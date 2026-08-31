@@ -25,6 +25,7 @@ export type Plan = {
   title: string;
   courseId: string | null;
   date: string | null;
+  endDate: string | null;
   location: PlanLocation;
   parentUnitId: string | null;
   childOrder: number | null;
@@ -55,10 +56,11 @@ export type WorkspacePreferences = {
   landingView: ArcView | "last-used";
   lastUsedView: ArcView;
   dayVisibleInSwitcher: boolean;
+  collapsedUnitIds: string[];
 };
 
 export type Workspace = {
-  schemaVersion: 1;
+  schemaVersion: 2;
   id: string;
   ownerId: string | null;
   teacherName: string;
@@ -74,7 +76,7 @@ export type Workspace = {
 
 export function emptyWorkspace(): Workspace {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     id: crypto.randomUUID(),
     ownerId: null,
     teacherName: "",
@@ -93,7 +95,8 @@ export function emptyWorkspace(): Workspace {
     preferences: {
       landingView: "week",
       lastUsedView: "week",
-      dayVisibleInSwitcher: true
+      dayVisibleInSwitcher: true,
+      collapsedUnitIds: []
     },
     updatedAt: new Date().toISOString()
   };
