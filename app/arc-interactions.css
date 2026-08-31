@@ -1,0 +1,118 @@
+.deskActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.deskActions button {
+  min-height: 34px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255,255,255,.5);
+  font-size: .68rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.deskActions button:disabled { opacity: .35; cursor: not-allowed; }
+.deskActions .todayButton { padding-inline: 12px; background: var(--ink); color: white; }
+.actionDivider { width: 1px; height: 24px; margin: 0 3px; background: var(--line); }
+
+.dayCell.pasteTarget,
+.ideasPanel.pasteTarget {
+  box-shadow: inset 0 0 0 2px rgba(47,111,115,.42);
+  background: rgba(47,111,115,.055);
+}
+
+.lessonMagnet { position: relative; cursor: grab; }
+.lessonMagnet:active { cursor: grabbing; }
+.lessonMagnet.selected,
+.ideaCard.selected,
+.unitChild.selected {
+  outline: 2px solid rgba(47,111,115,.7);
+  outline-offset: 1px;
+}
+.unitMagnet {
+  border-color: rgba(38,51,58,.27);
+  background: #f3eadb;
+  box-shadow: 0 6px 13px rgba(38,51,58,.08);
+}
+.magnetTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.magnetTitleRow strong { flex: 1; min-width: 0; }
+.disclosureButton {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: rgba(38,51,58,.07);
+  cursor: pointer;
+}
+.unitCount {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(38,51,58,.1);
+  font-size: .58rem;
+  font-weight: 900;
+}
+.unitChildren {
+  display: grid;
+  gap: 4px;
+  margin: 8px -2px 2px 17px;
+  padding-left: 7px;
+  border-left: 2px solid rgba(38,51,58,.12);
+}
+.unitChild {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 6px 7px;
+  border: 1px solid rgba(38,51,58,.1);
+  border-radius: 7px;
+  background: rgba(255,253,248,.75);
+  text-align: left;
+  cursor: pointer;
+}
+.unitChild span { min-width: 0; font-size: .66rem; font-weight: 750; }
+.unitChild small { color: var(--muted); font-size: .54rem; }
+.addChild {
+  justify-self: start;
+  border: 0;
+  background: transparent;
+  padding: 3px 1px;
+  color: var(--teal);
+  font-size: .6rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+.childComposer { display: grid; grid-template-columns: 1fr auto; gap: 4px; }
+.childComposer input { min-height: 30px; padding: 5px 7px; font-size: .64rem; }
+.childComposer button { border: 0; border-radius: 6px; background: var(--ink); color: white; font-size: .58rem; font-weight: 800; }
+
+.cellComposerActions { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.cellComposerActions .secondaryComposerAction {
+  background: #e7ddcc;
+  color: var(--ink);
+  border: 1px solid rgba(38,51,58,.12);
+}
+
+.ideaCard.unitIdea { background: #f3eadb; border-color: rgba(38,51,58,.22); }
+.ideaUnitMeta { display: block; margin: -3px 0 8px; color: var(--muted); font-size: .58rem; font-weight: 750; }
+
+@media (max-width: 900px) {
+  .deskActions { justify-content: flex-start; }
+}
