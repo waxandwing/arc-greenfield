@@ -1,0 +1,11 @@
+{
+  "product": "Arc by Wax & Wing",
+  "repository": "waxandwing/arc-greenfield",
+  "buildId": "ARC-GF-0001",
+  "phase": "0-repository-deployment-reset",
+  "created": "2026-08-31",
+  "productSpec": "https://docs.google.com/document/d/1SdC1jmvAeXCcrZriYRTnxoKmtQLjsbreBfYQHKlah7s/edit",
+  "productionAuthorized": false,
+  "legacyImplementationDependency": false,
+  "previewRule": "Visible buildId and deployed Git SHA must match the intended build before review begins."
+}
