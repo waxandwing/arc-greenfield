@@ -34,6 +34,19 @@ export function collectPlanTree(plans: Plan[], rootId: string): Plan[] {
   return plans.filter((plan) => ids.has(plan.id));
 }
 
+export function resolveTreeRootId(plans: Plan[], planId: string): string | null {
+  let current = plans.find((plan) => plan.id === planId);
+  if (!current) return null;
+  const visited = new Set<string>();
+  while (current.parentUnitId && !visited.has(current.id)) {
+    visited.add(current.id);
+    const parent = plans.find((plan) => plan.id === current!.parentUnitId);
+    if (!parent) break;
+    current = parent;
+  }
+  return current.id;
+}
+
 export function shiftPlanTree(plans: Plan[], rootId: string, deltaDays: number, courseId?: string | null): Plan[] {
   const treeIds = new Set(collectPlanTree(plans, rootId).map((plan) => plan.id));
   return plans.map((plan) => {
@@ -50,7 +63,7 @@ export function shiftPlanTree(plans: Plan[], rootId: string, deltaDays: number, 
 
 export function movePlanTreeToIdeas(plans: Plan[], rootId: string): Plan[] {
   const treeIds = new Set(collectPlanTree(plans, rootId).map((plan) => plan.id));
-  return plans.map((plan) => treeIds.has(plan.id) ? { ...plan, location: "ideas" as const, date: null, endDate: null } : plan);
+  return plans.map((plan) => treeIds.has(plan.id) ? { ...plan, location: "ideas" as const } : plan);
 }
 
 export function deletePlanTree(plans: Plan[], rootId: string): Plan[] {
@@ -74,9 +87,9 @@ export function clonePlanTree(plans: Plan[], rootId: string, targetDate?: string
     parentUnitId: plan.parentUnitId ? idMap.get(plan.parentUnitId) ?? plan.parentUnitId : null,
     continuationOfId: plan.continuationOfId ? idMap.get(plan.continuationOfId) ?? plan.continuationOfId : null,
     courseId: targetCourseId === undefined ? plan.courseId : targetCourseId,
-    date: targetDate === null ? null : shiftDate(plan.date, deltaDays),
-    endDate: targetDate === null ? null : shiftDate(plan.endDate, deltaDays),
-    location: targetDate === null ? "ideas" : plan.location
+    date: targetDate === null ? plan.date : shiftDate(plan.date, deltaDays),
+    endDate: targetDate === null ? plan.endDate : shiftDate(plan.endDate, deltaDays),
+    location: targetDate === null ? "ideas" : "calendar"
   }));
 }
 
