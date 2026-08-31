@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./phase1-fixes.css";
+import "./arc-interactions.css";
 
 export const metadata: Metadata = {
   title: "Arc Greenfield",
