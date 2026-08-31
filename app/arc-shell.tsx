@@ -23,8 +23,14 @@ function weekDays(anchor = new Date()) {
   return DAY_LABELS.map((label, index) => {
     const date = new Date(monday);
     date.setDate(monday.getDate() + index);
-    return { label, key: dateKey(date), number: date.getDate() };
+    return { label, key: dateKey(date), number: date.getDate(), month: date.toLocaleDateString(undefined, { month: "short" }) };
   });
+}
+
+function shiftDate(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
 }
 
 export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string }) {
@@ -34,15 +40,20 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
   const [draftCourse, setDraftCourse] = useState("");
   const [draftPeriod, setDraftPeriod] = useState("");
   const [ideaTitle, setIdeaTitle] = useState("");
+  const [ideaCourseId, setIdeaCourseId] = useState("");
   const [saveLabel, setSaveLabel] = useState("Not saved yet");
   const [cellDraft, setCellDraft] = useState<{ courseId: string; date: string; title: string } | null>(null);
   const [priorityDraft, setPriorityDraft] = useState<{ tier: PriorityTier; title: string } | null>(null);
+  const [weekAnchor, setWeekAnchor] = useState(() => new Date());
+  const [editingPlan, setEditingPlan] = useState<{ id: string; title: string } | null>(null);
 
-  const days = useMemo(() => weekDays(), []);
+  const days = useMemo(() => weekDays(weekAnchor), [weekAnchor]);
+  const weekLabel = `${days[0].month} ${days[0].number} – ${days[4].month} ${days[4].number}`;
 
   useEffect(() => {
     const loaded = loadWorkspace();
     setWorkspace(loaded);
+    if (loaded.courses[0]) setIdeaCourseId(loaded.courses[0].id);
     if (loaded.teacherName && loaded.courses.length > 0 && loaded.calendar.firstStudentDay) setScreen("desk");
     setReady(true);
   }, []);
@@ -69,6 +80,7 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
       color: COLORS[workspace.courses.length % COLORS.length]
     };
     updateWorkspace((current) => ({ ...current, courses: [...current.courses, course] }));
+    if (!ideaCourseId) setIdeaCourseId(course.id);
     setDraftCourse("");
     setDraftPeriod("");
   }
@@ -96,8 +108,8 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
   }
 
   function addIdea() {
-    if (!ideaTitle.trim()) return;
-    addPlan(ideaTitle, workspace.courses[0]?.id ?? null, null, "ideas");
+    if (!ideaTitle.trim() || !ideaCourseId) return;
+    addPlan(ideaTitle, ideaCourseId, null, "ideas");
     setIdeaTitle("");
   }
 
@@ -111,6 +123,34 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
     updateWorkspace((current) => ({
       ...current,
       plans: current.plans.map((plan) => plan.id === id ? { ...plan, location: "calendar", date } : plan)
+    }));
+  }
+
+  function movePlan(id: string, date: string) {
+    updateWorkspace((current) => ({
+      ...current,
+      plans: current.plans.map((plan) => plan.id === id ? { ...plan, date } : plan)
+    }));
+  }
+
+  function savePlanEdit() {
+    if (!editingPlan?.title.trim()) return;
+    updateWorkspace((current) => ({
+      ...current,
+      plans: current.plans.map((plan) => plan.id === editingPlan.id ? { ...plan, title: editingPlan.title.trim() } : plan)
+    }));
+    setEditingPlan(null);
+  }
+
+  function deletePlan(id: string) {
+    updateWorkspace((current) => ({ ...current, plans: current.plans.filter((plan) => plan.id !== id) }));
+    if (editingPlan?.id === id) setEditingPlan(null);
+  }
+
+  function returnPlanToIdeas(id: string) {
+    updateWorkspace((current) => ({
+      ...current,
+      plans: current.plans.map((plan) => plan.id === id ? { ...plan, location: "ideas", date: null } : plan)
     }));
   }
 
@@ -197,13 +237,17 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
         <section className="deskPage">
           <div className="deskToolbar">
             <div><p className="eyebrow">Planning desk</p><h1>{workspace.teacherName ? `${workspace.teacherName}’s week` : "Your week"}</h1></div>
-            <div className="viewStatus"><strong>Week</strong><span>Other views return after Week is solid.</span></div>
+            <div className="weekControls" aria-label="Week navigation">
+              <button type="button" onClick={() => setWeekAnchor((current) => shiftDate(current, -7))}>←</button>
+              <button type="button" className="todayButton" onClick={() => setWeekAnchor(new Date())}>Today</button>
+              <button type="button" onClick={() => setWeekAnchor((current) => shiftDate(current, 7))}>→</button>
+            </div>
           </div>
 
           <div className="deskGrid">
             <section className="calendarDesk" aria-label="Week planning workspace">
               <div className="calendarHeader">
-                <div><span className="viewName">This week</span><strong>Put the lesson where it belongs. Move it later.</strong></div>
+                <div><span className="viewName">{weekLabel}</span><strong>Put the lesson where it belongs. Move it when the week changes.</strong></div>
                 <button type="button" className="quietButton" onClick={() => setScreen("setup")}>Setup</button>
               </div>
 
@@ -213,13 +257,33 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
                   <div className="classRow" key={course.id}>
                     <div className="classLabel"><i style={{ background: course.color }} /><span>{course.name}</span><small>{course.periodLabel}</small></div>
                     <div className="dayCells">
-                      {days.map((day) => {
+                      {days.map((day, dayIndex) => {
                         const plans = workspace.plans.filter((plan) => plan.location === "calendar" && plan.courseId === course.id && plan.date === day.key);
                         const editing = cellDraft?.courseId === course.id && cellDraft.date === day.key;
                         return (
                           <div className="dayCell" key={day.key}>
                             <div className="cellPlans">
-                              {plans.map((plan) => <article className="lessonMagnet" key={plan.id}><strong>{plan.title}</strong></article>)}
+                              {plans.map((plan) => (
+                                <article className="lessonMagnet" key={plan.id}>
+                                  {editingPlan?.id === plan.id ? (
+                                    <div className="magnetEditor">
+                                      <input autoFocus value={editingPlan.title} onChange={(e) => setEditingPlan({ id: plan.id, title: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") savePlanEdit(); if (e.key === "Escape") setEditingPlan(null); }} />
+                                      <div><button type="button" onClick={savePlanEdit}>Save</button><button type="button" onClick={() => setEditingPlan(null)}>Cancel</button></div>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <strong>{plan.title}</strong>
+                                      <div className="magnetActions" aria-label={`Actions for ${plan.title}`}>
+                                        <button type="button" title="Edit" onClick={() => setEditingPlan({ id: plan.id, title: plan.title })}>Edit</button>
+                                        <button type="button" title="Move earlier" disabled={dayIndex === 0} onClick={() => movePlan(plan.id, days[dayIndex - 1]?.key ?? day.key)}>←</button>
+                                        <button type="button" title="Move later" disabled={dayIndex === days.length - 1} onClick={() => movePlan(plan.id, days[dayIndex + 1]?.key ?? day.key)}>→</button>
+                                        <button type="button" title="Return to Ideas" onClick={() => returnPlanToIdeas(plan.id)}>Ideas</button>
+                                        <button type="button" className="dangerAction" title="Delete" onClick={() => deletePlan(plan.id)}>×</button>
+                                      </div>
+                                    </>
+                                  )}
+                                </article>
+                              ))}
                             </div>
                             {editing ? (
                               <div className="cellComposer">
@@ -241,11 +305,25 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
             <aside className="workbench" aria-label="Planning workbench">
               <section className="ideasPanel">
                 <div className="ideasHeading"><div><p className="eyebrow">Ideas</p><h2>Things worth keeping.</h2></div><span>{workspace.plans.filter((plan) => plan.location === "ideas").length}</span></div>
-                <div className="ideaAdder"><input value={ideaTitle} onChange={(e) => setIdeaTitle(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addIdea(); }} placeholder="Catch an idea…" /><button type="button" onClick={addIdea}>＋</button></div>
+                <div className="ideaAdder">
+                  <input value={ideaTitle} onChange={(e) => setIdeaTitle(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addIdea(); }} placeholder="Catch an idea…" />
+                  <select aria-label="Class for new idea" value={ideaCourseId} onChange={(e) => setIdeaCourseId(e.target.value)}>
+                    <option value="" disabled>Class</option>
+                    {workspace.courses.map((course) => <option value={course.id} key={course.id}>{course.name}</option>)}
+                  </select>
+                  <button type="button" disabled={!ideaCourseId} onClick={addIdea}>＋</button>
+                </div>
                 <div className="ideaList">
-                  {workspace.plans.filter((plan) => plan.location === "ideas").map((plan) => (
-                    <article key={plan.id} className="ideaCard"><strong>{plan.title}</strong><div className="ideaDates">{days.map((day) => <button type="button" key={day.key} onClick={() => moveIdeaToDate(plan.id, day.key)}>{day.label}</button>)}</div></article>
-                  ))}
+                  {workspace.plans.filter((plan) => plan.location === "ideas").map((plan) => {
+                    const course = workspace.courses.find((item) => item.id === plan.courseId);
+                    return (
+                      <article key={plan.id} className="ideaCard">
+                        <div className="ideaCardHeader"><strong>{plan.title}</strong>{course && <span style={{ borderColor: course.color }}>{course.name}</span>}</div>
+                        <div className="ideaDates">{days.map((day) => <button type="button" key={day.key} onClick={() => moveIdeaToDate(plan.id, day.key)}>{day.label}</button>)}</div>
+                        <button type="button" className="ideaDelete" onClick={() => deletePlan(plan.id)}>Delete</button>
+                      </article>
+                    );
+                  })}
                   {workspace.plans.every((plan) => plan.location !== "ideas") && <p className="emptyNote">Loose thoughts can live here before they have a date.</p>}
                 </div>
               </section>
