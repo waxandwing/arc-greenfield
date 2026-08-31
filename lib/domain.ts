@@ -91,8 +91,8 @@ export function emptyWorkspace(): Workspace {
     priorities: [],
     yearMarkers: [],
     preferences: {
-      landingView: "month",
-      lastUsedView: "month",
+      landingView: "week",
+      lastUsedView: "week",
       dayVisibleInSwitcher: true
     },
     updatedAt: new Date().toISOString()
