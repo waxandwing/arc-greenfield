@@ -95,6 +95,7 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
         title: title.trim(),
         courseId,
         date,
+        endDate: null,
         location,
         parentUnitId: null,
         childOrder: null,
