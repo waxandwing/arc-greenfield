@@ -1,4 +1,4 @@
-import { emptyWorkspace, type Workspace } from "./domain";
+import { emptyWorkspace, type Plan, type Workspace } from "./domain";
 
 const STORAGE_KEY = "arc.greenfield.workspace.v1";
 
@@ -9,6 +9,23 @@ export type SaveState = {
   savedAt: string;
 };
 
+type WorkspaceV1 = Omit<Workspace, "schemaVersion" | "plans" | "preferences"> & {
+  schemaVersion: 1;
+  plans: Array<Omit<Plan, "endDate">>;
+  preferences: Omit<Workspace["preferences"], "collapsedUnitIds">;
+};
+
+function migrateWorkspace(parsed: Workspace | WorkspaceV1): Workspace {
+  if (parsed.schemaVersion === 2) return parsed;
+
+  return {
+    ...parsed,
+    schemaVersion: 2,
+    plans: parsed.plans.map((plan) => ({ ...plan, endDate: null })),
+    preferences: { ...parsed.preferences, collapsedUnitIds: [] }
+  };
+}
+
 export function loadWorkspace(): Workspace {
   if (typeof window === "undefined") return emptyWorkspace();
 
@@ -16,9 +33,9 @@ export function loadWorkspace(): Workspace {
   if (!raw) return emptyWorkspace();
 
   try {
-    const parsed = JSON.parse(raw) as Workspace;
-    if (parsed.schemaVersion !== 1) return emptyWorkspace();
-    return parsed;
+    const parsed = JSON.parse(raw) as Workspace | WorkspaceV1;
+    if (parsed.schemaVersion !== 1 && parsed.schemaVersion !== 2) return emptyWorkspace();
+    return migrateWorkspace(parsed);
   } catch {
     return emptyWorkspace();
   }
