@@ -17,5 +17,18 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Install Chromium for rendered checks
+        run: npx playwright install --with-deps chromium
+      - name: Run rendered Arc checks
+        run: npm run test:browser
+      - name: Upload browser evidence on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-browser-evidence
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
       - name: Verify canonical build contract exists
         run: test -f CANONICAL_BUILD.json
