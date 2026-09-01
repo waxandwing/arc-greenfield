@@ -1,6 +1,8 @@
 import { emptyWorkspace, type Plan, type Workspace } from "./domain";
 
-const STORAGE_KEY = "arc.greenfield.workspace.v1";
+const LEGACY_STORAGE_KEY = "arc.greenfield.workspace.v1";
+const ACTIVE_OWNER_KEY = "arc.workspace.active-owner.v1";
+const OWNER_STORAGE_PREFIX = "arc.workspace.owner.v1";
 
 export type SaveDestination = "device" | "arc-account" | "google-drive+arc";
 
@@ -26,28 +28,61 @@ function migrateWorkspace(parsed: Workspace | WorkspaceV1): Workspace {
   };
 }
 
-export function loadWorkspace(): Workspace {
-  if (typeof window === "undefined") return emptyWorkspace();
+export function workspaceStorageKey(ownerId: string | null): string {
+  return ownerId ? `${OWNER_STORAGE_PREFIX}:${ownerId}` : LEGACY_STORAGE_KEY;
+}
 
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) return emptyWorkspace();
+function activeOwnerId(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(ACTIVE_OWNER_KEY);
+}
+
+export function setActiveWorkspaceOwner(ownerId: string | null): void {
+  if (typeof window === "undefined") return;
+  if (ownerId) window.localStorage.setItem(ACTIVE_OWNER_KEY, ownerId);
+  else window.localStorage.removeItem(ACTIVE_OWNER_KEY);
+}
+
+export function loadWorkspace(ownerId?: string | null): Workspace {
+  const resolvedOwnerId = ownerId === undefined ? activeOwnerId() : ownerId;
+  if (typeof window === "undefined") {
+    const workspace = emptyWorkspace();
+    workspace.ownerId = resolvedOwnerId ?? null;
+    return workspace;
+  }
+
+  const raw = window.localStorage.getItem(workspaceStorageKey(resolvedOwnerId ?? null));
+  if (!raw) {
+    const workspace = emptyWorkspace();
+    workspace.ownerId = resolvedOwnerId ?? null;
+    return workspace;
+  }
 
   try {
     const parsed = JSON.parse(raw) as Workspace | WorkspaceV1;
-    if (parsed.schemaVersion !== 1 && parsed.schemaVersion !== 2) return emptyWorkspace();
-    return migrateWorkspace(parsed);
+    if (parsed.schemaVersion !== 1 && parsed.schemaVersion !== 2) {
+      const workspace = emptyWorkspace();
+      workspace.ownerId = resolvedOwnerId ?? null;
+      return workspace;
+    }
+    const migrated = migrateWorkspace(parsed);
+    return resolvedOwnerId ? { ...migrated, ownerId: resolvedOwnerId } : migrated;
   } catch {
-    return emptyWorkspace();
+    const workspace = emptyWorkspace();
+    workspace.ownerId = resolvedOwnerId ?? null;
+    return workspace;
   }
 }
 
-export function saveWorkspace(workspace: Workspace): SaveState {
+export function saveWorkspace(workspace: Workspace, ownerId?: string | null): SaveState {
   const savedAt = new Date().toISOString();
-  const next = { ...workspace, updatedAt: savedAt };
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  const resolvedOwnerId = ownerId === undefined ? activeOwnerId() ?? workspace.ownerId : ownerId;
+  const next = { ...workspace, ownerId: resolvedOwnerId ?? null, updatedAt: savedAt };
+  window.localStorage.setItem(workspaceStorageKey(resolvedOwnerId ?? null), JSON.stringify(next));
   return { destination: "device", savedAt };
 }
 
-export function clearWorkspace(): void {
-  window.localStorage.removeItem(STORAGE_KEY);
+export function clearWorkspace(ownerId?: string | null): void {
+  const resolvedOwnerId = ownerId === undefined ? activeOwnerId() : ownerId;
+  window.localStorage.removeItem(workspaceStorageKey(resolvedOwnerId ?? null));
 }
