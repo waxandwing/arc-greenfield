@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from "react";
 import type { Course, Workspace } from "../lib/domain";
+import { onboardingCompletedCount, onboardingReady, onboardingStepComplete, type OnboardingStep } from "../lib/onboarding-state";
 
 const COLORS = ["#2f6f73", "#557b93", "#d2a64a", "#d97965", "#6f7d5b", "#8a6d82"];
-type Step = "you" | "classes" | "calendar";
 
 type Props = {
   workspace: Workspace;
@@ -13,12 +13,16 @@ type Props = {
 };
 
 export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
-  const [step, setStep] = useState<Step>("you");
+  const [step, setStep] = useState<OnboardingStep>("you");
   const [draftCourse, setDraftCourse] = useState("");
   const [draftPeriod, setDraftPeriod] = useState("");
   const [previewOpen, setPreviewOpen] = useState(true);
 
-  const ready = Boolean(workspace.teacherName.trim() && workspace.courses.length && workspace.calendar.firstStudentDay);
+  const ready = onboardingReady(workspace);
+  const stepComplete = onboardingStepComplete(workspace, step);
+  const completedCount = onboardingCompletedCount(workspace);
+  const canOpenClasses = onboardingStepComplete(workspace, "you");
+  const canOpenCalendar = canOpenClasses && onboardingStepComplete(workspace, "classes");
   const stepIndex = step === "you" ? 0 : step === "classes" ? 1 : 2;
 
   const previewTitle = useMemo(() => {
@@ -51,6 +55,13 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
     });
   }
 
+  function openStep(next: OnboardingStep) {
+    if (next === "classes" && !canOpenClasses) return;
+    if (next === "calendar" && !canOpenCalendar) return;
+    setStep(next);
+    setPreviewOpen(true);
+  }
+
   return (
     <section className="arcOnboarding" aria-label="Set up Arc">
       <header className="onboardingIntro">
@@ -59,21 +70,21 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
           <h1>Make Arc yours.</h1>
           <p>Start with the pieces Arc actually needs. The preview updates while you work so setup feels like building your desk, not filling out a form.</p>
         </div>
-        <div className="onboardingProgress" aria-label={`Step ${stepIndex + 1} of 3`}>
-          {[0, 1, 2].map((index) => <span key={index} className={index <= stepIndex ? "complete" : ""} />)}
+        <div className="onboardingProgress" aria-label={`${completedCount} of 3 setup sections complete`}>
+          {(["you", "classes", "calendar"] as const).map((item) => <span key={item} className={onboardingStepComplete(workspace, item) ? "complete" : ""} />)}
         </div>
       </header>
 
       <div className={previewOpen ? "onboardingStage previewOpen" : "onboardingStage"}>
         <div className="onboardingChoices" role="tablist" aria-label="Setup sections">
-          <button type="button" role="tab" aria-selected={step === "you"} className={step === "you" ? "selected" : ""} onClick={() => { setStep("you"); setPreviewOpen(true); }}>
-            <span className="setupChoiceNumber">1</span><span><strong>You</strong><small>What should Arc call you?</small></span><b>{workspace.teacherName.trim() ? "Done" : "Start"}</b>
+          <button type="button" role="tab" aria-selected={step === "you"} className={step === "you" ? "selected" : ""} onClick={() => openStep("you")}>
+            <span className="setupChoiceNumber">1</span><span><strong>You</strong><small>What should Arc call you?</small></span><b>{onboardingStepComplete(workspace, "you") ? "Done" : "Start"}</b>
           </button>
-          <button type="button" role="tab" aria-selected={step === "classes"} className={step === "classes" ? "selected" : ""} onClick={() => { setStep("classes"); setPreviewOpen(true); }}>
-            <span className="setupChoiceNumber">2</span><span><strong>Classes</strong><small>Add the classes you actually teach.</small></span><b>{workspace.courses.length ? `${workspace.courses.length} added` : "Add"}</b>
+          <button type="button" role="tab" aria-selected={step === "classes"} aria-disabled={!canOpenClasses} disabled={!canOpenClasses} className={step === "classes" ? "selected" : ""} onClick={() => openStep("classes")}>
+            <span className="setupChoiceNumber">2</span><span><strong>Classes</strong><small>Add the classes you actually teach.</small></span><b>{workspace.courses.length ? `${workspace.courses.length} added` : "Next"}</b>
           </button>
-          <button type="button" role="tab" aria-selected={step === "calendar"} className={step === "calendar" ? "selected" : ""} onClick={() => { setStep("calendar"); setPreviewOpen(true); }}>
-            <span className="setupChoiceNumber">3</span><span><strong>School year</strong><small>Use your real dates. Quarter dates stay optional.</small></span><b>{workspace.calendar.firstStudentDay ? "Started" : "Add"}</b>
+          <button type="button" role="tab" aria-selected={step === "calendar"} aria-disabled={!canOpenCalendar} disabled={!canOpenCalendar} className={step === "calendar" ? "selected" : ""} onClick={() => openStep("calendar")}>
+            <span className="setupChoiceNumber">3</span><span><strong>School year</strong><small>Use your real dates. Quarter dates stay optional.</small></span><b>{onboardingStepComplete(workspace, "calendar") ? "Done" : "Next"}</b>
           </button>
         </div>
 
@@ -102,7 +113,7 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
 
             <div className="setupPopoutFooter">
               <button type="button" className="secondarySetupAction" disabled={stepIndex === 0} onClick={() => setStep(step === "calendar" ? "classes" : "you")}>Back</button>
-              {step !== "calendar" ? <button type="button" className="primarySetupAction" onClick={() => setStep(step === "you" ? "classes" : "calendar")}>Continue</button> : <button type="button" className="primarySetupAction" disabled={!ready} onClick={onComplete}>Open my desk</button>}
+              {step !== "calendar" ? <button type="button" className="primarySetupAction" disabled={!stepComplete} onClick={() => setStep(step === "you" ? "classes" : "calendar")}>Continue</button> : <button type="button" className="primarySetupAction" disabled={!ready} onClick={onComplete}>Open my desk</button>}
             </div>
           </div>
         </aside>
