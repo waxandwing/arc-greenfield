@@ -69,7 +69,6 @@ test("Arc color scheme is user-selectable, asset-derived, and persists", async (
   await page.screenshot({ path: testInfo.outputPath("palette-picker.png"), fullPage: false });
   await page.getByRole("radio", { name: /Blueprint/ }).click();
 
-  await page.waitForLoadState("domcontentloaded");
   await expect(page.getByRole("button", { name: /Palette · Blueprint/ })).toBeVisible();
   await expect(page.locator(".arcWorkspace")).toHaveAttribute("data-color-scheme", "blueprint");
 
@@ -86,7 +85,7 @@ test("Day is the teach-from-it surface and Year renders each school month once",
   await page.getByRole("button", { name: "Day", exact: true }).click();
   await expect(page.getByText("Teach from today", { exact: true })).toBeVisible();
   await expect(page.locator(".dayCourse.teachingCard")).toHaveCount(1);
-  await expect(page.getByText("Studio Art", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Studio Art", exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("day-teach-surface.png"), fullPage: false });
 
   await page.getByRole("button", { name: "Year", exact: true }).click();
