@@ -85,8 +85,10 @@
   border-radius: 7px;
   background: rgba(255,253,248,.75);
   text-align: left;
-  cursor: pointer;
+  cursor: grab;
 }
+.unitChild:active { cursor: grabbing; }
+.unitChild:focus-visible { outline: 3px solid rgba(217,121,101,.42); outline-offset: 2px; }
 .unitChild span { min-width: 0; font-size: .66rem; font-weight: 750; }
 .unitChild small { color: var(--muted); font-size: .54rem; }
 .addChild {
@@ -109,6 +111,29 @@
   color: var(--ink);
   border: 1px solid rgba(38,51,58,.12);
 }
+
+/* v23.4 recovery: Unit creation is a class-level planning action. */
+.classUnitAdd {
+  margin-top: 7px;
+  min-height: 28px;
+  padding: 4px 9px;
+  border: 1px solid rgba(47,111,115,.3);
+  border-radius: 999px;
+  background: #fffaf0;
+  color: var(--teal);
+  font-size: .58rem;
+  font-weight: 850;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+.classUnitAdd:hover { background: #f2d24b; color: var(--ink); }
+.classUnitAdd:focus-visible { outline: 3px solid rgba(217,121,101,.42); outline-offset: 2px; }
+.classUnitComposer { display: grid; gap: 4px; width: 100%; margin-top: 7px; }
+.classUnitComposer input { min-width: 0; min-height: 31px; padding: 5px 7px; font-size: .62rem; }
+.classUnitComposer button { min-height: 28px; border: 0; border-radius: 7px; background: var(--gold); color: var(--ink); font-size: .58rem; font-weight: 850; cursor: pointer; }
+.quickMode { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 5px; }
+.quickMode button { min-height: 30px; border: 1px solid var(--line); border-radius: 7px; background: #fffaf0; color: var(--muted); font-size: .58rem; font-weight: 850; cursor: pointer; }
+.quickMode button.active { border-color: var(--gold); background: var(--gold); color: var(--ink); }
 
 .ideaCard.unitIdea { background: #f3eadb; border-color: rgba(38,51,58,.22); }
 .ideaUnitMeta { display: block; margin: -3px 0 8px; color: var(--muted); font-size: .58rem; font-weight: 750; }
