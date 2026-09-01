@@ -5,10 +5,9 @@ export type PlanLocation = "calendar" | "fridge" | "ideas";
 export type PriorityTier = "must" | "should" | "could";
 export type ContentFilter = "everything" | "units" | "lessons" | "ideas";
 export type ArcColorScheme = "studio" | "sunroom" | "blueprint" | "clay";
-export type CourseMeetingPattern = {
-  kind: "weekdays";
-  weekdays: number[];
-};
+export type CourseMeetingPattern =
+  | { kind: "weekdays"; weekdays: number[] }
+  | { kind: "rotation"; labels: string[] };
 
 export type Course = {
   id: string;
@@ -24,6 +23,10 @@ export type SchoolCalendar = {
   quarterBoundaries: Array<{ id: string; label: string; start: string; end: string }>;
   noSchoolDates: Array<{ id: string; date: string; label: string }>;
   weekendsVisible: boolean;
+  rotation?: {
+    anchorDate: string;
+    labels: string[];
+  } | null;
 };
 
 export type Plan = {
@@ -115,7 +118,8 @@ export function emptyWorkspace(): Workspace {
       lastStudentDay: null,
       quarterBoundaries: [],
       noSchoolDates: [],
-      weekendsVisible: false
+      weekendsVisible: false,
+      rotation: null
     },
     plans: [],
     priorities: [],
