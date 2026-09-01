@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { ArcShell } from "./arc-shell";
+import { ArcEntry } from "./arc-entry";
 import { isArcAuthConfigured } from "../lib/auth-config";
 import { createArcServerClient } from "../lib/supabase-server";
 
@@ -17,5 +17,5 @@ export default async function HomePage() {
     process.env.GITHUB_SHA ??
     "local-uncommitted";
 
-  return <ArcShell buildId={BUILD_ID} gitSha={gitSha} />;
+  return <ArcEntry buildId={BUILD_ID} gitSha={gitSha} />;
 }
