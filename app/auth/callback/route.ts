@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
+import { safeInternalNext } from "../../../lib/access-routing";
 import { createArcServerClient } from "../../../lib/supabase-server";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const requestedNext = url.searchParams.get("next") ?? "/";
-  const next = requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/";
+  const next = safeInternalNext(url.searchParams.get("next"));
 
   if (!code) return NextResponse.redirect(new URL("/login?error=callback", url.origin));
 
