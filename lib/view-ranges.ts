@@ -82,8 +82,12 @@ export function quarterRange(calendar: SchoolCalendar, quarterId: string): Quart
   const boundary = calendar.quarterBoundaries.find((quarter) => quarter.id === quarterId);
   if (!boundary?.start || !boundary?.end) return null;
 
-  let cursor = mondayFor(parseDate(boundary.start));
-  const end = fridayFor(parseDate(boundary.end));
+  const startDate = parseDate(boundary.start);
+  const endDate = parseDate(boundary.end);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate > endDate) return null;
+
+  let cursor = mondayFor(startDate);
+  const end = fridayFor(endDate);
   const weeks: CalendarWeek[] = [];
   while (cursor <= end) {
     weeks.push(schoolWeek(cursor));
