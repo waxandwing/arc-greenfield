@@ -75,7 +75,10 @@ export function YearMapView({
             const quarterIndex = ranges.findIndex((range) => range.id === quarterId);
             const quarterClass = quarterIndex >= 0 ? ` q${quarterIndex + 1}` : "";
             const selected = day.key === selectedDate;
-            return <button type="button" key={day.key} className={`yearMiniDay${day.inside ? "" : " outside"}${withinYear ? "" : " outsideYear"}${noSchool ? " noSchool" : ""}${passed ? " pastInstructional" : ""}${selected ? " selected" : ""}${quarterClass}`} onClick={() => onSelectDate(day.key)} title={noSchool ? `${day.key} · ${noSchool.label}` : marker ? `${day.key} · ${marker.symbol} ${marker.note}` : day.key}>{marker?.symbol ?? day.date.getDate()}</button>;
+            return <button type="button" key={day.key} className={`yearMiniDay${day.inside ? "" : " outside"}${withinYear ? "" : " outsideYear"}${noSchool ? " noSchool" : ""}${passed ? " pastInstructionalAsset" : ""}${selected ? " selected" : ""}${quarterClass}`} onClick={() => onSelectDate(day.key)} title={noSchool ? `${day.key} · ${noSchool.label}` : marker ? `${day.key} · ${marker.symbol} ${marker.note}` : day.key}>
+              <span>{marker?.symbol ?? day.date.getDate()}</span>
+              {passed && <img className="yearElapsedX" src="/arc-x.png" alt="" aria-hidden="true" />}
+            </button>;
           })}</div>
         </article>)}
       </div>
