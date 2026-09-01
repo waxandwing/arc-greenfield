@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Course, Workspace } from "../lib/domain";
-import { onboardingCompletedCount, onboardingReady, onboardingStepComplete, type OnboardingStep } from "../lib/onboarding-state";
+import { onboardingCompletedCount, onboardingReady, onboardingStepComplete, schoolYearRangeValid, type OnboardingStep } from "../lib/onboarding-state";
 
 const COLORS = ["#2f6f73", "#557b93", "#d2a64a", "#d97965", "#6f7d5b", "#8a6d82"];
 
@@ -17,6 +17,8 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
   const [draftCourse, setDraftCourse] = useState("");
   const [draftPeriod, setDraftPeriod] = useState("");
   const [previewOpen, setPreviewOpen] = useState(true);
+  const [noSchoolDate, setNoSchoolDate] = useState("");
+  const [noSchoolLabel, setNoSchoolLabel] = useState("");
 
   const ready = onboardingReady(workspace);
   const stepComplete = onboardingStepComplete(workspace, step);
@@ -24,12 +26,13 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
   const canOpenClasses = onboardingStepComplete(workspace, "you");
   const canOpenCalendar = canOpenClasses && onboardingStepComplete(workspace, "classes");
   const stepIndex = step === "you" ? 0 : step === "classes" ? 1 : 2;
+  const schoolYearValid = schoolYearRangeValid(workspace);
 
   const previewTitle = useMemo(() => {
     if (step === "you") return workspace.teacherName.trim() ? `${workspace.teacherName.trim()}’s Arc` : "Your Arc";
     if (step === "classes") return workspace.courses.length ? `${workspace.courses.length} class${workspace.courses.length === 1 ? "" : "es"}` : "Your classes";
-    return workspace.calendar.firstStudentDay ? "Your school year" : "Your calendar";
-  }, [step, workspace]);
+    return schoolYearValid ? "Your school year" : "Your calendar";
+  }, [step, workspace, schoolYearValid]);
 
   function addCourse() {
     if (!draftCourse.trim()) return;
@@ -53,6 +56,36 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
       boundaries[index] = { ...boundaries[index], [field]: value };
       return { ...current, calendar: { ...current.calendar, quarterBoundaries: boundaries } };
     });
+  }
+
+  function addNoSchoolDate() {
+    if (!noSchoolDate) return;
+    onUpdate((current) => {
+      if (current.calendar.noSchoolDates.some((item) => item.date === noSchoolDate)) return current;
+      return {
+        ...current,
+        calendar: {
+          ...current.calendar,
+          noSchoolDates: [...current.calendar.noSchoolDates, {
+            id: crypto.randomUUID(),
+            date: noSchoolDate,
+            label: noSchoolLabel.trim() || "No school"
+          }].sort((a, b) => a.date.localeCompare(b.date))
+        }
+      };
+    });
+    setNoSchoolDate("");
+    setNoSchoolLabel("");
+  }
+
+  function removeNoSchoolDate(id: string) {
+    onUpdate((current) => ({
+      ...current,
+      calendar: {
+        ...current.calendar,
+        noSchoolDates: current.calendar.noSchoolDates.filter((item) => item.id !== id)
+      }
+    }));
   }
 
   function openStep(next: OnboardingStep) {
@@ -107,7 +140,18 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
             </div>}
 
             {step === "calendar" && <div className="setupPreviewSection calendarSetupSection">
+              <div className="calendarSourceTruth" role="note">
+                <strong>Manual calendar setup</strong>
+                <span>District lookup and calendar-file extraction stay hidden until they can return real source-backed dates. For now, Arc uses exactly what you enter here.</span>
+              </div>
               <div className="datePair"><label><span>First student day</span><input type="date" value={workspace.calendar.firstStudentDay ?? ""} onChange={(e) => onUpdate((current) => ({ ...current, calendar: { ...current.calendar, firstStudentDay: e.target.value || null } }))} /></label><label><span>Last student day</span><input type="date" value={workspace.calendar.lastStudentDay ?? ""} onChange={(e) => onUpdate((current) => ({ ...current, calendar: { ...current.calendar, lastStudentDay: e.target.value || null } }))} /></label></div>
+              {workspace.calendar.firstStudentDay && workspace.calendar.lastStudentDay && !schoolYearValid && <p className="calendarValidationError" role="alert">The last student day needs to be on or after the first student day.</p>}
+              <div className="noSchoolSetup">
+                <div className="noSchoolHeading"><strong>No-school dates</strong><span>Shift, Tack, Extend, and long-range views will skip these instructional days.</span></div>
+                <div className="noSchoolComposer"><input aria-label="No-school date" type="date" value={noSchoolDate} onChange={(e) => setNoSchoolDate(e.target.value)} /><input aria-label="No-school date label" value={noSchoolLabel} onChange={(e) => setNoSchoolLabel(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addNoSchoolDate(); }} placeholder="Holiday, workday, break…" /><button type="button" disabled={!noSchoolDate} onClick={addNoSchoolDate}>Add</button></div>
+                <div className="noSchoolList">{workspace.calendar.noSchoolDates.map((item) => <div key={item.id}><span><strong>{item.date}</strong><small>{item.label}</small></span><button type="button" aria-label={`Remove ${item.label} on ${item.date}`} onClick={() => removeNoSchoolDate(item.id)}>×</button></div>)}{workspace.calendar.noSchoolDates.length === 0 && <p>No dates added yet.</p>}</div>
+              </div>
+              <label className="weekendToggle"><span><input type="checkbox" checked={workspace.calendar.weekendsVisible} onChange={(e) => onUpdate((current) => ({ ...current, calendar: { ...current.calendar, weekendsVisible: e.target.checked } }))} /> Show weekends in calendar views</span></label>
               <details className="quarterDetails"><summary>Quarter dates <span>optional until Quarter view</span></summary><div className="quarterMiniGrid">{Array.from({ length: 4 }, (_, index) => { const boundary = workspace.calendar.quarterBoundaries.find((item) => item.id === `q${index + 1}`); return <div key={index}><strong>Q{index + 1}</strong><input aria-label={`Quarter ${index + 1} start`} type="date" value={boundary?.start ?? ""} onChange={(e) => updateQuarter(index, "start", e.target.value)} /><input aria-label={`Quarter ${index + 1} end`} type="date" value={boundary?.end ?? ""} onChange={(e) => updateQuarter(index, "end", e.target.value)} /></div>; })}</div></details>
             </div>}
 
