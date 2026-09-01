@@ -3,6 +3,7 @@ import "./globals.css";
 import "./phase1-fixes.css";
 import "./arc-interactions.css";
 import "./range-views.css";
+import "./arc-visual-language.css";
 
 export const metadata: Metadata = {
   title: "Arc Greenfield",
