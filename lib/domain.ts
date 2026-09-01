@@ -3,6 +3,7 @@ export type ArcView = "day" | "week" | "month" | "quarter" | "semester" | "year"
 export type PlanType = "unit" | "lesson" | "note" | "idea";
 export type PlanLocation = "calendar" | "fridge" | "ideas";
 export type PriorityTier = "must" | "should" | "could";
+export type ContentFilter = "everything" | "units" | "lessons" | "ideas";
 
 export type Course = {
   id: string;
@@ -55,6 +56,15 @@ export type YearMarker = {
   note: string;
 };
 
+export type WorkspaceCheckpoint = {
+  id: string;
+  label: string;
+  quarterId: string;
+  createdAt: string;
+  plans: Plan[];
+  preferences: WorkspacePreferences;
+};
+
 export type WorkspacePreferences = {
   landingView: ArcView | "last-used";
   lastUsedView: ArcView;
@@ -63,6 +73,10 @@ export type WorkspacePreferences = {
   openFolder?: "shift" | "fridge" | "more" | null;
   prioritiesExpanded?: boolean;
   lapsedDayXsVisible?: boolean;
+  courseFilterId?: string | null;
+  contentFilter?: ContentFilter;
+  compactMode?: boolean;
+  darkMode?: boolean;
 };
 
 export type Workspace = {
@@ -77,6 +91,7 @@ export type Workspace = {
   priorities: Priority[];
   yearMarkers: YearMarker[];
   preferences: WorkspacePreferences;
+  checkpoints?: WorkspaceCheckpoint[];
   updatedAt: string;
 };
 
@@ -105,8 +120,13 @@ export function emptyWorkspace(): Workspace {
       collapsedUnitIds: [],
       openFolder: null,
       prioritiesExpanded: false,
-      lapsedDayXsVisible: true
+      lapsedDayXsVisible: true,
+      courseFilterId: null,
+      contentFilter: "everything",
+      compactMode: false,
+      darkMode: false
     },
+    checkpoints: [],
     updatedAt: new Date().toISOString()
   };
 }
