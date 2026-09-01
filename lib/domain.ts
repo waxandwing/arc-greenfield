@@ -1,7 +1,7 @@
 export type ArcView = "day" | "week" | "month" | "quarter" | "semester" | "year";
 
 export type PlanType = "unit" | "lesson" | "note" | "idea";
-export type PlanLocation = "calendar" | "fridge";
+export type PlanLocation = "calendar" | "fridge" | "ideas";
 export type PriorityTier = "must" | "should" | "could";
 
 export type Course = {
