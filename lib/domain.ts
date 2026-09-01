@@ -4,6 +4,7 @@ export type PlanType = "unit" | "lesson" | "note" | "idea";
 export type PlanLocation = "calendar" | "fridge" | "ideas";
 export type PriorityTier = "must" | "should" | "could";
 export type ContentFilter = "everything" | "units" | "lessons" | "ideas";
+export type ArcColorScheme = "studio" | "sunroom" | "blueprint" | "clay";
 
 export type Course = {
   id: string;
@@ -75,6 +76,7 @@ export type WorkspacePreferences = {
   lapsedDayXsVisible?: boolean;
   courseFilterId?: string | null;
   contentFilter?: ContentFilter;
+  colorScheme?: ArcColorScheme;
   compactMode?: boolean;
   darkMode?: boolean;
 };
@@ -123,6 +125,7 @@ export function emptyWorkspace(): Workspace {
       lapsedDayXsVisible: true,
       courseFilterId: null,
       contentFilter: "everything",
+      colorScheme: "studio",
       compactMode: false,
       darkMode: false
     },
