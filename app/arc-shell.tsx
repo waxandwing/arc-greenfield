@@ -19,9 +19,11 @@ import { resolveArcShortcut } from "../lib/shortcuts";
 import { availableQuarterRanges } from "../lib/view-ranges";
 import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "../lib/workspace-history";
 import { loadWorkspace, saveWorkspace } from "../lib/workspace-store";
+import { DayPlanningView } from "./day-planning-view";
 import { MonthView } from "./month-view";
 import { QuarterView } from "./quarter-view";
 import { WeekPlanner } from "./week-planner";
+import { YearMapView } from "./year-map-view";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 const VIEW_LABELS: Array<{ id: ArcView; label: string }> = [
@@ -33,7 +35,6 @@ const VIEW_LABELS: Array<{ id: ArcView; label: string }> = [
   { id: "year", label: "Year" }
 ];
 const PRIORITY_TIERS: PriorityTier[] = ["must", "should", "could"];
-const YEAR_MARKERS = ["☺", "✂", "♕", "$", "‼", "abc", "🔗", "☆", "⚑"] as const;
 type FolderId = "fridge" | "shift" | "more";
 type Dragging = { kind: "plan" | "priority"; id: string } | null;
 
@@ -75,36 +76,8 @@ function weekDays(anchor = new Date()) {
   });
 }
 
-function monthKeys(start: string, end: string) {
-  const out: string[] = [];
-  const cursor = parseDate(`${start.slice(0, 7)}-01`);
-  const last = parseDate(`${end.slice(0, 7)}-01`);
-  while (cursor <= last && out.length < 14) {
-    out.push(dateKey(cursor).slice(0, 7));
-    cursor.setMonth(cursor.getMonth() + 1);
-  }
-  return out;
-}
-
-function monthGrid(monthKey: string) {
-  const start = parseDate(`${monthKey}-01`);
-  const firstDow = start.getDay();
-  const gridStart = new Date(start);
-  gridStart.setDate(start.getDate() - firstDow);
-  return Array.from({ length: 42 }, (_, index) => {
-    const date = shiftDate(gridStart, index);
-    return { key: dateKey(date), date, inside: date.getMonth() === start.getMonth() };
-  });
-}
-
 function isTypingTarget(target: EventTarget | null) {
   return Boolean((target as HTMLElement | null)?.closest("input, textarea, select, [contenteditable='true']"));
-}
-
-function isInstructional(workspace: Workspace, value: string) {
-  const day = parseDate(value).getDay();
-  if (day === 0 || day === 6) return false;
-  return !workspace.calendar.noSchoolDates.some((item) => item.date === value);
 }
 
 function normalizedWorkspace(raw: Workspace): Workspace {
@@ -544,9 +517,9 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
               {activeView === "week" && <WeekPlanner workspace={viewWorkspace} days={days} weekLabel={weekLabel} selectedPlanId={selectedPlanId} pasteTarget={pasteTarget?.location === "calendar" ? { ...pasteTarget, location: "calendar" } : null} onSelectPlan={selectPlan} onSelectDate={(courseId, date) => { setPasteTarget({ courseId, date, location: "calendar" }); setDayDate(date); }} onMovePlan={movePlanToDate} onRenamePlan={renamePlan} onAddPlan={(title, type, courseId, date) => addPlan(title, type, courseId, date, "calendar")} onAddChildLesson={addChildLesson} onToggleUnit={toggleUnit} onDeletePlan={deletePlan} onReturnToIdeas={returnToFridge} onNestLesson={nestSelectedLesson} />}
               {activeView === "month" && selectedCourseId && <MonthView workspace={viewWorkspace} anchor={monthAnchor} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} onAddPlan={(title, type, date) => addPlan(title, type, selectedCourseId, date, "calendar")} onNestLesson={nestSelectedLesson} />}
               {activeView === "quarter" && activeQuarter && selectedCourseId && <QuarterView workspace={viewWorkspace} range={activeQuarter} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} onAddPlan={(title, type, date) => addPlan(title, type, selectedCourseId, date, "calendar")} onNestLesson={nestSelectedLesson} />}
-              {activeView === "day" && <DayView workspace={viewWorkspace} date={dayDate} onSelectPlan={selectPlan} />}
+              {activeView === "day" && <DayPlanningView workspace={viewWorkspace} date={dayDate} onSelectPlan={selectPlan} onPatchPlan={patchPlan} />}
               {activeView === "semester" && <SemesterView workspace={viewWorkspace} quarterRanges={quarterRanges} quarterIndex={quarterIndex} onSelectPlan={selectPlan} />}
-              {activeView === "year" && <YearView workspace={viewWorkspace} onSelectPlan={selectPlan} onSelectDate={(date) => { setDayDate(date); setPasteTarget({ date, courseId: selectedCourseId || null, location: "calendar" }); }} onAddMarker={(symbol) => updateWorkspace((current) => ({ ...current, yearMarkers: [...current.yearMarkers, { id: crypto.randomUUID(), symbol, date: dayDate, courseId: selectedCourseId || null, note: "" }] }))} />}
+              {activeView === "year" && <YearMapView workspace={viewWorkspace} selectedCourseId={selectedCourseId} selectedDate={dayDate} onSelectPlan={selectPlan} onSelectDate={(date) => { setDayDate(date); setPasteTarget({ date, courseId: selectedCourseId || null, location: "calendar" }); }} onAddMarker={(symbol) => updateWorkspace((current) => ({ ...current, yearMarkers: [...current.yearMarkers, { id: crypto.randomUUID(), symbol, date: dayDate, courseId: selectedCourseId || null, note: "" }] }))} />}
             </div>
 
             <section className="arcPriority" aria-label="Must Should Could">
@@ -603,11 +576,6 @@ function MagnetEditor({ plan, unit, workspace, childTitle, setChildTitle, resour
   </aside>;
 }
 
-function DayView({ workspace, date, onSelectPlan }: { workspace: Workspace; date: string; onSelectPlan: (plan: Plan) => void }) {
-  const noSchool = workspace.calendar.noSchoolDates.find((item) => item.date === date);
-  return <section className="arcDayView"><h2>{parseDate(date).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</h2>{noSchool && <p>{noSchool.label || "No school"} · planning remains available.</p>}{workspace.courses.map((course) => { const plans = workspace.plans.filter((plan) => plan.location === "calendar" && plan.courseId === course.id && (plan.date === date || (plan.type === "unit" && plan.date && plan.date <= date && (plan.endDate ?? plan.date) >= date))); return <section className="dayCourse" style={{ ["--course-color" as string]: course.color }} key={course.id}><h3>{course.name} {course.periodLabel}</h3>{plans.map((plan) => <button type="button" className="dayPlan" key={plan.id} onClick={() => onSelectPlan(plan)}>{plan.type} · {plan.title}</button>)}{plans.length === 0 && <span className="emptyNote">Nothing planned.</span>}</section>; })}</section>;
-}
-
 function SemesterView({ workspace, quarterRanges, quarterIndex, onSelectPlan }: { workspace: Workspace; quarterRanges: ReturnType<typeof availableQuarterRanges>; quarterIndex: number; onSelectPlan: (plan: Plan) => void }) {
   if (!quarterRanges.length) return <section className="arcSemesterView"><h2>Semester</h2><p>Add real quarter dates in Setup first.</p></section>;
   const startIndex = quarterIndex >= 2 ? 2 : 0;
@@ -615,11 +583,4 @@ function SemesterView({ workspace, quarterRanges, quarterIndex, onSelectPlan }: 
   const start = ranges[0]?.start; const end = ranges[ranges.length - 1]?.end;
   const units = workspace.plans.filter((plan) => plan.type === "unit" && plan.location === "calendar" && plan.date && start && end && plan.date <= end && (plan.endDate ?? plan.date) >= start);
   return <section className="arcSemesterView"><h2>{startIndex === 0 ? "Semester 1" : "Semester 2"}</h2><div className="semesterTracks">{units.map((unit) => { const course = workspace.courses.find((item) => item.id === unit.courseId); return <div className="semesterUnit" key={unit.id}><span>{course?.name}</span><button type="button" style={{ ["--course-color" as string]: course?.color || "#eeb834" }} onClick={() => onSelectPlan(unit)}>{unit.title}</button></div>; })}</div></section>;
-}
-
-function YearView({ workspace, onSelectPlan, onSelectDate, onAddMarker }: { workspace: Workspace; onSelectPlan: (plan: Plan) => void; onSelectDate: (date: string) => void; onAddMarker: (symbol: typeof YEAR_MARKERS[number]) => void }) {
-  const ranges = availableQuarterRanges(workspace.calendar);
-  if (!ranges.length || !workspace.calendar.firstStudentDay || !workspace.calendar.lastStudentDay) return <section className="arcYearView"><h2>Year Map</h2><p>Add the real school-year and quarter dates in Setup first.</p></section>;
-  const today = dateKey(new Date());
-  return <section className="arcYearView"><h2>Year Map</h2><div className="yearMarkerRow" aria-label="Year markers">{YEAR_MARKERS.map((symbol) => <button type="button" key={symbol} onClick={() => onAddMarker(symbol)}>{symbol}</button>)}</div><div className="yearQuarters">{ranges.slice(0, 4).map((range, index) => <section className={`yearQuarter q${index + 1}`} key={range.id}><header>{range.label} · {range.start.slice(5)}–{range.end.slice(5)}</header><div className="yearMiniMonths">{monthKeys(range.start, range.end).map((monthKey) => <div className="yearMiniMonth" key={monthKey}><h4>{parseDate(`${monthKey}-01`).toLocaleDateString(undefined, { month: "long" })}</h4><div className="yearMiniGrid">{monthGrid(monthKey).map((day) => { const noSchool = workspace.calendar.noSchoolDates.some((item) => item.date === day.key); const passed = day.inside && day.key < today && isInstructional(workspace, day.key) && workspace.preferences.lapsedDayXsVisible !== false; const marker = workspace.yearMarkers.find((item) => item.date === day.key); return <button type="button" key={day.key} className={`yearMiniDay${day.inside ? "" : " outside"}${noSchool ? " noSchool" : ""}${passed ? " pastInstructional" : ""}`} onClick={() => onSelectDate(day.key)} title={marker ? `${day.key} · ${marker.symbol} ${marker.note}` : day.key}>{marker?.symbol ?? day.date.getDate()}</button>; })}</div></div>)}</div></section>)}</div><div className="semesterTracks">{workspace.plans.filter((plan) => plan.type === "unit" && plan.location === "calendar").map((unit) => { const course = workspace.courses.find((item) => item.id === unit.courseId); return <div className="semesterUnit" key={unit.id}><span>{course?.name}</span><button type="button" style={{ ["--course-color" as string]: course?.color || "#eeb834" }} onClick={() => onSelectPlan(unit)}>{unit.title}</button></div>; })}</div></section>;
 }
