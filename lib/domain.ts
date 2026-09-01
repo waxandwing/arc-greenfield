@@ -1,7 +1,7 @@
 export type ArcView = "day" | "week" | "month" | "quarter" | "semester" | "year";
 
-export type PlanType = "unit" | "lesson" | "note";
-export type PlanLocation = "calendar" | "ideas";
+export type PlanType = "unit" | "lesson" | "note" | "idea";
+export type PlanLocation = "calendar" | "fridge";
 export type PriorityTier = "must" | "should" | "could";
 
 export type Course = {
@@ -42,6 +42,9 @@ export type Priority = {
   tier: PriorityTier;
   completed: boolean;
   scope: "school" | "personal";
+  circled?: boolean;
+  crossedOutAt?: string | null;
+  linkedPlanId?: string | null;
 };
 
 export type YearMarker = {
@@ -57,6 +60,9 @@ export type WorkspacePreferences = {
   lastUsedView: ArcView;
   dayVisibleInSwitcher: boolean;
   collapsedUnitIds: string[];
+  openFolder?: "shift" | "fridge" | "more" | null;
+  prioritiesExpanded?: boolean;
+  lapsedDayXsVisible?: boolean;
 };
 
 export type Workspace = {
@@ -96,7 +102,10 @@ export function emptyWorkspace(): Workspace {
       landingView: "week",
       lastUsedView: "week",
       dayVisibleInSwitcher: true,
-      collapsedUnitIds: []
+      collapsedUnitIds: [],
+      openFolder: null,
+      prioritiesExpanded: false,
+      lapsedDayXsVisible: true
     },
     updatedAt: new Date().toISOString()
   };
