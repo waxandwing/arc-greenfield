@@ -2,6 +2,7 @@
 
 import type { Plan, Workspace } from "../lib/domain";
 import type { QuarterRange } from "../lib/view-ranges";
+import { RangeQuickAdd } from "./range-quick-add";
 
 export type QuarterViewProps = {
   workspace: Workspace;
@@ -12,6 +13,7 @@ export type QuarterViewProps = {
   onSelectPlan: (plan: Plan) => void;
   onSelectDate: (date: string) => void;
   onMovePlan: (planId: string, date: string, courseId: string) => void;
+  onAddPlan: (title: string, type: "lesson" | "unit", date: string) => void;
 };
 
 function coversDate(plan: Plan, date: string) {
@@ -44,11 +46,12 @@ function shortDate(value: string | null) {
   return `${Number(month)}/${Number(day)}`;
 }
 
-export function QuarterView({ workspace, range, courseId, selectedPlanId, pasteTargetDate, onSelectPlan, onSelectDate, onMovePlan }: QuarterViewProps) {
+export function QuarterView({ workspace, range, courseId, selectedPlanId, pasteTargetDate, onSelectPlan, onSelectDate, onMovePlan, onAddPlan }: QuarterViewProps) {
   const course = workspace.courses.find((item) => item.id === courseId);
+  const defaultAddDate = pasteTargetDate ?? range.start;
   return (
     <section className="quarterSurface" aria-label={`${range.label} planning view`}>
-      <div className="rangeViewHeader"><div><p className="eyebrow">Quarter</p><h2>{range.label}</h2><p>{range.start} – {range.end} · Move the Unit as a sequence or select one Lesson on the day it happens.</p></div><span>{course?.name ?? "Choose a class"}</span></div>
+      <div className="rangeViewHeader"><div><p className="eyebrow">Quarter</p><h2>{range.label}</h2><p>{range.start} – {range.end} · Move the Unit as a sequence or select one Lesson on the day it happens.</p></div><div className="rangeHeaderActions"><span>{course?.name ?? "Choose a class"}</span><RangeQuickAdd defaultDate={defaultAddDate} onAdd={onAddPlan} /></div></div>
       <div className="quarterWeeks">
         {range.weeks.map((week, index) => (
           <section className="quarterWeek" key={week.key}>
