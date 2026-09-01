@@ -77,7 +77,7 @@ export function YearMapView({
             const selected = day.key === selectedDate;
             return <button type="button" key={day.key} className={`yearMiniDay${day.inside ? "" : " outside"}${withinYear ? "" : " outsideYear"}${noSchool ? " noSchool" : ""}${passed ? " pastInstructionalAsset" : ""}${selected ? " selected" : ""}${quarterClass}`} onClick={() => onSelectDate(day.key)} title={noSchool ? `${day.key} · ${noSchool.label}` : marker ? `${day.key} · ${marker.symbol} ${marker.note}` : day.key}>
               <span>{marker?.symbol ?? day.date.getDate()}</span>
-              {passed && <img className="yearElapsedX" src="/arc-x.png" alt="" aria-hidden="true" />}
+              {passed && <img src="/arc-x.png" alt="" aria-hidden="true" style={{ position: "absolute", inset: "14%", width: "72%", height: "72%", objectFit: "contain", pointerEvents: "none", transform: "rotate(-4deg)" }} />}
             </button>;
           })}</div>
         </article>)}
