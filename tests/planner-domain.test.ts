@@ -6,13 +6,14 @@ import { clonePlanTree, collectPlanTree, movePlanTreeToIdeas, shiftPlanTree } fr
 import { quarterRange } from "../lib/view-ranges";
 
 function plan(overrides: Partial<Plan> & Pick<Plan, "id" | "title" | "type">): Plan {
+  const { id, title, type, ...rest } = overrides;
   return {
-    id: overrides.id,
-    title: overrides.title,
-    type: overrides.type,
+    id,
+    title,
+    type,
     courseId: "course-a",
     date: "2026-09-08",
-    endDate: overrides.type === "unit" ? "2026-09-12" : null,
+    endDate: type === "unit" ? "2026-09-12" : null,
     location: "calendar",
     parentUnitId: null,
     childOrder: null,
@@ -21,7 +22,7 @@ function plan(overrides: Partial<Plan> & Pick<Plan, "id" | "title" | "type">): P
     notes: "",
     resources: [],
     details: {},
-    ...overrides
+    ...rest
   };
 }
 
