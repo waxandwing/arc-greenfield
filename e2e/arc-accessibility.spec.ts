@@ -50,6 +50,7 @@ test("Arc remains operable at an effective 200 percent desktop viewport", async 
 
 test("reduced motion and forced colors keep the primary planning path reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "reduced-motion-high-contrast");
+  await page.emulateMedia({ reducedMotion: "reduce", forcedColors: "active" });
   await completeFirstRun(page);
 
   const media = await page.evaluate(() => ({
