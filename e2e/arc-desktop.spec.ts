@@ -59,13 +59,14 @@ test("first run reaches a functional Arc desk without a fake calendar source", a
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
 });
 
-test("Arc color scheme is user-selectable, asset-derived, and persists", async ({ page }) => {
+test("Arc color scheme is user-selectable, asset-derived, and persists", async ({ page }, testInfo) => {
   await completeFirstRun(page);
 
   const palette = page.getByRole("button", { name: /Palette · Arc Studio/ });
   await expect(palette).toBeVisible();
   await palette.click();
   await expect(page.getByRole("radiogroup", { name: "Arc color scheme" })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("palette-picker.png"), fullPage: false });
   await page.getByRole("radio", { name: /Blueprint/ }).click();
 
   await page.waitForLoadState("domcontentloaded");
@@ -79,18 +80,20 @@ test("Arc color scheme is user-selectable, asset-derived, and persists", async (
   expect(stored).toBe("blueprint");
 });
 
-test("Day is the teach-from-it surface and Year renders each school month once", async ({ page }) => {
+test("Day is the teach-from-it surface and Year renders each school month once", async ({ page }, testInfo) => {
   await completeFirstRun(page);
 
   await page.getByRole("button", { name: "Day", exact: true }).click();
   await expect(page.getByText("Teach from today", { exact: true })).toBeVisible();
   await expect(page.locator(".dayCourse.teachingCard")).toHaveCount(1);
   await expect(page.getByText("Studio Art", { exact: true })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("day-teach-surface.png"), fullPage: false });
 
   await page.getByRole("button", { name: "Year", exact: true }).click();
   await expect(page.getByText("Each month appears once. Quarter color changes on the actual boundary date.", { exact: true })).toBeVisible();
   await expect(page.locator(".yearMiniMonth")).toHaveCount(10);
   await expect(page.locator(".yearMiniMonth").filter({ hasText: "October" })).toHaveCount(1);
+  await page.screenshot({ path: testInfo.outputPath("year-map.png"), fullPage: false });
 });
 
 test("desktop planning shell stays inside the viewport at supported laptop sizes", async ({ page }) => {
