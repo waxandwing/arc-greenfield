@@ -4,7 +4,7 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.clear());
 });
 
-test("class meeting days persist from onboarding into the Arc workspace", async ({ page }) => {
+test("class meeting days persist from onboarding into the Arc workspace", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.getByPlaceholder("What should Arc call you?").fill("Schedule Test Teacher");
   await page.getByRole("button", { name: "Continue" }).click();
@@ -22,6 +22,7 @@ test("class meeting days persist from onboarding into the Arc workspace", async 
   await expect(meetingDays.getByRole("button", { name: "Ceramics meets Wednesday" })).toHaveAttribute("aria-pressed", "true");
   await expect(meetingDays.getByRole("button", { name: "Ceramics meets Thursday" })).toHaveAttribute("aria-pressed", "false");
   await expect(meetingDays.getByRole("button", { name: "Ceramics meets Friday" })).toHaveAttribute("aria-pressed", "true");
+  await page.screenshot({ path: testInfo.outputPath("meeting-days-mwf.png"), fullPage: false });
 
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByLabel("First student day", { exact: true }).fill("2026-08-10");
