@@ -1,4 +1,4 @@
-import type { Plan, Workspace } from "./domain";
+import type { Plan, PlanLocation, Workspace } from "./domain";
 import { clonePlanTree, collectPlanTree, deletePlanTree } from "./plan-tree";
 
 export type ClipboardMode = "copy" | "cut";
@@ -14,7 +14,7 @@ export type ArcClipboard = {
 export type PasteTarget = {
   date: string | null;
   courseId: string | null;
-  location: "calendar" | "ideas";
+  location: PlanLocation;
 };
 
 export type PasteResult = {
@@ -32,8 +32,6 @@ export function createClipboard(workspace: Workspace, selectedPlanId: string, mo
     if (plan.id !== selectedPlanId) return plan;
     return {
       ...plan,
-      // A selected Unit remains the root of its full tree. A selected nested Lesson
-      // becomes a standalone clipboard root instead of retaining a stale Unit link.
       parentUnitId: selected.type === "unit" ? plan.parentUnitId : null,
       childOrder: selected.type === "unit" ? plan.childOrder : null
     };
@@ -57,17 +55,19 @@ export function pasteClipboard(workspace: Workspace, clipboard: ArcClipboard, ta
   const sourceRoot = clipboard.tree.find((plan) => plan.id === clipboard.sourceRootId);
   if (!sourceRoot) return { workspace, pastedRootId: null, nextClipboard: clipboard };
 
-  const targetDate = target.location === "ideas" ? null : target.date;
+  const targetDate = target.location === "calendar" ? target.date : null;
   const clones = clonePlanTree(clipboard.tree, clipboard.sourceRootId, targetDate, target.courseId);
-  const pastedRoot = clones.find((plan) => plan.parentUnitId === null) ?? clones[0] ?? null;
-  const normalized = clones.map((plan) => ({ ...plan, location: target.location, courseId: target.courseId }));
+  const pastedRoot = clones.find((plan) => plan.id !== undefined && plan.parentUnitId === null) ?? clones[0] ?? null;
+  const normalized = clones.map((plan) => ({
+    ...plan,
+    location: target.location,
+    courseId: target.courseId ?? plan.courseId
+  }));
   const nextWorkspace = { ...workspace, plans: [...workspace.plans, ...normalized] };
 
   return {
     workspace: nextWorkspace,
     pastedRootId: pastedRoot?.id ?? null,
-    // Copy remains reusable. Cut is consumed after one successful paste. Returning
-    // this explicitly lets React clear its clipboard state without mutating props.
     nextClipboard: clipboard.mode === "cut" ? null : clipboard
   };
 }
