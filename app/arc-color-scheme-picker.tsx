@@ -88,18 +88,27 @@ export function ArcColorSchemePicker() {
     const next = saved ?? workspace?.preferences?.colorScheme ?? "studio";
     setSelected(next);
 
-    const sync = () => {
-      const found = applyScheme(next);
-      setVisible(found);
+    const persistPreference = () => {
+      const current = readWorkspace();
+      if (current && current.preferences?.colorScheme !== next) {
+        window.localStorage.setItem(WORKSPACE_KEY, JSON.stringify({
+          ...current,
+          preferences: { ...current.preferences, colorScheme: next }
+        }));
+      }
     };
-    sync();
 
-    if (workspace && workspace.preferences?.colorScheme !== next) {
-      const synced = { ...workspace, preferences: { ...workspace.preferences, colorScheme: next } };
-      window.localStorage.setItem(WORKSPACE_KEY, JSON.stringify(synced));
+    persistPreference();
+    if (applyScheme(next)) {
+      setVisible(true);
+      return;
     }
 
-    const observer = new MutationObserver(sync);
+    const observer = new MutationObserver(() => {
+      if (!applyScheme(next)) return;
+      setVisible(true);
+      observer.disconnect();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
   }, []);
@@ -117,7 +126,6 @@ export function ArcColorSchemePicker() {
       }));
     }
     setOpen(false);
-    window.setTimeout(() => window.location.reload(), 40);
   }
 
   if (!visible) return null;
