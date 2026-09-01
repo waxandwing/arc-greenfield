@@ -49,14 +49,13 @@ async function seedTeachFromDay(page: import("@playwright/test").Page) {
   await unitEditor.getByPlaceholder("Add lesson").fill("Blind contour warm-up");
   await unitEditor.getByPlaceholder("Add lesson").press("Enter");
 
-  const lessonEditor = page.locator('.arcMagnetEditor[aria-label="Magnet details"]');
-  await expect(lessonEditor).toBeVisible();
-  await lessonEditor.getByLabel("Notes").fill("Two slow drawings. Keep eyes on the object, not the page.");
-  const resources = lessonEditor.locator(".editorUnitList").filter({ hasText: "Resources" });
+  await expect(unitEditor.getByLabel("Title")).toHaveValue("Blind contour warm-up");
+  await unitEditor.getByLabel("Notes").fill("Two slow drawings. Keep eyes on the object, not the page.");
+  const resources = unitEditor.locator(".editorUnitList").filter({ hasText: "Resources" });
   await resources.getByPlaceholder("Label").fill("Contour reference");
   await resources.getByPlaceholder("https://").fill("https://example.com/contour");
   await resources.getByRole("button", { name: "＋", exact: true }).click();
-  await lessonEditor.getByRole("button", { name: "×", exact: true }).click();
+  await unitEditor.getByRole("button", { name: "×", exact: true }).click();
 }
 
 test.beforeEach(async ({ page }) => {
