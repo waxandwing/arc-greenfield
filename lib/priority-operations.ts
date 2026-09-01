@@ -3,10 +3,7 @@ import type { Priority, PriorityTier, Workspace } from "./domain";
 export function renamePriority(workspace: Workspace, id: string, title: string): Workspace {
   const trimmed = title.trim();
   if (!trimmed) return workspace;
-  return {
-    ...workspace,
-    priorities: workspace.priorities.map((priority) => priority.id === id ? { ...priority, title: trimmed } : priority)
-  };
+  return { ...workspace, priorities: workspace.priorities.map((priority) => priority.id === id ? { ...priority, title: trimmed } : priority) };
 }
 
 export function deletePriority(workspace: Workspace, id: string): Workspace {
@@ -14,19 +11,11 @@ export function deletePriority(workspace: Workspace, id: string): Workspace {
 }
 
 export function movePriority(workspace: Workspace, id: string, tier: PriorityTier): Workspace {
-  return {
-    ...workspace,
-    priorities: workspace.priorities.map((priority) => priority.id === id ? { ...priority, tier } : priority)
-  };
+  return { ...workspace, priorities: workspace.priorities.map((priority) => priority.id === id ? { ...priority, tier } : priority) };
 }
 
 export function togglePriorityCircle(workspace: Workspace, id: string): Workspace {
-  return {
-    ...workspace,
-    priorities: workspace.priorities.map((priority) => priority.id === id
-      ? { ...priority, circled: !priority.circled }
-      : priority)
-  };
+  return { ...workspace, priorities: workspace.priorities.map((priority) => priority.id === id ? { ...priority, circled: !priority.circled } : priority) };
 }
 
 export function togglePriorityCompleted(workspace: Workspace, id: string, now = new Date().toISOString()): Workspace {
@@ -35,36 +24,28 @@ export function togglePriorityCompleted(workspace: Workspace, id: string, now = 
     priorities: workspace.priorities.map((priority) => {
       if (priority.id !== id) return priority;
       const completed = !priority.completed;
-      return {
-        ...priority,
-        completed,
-        crossedOutAt: completed ? now : null
-      };
+      return { ...priority, completed, crossedOutAt: completed ? now : null };
     })
   };
 }
 
+export function crossOutPriority(workspace: Workspace, id: string, now = new Date().toISOString()): Workspace {
+  return togglePriorityCompleted(workspace, id, now);
+}
+
 export function linkPriorityToPlan(workspace: Workspace, id: string, planId: string | null): Workspace {
   if (planId && !workspace.plans.some((plan) => plan.id === planId)) return workspace;
-  return {
-    ...workspace,
-    priorities: workspace.priorities.map((priority) => priority.id === id
-      ? { ...priority, linkedPlanId: planId }
-      : priority)
-  };
+  return { ...workspace, priorities: workspace.priorities.map((priority) => priority.id === id ? { ...priority, linkedPlanId: planId } : priority) };
 }
 
 export function reorderPriority(workspace: Workspace, id: string, direction: -1 | 1): Workspace {
   const index = workspace.priorities.findIndex((priority) => priority.id === id);
   if (index < 0) return workspace;
   const priority = workspace.priorities[index];
-  const sameTierIndices = workspace.priorities
-    .map((item, itemIndex) => item.tier === priority.tier ? itemIndex : -1)
-    .filter((itemIndex) => itemIndex >= 0);
+  const sameTierIndices = workspace.priorities.map((item, itemIndex) => item.tier === priority.tier ? itemIndex : -1).filter((itemIndex) => itemIndex >= 0);
   const tierPosition = sameTierIndices.indexOf(index);
   const targetTierPosition = tierPosition + direction;
   if (targetTierPosition < 0 || targetTierPosition >= sameTierIndices.length) return workspace;
-
   const targetIndex = sameTierIndices[targetTierPosition];
   const priorities = [...workspace.priorities];
   [priorities[index], priorities[targetIndex]] = [priorities[targetIndex], priorities[index]];
@@ -72,8 +53,5 @@ export function reorderPriority(workspace: Workspace, id: string, direction: -1 
 }
 
 export function priorityCounts(priorities: Priority[]) {
-  return priorities.reduce<Record<PriorityTier, number>>((counts, priority) => {
-    counts[priority.tier] += 1;
-    return counts;
-  }, { must: 0, should: 0, could: 0 });
+  return priorities.reduce<Record<PriorityTier, number>>((counts, priority) => { counts[priority.tier] += 1; return counts; }, { must: 0, should: 0, could: 0 });
 }
