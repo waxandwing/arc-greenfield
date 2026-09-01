@@ -113,6 +113,28 @@
 .ideaCard.unitIdea { background: #f3eadb; border-color: rgba(38,51,58,.22); }
 .ideaUnitMeta { display: block; margin: -3px 0 8px; color: var(--muted); font-size: .58rem; font-weight: 750; }
 
+.priorityPanelHeading { display: flex; align-items: start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.priorityPanelNote { margin: 2px 0 0; color: var(--muted); font-size: .66rem; line-height: 1.35; }
+.priorityHeading { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 7px; }
+.priorityHeading small { display: grid; place-items: center; min-width: 22px; height: 22px; border-radius: 999px; background: rgba(38,51,58,.08); color: var(--muted); font-size: .58rem; font-weight: 900; }
+.priorityItem { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 8px; align-items: start; padding: 8px; border: 1px solid rgba(38,51,58,.1); border-radius: 9px; background: rgba(255,253,248,.72); }
+.priorityItem.done { opacity: .58; }
+.priorityTitle { min-width: 0; padding-top: 2px; font-size: .7rem; font-weight: 760; line-height: 1.3; }
+.priorityActions { grid-column: 2; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.priorityActions button,.priorityActions select { min-height: 30px; border: 1px solid var(--line); border-radius: 7px; background: rgba(255,255,255,.66); color: var(--ink); padding: 4px 7px; font-size: .58rem; font-weight: 800; }
+.priorityActions button { cursor: pointer; }
+.priorityActions button:disabled { opacity: .3; cursor: not-allowed; }
+.priorityActions .dangerAction { color: #8c4138; }
+.priorityEditRow { display: grid; grid-template-columns: 1fr auto; gap: 5px; }
+.priorityEditRow input { min-height: 32px; font-size: .68rem; }
+.priorityEditRow button { border: 0; border-radius: 7px; background: var(--ink); color: white; padding: 5px 8px; font-size: .58rem; font-weight: 850; }
+.priorityEmpty { margin: 2px 0 4px; color: var(--muted); font-size: .62rem; font-style: italic; }
+.priorityComposer { grid-template-columns: 1fr auto auto; }
+.priorityTier-must .priorityHeading > span::after,.priorityTier-should .priorityHeading > span::after,.priorityTier-could .priorityHeading > span::after { content: ""; display: inline-block; width: 18px; height: 4px; margin-left: 7px; border-radius: 999px; vertical-align: middle; }
+.priorityTier-must .priorityHeading > span::after { background: var(--coral); }
+.priorityTier-should .priorityHeading > span::after { background: var(--gold); }
+.priorityTier-could .priorityHeading > span::after { background: var(--teal); }
+
 @media (max-width: 900px) {
   .deskActions { justify-content: flex-start; }
 }
