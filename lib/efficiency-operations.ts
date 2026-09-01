@@ -31,6 +31,138 @@ export function nextInstructionalDate(calendar: SchoolCalendar, value: string, d
   return next;
 }
 
+export type ShiftConflict = {
+  rootId: string;
+  planId: string;
+  kind: "fixed-date" | "lesson-collision";
+  targetDate: string | null;
+  conflictingPlanId: string | null;
+};
+
+export type ShiftPreflight = {
+  courseIds: string[];
+  fromDate: string;
+  direction: 1 | -1;
+  rootIds: string[];
+  movableRootIds: string[];
+  blockedRootIds: string[];
+  affectedPlanIds: string[];
+  conflicts: ShiftConflict[];
+};
+
+function shiftedInstructionalDate(calendar: SchoolCalendar, value: string | null, direction: 1 | -1): string | null {
+  if (!value) return null;
+  return nextInstructionalDate(calendar, value, direction);
+}
+
+/**
+ * Preflight a one-instructional-day Shift without mutating the workspace.
+ * A root is blocked as a whole when any member of its tree is fixed or when
+ * moving one of its lessons would collide with a lesson that is not moving.
+ */
+export function previewInstructionalShift(
+  workspace: Workspace,
+  courseIds: string[],
+  fromDate: string,
+  direction: 1 | -1 = 1
+): ShiftPreflight {
+  const courseSet = new Set(courseIds);
+  const roots = workspace.plans.filter((plan) =>
+    plan.location === "calendar" &&
+    !plan.parentUnitId &&
+    Boolean(plan.date) &&
+    plan.date! >= fromDate &&
+    Boolean(plan.courseId && courseSet.has(plan.courseId))
+  );
+
+  const rootTrees = roots.map((root) => ({
+    root,
+    tree: root.type === "unit" ? collectPlanTree(workspace.plans, root.id) : [root]
+  }));
+  const movingIds = new Set(rootTrees.flatMap(({ tree }) => tree.map((plan) => plan.id)));
+  const conflicts: ShiftConflict[] = [];
+  const blockedRootIds = new Set<string>();
+
+  for (const { root, tree } of rootTrees) {
+    for (const plan of tree) {
+      if (plan.fixedDate) {
+        blockedRootIds.add(root.id);
+        conflicts.push({
+          rootId: root.id,
+          planId: plan.id,
+          kind: "fixed-date",
+          targetDate: plan.date,
+          conflictingPlanId: null
+        });
+      }
+    }
+
+    if (blockedRootIds.has(root.id)) continue;
+
+    for (const plan of tree) {
+      if (plan.type !== "lesson" || !plan.date || !plan.courseId) continue;
+      const targetDate = shiftedInstructionalDate(workspace.calendar, plan.date, direction);
+      const collision = workspace.plans.find((candidate) =>
+        !movingIds.has(candidate.id) &&
+        candidate.location === "calendar" &&
+        candidate.type === "lesson" &&
+        candidate.courseId === plan.courseId &&
+        candidate.date === targetDate
+      );
+      if (!collision) continue;
+      blockedRootIds.add(root.id);
+      conflicts.push({
+        rootId: root.id,
+        planId: plan.id,
+        kind: "lesson-collision",
+        targetDate,
+        conflictingPlanId: collision.id
+      });
+    }
+  }
+
+  const rootIds = roots.map((root) => root.id);
+  const movableRootIds = rootIds.filter((id) => !blockedRootIds.has(id));
+  const affectedPlanIds = rootTrees
+    .filter(({ root }) => !blockedRootIds.has(root.id))
+    .flatMap(({ tree }) => tree.map((plan) => plan.id));
+
+  return {
+    courseIds: [...courseSet],
+    fromDate,
+    direction,
+    rootIds,
+    movableRootIds,
+    blockedRootIds: rootIds.filter((id) => blockedRootIds.has(id)),
+    affectedPlanIds,
+    conflicts
+  };
+}
+
+/** Apply exactly the preflighted safe roots as one workspace mutation. */
+export function applyInstructionalShift(workspace: Workspace, preflight: ShiftPreflight): Workspace {
+  if (preflight.movableRootIds.length === 0) return workspace;
+  const movableRootIds = new Set(preflight.movableRootIds);
+  const memberToRoot = new Map<string, string>();
+  for (const rootId of preflight.movableRootIds) {
+    const root = workspace.plans.find((plan) => plan.id === rootId);
+    if (!root) continue;
+    const tree = root.type === "unit" ? collectPlanTree(workspace.plans, rootId) : [root];
+    tree.forEach((plan) => memberToRoot.set(plan.id, rootId));
+  }
+
+  const plans = workspace.plans.map((plan) => {
+    const rootId = memberToRoot.get(plan.id);
+    if (!rootId || !movableRootIds.has(rootId)) return plan;
+    return {
+      ...plan,
+      date: shiftedInstructionalDate(workspace.calendar, plan.date, preflight.direction),
+      endDate: shiftedInstructionalDate(workspace.calendar, plan.endDate, preflight.direction)
+    };
+  });
+  return { ...workspace, plans };
+}
+
 export function tackLesson(workspace: Workspace, lessonId: string): Workspace {
   const lesson = workspace.plans.find((plan) => plan.id === lessonId && plan.type === "lesson");
   if (!lesson?.date || lesson.fixedDate) return workspace;
