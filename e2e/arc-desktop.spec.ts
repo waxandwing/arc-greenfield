@@ -19,7 +19,7 @@ async function completeFirstRun(page: import("@playwright/test").Page) {
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByText("Labor Day", { exact: true })).toBeVisible();
 
-  await page.getByText("Quarter dates", { exact: false }).click();
+  await page.locator("details.quarterDetails > summary").click();
   const quarters = [
     ["2026-08-10", "2026-10-09"],
     ["2026-10-12", "2026-12-18"],
