@@ -2,6 +2,7 @@
 
 import type { Plan, Workspace } from "../lib/domain";
 import { monthWeeks } from "../lib/view-ranges";
+import { RangeQuickAdd } from "./range-quick-add";
 
 export type MonthViewProps = {
   workspace: Workspace;
@@ -12,6 +13,7 @@ export type MonthViewProps = {
   onSelectPlan: (plan: Plan) => void;
   onSelectDate: (date: string) => void;
   onMovePlan: (planId: string, date: string, courseId: string) => void;
+  onAddPlan: (title: string, type: "lesson" | "unit", date: string) => void;
 };
 
 function coversDate(plan: Plan, date: string) {
@@ -44,14 +46,16 @@ function shortDate(value: string | null) {
   return `${Number(month)}/${Number(day)}`;
 }
 
-export function MonthView({ workspace, anchor, courseId, selectedPlanId, pasteTargetDate, onSelectPlan, onSelectDate, onMovePlan }: MonthViewProps) {
+export function MonthView({ workspace, anchor, courseId, selectedPlanId, pasteTargetDate, onSelectPlan, onSelectDate, onMovePlan, onAddPlan }: MonthViewProps) {
   const weeks = monthWeeks(anchor);
   const course = workspace.courses.find((item) => item.id === courseId);
   const label = anchor.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const firstPrimaryDay = weeks.flatMap((week) => week.days).find((day) => day.inPrimaryMonth)?.key ?? weeks[0]?.days[0]?.key ?? "";
+  const defaultAddDate = pasteTargetDate ?? firstPrimaryDay;
 
   return (
     <section className="monthSurface" aria-label={`${label} planning view`}>
-      <div className="rangeViewHeader"><div><p className="eyebrow">Month</p><h2>{label}</h2><p>Move Units as sequences or pick up one Lesson without flattening the Unit.</p></div><span>{course?.name ?? "Choose a class"}</span></div>
+      <div className="rangeViewHeader"><div><p className="eyebrow">Month</p><h2>{label}</h2><p>Move Units as sequences or pick up one Lesson without flattening the Unit.</p></div><div className="rangeHeaderActions"><span>{course?.name ?? "Choose a class"}</span><RangeQuickAdd defaultDate={defaultAddDate} onAdd={onAddPlan} /></div></div>
       <div className="monthDayLabels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span></div>
       <div className="monthWeeks">
         {weeks.map((week) => (
