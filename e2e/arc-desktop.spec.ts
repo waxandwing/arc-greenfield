@@ -12,12 +12,12 @@ async function completeFirstRun(page: import("@playwright/test").Page) {
   await page.getByRole("button", { name: "Add class" }).click();
   await page.getByRole("button", { name: "Continue" }).click();
 
-  await page.getByLabel("First student day").fill("2026-08-10");
-  await page.getByLabel("Last student day").fill("2027-05-28");
-  await page.getByLabel("No-school date").fill("2026-09-07");
-  await page.getByLabel("No-school date label").fill("Labor Day");
+  await page.getByLabel("First student day", { exact: true }).fill("2026-08-10");
+  await page.getByLabel("Last student day", { exact: true }).fill("2027-05-28");
+  await page.getByLabel("No-school date", { exact: true }).fill("2026-09-07");
+  await page.getByLabel("No-school date label", { exact: true }).fill("Labor Day");
   await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByText("Labor Day")).toBeVisible();
+  await expect(page.getByText("Labor Day", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Open my desk" }).click();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
@@ -30,20 +30,20 @@ test.beforeEach(async ({ page }) => {
 test("first run reaches a functional Arc desk without a fake calendar source", async ({ page }) => {
   await completeFirstRun(page);
 
-  await expect(page.getByRole("button", { name: "Fridge" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Shift" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Save now" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Fridge", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Shift", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Save now", exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: "Fridge" }).click();
-  await expect(page.getByRole("heading", { name: "Fridge Door" })).toBeVisible();
+  await page.getByRole("button", { name: "Fridge", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Fridge Door", exact: true })).toBeVisible();
   await page.getByPlaceholder("idea title").fill("Try cyanotype warm-up");
-  await page.getByRole("button", { name: "Add to Fridge" }).click();
-  await expect(page.getByText("Try cyanotype warm-up")).toBeVisible();
+  await page.getByRole("button", { name: "Add to Fridge", exact: true }).click();
+  await expect(page.getByText("Try cyanotype warm-up", { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: "Fridge" }).click();
-  await page.getByRole("button", { name: "Month" }).click();
+  await page.getByRole("button", { name: "Fridge", exact: true }).click();
+  await page.getByRole("button", { name: "Month", exact: true }).click();
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
-  await page.getByRole("button", { name: "Week" }).click();
+  await page.getByRole("button", { name: "Week", exact: true }).click();
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
 });
 
@@ -64,7 +64,7 @@ test("core planning controls are keyboard reachable", async ({ page }) => {
   await completeFirstRun(page);
   await page.keyboard.press("Tab");
   const focusOrder: string[] = [];
-  for (let index = 0; index < 18; index += 1) {
+  for (let index = 0; index < 24; index += 1) {
     const label = await page.evaluate(() => {
       const active = document.activeElement as HTMLElement | null;
       return active?.getAttribute("aria-label") || active?.textContent?.trim().slice(0, 40) || active?.tagName || "";
