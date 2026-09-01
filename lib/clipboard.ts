@@ -17,6 +17,12 @@ export type PasteTarget = {
   location: "calendar" | "ideas";
 };
 
+export type PasteResult = {
+  workspace: Workspace;
+  pastedRootId: string | null;
+  nextClipboard: ArcClipboard | null;
+};
+
 export function createClipboard(workspace: Workspace, selectedPlanId: string, mode: ClipboardMode): ArcClipboard | null {
   const selected = workspace.plans.find((plan) => plan.id === selectedPlanId);
   if (!selected) return null;
@@ -47,9 +53,9 @@ export function applyCut(workspace: Workspace, clipboard: ArcClipboard): Workspa
   return { ...workspace, plans: deletePlanTree(workspace.plans, clipboard.sourceRootId) };
 }
 
-export function pasteClipboard(workspace: Workspace, clipboard: ArcClipboard, target: PasteTarget): { workspace: Workspace; pastedRootId: string | null } {
+export function pasteClipboard(workspace: Workspace, clipboard: ArcClipboard, target: PasteTarget): PasteResult {
   const sourceRoot = clipboard.tree.find((plan) => plan.id === clipboard.sourceRootId);
-  if (!sourceRoot) return { workspace, pastedRootId: null };
+  if (!sourceRoot) return { workspace, pastedRootId: null, nextClipboard: clipboard };
 
   const targetDate = target.location === "ideas" ? null : target.date;
   const clones = clonePlanTree(clipboard.tree, clipboard.sourceRootId, targetDate, target.courseId);
@@ -57,13 +63,11 @@ export function pasteClipboard(workspace: Workspace, clipboard: ArcClipboard, ta
   const normalized = clones.map((plan) => ({ ...plan, location: target.location, courseId: target.courseId }));
   const nextWorkspace = { ...workspace, plans: [...workspace.plans, ...normalized] };
 
-  // Copy stays reusable. Cut is intentionally one-shot: once the removed tree has
-  // been restored somewhere, its snapshot is consumed so a second paste cannot
-  // silently duplicate a move. The shell can later clear the empty clipboard UI.
-  if (clipboard.mode === "cut") clipboard.tree.length = 0;
-
   return {
     workspace: nextWorkspace,
-    pastedRootId: pastedRoot?.id ?? null
+    pastedRootId: pastedRoot?.id ?? null,
+    // Copy remains reusable. Cut is consumed after one successful paste. Returning
+    // this explicitly lets React clear its clipboard state without mutating props.
+    nextClipboard: clipboard.mode === "cut" ? null : clipboard
   };
 }
