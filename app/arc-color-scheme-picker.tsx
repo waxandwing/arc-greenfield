@@ -19,17 +19,9 @@ const SCHEMES: Array<{
     note: "The original Arc asset family.",
     swatches: ["#174F64", "#AAC7D0", "#EFBE3F", "#F0D538", "#DF8968"],
     vars: {
-      "--arc-paper": "#F6F1E7",
-      "--arc-deep": "#174F64",
-      "--arc-teal": "#6F9EAA",
-      "--arc-blue": "#AAC7D0",
-      "--arc-gold": "#EFBE3F",
-      "--arc-coral": "#DF8968",
-      "--arc-orange": "#EFAA57",
-      "--arc-q1": "#F0D538",
-      "--arc-q2": "#EFAA57",
-      "--arc-q3": "#AAC7D0",
-      "--arc-q4": "#DF8968"
+      "--arc-paper": "#F6F1E7", "--arc-deep": "#174F64", "--arc-teal": "#6F9EAA", "--arc-blue": "#AAC7D0",
+      "--arc-gold": "#EFBE3F", "--arc-coral": "#DF8968", "--arc-orange": "#EFAA57",
+      "--arc-q1": "#F0D538", "--arc-q2": "#EFAA57", "--arc-q3": "#AAC7D0", "--arc-q4": "#DF8968"
     }
   },
   {
@@ -38,17 +30,9 @@ const SCHEMES: Array<{
     note: "More yellow and warm paper, still unmistakably Arc.",
     swatches: ["#F0D538", "#EFBE3F", "#EFAA57", "#AAC7D0", "#174F64"],
     vars: {
-      "--arc-paper": "#F8F1DF",
-      "--arc-deep": "#174F64",
-      "--arc-teal": "#8AAEB6",
-      "--arc-blue": "#C3DADF",
-      "--arc-gold": "#EFBE3F",
-      "--arc-coral": "#DF8968",
-      "--arc-orange": "#EFAA57",
-      "--arc-q1": "#F0D538",
-      "--arc-q2": "#EFBE3F",
-      "--arc-q3": "#AAC7D0",
-      "--arc-q4": "#DF8968"
+      "--arc-paper": "#F8F1DF", "--arc-deep": "#174F64", "--arc-teal": "#8AAEB6", "--arc-blue": "#C3DADF",
+      "--arc-gold": "#EFBE3F", "--arc-coral": "#DF8968", "--arc-orange": "#EFAA57",
+      "--arc-q1": "#F0D538", "--arc-q2": "#EFBE3F", "--arc-q3": "#AAC7D0", "--arc-q4": "#DF8968"
     }
   },
   {
@@ -57,17 +41,9 @@ const SCHEMES: Array<{
     note: "Leans into the painted Arc blues without going corporate.",
     swatches: ["#174F64", "#6F9EAA", "#AAC7D0", "#EFBE3F", "#DF8968"],
     vars: {
-      "--arc-paper": "#F4F1E9",
-      "--arc-deep": "#174F64",
-      "--arc-teal": "#6F9EAA",
-      "--arc-blue": "#AAC7D0",
-      "--arc-gold": "#EFBE3F",
-      "--arc-coral": "#DF8968",
-      "--arc-orange": "#EFAA57",
-      "--arc-q1": "#AAC7D0",
-      "--arc-q2": "#6F9EAA",
-      "--arc-q3": "#EFBE3F",
-      "--arc-q4": "#DF8968"
+      "--arc-paper": "#F4F1E9", "--arc-deep": "#174F64", "--arc-teal": "#6F9EAA", "--arc-blue": "#AAC7D0",
+      "--arc-gold": "#EFBE3F", "--arc-coral": "#DF8968", "--arc-orange": "#EFAA57",
+      "--arc-q1": "#AAC7D0", "--arc-q2": "#6F9EAA", "--arc-q3": "#EFBE3F", "--arc-q4": "#DF8968"
     }
   },
   {
@@ -76,17 +52,9 @@ const SCHEMES: Array<{
     note: "Coral and orange forward, balanced by Arc blue.",
     swatches: ["#DF8968", "#EFAA57", "#EFBE3F", "#AAC7D0", "#174F64"],
     vars: {
-      "--arc-paper": "#F7EFE5",
-      "--arc-deep": "#174F64",
-      "--arc-teal": "#7FA7AD",
-      "--arc-blue": "#BDD4DA",
-      "--arc-gold": "#EFBE3F",
-      "--arc-coral": "#DF8968",
-      "--arc-orange": "#EFAA57",
-      "--arc-q1": "#EFBE3F",
-      "--arc-q2": "#EFAA57",
-      "--arc-q3": "#DF8968",
-      "--arc-q4": "#AAC7D0"
+      "--arc-paper": "#F7EFE5", "--arc-deep": "#174F64", "--arc-teal": "#7FA7AD", "--arc-blue": "#BDD4DA",
+      "--arc-gold": "#EFBE3F", "--arc-coral": "#DF8968", "--arc-orange": "#EFAA57",
+      "--arc-q1": "#EFBE3F", "--arc-q2": "#EFAA57", "--arc-q3": "#DF8968", "--arc-q4": "#AAC7D0"
     }
   }
 ];
@@ -103,28 +71,35 @@ function readWorkspace(): Workspace | null {
 function applyScheme(id: ArcColorScheme) {
   const scheme = SCHEMES.find((item) => item.id === id) ?? SCHEMES[0];
   const root = document.querySelector<HTMLElement>(".arcWorkspace");
-  if (!root) return;
+  if (!root) return false;
   root.dataset.colorScheme = scheme.id;
   Object.entries(scheme.vars).forEach(([key, value]) => root.style.setProperty(key, value));
+  return true;
 }
 
 export function ArcColorSchemePicker() {
   const [selected, setSelected] = useState<ArcColorScheme>("studio");
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const workspace = readWorkspace();
     const saved = window.localStorage.getItem(SCHEME_KEY) as ArcColorScheme | null;
     const next = saved ?? workspace?.preferences?.colorScheme ?? "studio";
     setSelected(next);
-    applyScheme(next);
+
+    const sync = () => {
+      const found = applyScheme(next);
+      setVisible(found);
+    };
+    sync();
 
     if (workspace && workspace.preferences?.colorScheme !== next) {
       const synced = { ...workspace, preferences: { ...workspace.preferences, colorScheme: next } };
       window.localStorage.setItem(WORKSPACE_KEY, JSON.stringify(synced));
     }
 
-    const observer = new MutationObserver(() => applyScheme(next));
+    const observer = new MutationObserver(sync);
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
   }, []);
@@ -144,6 +119,8 @@ export function ArcColorSchemePicker() {
     setOpen(false);
     window.setTimeout(() => window.location.reload(), 40);
   }
+
+  if (!visible) return null;
 
   return (
     <div style={{ position: "fixed", right: 12, bottom: 12, zIndex: 95, fontFamily: "League Spartan, Montserrat, sans-serif" }}>
