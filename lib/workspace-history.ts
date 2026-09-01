@@ -1,4 +1,5 @@
 import type { Workspace } from "./domain";
+import { repairOrphanedCoursePlans } from "./course-operations";
 
 export type WorkspaceHistory = {
   past: Workspace[];
@@ -13,12 +14,13 @@ function snapshot(workspace: Workspace): Workspace {
 }
 
 export function createWorkspaceHistory(workspace: Workspace): WorkspaceHistory {
-  return { past: [], present: snapshot(workspace), future: [] };
+  return { past: [], present: snapshot(repairOrphanedCoursePlans(workspace)), future: [] };
 }
 
 export function commitWorkspace(history: WorkspaceHistory, next: Workspace): WorkspaceHistory {
   const past = [...history.past, snapshot(history.present)].slice(-HISTORY_LIMIT);
-  return { past, present: snapshot(next), future: [] };
+  const repaired = repairOrphanedCoursePlans(next);
+  return { past, present: snapshot(repaired), future: [] };
 }
 
 export function undoWorkspace(history: WorkspaceHistory): WorkspaceHistory {
