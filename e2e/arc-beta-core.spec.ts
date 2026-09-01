@@ -40,6 +40,7 @@ test("core Unit workflow creates a real Unit tree and opens Unit Focus without l
   await expect(page.locator('.arcMagnetEditor[aria-label="Unit Focus"]')).toBeVisible();
   await expect(page.getByText("Contour Warm-up", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Week" })).toHaveClass(/active/);
+  await page.screenshot({ path: "test-results/ui-week-unit-focus.png", fullPage: true });
 });
 
 test("Month is an editing surface: select a Unit, copy it, choose a date, and paste a new tree", async ({ page }) => {
@@ -57,6 +58,7 @@ test("Month is an editing surface: select a Unit, copy it, choose a date, and pa
   await expect(page.getByRole("button", { name: "Paste" })).toBeEnabled();
   await page.getByRole("button", { name: "Paste" }).click();
   await expect(page.getByRole("button", { name: /Foundations, Unit from/ })).toHaveCount(2);
+  await page.screenshot({ path: "test-results/ui-month-copy-paste.png", fullPage: true });
 });
 
 test("Must Should Could is one lifecycle: add, red-circle, cross out, then delete", async ({ page }) => {
@@ -69,6 +71,7 @@ test("Must Should Could is one lifecycle: add, red-circle, cross out, then delet
 
   await page.getByRole("button", { name: "Red circle this task" }).click();
   await expect(page.getByRole("button", { name: "Remove red circle" })).toBeVisible();
+  await page.screenshot({ path: "test-results/ui-msc-red-circle.png", fullPage: true });
   await page.getByRole("button", { name: "Call family" }).click();
   await expect(page.getByRole("button", { name: "Delete crossed-out task" })).toBeVisible();
   await page.getByRole("button", { name: "Delete crossed-out task" }).click();
@@ -95,4 +98,5 @@ test("full-screen shell does not grow the document when Fridge and priorities ar
   expect(measurements.scrollWidth, `horizontal overflow ${JSON.stringify(measurements)}`).toBeLessThanOrEqual(measurements.innerWidth + 4);
   expect(measurements.viewportHeight).toBeGreaterThan(180);
   expect(measurements.folderWidth).toBeGreaterThan(250);
+  await page.screenshot({ path: "test-results/ui-fridge-msc-fullscreen.png", fullPage: true });
 });
