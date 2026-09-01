@@ -9,7 +9,7 @@ const approved = new Set([
   "#F8F1DF", "#F4F1E9", "#F7EFE5", "#C8BDAB", "#FFFDF8", "#DDD5C6", "#687175"
 ]);
 
-test("Arc exposes four persistent asset-derived color schemes", () => {
+test("Arc exposes four persistent asset-derived color schemes in More preferences", () => {
   const domain = readFileSync(resolve(process.cwd(), "lib/domain.ts"), "utf8");
   const picker = readFileSync(resolve(process.cwd(), "app/arc-color-scheme-picker.tsx"), "utf8");
 
@@ -22,7 +22,10 @@ test("Arc exposes four persistent asset-derived color schemes", () => {
   }
   assert.equal(picker.includes("arc.colorScheme"), true);
   assert.equal(picker.includes("preferences: { ...workspace.preferences, colorScheme: id }"), true);
-  assert.equal(picker.includes("if (!visible) return null"), true, "palette chooser should stay off beta/login/onboarding screens");
+  assert.match(picker, /findMorePreferencesMount/);
+  assert.match(picker, /createPortal/);
+  assert.equal(picker.includes("position: \"fixed\""), false, "palette chooser must not float over the planning surface");
+  assert.equal(picker.includes("if (!mountNode) return null"), true, "palette chooser should only appear inside More preferences");
 
   const hexes = [...picker.matchAll(/#[0-9A-F]{6}/g)].map((match) => match[0]);
   const unapproved = [...new Set(hexes.filter((hex) => !approved.has(hex)))];
