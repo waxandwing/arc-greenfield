@@ -20,6 +20,40 @@ export function movePriority(workspace: Workspace, id: string, tier: PriorityTie
   };
 }
 
+export function togglePriorityCircle(workspace: Workspace, id: string): Workspace {
+  return {
+    ...workspace,
+    priorities: workspace.priorities.map((priority) => priority.id === id
+      ? { ...priority, circled: !priority.circled }
+      : priority)
+  };
+}
+
+export function togglePriorityCompleted(workspace: Workspace, id: string, now = new Date().toISOString()): Workspace {
+  return {
+    ...workspace,
+    priorities: workspace.priorities.map((priority) => {
+      if (priority.id !== id) return priority;
+      const completed = !priority.completed;
+      return {
+        ...priority,
+        completed,
+        crossedOutAt: completed ? now : null
+      };
+    })
+  };
+}
+
+export function linkPriorityToPlan(workspace: Workspace, id: string, planId: string | null): Workspace {
+  if (planId && !workspace.plans.some((plan) => plan.id === planId)) return workspace;
+  return {
+    ...workspace,
+    priorities: workspace.priorities.map((priority) => priority.id === id
+      ? { ...priority, linkedPlanId: planId }
+      : priority)
+  };
+}
+
 export function reorderPriority(workspace: Workspace, id: string, direction: -1 | 1): Workspace {
   const index = workspace.priorities.findIndex((priority) => priority.id === id);
   if (index < 0) return workspace;
