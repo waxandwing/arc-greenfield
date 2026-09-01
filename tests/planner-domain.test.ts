@@ -92,6 +92,19 @@ test("cut then paste restores the whole Unit tree at a new date and class", () =
   assert.ok(pasted.workspace.plans.every((item) => item.courseId === "course-b"));
 });
 
+test("copying one nested Lesson pastes it as a standalone Lesson, not back into the source Unit", () => {
+  const source = workspace();
+  const clipboard = createClipboard(source, lessonB.id, "copy");
+  assert.ok(clipboard);
+  assert.equal(clipboard.tree.length, 1);
+  assert.equal(clipboard.tree[0].parentUnitId, null);
+  const pasted = pasteClipboard(source, clipboard, { location: "calendar", date: "2026-12-01", courseId: "course-b" });
+  const pastedLesson = pasted.workspace.plans.find((item) => item.id === pasted.pastedRootId);
+  assert.equal(pastedLesson?.parentUnitId, null);
+  assert.equal(pastedLesson?.date, "2026-12-01");
+  assert.equal(pastedLesson?.courseId, "course-b");
+});
+
 test("Quarter rejects an end date earlier than its start date", () => {
   const calendar = workspace().calendar;
   calendar.quarterBoundaries = [{ id: "q1", label: "Quarter 1", start: "2026-10-10", end: "2026-09-01" }];
