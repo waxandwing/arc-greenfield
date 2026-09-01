@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ArcColorScheme, Workspace } from "../lib/domain";
 
 const WORKSPACE_KEY = "arc.greenfield.workspace.v1";
@@ -77,10 +78,15 @@ function applyScheme(id: ArcColorScheme) {
   return true;
 }
 
+function findMorePreferencesMount(): HTMLElement | null {
+  const folders = [...document.querySelectorAll<HTMLElement>(".arcFolderInner")];
+  const more = folders.find((folder) => folder.querySelector(".arcFolderHead h2")?.textContent?.trim() === "More");
+  return more?.querySelector<HTMLElement>(".arcFolderScroll") ?? null;
+}
+
 export function ArcColorSchemePicker() {
   const [selected, setSelected] = useState<ArcColorScheme>("studio");
-  const [open, setOpen] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const workspace = readWorkspace();
@@ -88,27 +94,20 @@ export function ArcColorSchemePicker() {
     const next = saved ?? workspace?.preferences?.colorScheme ?? "studio";
     setSelected(next);
 
-    const persistPreference = () => {
-      const current = readWorkspace();
-      if (current && current.preferences?.colorScheme !== next) {
-        window.localStorage.setItem(WORKSPACE_KEY, JSON.stringify({
-          ...current,
-          preferences: { ...current.preferences, colorScheme: next }
-        }));
-      }
-    };
-
-    persistPreference();
-    if (applyScheme(next)) {
-      setVisible(true);
-      return;
+    const current = readWorkspace();
+    if (current && current.preferences?.colorScheme !== next) {
+      window.localStorage.setItem(WORKSPACE_KEY, JSON.stringify({
+        ...current,
+        preferences: { ...current.preferences, colorScheme: next }
+      }));
     }
 
-    const observer = new MutationObserver(() => {
-      if (!applyScheme(next)) return;
-      setVisible(true);
-      observer.disconnect();
-    });
+    const sync = () => {
+      applyScheme(next);
+      setMountNode(findMorePreferencesMount());
+    };
+    sync();
+    const observer = new MutationObserver(sync);
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
   }, []);
@@ -125,23 +124,20 @@ export function ArcColorSchemePicker() {
         updatedAt: new Date().toISOString()
       }));
     }
-    setOpen(false);
   }
 
-  if (!visible) return null;
+  if (!mountNode) return null;
 
-  return (
-    <div style={{ position: "fixed", right: 12, bottom: 12, zIndex: 95, fontFamily: "League Spartan, Montserrat, sans-serif" }}>
-      {open && <div role="radiogroup" aria-label="Arc color scheme" style={{ width: 260, marginBottom: 7, padding: 10, border: "1px solid #C8BDAB", borderRadius: 12, background: "#FFFDF8", boxShadow: "0 14px 34px rgba(38,51,58,.14)" }}>
-        <div style={{ marginBottom: 8 }}><strong style={{ display: "block", color: "#174F64", fontFamily: "Georgia, serif", fontWeight: 500 }}>Color scheme</strong><span style={{ fontSize: 11, color: "#687175" }}>All four stay inside the Arc asset palette.</span></div>
-        {SCHEMES.map((scheme) => <button key={scheme.id} type="button" role="radio" aria-checked={selected === scheme.id} onClick={() => choose(scheme.id)} style={{ width: "100%", display: "grid", gridTemplateColumns: "1fr auto", gap: 7, alignItems: "center", marginTop: 5, padding: "7px 8px", border: selected === scheme.id ? "2px solid #174F64" : "1px solid #DDD5C6", borderRadius: 8, background: "#FFFDF8", textAlign: "left", cursor: "pointer" }}>
+  return createPortal(
+    <section aria-label="Color scheme" style={{ display: "grid", gap: 7, margin: "10px 0", padding: 10, border: "1px solid #C8BDAB", borderRadius: 10, background: "#FFFDF8" }}>
+      <div><strong style={{ display: "block", color: "#174F64", fontFamily: "Georgia, serif", fontWeight: 500 }}>Color scheme</strong><span style={{ color: "#687175", fontSize: 10 }}>Built from the Arc asset palette.</span></div>
+      <div role="radiogroup" aria-label="Arc color scheme" style={{ display: "grid", gap: 5 }}>
+        {SCHEMES.map((scheme) => <button key={scheme.id} type="button" role="radio" aria-checked={selected === scheme.id} onClick={() => choose(scheme.id)} style={{ width: "100%", display: "grid", gridTemplateColumns: "1fr auto", gap: 7, alignItems: "center", padding: "7px 8px", border: selected === scheme.id ? "2px solid #174F64" : "1px solid #DDD5C6", borderRadius: 8, background: "#FFFDF8", textAlign: "left", cursor: "pointer" }}>
           <span><b style={{ display: "block", fontSize: 12 }}>{scheme.label}</b><small style={{ color: "#687175", fontSize: 10 }}>{scheme.note}</small></span>
-          <span aria-hidden="true" style={{ display: "flex", gap: 2 }}>{scheme.swatches.map((color) => <i key={color} style={{ display: "block", width: 12, height: 22, borderRadius: 3, background: color }} />)}</span>
+          <span aria-hidden="true" style={{ display: "flex", gap: 2 }}>{scheme.swatches.map((color) => <i key={color} style={{ display: "block", width: 11, height: 22, borderRadius: 3, background: color }} />)}</span>
         </button>)}
-      </div>}
-      <button type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)} style={{ height: 34, padding: "0 11px", border: "1px solid #C8BDAB", borderRadius: 999, background: "#FFFDF8", boxShadow: "0 4px 14px rgba(38,51,58,.1)", color: "#174F64", fontSize: 11, fontWeight: 800, cursor: "pointer" }}>
-        Palette · {SCHEMES.find((item) => item.id === selected)?.label ?? "Arc Studio"}
-      </button>
-    </div>
+      </div>
+    </section>,
+    mountNode
   );
 }
