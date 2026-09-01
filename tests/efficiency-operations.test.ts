@@ -110,7 +110,8 @@ test("Shift preflight detects collisions with lessons outside the move set", () 
   const workspace = emptyWorkspace();
   workspace.plans = [
     plan({ id: "moving", title: "Moving lesson", type: "lesson", date: "2026-09-08" }),
-    plan({ id: "occupied", title: "Already there", type: "lesson", date: "2026-09-09" })
+    plan({ id: "older-unit", title: "Existing unit", type: "unit", date: "2026-09-01", endDate: "2026-09-11" }),
+    plan({ id: "occupied", title: "Already there", type: "lesson", date: "2026-09-09", parentUnitId: "older-unit", childOrder: 0 })
   ];
   const preview = previewInstructionalShift(workspace, ["course-a"], "2026-09-08");
   assert.deepEqual(preview.blockedRootIds, ["moving"]);
