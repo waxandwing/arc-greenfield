@@ -4,11 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { emptyWorkspace, type Course, type Plan, type PlanType, type PriorityTier, type Workspace } from "../lib/domain";
 import { applyCut, createClipboard, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
 import { deletePlanTree, movePlanTreeToIdeas, orderedUnitChildren, shiftPlanTree } from "../lib/plan-tree";
+import { deletePriority, movePriority, renamePriority, reorderPriority } from "../lib/priority-operations";
 import { resolveArcShortcut } from "../lib/shortcuts";
 import { availableQuarterRanges } from "../lib/view-ranges";
 import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "../lib/workspace-history";
 import { loadWorkspace, saveWorkspace } from "../lib/workspace-store";
 import { MonthView } from "./month-view";
+import { PriorityWorkbench } from "./priority-workbench";
 import { QuarterView } from "./quarter-view";
 
 const COLORS = ["#2f6f73", "#557b93", "#d2a64a", "#d97965", "#6f7d5b", "#8a6d82"];
@@ -271,6 +273,7 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
     if (!result.pastedRootId) return;
     replaceWorkspace(result.workspace);
     setSelectedPlanId(result.pastedRootId);
+    setClipboard(result.nextClipboard);
   }
 
   function selectPlan(plan: Plan) {
@@ -392,7 +395,15 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
 
             <aside className="workbench" aria-label="Planning workbench">
               <section className={pasteTarget?.location === "ideas" ? "ideasPanel pasteTarget" : "ideasPanel"} onClick={() => setPasteTarget({ courseId: ideaCourseId || null, date: null, location: "ideas" })} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/arc-plan"); if (id) returnPlanToIdeas(id); }}><div className="ideasHeading"><div><p className="eyebrow">Ideas</p><h2>Things worth keeping.</h2></div><span>{workspace.plans.filter((plan) => plan.location === "ideas" && plan.parentUnitId === null).length}</span></div><div className="ideaAdder"><input value={ideaTitle} onClick={(e) => e.stopPropagation()} onChange={(e) => setIdeaTitle(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addIdea(); }} placeholder="Catch an idea…" /><select aria-label="Class for new idea" value={ideaCourseId} onClick={(e) => e.stopPropagation()} onChange={(e) => setIdeaCourseId(e.target.value)}><option value="" disabled>Class</option>{workspace.courses.map((course) => <option value={course.id} key={course.id}>{course.name}</option>)}</select><button type="button" disabled={!ideaCourseId} onClick={(e) => { e.stopPropagation(); addIdea(); }}>＋</button></div><div className="ideaList">{workspace.plans.filter((plan) => plan.location === "ideas" && plan.parentUnitId === null).map((plan) => { const course = workspace.courses.find((item) => item.id === plan.courseId); const children = plan.type === "unit" ? orderedUnitChildren(workspace.plans, plan.id) : []; return <article key={plan.id} className={`${plan.type === "unit" ? "ideaCard unitIdea" : "ideaCard"}${selectedPlanId === plan.id ? " selected" : ""}`} draggable onDragStart={(e) => e.dataTransfer.setData("text/arc-plan", plan.id)} onClick={(e) => { e.stopPropagation(); selectPlan(plan); }}><div className="ideaCardHeader"><strong>{plan.title}</strong>{course && <span style={{ borderColor: course.color }}>{course.name}</span>}</div>{plan.type === "unit" && <small className="ideaUnitMeta">Unit · {children.length} lesson{children.length === 1 ? "" : "s"}</small>}<div className="ideaDates">{days.map((day) => <button type="button" key={day.key} onClick={(e) => { e.stopPropagation(); moveIdeaToDate(plan.id, day.key); }}>{day.label}</button>)}</div><button type="button" className="ideaDelete" onClick={(e) => { e.stopPropagation(); deletePlan(plan.id); }}>Delete</button></article>; })}{workspace.plans.every((plan) => plan.location !== "ideas" || plan.parentUnitId !== null) && <p className="emptyNote">Loose thoughts can live here before they have a date.</p>}</div></section>
-              <section className="priorityPanel" aria-label="Must should could priorities"><p className="eyebrow">Must · Should · Could</p>{(["must", "should", "could"] as const).map((tier) => <div key={tier} className="priorityTier"><div className="priorityHeading"><span>{tier}</span><button type="button" aria-label={`Add ${tier} priority`} onClick={() => setPriorityDraft({ tier, title: "" })}>＋</button></div><div className="priorityList">{workspace.priorities.filter((priority) => priority.tier === tier).map((priority) => <label className={priority.completed ? "priorityItem done" : "priorityItem"} key={priority.id}><input type="checkbox" checked={priority.completed} onChange={() => togglePriority(priority.id)} /><span>{priority.title}</span></label>)}</div>{priorityDraft?.tier === tier && <div className="priorityComposer"><input autoFocus value={priorityDraft.title} onChange={(e) => setPriorityDraft({ tier, title: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") addPriority(); if (e.key === "Escape") setPriorityDraft(null); }} placeholder={`Add a ${tier}`} /><button type="button" onClick={addPriority}>Add</button></div>}</div>)}</section>
+              <PriorityWorkbench
+                priorities={workspace.priorities}
+                onAdd={(tier, title) => updateWorkspace((current) => ({ ...current, priorities: [...current.priorities, { id: crypto.randomUUID(), title, tier, completed: false, scope: "school" }] }))}
+                onToggle={togglePriority}
+                onRename={(id, title) => updateWorkspace((current) => renamePriority(current, id, title))}
+                onDelete={(id) => updateWorkspace((current) => deletePriority(current, id))}
+                onMove={(id, tier) => updateWorkspace((current) => movePriority(current, id, tier))}
+                onReorder={(id, direction) => updateWorkspace((current) => reorderPriority(current, id, direction))}
+              />
             </aside>
           </div>
         </section>
