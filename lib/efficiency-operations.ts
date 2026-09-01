@@ -31,6 +31,26 @@ export function nextInstructionalDate(calendar: SchoolCalendar, value: string, d
   return next;
 }
 
+export function courseMeetsOnDate(workspace: Workspace, courseId: string | null, value: string): boolean {
+  if (!isInstructionalDay(workspace.calendar, value)) return false;
+  if (!courseId) return true;
+  const course = workspace.courses.find((item) => item.id === courseId);
+  const pattern = course?.meetingPattern;
+  if (!pattern || pattern.kind !== "weekdays" || pattern.weekdays.length === 0) return true;
+  return pattern.weekdays.includes(parseDate(value).getDay());
+}
+
+export function nextCourseMeetingDate(
+  workspace: Workspace,
+  courseId: string | null,
+  value: string,
+  direction: 1 | -1 = 1
+): string {
+  let next = value;
+  do next = shiftDate(next, direction); while (!courseMeetsOnDate(workspace, courseId, next));
+  return next;
+}
+
 export type ShiftConflict = {
   rootId: string;
   planId: string;
@@ -50,15 +70,17 @@ export type ShiftPreflight = {
   conflicts: ShiftConflict[];
 };
 
-function shiftedInstructionalDate(calendar: SchoolCalendar, value: string | null, direction: 1 | -1): string | null {
+function shiftedMeetingDate(workspace: Workspace, courseId: string | null, value: string | null, direction: 1 | -1): string | null {
   if (!value) return null;
-  return nextInstructionalDate(calendar, value, direction);
+  return nextCourseMeetingDate(workspace, courseId, value, direction);
 }
 
 /**
- * Preflight a one-instructional-day Shift without mutating the workspace.
+ * Preflight a one-meeting Shift without mutating the workspace.
  * A root is blocked as a whole when any member of its tree is fixed or when
  * moving one of its lessons would collide with a lesson that is not moving.
+ * Course meeting patterns are honored when present; migrated workspaces with
+ * no pattern retain the Monday-Friday instructional-day behavior.
  */
 export function previewInstructionalShift(
   workspace: Workspace,
@@ -101,7 +123,7 @@ export function previewInstructionalShift(
 
     for (const plan of tree) {
       if (plan.type !== "lesson" || !plan.date || !plan.courseId) continue;
-      const targetDate = shiftedInstructionalDate(workspace.calendar, plan.date, direction);
+      const targetDate = shiftedMeetingDate(workspace, plan.courseId, plan.date, direction);
       const collision = workspace.plans.find((candidate) =>
         !movingIds.has(candidate.id) &&
         candidate.location === "calendar" &&
@@ -156,8 +178,8 @@ export function applyInstructionalShift(workspace: Workspace, preflight: ShiftPr
     if (!rootId || !movableRootIds.has(rootId)) return plan;
     return {
       ...plan,
-      date: shiftedInstructionalDate(workspace.calendar, plan.date, preflight.direction),
-      endDate: shiftedInstructionalDate(workspace.calendar, plan.endDate, preflight.direction)
+      date: shiftedMeetingDate(workspace, plan.courseId, plan.date, preflight.direction),
+      endDate: shiftedMeetingDate(workspace, plan.courseId, plan.endDate, preflight.direction)
     };
   });
   return { ...workspace, plans };
@@ -166,7 +188,7 @@ export function applyInstructionalShift(workspace: Workspace, preflight: ShiftPr
 export function tackLesson(workspace: Workspace, lessonId: string): Workspace {
   const lesson = workspace.plans.find((plan) => plan.id === lessonId && plan.type === "lesson");
   if (!lesson?.date || lesson.fixedDate) return workspace;
-  const next = nextInstructionalDate(workspace.calendar, lesson.date);
+  const next = nextCourseMeetingDate(workspace, lesson.courseId, lesson.date);
   return {
     ...workspace,
     plans: workspace.plans.map((plan) => plan.id === lessonId ? { ...plan, date: next, location: "calendar" as const } : plan)
@@ -176,7 +198,7 @@ export function tackLesson(workspace: Workspace, lessonId: string): Workspace {
 export function extendLesson(workspace: Workspace, lessonId: string): { workspace: Workspace; continuationId: string | null } {
   const lesson = workspace.plans.find((plan) => plan.id === lessonId && plan.type === "lesson");
   if (!lesson?.date) return { workspace, continuationId: null };
-  const next = nextInstructionalDate(workspace.calendar, lesson.date);
+  const next = nextCourseMeetingDate(workspace, lesson.courseId, lesson.date);
   const continuationId = crypto.randomUUID();
   const siblings = lesson.parentUnitId
     ? workspace.plans.filter((plan) => plan.parentUnitId === lesson.parentUnitId)
@@ -197,7 +219,7 @@ export function copyLessonNext(workspace: Workspace, lessonId: string): { worksp
   const lesson = workspace.plans.find((plan) => plan.id === lessonId && plan.type === "lesson");
   if (!lesson?.date) return { workspace, copyId: null };
   const copyId = crypto.randomUUID();
-  const next = nextInstructionalDate(workspace.calendar, lesson.date);
+  const next = nextCourseMeetingDate(workspace, lesson.courseId, lesson.date);
   const siblings = lesson.parentUnitId
     ? workspace.plans.filter((plan) => plan.parentUnitId === lesson.parentUnitId)
     : [];
