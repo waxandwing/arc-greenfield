@@ -21,11 +21,11 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run rendered Arc checks
         run: npm run test:browser
-      - name: Upload browser evidence on failure
-        if: failure()
+      - name: Upload rendered Arc evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: arc-browser-evidence
+          name: arc-rendered-evidence
           path: |
             playwright-report
             test-results
