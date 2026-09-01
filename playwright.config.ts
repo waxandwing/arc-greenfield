@@ -15,7 +15,22 @@ export default defineConfig({
   },
   projects: [
     { name: "desktop-1440", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
-    { name: "laptop-1366", use: { ...devices["Desktop Chrome"], viewport: { width: 1366, height: 768 } } }
+    { name: "laptop-1366", use: { ...devices["Desktop Chrome"], viewport: { width: 1366, height: 768 } } },
+    {
+      name: "zoom-200",
+      testMatch: /arc-accessibility\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 720, height: 450 } }
+    },
+    {
+      name: "reduced-motion-high-contrast",
+      testMatch: /arc-accessibility\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1366, height: 768 },
+        reducedMotion: "reduce",
+        forcedColors: "active"
+      }
+    }
   ],
   webServer: {
     command: "npm run start",
