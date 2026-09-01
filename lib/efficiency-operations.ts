@@ -31,13 +31,37 @@ export function nextInstructionalDate(calendar: SchoolCalendar, value: string, d
   return next;
 }
 
+export function rotationLabelForDate(calendar: SchoolCalendar, value: string): string | null {
+  const rotation = calendar.rotation;
+  if (!rotation?.anchorDate || rotation.labels.length === 0) return null;
+  if (!isInstructionalDay(calendar, rotation.anchorDate) || !isInstructionalDay(calendar, value)) return null;
+
+  let cursor = rotation.anchorDate;
+  let offset = 0;
+  while (cursor !== value) {
+    const direction: 1 | -1 = cursor < value ? 1 : -1;
+    cursor = nextInstructionalDate(calendar, cursor, direction);
+    offset += direction;
+    if (Math.abs(offset) > 2000) return null;
+  }
+  const index = ((offset % rotation.labels.length) + rotation.labels.length) % rotation.labels.length;
+  return rotation.labels[index];
+}
+
 export function courseMeetsOnDate(workspace: Workspace, courseId: string | null, value: string): boolean {
   if (!isInstructionalDay(workspace.calendar, value)) return false;
   if (!courseId) return true;
   const course = workspace.courses.find((item) => item.id === courseId);
   const pattern = course?.meetingPattern;
-  if (!pattern || pattern.kind !== "weekdays" || pattern.weekdays.length === 0) return true;
-  return pattern.weekdays.includes(parseDate(value).getDay());
+  if (!pattern) return true;
+  if (pattern.kind === "weekdays") {
+    if (pattern.weekdays.length === 0) return true;
+    return pattern.weekdays.includes(parseDate(value).getDay());
+  }
+  if (pattern.labels.length === 0) return true;
+  const label = rotationLabelForDate(workspace.calendar, value);
+  if (!label) return true;
+  return pattern.labels.includes(label);
 }
 
 export function nextCourseMeetingDate(
@@ -47,7 +71,12 @@ export function nextCourseMeetingDate(
   direction: 1 | -1 = 1
 ): string {
   let next = value;
-  do next = shiftDate(next, direction); while (!courseMeetsOnDate(workspace, courseId, next));
+  let attempts = 0;
+  do {
+    next = shiftDate(next, direction);
+    attempts += 1;
+    if (attempts > 2000) return nextInstructionalDate(workspace.calendar, value, direction);
+  } while (!courseMeetsOnDate(workspace, courseId, next));
   return next;
 }
 
