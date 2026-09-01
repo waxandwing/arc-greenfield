@@ -62,14 +62,14 @@ test("first run reaches a functional Arc desk without a fake calendar source", a
 test("Arc color scheme is user-selectable, asset-derived, and persists", async ({ page }, testInfo) => {
   await completeFirstRun(page);
 
-  const palette = page.getByRole("button", { name: /Palette · Arc Studio/ });
+  await expect(page.getByRole("radiogroup", { name: "Arc color scheme" })).toHaveCount(0);
+  await page.getByRole("button", { name: "More", exact: true }).click();
+  const palette = page.getByRole("radiogroup", { name: "Arc color scheme" });
   await expect(palette).toBeVisible();
-  await palette.click();
-  await expect(page.getByRole("radiogroup", { name: "Arc color scheme" })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("palette-picker.png"), fullPage: false });
   await page.getByRole("radio", { name: /Blueprint/ }).click();
 
-  await expect(page.getByRole("button", { name: /Palette · Blueprint/ })).toBeVisible();
+  await expect(page.getByRole("radio", { name: /Blueprint/ })).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".arcWorkspace")).toHaveAttribute("data-color-scheme", "blueprint");
 
   const stored = await page.evaluate(() => {
