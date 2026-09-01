@@ -79,6 +79,20 @@ test("Arc color scheme is user-selectable, asset-derived, and persists", async (
   expect(stored).toBe("blueprint");
 });
 
+test("Day is the teach-from-it surface and Year renders each school month once", async ({ page }) => {
+  await completeFirstRun(page);
+
+  await page.getByRole("button", { name: "Day", exact: true }).click();
+  await expect(page.getByText("Teach from today", { exact: true })).toBeVisible();
+  await expect(page.locator(".dayCourse.teachingCard")).toHaveCount(1);
+  await expect(page.getByText("Studio Art", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Year", exact: true }).click();
+  await expect(page.getByText("Each month appears once. Quarter color changes on the actual boundary date.", { exact: true })).toBeVisible();
+  await expect(page.locator(".yearMiniMonth")).toHaveCount(10);
+  await expect(page.locator(".yearMiniMonth").filter({ hasText: "October" })).toHaveCount(1);
+});
+
 test("desktop planning shell stays inside the viewport at supported laptop sizes", async ({ page }) => {
   await completeFirstRun(page);
   const measurements = await page.evaluate(() => ({
