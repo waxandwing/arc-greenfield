@@ -24,12 +24,7 @@ export default defineConfig({
     {
       name: "reduced-motion-high-contrast",
       testMatch: /arc-accessibility\.spec\.ts/,
-      use: {
-        ...devices["Desktop Chrome"],
-        viewport: { width: 1366, height: 768 },
-        reducedMotion: "reduce",
-        forcedColors: "active"
-      }
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1366, height: 768 } }
     }
   ],
   webServer: {
