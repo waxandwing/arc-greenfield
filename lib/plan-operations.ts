@@ -30,22 +30,9 @@ function normalizeChildOrder(plans: Plan[], unitId: string): Plan[] {
   return plans.map((plan) => order.has(plan.id) ? { ...plan, childOrder: order.get(plan.id)! } : plan);
 }
 
-export type CalendarTarget = {
-  kind: "calendar";
-  date: string;
-  courseId: string;
-};
-
-export type FridgeTarget = {
-  kind: "fridge";
-};
-
-export type UnitTarget = {
-  kind: "unit";
-  unitId: string;
-  position?: number;
-};
-
+export type CalendarTarget = { kind: "calendar"; date: string; courseId: string };
+export type FridgeTarget = { kind: "fridge" };
+export type UnitTarget = { kind: "unit"; unitId: string; position?: number };
 export type PlanTarget = CalendarTarget | FridgeTarget | UnitTarget;
 
 export function movePlanToCalendarDate(plans: Plan[], id: string, date: string, courseId: string): Plan[] {
@@ -58,31 +45,32 @@ export function movePlan(plans: Plan[], id: string, target: PlanTarget): Plan[] 
 
   if (target.kind === "fridge") {
     const ids = new Set(collectPlanTree(plans, id).map((item) => item.id));
-    return plans.map((item) => ids.has(item.id)
-      ? { ...item, location: "fridge" as PlanLocation }
-      : item);
+    return plans.map((item) => ids.has(item.id) ? { ...item, location: "fridge" as PlanLocation } : item);
   }
 
-  if (target.kind === "unit") {
-    return nestLesson(plans, id, target.unitId, target.position);
-  }
+  if (target.kind === "unit") return nestLesson(plans, id, target.unitId, target.position);
 
-  if (plan.type === "unit" && plan.date) {
-    return shiftPlanTree(plans, id, dayDelta(plan.date, target.date), target.courseId);
+  if (plan.type === "unit") {
+    if (plan.date) return shiftPlanTree(plans, id, dayDelta(plan.date, target.date), target.courseId);
+    const ids = new Set(collectPlanTree(plans, id).map((item) => item.id));
+    return plans.map((item) => {
+      if (!ids.has(item.id)) return item;
+      const isRoot = item.id === id;
+      return {
+        ...item,
+        courseId: target.courseId,
+        date: item.date ?? target.date,
+        endDate: isRoot ? (item.endDate ?? target.date) : item.endDate,
+        location: "calendar" as const
+      };
+    });
   }
 
   return plans.map((item) => {
     if (item.id !== id) return item;
     const changingCourse = item.courseId !== target.courseId;
     const detachFromUnit = Boolean(item.parentUnitId && changingCourse);
-    return {
-      ...item,
-      courseId: target.courseId,
-      date: target.date,
-      location: "calendar" as const,
-      parentUnitId: detachFromUnit ? null : item.parentUnitId,
-      childOrder: detachFromUnit ? null : item.childOrder
-    };
+    return { ...item, courseId: target.courseId, date: target.date, location: "calendar" as const, parentUnitId: detachFromUnit ? null : item.parentUnitId, childOrder: detachFromUnit ? null : item.childOrder };
   });
 }
 
@@ -90,8 +78,6 @@ export function nestLesson(plans: Plan[], lessonId: string, unitId: string, posi
   const lesson = plans.find((item) => item.id === lessonId);
   const unit = plans.find((item) => item.id === unitId);
   if (!lesson || lesson.type !== "lesson" || !unit || unit.type !== "unit") return plans;
-  if (lesson.id === unit.id) return plans;
-
   const siblings = orderedUnitChildren(plans, unitId).filter((item) => item.id !== lessonId);
   const index = Math.max(0, Math.min(position ?? siblings.length, siblings.length));
   const reordered = [...siblings.slice(0, index), lesson, ...siblings.slice(index)];
@@ -104,14 +90,7 @@ export function nestLesson(plans: Plan[], lessonId: string, unitId: string, posi
       let date = item.date;
       if (unitStart && (!date || date < unitStart)) date = unitStart;
       if (unitEnd && date && date > unitEnd) date = unitEnd;
-      return {
-        ...item,
-        parentUnitId: unitId,
-        childOrder: childOrder.get(item.id) ?? index,
-        courseId: unit.courseId,
-        date,
-        location: unit.location
-      };
+      return { ...item, parentUnitId: unitId, childOrder: childOrder.get(item.id) ?? index, courseId: unit.courseId, date, location: unit.location };
     }
     if (childOrder.has(item.id)) return { ...item, childOrder: childOrder.get(item.id)! };
     return item;
@@ -122,17 +101,7 @@ export function detachLesson(plans: Plan[], lessonId: string, target?: CalendarT
   const lesson = plans.find((item) => item.id === lessonId);
   if (!lesson || lesson.type !== "lesson" || !lesson.parentUnitId) return plans;
   const priorUnitId = lesson.parentUnitId;
-
-  let next = plans.map((item) => item.id === lessonId
-    ? {
-        ...item,
-        parentUnitId: null,
-        childOrder: null,
-        location: target?.kind === "fridge" ? "fridge" as const : item.location,
-        date: target?.kind === "calendar" ? target.date : item.date,
-        courseId: target?.kind === "calendar" ? target.courseId : item.courseId
-      }
-    : item);
+  let next = plans.map((item) => item.id === lessonId ? { ...item, parentUnitId: null, childOrder: null, location: target?.kind === "fridge" ? "fridge" as const : item.location, date: target?.kind === "calendar" ? target.date : item.date, courseId: target?.kind === "calendar" ? target.courseId : item.courseId } : item);
   next = normalizeChildOrder(next, priorUnitId);
   return next;
 }
@@ -160,7 +129,5 @@ export function moveUnitTreeByDelta(plans: Plan[], unitId: string, deltaDays: nu
 }
 
 export function moveLoosePlanByDelta(plans: Plan[], planId: string, deltaDays: number): Plan[] {
-  return plans.map((item) => item.id === planId
-    ? { ...item, date: shiftDate(item.date, deltaDays), endDate: shiftDate(item.endDate, deltaDays) }
-    : item);
+  return plans.map((item) => item.id === planId ? { ...item, date: shiftDate(item.date, deltaDays), endDate: shiftDate(item.endDate, deltaDays) } : item);
 }
