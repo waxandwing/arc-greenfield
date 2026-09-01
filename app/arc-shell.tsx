@@ -11,7 +11,7 @@ import {
   type Workspace
 } from "../lib/domain";
 import { applyCut, createClipboard, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
-import { checkpointQuarter, copyLessonNext, extendLesson, nextInstructionalDate, reuseWeek, tackLesson } from "../lib/efficiency-operations";
+import { applyInstructionalShift, checkpointQuarter, copyLessonNext, extendLesson, previewInstructionalShift, reuseWeek, tackLesson } from "../lib/efficiency-operations";
 import { deleteSelection, detachLesson, movePlan, movePlanToCalendarDate, nestLesson } from "../lib/plan-operations";
 import { collectPlanTree, orderedUnitChildren } from "../lib/plan-tree";
 import { crossOutPriority, deletePriority, linkPriorityToPlan, movePriority, reorderPriority, togglePriorityCircle } from "../lib/priority-operations";
@@ -173,18 +173,10 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   }, [workspace]);
 
   const shiftFromDate = pasteTarget?.location === "calendar" && pasteTarget.date ? pasteTarget.date : days[0].key;
-  const shiftPreview = useMemo(() => {
-    if (!selectedCourseId) return { roots: [] as Plan[], affected: 0, blocked: 0 };
-    const roots = workspace.plans.filter((plan) => plan.location === "calendar" && plan.courseId === selectedCourseId && !plan.parentUnitId && plan.date && plan.date >= shiftFromDate);
-    let affected = 0;
-    let blocked = 0;
-    for (const root of roots) {
-      const tree = root.type === "unit" ? collectPlanTree(workspace.plans, root.id) : [root];
-      if (tree.some((plan) => plan.fixedDate)) blocked += tree.length;
-      else affected += tree.length;
-    }
-    return { roots, affected, blocked };
-  }, [workspace.plans, selectedCourseId, shiftFromDate]);
+  const shiftPreview = useMemo(() => selectedCourseId
+    ? previewInstructionalShift(workspace, [selectedCourseId], shiftFromDate)
+    : null,
+  [workspace, selectedCourseId, shiftFromDate]);
 
   useEffect(() => {
     const loaded = normalizedWorkspace(loadWorkspace());
@@ -235,6 +227,13 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     setActiveFolder(next);
     updatePreferences({ openFolder: next });
     if (next === "fridge") setPasteTarget({ date: null, courseId: null, location: "fridge" });
+  }
+
+  function openFridgeForDrop() {
+    if (activeFolder === "fridge") return;
+    setActiveFolder("fridge");
+    updatePreferences({ openFolder: "fridge" });
+    setPasteTarget({ date: null, courseId: null, location: "fridge" });
   }
 
   function saveNow() {
@@ -294,7 +293,16 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   }
 
   function deletePlan(id: string) {
-    updateWorkspace((current) => ({ ...current, plans: deleteSelection(current.plans, id) }));
+    updateWorkspace((current) => {
+      const deletedIds = new Set(collectPlanTree(current.plans, id).map((plan) => plan.id));
+      return {
+        ...current,
+        plans: deleteSelection(current.plans, id),
+        priorities: current.priorities.map((priority) => priority.linkedPlanId && deletedIds.has(priority.linkedPlanId)
+          ? { ...priority, linkedPlanId: null }
+          : priority)
+      };
+    });
     if (selectedPlanId === id) setSelectedPlanId(null);
   }
 
@@ -380,26 +388,11 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   }
 
   function applyShift() {
-    if (!selectedCourseId || shiftPreview.affected === 0) return;
-    updateWorkspace((current) => {
-      const affectedIds = new Set<string>();
-      for (const root of shiftPreview.roots) {
-        const tree = root.type === "unit" ? collectPlanTree(current.plans, root.id) : [root];
-        if (tree.some((plan) => plan.fixedDate)) continue;
-        tree.forEach((plan) => affectedIds.add(plan.id));
-      }
-      return {
-        ...current,
-        plans: current.plans.map((plan) => {
-          if (!affectedIds.has(plan.id)) return plan;
-          return {
-            ...plan,
-            date: plan.date ? nextInstructionalDate(current.calendar, plan.date) : plan.date,
-            endDate: plan.endDate ? nextInstructionalDate(current.calendar, plan.endDate) : plan.endDate
-          };
-        })
-      };
-    });
+    if (!selectedCourseId || !shiftPreview || shiftPreview.movableRootIds.length === 0) return;
+    updateWorkspace((current) => applyInstructionalShift(
+      current,
+      previewInstructionalShift(current, [selectedCourseId], shiftFromDate)
+    ));
   }
 
   function runTack(id: string) { updateWorkspace((current) => tackLesson(current, id)); }
@@ -469,7 +462,6 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   if (!ready) return <main className="loadingShell">Opening Arc…</main>;
 
   const fridgeRoots = workspace.plans.filter((plan) => (plan.location === "fridge" || plan.location === "ideas") && !plan.parentUnitId);
-  const currentQuarterClass = activeQuarter ? `q${Math.min(4, quarterIndex + 1)}` : "";
 
   return (
     <main className="arcWorkspace" onDragStart={onDragStartBubble} onDragEnd={() => { setDragging(null); setTrashHot(false); }}>
@@ -481,7 +473,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
 
       <section className="arcStage">
         <nav className="arcToolTabs" aria-label="Planning folders">
-          <button type="button" className="fridgeTab" aria-pressed={activeFolder === "fridge"} onClick={() => toggleFolder("fridge")}>Fridge</button>
+          <button type="button" className="fridgeTab" aria-pressed={activeFolder === "fridge"} onDragEnter={() => { if (dragging?.kind === "plan") openFridgeForDrop(); }} onClick={() => toggleFolder("fridge")}>Fridge</button>
           <button type="button" className="shiftTab" aria-pressed={activeFolder === "shift"} onClick={() => toggleFolder("shift")}>Shift</button>
           <button type="button" className="moreTab" aria-pressed={activeFolder === "more"} onClick={() => toggleFolder("more")}>More</button>
         </nav>
@@ -510,9 +502,10 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
               <div className="arcFolderScroll">
                 <label className="rangeCoursePicker"><span>Class</span><select value={selectedCourseId} onChange={(event) => setActiveCourseId(event.target.value)}>{workspace.courses.map((course) => <option key={course.id} value={course.id}>{course.name}</option>)}</select></label>
                 <p><strong>From:</strong> {shiftFromDate}</p>
-                <p><strong>{shiftPreview.affected}</strong> plan object{shiftPreview.affected === 1 ? "" : "s"} will move one instructional day.</p>
-                {shiftPreview.blocked > 0 && <p><strong>{shiftPreview.blocked}</strong> fixed object{shiftPreview.blocked === 1 ? " stays" : "s stay"} put.</p>}
-                <button type="button" className="primaryAction" disabled={shiftPreview.affected === 0} onClick={applyShift}>Apply Shift</button>
+                <p><strong>{shiftPreview?.affectedPlanIds.length ?? 0}</strong> plan object{(shiftPreview?.affectedPlanIds.length ?? 0) === 1 ? "" : "s"} can move one instructional day.</p>
+                {(shiftPreview?.blockedRootIds.length ?? 0) > 0 && <p><strong>{shiftPreview?.blockedRootIds.length}</strong> root plan{shiftPreview?.blockedRootIds.length === 1 ? " is" : "s are"} blocked.</p>}
+                {shiftPreview && shiftPreview.conflicts.length > 0 && <div className="shiftConflictList" role="status"><strong>Resolve before Shift</strong>{shiftPreview.conflicts.slice(0, 6).map((conflict) => { const plan = workspace.plans.find((item) => item.id === conflict.planId); return <span key={`${conflict.rootId}-${conflict.planId}-${conflict.kind}`}>{plan?.title ?? "Plan"} · {conflict.kind === "fixed-date" ? "fixed date" : `collision on ${conflict.targetDate}`}</span>; })}</div>}
+                <button type="button" className="primaryAction" disabled={!shiftPreview || shiftPreview.movableRootIds.length === 0} onClick={applyShift}>Apply safe Shift</button>
               </div><div />
             </div>}
 
@@ -575,7 +568,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
               </div>
             </section>
 
-            {selectedPlan && <MagnetEditor plan={selectedPlan} unit={focusUnit} workspace={workspace} childTitle={childTitle} setChildTitle={setChildTitle} resourceDraft={resourceDraft} setResourceDraft={setResourceDraft} onClose={() => setSelectedPlanId(null)} onRename={renamePlan} onPatch={patchPlan} onTack={runTack} onExtend={runExtend} onCopyNext={runCopyNext} onFridge={returnToFridge} onDelete={deletePlan} onAddChild={addChildLesson} onReorderChild={reorderUnitChild} onDetachChild={(id) => updateWorkspace((current) => ({ ...current, plans: detachLesson(current.plans, id, { kind: "fridge" }) }))} />}
+            {selectedPlan && <MagnetEditor plan={selectedPlan} unit={focusUnit} workspace={workspace} childTitle={childTitle} setChildTitle={setChildTitle} resourceDraft={resourceDraft} setResourceDraft={setResourceDraft} onClose={() => setSelectedPlanId(null)} onRename={renamePlan} onPatch={patchPlan} onMoveDate={movePlanToDate} onSelectChild={(id) => setSelectedPlanId(id)} onTack={runTack} onExtend={runExtend} onCopyNext={runCopyNext} onFridge={returnToFridge} onDelete={deletePlan} onAddChild={addChildLesson} onReorderChild={reorderUnitChild} onDetachChild={(id) => updateWorkspace((current) => ({ ...current, plans: detachLesson(current.plans, id, { kind: "fridge" }) }))} />}
           </section>
         </div>
 
@@ -585,10 +578,11 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   );
 }
 
-function MagnetEditor({ plan, unit, workspace, childTitle, setChildTitle, resourceDraft, setResourceDraft, onClose, onRename, onPatch, onTack, onExtend, onCopyNext, onFridge, onDelete, onAddChild, onReorderChild, onDetachChild }: {
+function MagnetEditor({ plan, unit, workspace, childTitle, setChildTitle, resourceDraft, setResourceDraft, onClose, onRename, onPatch, onMoveDate, onSelectChild, onTack, onExtend, onCopyNext, onFridge, onDelete, onAddChild, onReorderChild, onDetachChild }: {
   plan: Plan; unit: Plan | null; workspace: Workspace; childTitle: string; setChildTitle: (value: string) => void;
   resourceDraft: { label: string; url: string }; setResourceDraft: (value: { label: string; url: string }) => void;
   onClose: () => void; onRename: (id: string, title: string) => void; onPatch: (id: string, patch: Partial<Plan>) => void;
+  onMoveDate: (id: string, date: string, courseId: string) => void; onSelectChild: (id: string) => void;
   onTack: (id: string) => void; onExtend: (id: string) => void; onCopyNext: (id: string) => void; onFridge: (id: string) => void; onDelete: (id: string) => void;
   onAddChild: (unit: Plan, title: string) => void; onReorderChild: (unitId: string, childId: string, direction: -1 | 1) => void; onDetachChild: (id: string) => void;
 }) {
@@ -600,10 +594,11 @@ function MagnetEditor({ plan, unit, workspace, childTitle, setChildTitle, resour
       <label>Title<input defaultValue={plan.title} key={plan.id + plan.title} onBlur={(event) => onRename(plan.id, event.target.value)} /></label>
       <label>Notes<textarea defaultValue={plan.notes} key={plan.id + plan.notes} rows={3} onBlur={(event) => onPatch(plan.id, { notes: event.target.value })} /></label>
       {plan.type !== "idea" && <label><span><input type="checkbox" checked={plan.fixedDate} onChange={(event) => onPatch(plan.id, { fixedDate: event.target.checked })} /> Fixed date</span></label>}
+      {plan.courseId && <label>Move / schedule<input type="date" value={plan.date ?? ""} onChange={(event) => { if (event.target.value && plan.courseId) onMoveDate(plan.id, event.target.value, plan.courseId); }} /></label>}
       {plan.type === "lesson" && <div className="editorQuickActions"><button type="button" disabled={plan.fixedDate || !plan.date} onClick={() => onTack(plan.id)}>Tack →</button><button type="button" disabled={!plan.date} onClick={() => onExtend(plan.id)}>Extend +1 day</button><button type="button" disabled={!plan.date} onClick={() => onCopyNext(plan.id)}>Copy → next</button></div>}
       <div className="editorQuickActions"><button type="button" onClick={() => onFridge(plan.id)}>Return to Fridge</button><button type="button" onClick={() => onDelete(plan.id)}>Delete</button></div>
       <div className="editorUnitList"><strong>Resources</strong>{plan.resources.map((resource) => <a key={resource.id} href={resource.url} target="_blank" rel="noreferrer">{resource.label}</a>)}<div className="priorityAdd"><input value={resourceDraft.label} onChange={(event) => setResourceDraft({ ...resourceDraft, label: event.target.value })} placeholder="Label" /><input value={resourceDraft.url} onChange={(event) => setResourceDraft({ ...resourceDraft, url: event.target.value })} placeholder="https://" /><button type="button" onClick={() => { if (!resourceDraft.label.trim() || !resourceDraft.url.trim()) return; onPatch(plan.id, { resources: [...plan.resources, { id: crypto.randomUUID(), label: resourceDraft.label.trim(), url: resourceDraft.url.trim() }] }); setResourceDraft({ label: "", url: "" }); }}>＋</button></div></div>
-      {focus.type === "unit" && <div className="editorUnitList"><strong>Lesson sequence</strong>{children.map((child, index) => <div className="editorUnitChild" key={child.id}><button type="button" onClick={() => onPatch(child.id, {})}>{index + 1}. {child.title}</button><div><button type="button" disabled={index === 0} onClick={() => onReorderChild(focus.id, child.id, -1)}>↑</button><button type="button" disabled={index === children.length - 1} onClick={() => onReorderChild(focus.id, child.id, 1)}>↓</button><button type="button" onClick={() => onDetachChild(child.id)}>Fridge</button></div></div>)}<div className="priorityAdd"><input value={childTitle} onChange={(event) => setChildTitle(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && childTitle.trim()) { onAddChild(focus, childTitle); setChildTitle(""); } }} placeholder="Add lesson" /><button type="button" onClick={() => { if (!childTitle.trim()) return; onAddChild(focus, childTitle); setChildTitle(""); }}>＋</button></div></div>}
+      {focus.type === "unit" && <div className="editorUnitList"><strong>Lesson sequence</strong>{children.map((child, index) => <div className="editorUnitChild" key={child.id}><button type="button" onClick={() => onSelectChild(child.id)}>{index + 1}. {child.title}</button><div><button type="button" disabled={index === 0} onClick={() => onReorderChild(focus.id, child.id, -1)}>↑</button><button type="button" disabled={index === children.length - 1} onClick={() => onReorderChild(focus.id, child.id, 1)}>↓</button><button type="button" onClick={() => onDetachChild(child.id)}>Fridge</button></div></div>)}<div className="priorityAdd"><input value={childTitle} onChange={(event) => setChildTitle(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && childTitle.trim()) { onAddChild(focus, childTitle); setChildTitle(""); } }} placeholder="Add lesson" /><button type="button" onClick={() => { if (!childTitle.trim()) return; onAddChild(focus, childTitle); setChildTitle(""); }}>＋</button></div></div>}
     </div>
   </aside>;
 }
