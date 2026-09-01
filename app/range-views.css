@@ -1,0 +1,154 @@
+.viewControlBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: -4px 0 16px;
+}
+
+.viewSwitcher {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.48);
+}
+
+.viewSwitcher button {
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: .74rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.viewSwitcher button.active {
+  background: var(--ink);
+  color: white;
+}
+
+.viewSwitcher button:disabled {
+  opacity: .36;
+  cursor: not-allowed;
+}
+
+.rangeCoursePicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.rangeCoursePicker select {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255,255,255,.7);
+  padding: 7px 9px;
+  color: var(--ink);
+  font: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.quarterSetup {
+  display: grid;
+  grid-template-columns: minmax(220px,.7fr) 1.6fr;
+  gap: 20px;
+  margin-top: 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+}
+
+.quarterSetup h2 { margin-bottom: 6px; font-size: 1.8rem; }
+.quarterSetup p:last-child { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.45; }
+.quarterSetupRows { display: grid; gap: 8px; }
+.quarterSetupRow { display: grid; grid-template-columns: 36px 1fr 1fr; align-items: end; gap: 8px; }
+.quarterSetupRow > strong { align-self: center; font: 600 1rem Georgia,serif; }
+.quarterSetupRow label { display: grid; gap: 4px; color: var(--muted); font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.quarterSetupRow input { min-height: 38px; }
+
+.monthSurface,.quarterSurface { min-width: 0; }
+.rangeViewHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.rangeViewHeader h2 { margin: 0; font-size: 2rem; }
+.rangeViewHeader p:last-child { margin: 4px 0 0; color: var(--muted); font-size: .72rem; }
+.rangeViewHeader > span { color: var(--muted); font-size: .74rem; font-weight: 800; }
+
+.monthDayLabels {
+  display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr));
+  border-bottom: 1px solid var(--line);
+  background: rgba(255,255,255,.26);
+}
+.monthDayLabels span { padding: 9px; text-align: center; color: var(--muted); font-size: .66rem; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+.monthDayLabels span + span { border-left: 1px solid var(--line); }
+.monthWeeks { display: grid; }
+.monthWeek { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); min-height: 118px; border-bottom: 1px solid var(--line); }
+.monthWeek:last-child { border-bottom: 0; }
+.monthDay { position: relative; min-width: 0; padding: 26px 6px 7px; border-right: 1px solid var(--line); background: rgba(255,255,255,.14); cursor: pointer; }
+.monthDay:last-child { border-right: 0; }
+.monthDay.outsideMonth { background: rgba(38,51,58,.035); }
+.monthDay.outsideMonth .monthDate { opacity: .38; }
+.monthDate { position: absolute; top: 7px; right: 8px; font: 500 .9rem Georgia,serif; }
+.monthPlans { display: grid; gap: 5px; }
+.monthPlan,.quarterPlan {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border: 1px solid rgba(38,51,58,.12);
+  border-radius: 8px;
+  background: #fffdf8;
+  padding: 6px 7px;
+  text-align: left;
+  color: var(--ink);
+  font-size: .67rem;
+  line-height: 1.25;
+  cursor: grab;
+}
+.monthPlan.unit,.quarterPlan.unit { border-left: 4px solid var(--teal); font-weight: 800; }
+.monthPlan small,.quarterPlan small { color: var(--muted); font-size: .54rem; text-transform: uppercase; letter-spacing: .05em; }
+.monthPlan.selected,.quarterPlan.selected { outline: 2px solid var(--coral); outline-offset: 1px; }
+.monthDay.pasteTarget,.quarterDay.pasteTarget { box-shadow: inset 0 0 0 2px var(--coral); background: rgba(217,121,101,.06); }
+
+.quarterWeeks { display: grid; }
+.quarterWeek { display: grid; grid-template-columns: 82px minmax(0,1fr); border-bottom: 1px solid var(--line); }
+.quarterWeek:last-child { border-bottom: 0; }
+.quarterWeek > header { padding: 12px 10px; border-right: 1px solid var(--line); background: rgba(255,255,255,.2); }
+.quarterWeek > header span { display: block; font-size: .7rem; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; }
+.quarterWeek > header small { display: block; margin-top: 4px; color: var(--muted); font-size: .62rem; }
+.quarterDays { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); }
+.quarterDay { min-width: 0; min-height: 96px; padding: 8px 6px; border-right: 1px solid var(--line); cursor: pointer; }
+.quarterDay:last-child { border-right: 0; }
+.quarterDate { display: block; margin-bottom: 7px; color: var(--muted); font-size: .6rem; font-weight: 800; }
+.quarterPlans { display: grid; gap: 4px; }
+
+@media (max-width: 900px) {
+  .viewControlBar { align-items: stretch; flex-wrap: wrap; }
+  .rangeCoursePicker { margin-left: 0; }
+  .quarterSetup { grid-template-columns: 1fr; }
+  .monthSurface,.quarterSurface { min-width: 850px; }
+}
+
+@media (max-width: 640px) {
+  .quarterSetupRow { grid-template-columns: 30px 1fr; }
+  .quarterSetupRow label:last-child { grid-column: 2; }
+}
