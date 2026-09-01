@@ -4,6 +4,7 @@ export type ArcShortcutAction =
   | "copy"
   | "cut"
   | "paste"
+  | "save"
   | "delete"
   | "escape";
 
@@ -29,6 +30,7 @@ export function resolveArcShortcut(input: ShortcutInput): ArcShortcutAction | nu
   if (key === "c") return "copy";
   if (key === "x") return "cut";
   if (key === "v") return "paste";
+  if (key === "s") return "save";
   return null;
 }
 
@@ -38,6 +40,7 @@ export const ARC_SHORTCUT_LABELS: Array<{ action: ArcShortcutAction; label: stri
   { action: "copy", label: "⌘/Ctrl C · Copy selection" },
   { action: "cut", label: "⌘/Ctrl X · Cut selection" },
   { action: "paste", label: "⌘/Ctrl V · Paste selection" },
+  { action: "save", label: "⌘/Ctrl S · Save now" },
   { action: "delete", label: "Delete · Remove selection" },
   { action: "escape", label: "Esc · Clear selection" }
 ];
