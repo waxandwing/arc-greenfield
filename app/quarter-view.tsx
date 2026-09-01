@@ -30,9 +30,12 @@ function spanClass(plan: Plan, date: string) {
 }
 
 function unitChildren(workspace: Workspace, unitId: string) {
-  return workspace.plans
-    .filter((plan) => plan.parentUnitId === unitId)
-    .sort((a, b) => (a.childOrder ?? 0) - (b.childOrder ?? 0));
+  return workspace.plans.filter((plan) => plan.parentUnitId === unitId).sort((a, b) => (a.childOrder ?? 0) - (b.childOrder ?? 0));
+}
+
+function ownerUnit(workspace: Workspace, lesson: Plan) {
+  if (!lesson.parentUnitId) return null;
+  return workspace.plans.find((plan) => plan.id === lesson.parentUnitId && plan.type === "unit") ?? null;
 }
 
 function shortDate(value: string | null) {
@@ -45,7 +48,7 @@ export function QuarterView({ workspace, range, courseId, selectedPlanId, pasteT
   const course = workspace.courses.find((item) => item.id === courseId);
   return (
     <section className="quarterSurface" aria-label={`${range.label} planning view`}>
-      <div className="rangeViewHeader"><div><p className="eyebrow">Quarter</p><h2>{range.label}</h2><p>{range.start} – {range.end} · Units span their instructional run instead of collapsing into one-day cards.</p></div><span>{course?.name ?? "Choose a class"}</span></div>
+      <div className="rangeViewHeader"><div><p className="eyebrow">Quarter</p><h2>{range.label}</h2><p>{range.start} – {range.end} · Move the Unit as a sequence or select one Lesson on the day it happens.</p></div><span>{course?.name ?? "Choose a class"}</span></div>
       <div className="quarterWeeks">
         {range.weeks.map((week, index) => (
           <section className="quarterWeek" key={week.key}>
@@ -53,6 +56,11 @@ export function QuarterView({ workspace, range, courseId, selectedPlanId, pasteT
             <div className="quarterDays">
               {week.days.map((day) => {
                 const plans = workspace.plans.filter((plan) => plan.location === "calendar" && plan.parentUnitId === null && plan.courseId === courseId && coversDate(plan, day.key));
+                const nestedLessons = workspace.plans.filter((plan) => {
+                  if (plan.location !== "calendar" || plan.courseId !== courseId || plan.type !== "lesson" || !plan.parentUnitId || plan.date !== day.key) return false;
+                  const unit = ownerUnit(workspace, plan);
+                  return Boolean(unit && !workspace.preferences.collapsedUnitIds.includes(unit.id));
+                });
                 const target = pasteTargetDate === day.key;
                 return (
                   <div className={`quarterDay${target ? " pasteTarget" : ""}`} key={day.key} onClick={() => onSelectDate(day.key)} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); const id = event.dataTransfer.getData("text/arc-plan"); if (id) onMovePlan(id, day.key, courseId); }}>
@@ -69,6 +77,10 @@ export function QuarterView({ workspace, range, courseId, selectedPlanId, pasteT
                             {plan.type === "unit" && isSpanStart && children.length > 0 && <span className="unitSequencePreview" aria-hidden="true">{children.slice(0, 3).map((child) => <span key={child.id}>{shortDate(child.date)} · {child.title}</span>)}{children.length > 3 && <span>+{children.length - 3} more</span>}</span>}
                           </button>
                         );
+                      })}
+                      {nestedLessons.map((lesson) => {
+                        const unit = ownerUnit(workspace, lesson);
+                        return <button type="button" draggable className={`quarterPlan rangeNestedLesson${selectedPlanId === lesson.id ? " selected" : ""}`} key={lesson.id} onDragStart={(event) => { event.stopPropagation(); event.dataTransfer.setData("text/arc-plan", lesson.id); event.dataTransfer.effectAllowed = "move"; }} onClick={(event) => { event.stopPropagation(); onSelectPlan(lesson); }} aria-label={`${lesson.title}${unit ? `, Lesson in ${unit.title}` : ""}`}><small>{unit?.title ?? "Lesson"}</small><span>{lesson.title}</span></button>;
                       })}
                     </div>
                   </div>
