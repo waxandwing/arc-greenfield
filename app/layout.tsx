@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./onboarding-screen.css";
 import "./workspace-rebuild-v2.css";
+import { ArcColorSchemePicker } from "./arc-color-scheme-picker";
 
 export const metadata: Metadata = {
   title: "Arc by Wax & Wing",
@@ -11,7 +12,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ArcColorSchemePicker />
+      </body>
     </html>
   );
 }
