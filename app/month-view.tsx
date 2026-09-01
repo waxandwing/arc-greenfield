@@ -21,7 +21,7 @@ export function MonthView({ workspace, anchor, courseId, selectedPlanId, pasteTa
 
   return (
     <section className="monthSurface" aria-label={`${label} planning view`}>
-      <div className="rangeViewHeader"><div><p className="eyebrow">Month</p><h2>{label}</h2></div><span>{course?.name ?? "Choose a class"}</span></div>
+      <div className="rangeViewHeader"><div><p className="eyebrow">Month</p><h2>{label}</h2><p>Move the whole Unit here. Its Lessons stay attached.</p></div><span>{course?.name ?? "Choose a class"}</span></div>
       <div className="monthDayLabels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span></div>
       <div className="monthWeeks">
         {weeks.map((week) => (
@@ -33,11 +33,14 @@ export function MonthView({ workspace, anchor, courseId, selectedPlanId, pasteTa
                 <div className={`monthDay${day.inPrimaryMonth ? "" : " outsideMonth"}${target ? " pasteTarget" : ""}`} key={day.key} onClick={() => onSelectDate(day.key)} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); const id = event.dataTransfer.getData("text/arc-plan"); if (id) onMovePlan(id, day.key, courseId); }}>
                   <span className="monthDate">{day.date.getDate()}</span>
                   <div className="monthPlans">
-                    {plans.map((plan) => (
-                      <button type="button" draggable className={`${plan.type === "unit" ? "monthPlan unit" : "monthPlan"}${selectedPlanId === plan.id ? " selected" : ""}`} key={plan.id} onDragStart={(event) => { event.stopPropagation(); event.dataTransfer.setData("text/arc-plan", plan.id); event.dataTransfer.effectAllowed = "move"; }} onClick={(event) => { event.stopPropagation(); onSelectPlan(plan); }}>
-                        <span>{plan.title}</span>{plan.type === "unit" && <small>Unit</small>}
-                      </button>
-                    ))}
+                    {plans.map((plan) => {
+                      const childCount = plan.type === "unit" ? workspace.plans.filter((child) => child.parentUnitId === plan.id).length : 0;
+                      return (
+                        <button type="button" draggable className={`${plan.type === "unit" ? "monthPlan unit" : "monthPlan"}${selectedPlanId === plan.id ? " selected" : ""}`} key={plan.id} onDragStart={(event) => { event.stopPropagation(); event.dataTransfer.setData("text/arc-plan", plan.id); event.dataTransfer.effectAllowed = "move"; }} onClick={(event) => { event.stopPropagation(); onSelectPlan(plan); }}>
+                          <span>{plan.title}</span>{plan.type === "unit" && <small>{childCount} lesson{childCount === 1 ? "" : "s"}</small>}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               );
