@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "./phase1-fixes.css";
 import "./arc-interactions.css";
 import "./range-views.css";
 import "./arc-visual-language.css";
