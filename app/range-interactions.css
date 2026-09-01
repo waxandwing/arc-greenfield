@@ -1,0 +1,41 @@
+.monthPlan.rangeNestedLesson,
+.quarterPlan.rangeNestedLesson {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: 2px;
+  justify-items: start;
+  border-color: rgba(47,111,115,.24);
+  border-left: 3px solid rgba(47,111,115,.52);
+  background: rgba(255,253,248,.94);
+  padding: 6px 7px;
+}
+.monthPlan.rangeNestedLesson small,
+.quarterPlan.rangeNestedLesson small {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--teal);
+  font-size: .48rem;
+  font-weight: 900;
+  letter-spacing: .04em;
+}
+.monthPlan.rangeNestedLesson > span,
+.quarterPlan.rangeNestedLesson > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .64rem;
+  font-weight: 720;
+}
+.monthPlan.rangeNestedLesson:hover,
+.quarterPlan.rangeNestedLesson:hover {
+  border-color: rgba(47,111,115,.52);
+  background: #fffaf0;
+}
+.monthPlan.rangeNestedLesson:focus-visible,
+.quarterPlan.rangeNestedLesson:focus-visible {
+  outline: 3px solid rgba(217,121,101,.42);
+  outline-offset: 2px;
+}
