@@ -56,12 +56,13 @@ export function pasteClipboard(workspace: Workspace, clipboard: ArcClipboard, ta
   if (!sourceRoot) return { workspace, pastedRootId: null, nextClipboard: clipboard };
 
   const targetDate = target.location === "calendar" ? target.date : null;
-  const clones = clonePlanTree(clipboard.tree, clipboard.sourceRootId, targetDate, target.courseId);
-  const pastedRoot = clones.find((plan) => plan.id !== undefined && plan.parentUnitId === null) ?? clones[0] ?? null;
+  const targetCourseId = target.courseId ?? clipboard.sourceCourseId;
+  const clones = clonePlanTree(clipboard.tree, clipboard.sourceRootId, targetDate, targetCourseId);
+  const pastedRoot = clones.find((plan) => plan.parentUnitId === null) ?? clones[0] ?? null;
   const normalized = clones.map((plan) => ({
     ...plan,
     location: target.location,
-    courseId: target.courseId ?? plan.courseId
+    courseId: targetCourseId ?? plan.courseId
   }));
   const nextWorkspace = { ...workspace, plans: [...workspace.plans, ...normalized] };
 
