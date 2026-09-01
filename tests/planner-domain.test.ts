@@ -93,6 +93,19 @@ test("cut then paste restores the whole Unit tree at a new date and class", () =
   assert.ok(pasted.workspace.plans.every((item) => item.courseId === "course-b"));
 });
 
+test("a cut clipboard is consumed after one successful paste", () => {
+  const source = workspace();
+  const clipboard = createClipboard(source, unit.id, "cut");
+  assert.ok(clipboard);
+  const cut = applyCut(source, clipboard);
+  const first = pasteClipboard(cut, clipboard, { location: "calendar", date: "2026-11-03", courseId: "course-b" });
+  assert.ok(first.pastedRootId);
+  assert.equal(clipboard.tree.length, 0);
+  const second = pasteClipboard(first.workspace, clipboard, { location: "calendar", date: "2026-12-01", courseId: "course-a" });
+  assert.equal(second.pastedRootId, null);
+  assert.equal(second.workspace.plans.length, first.workspace.plans.length);
+});
+
 test("copying one nested Lesson pastes it as a standalone Lesson, not back into the source Unit", () => {
   const source = workspace();
   const clipboard = createClipboard(source, lessonB.id, "copy");
