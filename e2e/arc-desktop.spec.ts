@@ -35,6 +35,30 @@ async function completeFirstRun(page: import("@playwright/test").Page) {
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
 }
 
+async function seedTeachFromDay(page: import("@playwright/test").Page) {
+  await page.getByRole("button", { name: "＋ Unit", exact: true }).click();
+  await page.getByPlaceholder("Unit title").fill("Seeing + Drawing");
+  await page.getByRole("button", { name: "Add", exact: true }).click();
+
+  const unit = page.locator(".unitMagnet").filter({ hasText: "Seeing + Drawing" }).first();
+  await expect(unit).toBeVisible();
+  await unit.click();
+  const unitEditor = page.locator('.arcMagnetEditor[aria-label="Unit Focus"]');
+  await expect(unitEditor).toBeVisible();
+  await unitEditor.getByLabel("Move / schedule").fill("2026-09-01");
+  await unitEditor.getByPlaceholder("Add lesson").fill("Blind contour warm-up");
+  await unitEditor.getByPlaceholder("Add lesson").press("Enter");
+
+  const lessonEditor = page.locator('.arcMagnetEditor[aria-label="Magnet details"]');
+  await expect(lessonEditor).toBeVisible();
+  await lessonEditor.getByLabel("Notes").fill("Two slow drawings. Keep eyes on the object, not the page.");
+  const resources = lessonEditor.locator(".editorUnitList").filter({ hasText: "Resources" });
+  await resources.getByPlaceholder("Label").fill("Contour reference");
+  await resources.getByPlaceholder("https://").fill("https://example.com/contour");
+  await resources.getByRole("button", { name: "＋", exact: true }).click();
+  await lessonEditor.getByRole("button", { name: "×", exact: true }).click();
+}
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.clear());
 });
@@ -79,13 +103,21 @@ test("Arc color scheme is user-selectable, asset-derived, and persists", async (
   expect(stored).toBe("blueprint");
 });
 
-test("Day is the teach-from-it surface and Year renders each school month once", async ({ page }, testInfo) => {
+test("Day is a real teach-from-it surface and Year renders each school month once", async ({ page }, testInfo) => {
   await completeFirstRun(page);
+  await seedTeachFromDay(page);
 
   await page.getByRole("button", { name: "Day", exact: true }).click();
   await expect(page.getByText("Teach from today", { exact: true })).toBeVisible();
   await expect(page.locator(".dayCourse.teachingCard")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "Studio Art", exact: true })).toBeVisible();
+  await expect(page.getByText("Seeing + Drawing", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Blind contour warm-up", exact: true })).toBeVisible();
+  await expect(page.getByText("Two slow drawings. Keep eyes on the object, not the page.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Contour reference", exact: true })).toBeVisible();
+  const reflection = page.getByPlaceholder("A sentence is enough.");
+  await reflection.fill("Students needed one more demo before the second drawing.");
+  await expect(reflection).toHaveValue("Students needed one more demo before the second drawing.");
   await page.screenshot({ path: testInfo.outputPath("day-teach-surface.png"), fullPage: false });
 
   await page.getByRole("button", { name: "Year", exact: true }).click();
