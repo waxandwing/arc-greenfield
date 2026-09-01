@@ -5,12 +5,17 @@ export type PlanLocation = "calendar" | "fridge" | "ideas";
 export type PriorityTier = "must" | "should" | "could";
 export type ContentFilter = "everything" | "units" | "lessons" | "ideas";
 export type ArcColorScheme = "studio" | "sunroom" | "blueprint" | "clay";
+export type CourseMeetingPattern = {
+  kind: "weekdays";
+  weekdays: number[];
+};
 
 export type Course = {
   id: string;
   name: string;
   periodLabel: string;
   color: string;
+  meetingPattern?: CourseMeetingPattern;
 };
 
 export type SchoolCalendar = {
