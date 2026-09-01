@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { emptyWorkspace, type Course, type Plan, type PlanType, type Workspace } from "../lib/domain";
+import { emptyWorkspace, type Plan, type PlanType, type Workspace } from "../lib/domain";
 import { applyCut, createClipboard, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
 import { movePlanToCalendarDate } from "../lib/plan-operations";
 import { deletePlanTree, movePlanTreeToIdeas, orderedUnitChildren } from "../lib/plan-tree";
@@ -15,7 +15,6 @@ import { PriorityWorkbench } from "./priority-workbench";
 import { QuarterView } from "./quarter-view";
 import { WeekPlanner } from "./week-planner";
 
-const COLORS = ["#2f6f73", "#557b93", "#d2a64a", "#d97965", "#6f7d5b", "#8a6d82"];
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 type PlannerView = "week" | "month" | "quarter";
 
@@ -57,14 +56,11 @@ function isTypingTarget(target: EventTarget | null) {
   return Boolean(element?.closest("input, textarea, select, [contenteditable='true']"));
 }
 
-export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string }) {
+export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gitSha: string; onOpenSetup: () => void }) {
   const [history, setHistory] = useState<WorkspaceHistory>(() => createWorkspaceHistory(emptyWorkspace()));
   const workspace = history.present;
   const [ready, setReady] = useState(false);
-  const [screen, setScreen] = useState<"setup" | "desk">("setup");
   const [activeView, setActiveView] = useState<PlannerView>("week");
-  const [draftCourse, setDraftCourse] = useState("");
-  const [draftPeriod, setDraftPeriod] = useState("");
   const [ideaTitle, setIdeaTitle] = useState("");
   const [ideaCourseId, setIdeaCourseId] = useState("");
   const [activeCourseId, setActiveCourseId] = useState("");
@@ -89,7 +85,6 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
       setIdeaCourseId(loaded.courses[0].id);
       setActiveCourseId(loaded.courses[0].id);
     }
-    if (loaded.teacherName && loaded.courses.length > 0 && loaded.calendar.firstStudentDay) setScreen("desk");
     setReady(true);
   }, []);
 
@@ -121,32 +116,6 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
   function redo() {
     setHistory((current) => redoWorkspace(current));
     setSelectedPlanId(null);
-  }
-
-  function addCourse() {
-    if (!draftCourse.trim()) return;
-    const course: Course = {
-      id: crypto.randomUUID(),
-      name: draftCourse.trim(),
-      periodLabel: draftPeriod.trim(),
-      color: COLORS[workspace.courses.length % COLORS.length]
-    };
-    updateWorkspace((current) => ({ ...current, courses: [...current.courses, course] }));
-    if (!ideaCourseId) setIdeaCourseId(course.id);
-    if (!activeCourseId) setActiveCourseId(course.id);
-    setDraftCourse("");
-    setDraftPeriod("");
-  }
-
-  function updateQuarterBoundary(index: number, field: "start" | "end", value: string) {
-    updateWorkspace((current) => {
-      const boundaries = Array.from({ length: 4 }, (_, boundaryIndex) => {
-        const existing = current.calendar.quarterBoundaries.find((item) => item.id === `q${boundaryIndex + 1}`);
-        return existing ?? { id: `q${boundaryIndex + 1}`, label: `Quarter ${boundaryIndex + 1}`, start: "", end: "" };
-      });
-      boundaries[index] = { ...boundaries[index], [field]: value };
-      return { ...current, calendar: { ...current.calendar, quarterBoundaries: boundaries } };
-    });
   }
 
   function makePlan(title: string, type: PlanType, courseId: string | null, date: string | null, location: "calendar" | "ideas", parentUnitId: string | null = null, childOrder: number | null = null): Plan {
@@ -203,10 +172,7 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
 
   function renamePlan(id: string, title: string) {
     if (!title.trim()) return;
-    updateWorkspace((current) => ({
-      ...current,
-      plans: current.plans.map((plan) => plan.id === id ? { ...plan, title: title.trim() } : plan)
-    }));
+    updateWorkspace((current) => ({ ...current, plans: current.plans.map((plan) => plan.id === id ? { ...plan, title: title.trim() } : plan) }));
   }
 
   function deletePlan(id: string) {
@@ -258,10 +224,7 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
   }
 
   function togglePriority(id: string) {
-    updateWorkspace((current) => ({
-      ...current,
-      priorities: current.priorities.map((priority) => priority.id === id ? { ...priority, completed: !priority.completed } : priority)
-    }));
+    updateWorkspace((current) => ({ ...current, priorities: current.priorities.map((priority) => priority.id === id ? { ...priority, completed: !priority.completed } : priority) }));
   }
 
   function goPrevious() {
@@ -289,11 +252,7 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
       const action = resolveArcShortcut(event);
       if (!action) return;
       if (isTypingTarget(event.target) && action !== "escape") return;
-
-      if (action === "escape") {
-        setSelectedPlanId(null);
-        return;
-      }
+      if (action === "escape") { setSelectedPlanId(null); return; }
       if (action === "undo") { event.preventDefault(); undo(); return; }
       if (action === "redo") { event.preventDefault(); redo(); return; }
       if (action === "copy") { event.preventDefault(); copySelection("copy"); return; }
@@ -310,74 +269,38 @@ export function ArcShell({ buildId, gitSha }: { buildId: string; gitSha: string 
   return (
     <main className="arcApp">
       <header className="arcTopbar">
-        <button className="arcBrand" type="button" onClick={() => setScreen("desk")} aria-label="Arc home"><span className="arcBrandEyebrow">Wax &amp; Wing</span><span className="arcBrandWord">Arc</span></button>
+        <button className="arcBrand" type="button" onClick={() => setActiveView("week")} aria-label="Arc home"><span className="arcBrandEyebrow">Wax &amp; Wing</span><span className="arcBrandWord">Arc</span></button>
         <div className="arcMeta"><span>{saveLabel}</span><code>{buildId} · {gitSha.slice(0, 7)}</code></div>
       </header>
 
-      {screen === "setup" ? (
-        <section className="setupPage">
-          <div className="setupCopy"><p className="eyebrow">Set up your desk</p><h1>Three things. Then plan.</h1><p>Arc needs your name, the classes you actually teach, and the rough bounds of your school year. Quarter dates are optional until you want Quarter view.</p></div>
-          <div className="setupGrid">
-            <section className="setupCard"><span className="stepNumber">1</span><h2>You</h2><label><span>Your name</span><input value={workspace.teacherName} onChange={(e) => updateWorkspace((current) => ({ ...current, teacherName: e.target.value }))} placeholder="What should Arc call you?" /></label></section>
-            <section className="setupCard wideCard"><span className="stepNumber">2</span><h2>Classes</h2><div className="courseAdder"><input value={draftCourse} onChange={(e) => setDraftCourse(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCourse(); }} placeholder="Course name" /><input value={draftPeriod} onChange={(e) => setDraftPeriod(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCourse(); }} placeholder="Period / block" /><button type="button" onClick={addCourse}>Add class</button></div><div className="courseChips">{workspace.courses.map((course) => <span className="courseChip" key={course.id} style={{ borderColor: course.color }}><i style={{ background: course.color }} />{course.name}{course.periodLabel ? ` · ${course.periodLabel}` : ""}<button type="button" aria-label={`Remove ${course.name}`} onClick={() => updateWorkspace((current) => ({ ...current, courses: current.courses.filter((item) => item.id !== course.id) }))}>×</button></span>)}</div></section>
-            <section className="setupCard"><span className="stepNumber">3</span><h2>School year</h2><div className="datePair"><label><span>First student day</span><input type="date" value={workspace.calendar.firstStudentDay ?? ""} onChange={(e) => updateWorkspace((current) => ({ ...current, calendar: { ...current.calendar, firstStudentDay: e.target.value || null } }))} /></label><label><span>Last student day</span><input type="date" value={workspace.calendar.lastStudentDay ?? ""} onChange={(e) => updateWorkspace((current) => ({ ...current, calendar: { ...current.calendar, lastStudentDay: e.target.value || null } }))} /></label></div></section>
-          </div>
-          <section className="quarterSetup" aria-label="Quarter dates"><div><p className="eyebrow">Optional now · required for Quarter</p><h2>Quarter dates</h2><p>Use your actual school calendar. Arc will not invent quarter boundaries.</p></div><div className="quarterSetupRows">{Array.from({ length: 4 }, (_, index) => { const boundary = workspace.calendar.quarterBoundaries.find((item) => item.id === `q${index + 1}`); return <div className="quarterSetupRow" key={index}><strong>Q{index + 1}</strong><label><span>Start</span><input type="date" value={boundary?.start ?? ""} onChange={(e) => updateQuarterBoundary(index, "start", e.target.value)} /></label><label><span>End</span><input type="date" value={boundary?.end ?? ""} onChange={(e) => updateQuarterBoundary(index, "end", e.target.value)} /></label></div>; })}</div></section>
-          <div className="setupFooter"><p>No-school dates, imports, and deeper preferences come later.</p><button className="primaryAction" type="button" disabled={!workspace.teacherName.trim() || workspace.courses.length === 0 || !workspace.calendar.firstStudentDay} onClick={() => setScreen("desk")}>Open my desk</button></div>
-        </section>
-      ) : (
-        <section className="deskPage">
-          <div className="deskToolbar">
-            <div><p className="eyebrow">Planning desk</p><h1>{workspace.teacherName ? `${workspace.teacherName}’s ${activeView}` : `Your ${activeView}`}</h1></div>
-            <div className="deskActions" aria-label="Planner actions"><button type="button" onClick={undo} disabled={!canUndo(history)}>Undo</button><button type="button" onClick={redo} disabled={!canRedo(history)}>Redo</button><span className="actionDivider" /><button type="button" onClick={() => copySelection("copy")} disabled={!selectedPlanId}>Copy</button><button type="button" onClick={() => copySelection("cut")} disabled={!selectedPlanId}>Cut</button><button type="button" onClick={pasteSelection} disabled={!clipboard || !pasteTarget}>Paste</button><span className="actionDivider" /><button type="button" onClick={goPrevious}>←</button><button type="button" className="todayButton" onClick={goToday}>Today</button><button type="button" onClick={goNext}>→</button></div>
-          </div>
+      <section className="deskPage">
+        <div className="deskToolbar">
+          <div><p className="eyebrow">Planning desk</p><h1>{workspace.teacherName ? `${workspace.teacherName}’s ${activeView}` : `Your ${activeView}`}</h1></div>
+          <div className="deskActions" aria-label="Planner actions"><button type="button" onClick={undo} disabled={!canUndo(history)}>Undo</button><button type="button" onClick={redo} disabled={!canRedo(history)}>Redo</button><span className="actionDivider" /><button type="button" onClick={() => copySelection("copy")} disabled={!selectedPlanId}>Copy</button><button type="button" onClick={() => copySelection("cut")} disabled={!selectedPlanId}>Cut</button><button type="button" onClick={pasteSelection} disabled={!clipboard || !pasteTarget}>Paste</button><span className="actionDivider" /><button type="button" onClick={goPrevious}>←</button><button type="button" className="todayButton" onClick={goToday}>Today</button><button type="button" onClick={goNext}>→</button></div>
+        </div>
 
-          <div className="viewControlBar">
-            <div className="viewSwitcher" aria-label="Planner view"><button type="button" className={activeView === "week" ? "active" : ""} onClick={() => setActiveView("week")}>Week</button><button type="button" className={activeView === "month" ? "active" : ""} onClick={() => setActiveView("month")}>Month</button><button type="button" className={activeView === "quarter" ? "active" : ""} disabled={quarterRanges.length === 0} title={quarterRanges.length === 0 ? "Add quarter dates in Setup first" : undefined} onClick={() => setActiveView("quarter")}>Quarter</button></div>
-            {activeView !== "week" && <label className="rangeCoursePicker"><span>Class</span><select value={selectedCourseId} onChange={(e) => setActiveCourseId(e.target.value)}>{workspace.courses.map((course) => <option key={course.id} value={course.id}>{course.name}{course.periodLabel ? ` · ${course.periodLabel}` : ""}</option>)}</select></label>}
-            {activeView === "quarter" && quarterRanges.length > 1 && <label className="rangeCoursePicker"><span>Quarter</span><select value={Math.min(quarterIndex, quarterRanges.length - 1)} onChange={(e) => setQuarterIndex(Number(e.target.value))}>{quarterRanges.map((quarter, index) => <option value={index} key={quarter.id}>{quarter.label}</option>)}</select></label>}
-            <button type="button" className="quietButton" onClick={() => setScreen("setup")}>Setup</button>
-          </div>
+        <div className="viewControlBar">
+          <div className="viewSwitcher" aria-label="Planner view"><button type="button" className={activeView === "week" ? "active" : ""} onClick={() => setActiveView("week")}>Week</button><button type="button" className={activeView === "month" ? "active" : ""} onClick={() => setActiveView("month")}>Month</button><button type="button" className={activeView === "quarter" ? "active" : ""} disabled={quarterRanges.length === 0} title={quarterRanges.length === 0 ? "Add quarter dates in Setup first" : undefined} onClick={() => setActiveView("quarter")}>Quarter</button></div>
+          {activeView !== "week" && <label className="rangeCoursePicker"><span>Class</span><select value={selectedCourseId} onChange={(e) => setActiveCourseId(e.target.value)}>{workspace.courses.map((course) => <option key={course.id} value={course.id}>{course.name}{course.periodLabel ? ` · ${course.periodLabel}` : ""}</option>)}</select></label>}
+          {activeView === "quarter" && quarterRanges.length > 1 && <label className="rangeCoursePicker"><span>Quarter</span><select value={Math.min(quarterIndex, quarterRanges.length - 1)} onChange={(e) => setQuarterIndex(Number(e.target.value))}>{quarterRanges.map((quarter, index) => <option value={index} key={quarter.id}>{quarter.label}</option>)}</select></label>}
+          <button type="button" className="quietButton" onClick={onOpenSetup}>Setup</button>
+        </div>
 
-          <div className="deskGrid">
-            <section className="calendarDesk" aria-label={`${activeView} planning workspace`}>
-              {activeView === "week" && <WeekPlanner
-                workspace={workspace}
-                days={days}
-                weekLabel={weekLabel}
-                selectedPlanId={selectedPlanId}
-                pasteTarget={pasteTarget}
-                onSelectPlan={selectPlan}
-                onSelectDate={(courseId, date) => setPasteTarget({ courseId, date, location: "calendar" })}
-                onMovePlan={movePlanToDate}
-                onRenamePlan={renamePlan}
-                onAddPlan={(title, type, courseId, date) => addPlan(title, type, courseId, date, "calendar")}
-                onAddChildLesson={addChildLesson}
-                onToggleUnit={toggleUnit}
-                onDeletePlan={deletePlan}
-                onReturnToIdeas={returnPlanToIdeas}
-              />}
+        <div className="deskGrid">
+          <section className="calendarDesk" aria-label={`${activeView} planning workspace`}>
+            {activeView === "week" && <WeekPlanner workspace={workspace} days={days} weekLabel={weekLabel} selectedPlanId={selectedPlanId} pasteTarget={pasteTarget} onSelectPlan={selectPlan} onSelectDate={(courseId, date) => setPasteTarget({ courseId, date, location: "calendar" })} onMovePlan={movePlanToDate} onRenamePlan={renamePlan} onAddPlan={(title, type, courseId, date) => addPlan(title, type, courseId, date, "calendar")} onAddChildLesson={addChildLesson} onToggleUnit={toggleUnit} onDeletePlan={deletePlan} onReturnToIdeas={returnPlanToIdeas} />}
 
-              {activeView === "month" && selectedCourseId && <MonthView workspace={workspace} anchor={monthAnchor} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} />}
+            {activeView === "month" && selectedCourseId && <MonthView workspace={workspace} anchor={monthAnchor} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} />}
 
-              {activeView === "quarter" && activeQuarter && selectedCourseId && <QuarterView workspace={workspace} range={activeQuarter} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} />}
-            </section>
+            {activeView === "quarter" && activeQuarter && selectedCourseId && <QuarterView workspace={workspace} range={activeQuarter} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} />}
+          </section>
 
-            <aside className="workbench" aria-label="Planning workbench">
-              <section className={pasteTarget?.location === "ideas" ? "ideasPanel pasteTarget" : "ideasPanel"} onClick={() => setPasteTarget({ courseId: ideaCourseId || null, date: null, location: "ideas" })} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/arc-plan"); if (id) returnPlanToIdeas(id); }}><div className="ideasHeading"><div><p className="eyebrow">Ideas</p><h2>Things worth keeping.</h2></div><span>{workspace.plans.filter((plan) => plan.location === "ideas" && plan.parentUnitId === null).length}</span></div><div className="ideaAdder"><input value={ideaTitle} onClick={(e) => e.stopPropagation()} onChange={(e) => setIdeaTitle(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addIdea(); }} placeholder="Catch an idea…" /><select aria-label="Class for new idea" value={ideaCourseId} onClick={(e) => e.stopPropagation()} onChange={(e) => setIdeaCourseId(e.target.value)}><option value="" disabled>Class</option>{workspace.courses.map((course) => <option value={course.id} key={course.id}>{course.name}</option>)}</select><button type="button" disabled={!ideaCourseId} onClick={(e) => { e.stopPropagation(); addIdea(); }}>＋</button></div><div className="ideaList">{workspace.plans.filter((plan) => plan.location === "ideas" && plan.parentUnitId === null).map((plan) => { const course = workspace.courses.find((item) => item.id === plan.courseId); const children = plan.type === "unit" ? orderedUnitChildren(workspace.plans, plan.id) : []; return <article key={plan.id} className={`${plan.type === "unit" ? "ideaCard unitIdea" : "ideaCard"}${selectedPlanId === plan.id ? " selected" : ""}`} draggable onDragStart={(e) => e.dataTransfer.setData("text/arc-plan", plan.id)} onClick={(e) => { e.stopPropagation(); selectPlan(plan); }}><div className="ideaCardHeader"><strong>{plan.title}</strong>{course && <span style={{ borderColor: course.color }}>{course.name}</span>}</div>{plan.type === "unit" && <small className="ideaUnitMeta">Unit · {children.length} lesson{children.length === 1 ? "" : "s"}</small>}<div className="ideaDates">{days.map((day) => <button type="button" key={day.key} onClick={(e) => { e.stopPropagation(); moveIdeaToDate(plan.id, day.key); }}>{day.label}</button>)}</div><button type="button" className="ideaDelete" onClick={(e) => { e.stopPropagation(); deletePlan(plan.id); }}>Delete</button></article>; })}{workspace.plans.every((plan) => plan.location !== "ideas" || plan.parentUnitId !== null) && <p className="emptyNote">Loose thoughts can live here before they have a date.</p>}</div></section>
-              <PriorityWorkbench
-                priorities={workspace.priorities}
-                onAdd={(tier, title) => updateWorkspace((current) => ({ ...current, priorities: [...current.priorities, { id: crypto.randomUUID(), title, tier, completed: false, scope: "school" }] }))}
-                onToggle={togglePriority}
-                onRename={(id, title) => updateWorkspace((current) => renamePriority(current, id, title))}
-                onDelete={(id) => updateWorkspace((current) => deletePriority(current, id))}
-                onMove={(id, tier) => updateWorkspace((current) => movePriority(current, id, tier))}
-                onReorder={(id, direction) => updateWorkspace((current) => reorderPriority(current, id, direction))}
-              />
-            </aside>
-          </div>
-        </section>
-      )}
+          <aside className="workbench" aria-label="Planning workbench">
+            <section className={pasteTarget?.location === "ideas" ? "ideasPanel pasteTarget" : "ideasPanel"} onClick={() => setPasteTarget({ courseId: ideaCourseId || null, date: null, location: "ideas" })} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/arc-plan"); if (id) returnPlanToIdeas(id); }}><div className="ideasHeading"><div><p className="eyebrow">Ideas</p><h2>Things worth keeping.</h2></div><span>{workspace.plans.filter((plan) => plan.location === "ideas" && plan.parentUnitId === null).length}</span></div><div className="ideaAdder"><input value={ideaTitle} onClick={(e) => e.stopPropagation()} onChange={(e) => setIdeaTitle(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addIdea(); }} placeholder="Catch an idea…" /><select aria-label="Class for new idea" value={ideaCourseId} onClick={(e) => e.stopPropagation()} onChange={(e) => setIdeaCourseId(e.target.value)}><option value="" disabled>Class</option>{workspace.courses.map((course) => <option value={course.id} key={course.id}>{course.name}</option>)}</select><button type="button" disabled={!ideaCourseId} onClick={(e) => { e.stopPropagation(); addIdea(); }}>＋</button></div><div className="ideaList">{workspace.plans.filter((plan) => plan.location === "ideas" && plan.parentUnitId === null).map((plan) => { const course = workspace.courses.find((item) => item.id === plan.courseId); const children = plan.type === "unit" ? orderedUnitChildren(workspace.plans, plan.id) : []; return <article key={plan.id} className={`${plan.type === "unit" ? "ideaCard unitIdea" : "ideaCard"}${selectedPlanId === plan.id ? " selected" : ""}`} draggable onDragStart={(e) => e.dataTransfer.setData("text/arc-plan", plan.id)} onClick={(e) => { e.stopPropagation(); selectPlan(plan); }}><div className="ideaCardHeader"><strong>{plan.title}</strong>{course && <span style={{ borderColor: course.color }}>{course.name}</span>}</div>{plan.type === "unit" && <small className="ideaUnitMeta">Unit · {children.length} lesson{children.length === 1 ? "" : "s"}</small>}<div className="ideaDates">{days.map((day) => <button type="button" key={day.key} onClick={(e) => { e.stopPropagation(); moveIdeaToDate(plan.id, day.key); }}>{day.label}</button>)}</div><button type="button" className="ideaDelete" onClick={(e) => { e.stopPropagation(); deletePlan(plan.id); }}>Delete</button></article>; })}{workspace.plans.every((plan) => plan.location !== "ideas" || plan.parentUnitId !== null) && <p className="emptyNote">Loose thoughts can live here before they have a date.</p>}</div></section>
+            <PriorityWorkbench priorities={workspace.priorities} onAdd={(tier, title) => updateWorkspace((current) => ({ ...current, priorities: [...current.priorities, { id: crypto.randomUUID(), title, tier, completed: false, scope: "school" }] }))} onToggle={togglePriority} onRename={(id, title) => updateWorkspace((current) => renamePriority(current, id, title))} onDelete={(id) => updateWorkspace((current) => deletePriority(current, id))} onMove={(id, tier) => updateWorkspace((current) => movePriority(current, id, tier))} onReorder={(id, direction) => updateWorkspace((current) => reorderPriority(current, id, direction))} />
+          </aside>
+        </div>
+      </section>
     </main>
   );
 }
