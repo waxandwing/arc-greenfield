@@ -1,7 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { emptyWorkspace, type Plan } from "../lib/domain";
-import { checkpointQuarter, copyLessonNext, extendLesson, nextInstructionalDate, reuseWeek, tackLesson } from "../lib/efficiency-operations";
+import {
+  applyInstructionalShift,
+  checkpointQuarter,
+  copyLessonNext,
+  extendLesson,
+  nextInstructionalDate,
+  previewInstructionalShift,
+  reuseWeek,
+  tackLesson
+} from "../lib/efficiency-operations";
 
 function plan(overrides: Partial<Plan> & Pick<Plan, "id" | "title" | "type">): Plan {
   const { id, title, type, ...rest } = overrides;
@@ -82,4 +91,42 @@ test("Quarter checkpoint is non-destructive", () => {
   assert.equal(next.plans.length, 1);
   assert.equal(next.checkpoints?.length, 1);
   assert.equal(next.checkpoints?.[0].plans[0].id, "lesson");
+});
+
+test("Shift preflight blocks an entire unit tree when one child is fixed", () => {
+  const workspace = emptyWorkspace();
+  workspace.plans = [
+    plan({ id: "unit", title: "Printmaking", type: "unit", date: "2026-09-08", endDate: "2026-09-10" }),
+    plan({ id: "lesson-a", title: "Demo", type: "lesson", date: "2026-09-08", parentUnitId: "unit", childOrder: 0 }),
+    plan({ id: "lesson-b", title: "Critique", type: "lesson", date: "2026-09-10", parentUnitId: "unit", childOrder: 1, fixedDate: true })
+  ];
+  const preview = previewInstructionalShift(workspace, ["course-a"], "2026-09-08");
+  assert.deepEqual(preview.blockedRootIds, ["unit"]);
+  assert.equal(preview.affectedPlanIds.length, 0);
+  assert.equal(preview.conflicts[0]?.kind, "fixed-date");
+});
+
+test("Shift preflight detects collisions with lessons outside the move set", () => {
+  const workspace = emptyWorkspace();
+  workspace.plans = [
+    plan({ id: "moving", title: "Moving lesson", type: "lesson", date: "2026-09-08" }),
+    plan({ id: "occupied", title: "Already there", type: "lesson", date: "2026-09-09" })
+  ];
+  const preview = previewInstructionalShift(workspace, ["course-a"], "2026-09-08");
+  assert.deepEqual(preview.blockedRootIds, ["moving"]);
+  assert.equal(preview.conflicts[0]?.kind, "lesson-collision");
+  assert.equal(preview.conflicts[0]?.conflictingPlanId, "occupied");
+});
+
+test("Shift apply moves only roots that passed preflight and skips no-school dates", () => {
+  const workspace = emptyWorkspace();
+  workspace.calendar.noSchoolDates = [{ id: "off", date: "2026-09-09", label: "No school" }];
+  workspace.plans = [
+    plan({ id: "unit", title: "Sculpture", type: "unit", date: "2026-09-08", endDate: "2026-09-10" }),
+    plan({ id: "lesson", title: "Armature", type: "lesson", date: "2026-09-08", parentUnitId: "unit", childOrder: 0 })
+  ];
+  const preview = previewInstructionalShift(workspace, ["course-a"], "2026-09-08");
+  const next = applyInstructionalShift(workspace, preview);
+  assert.equal(next.plans.find((item) => item.id === "unit")?.date, "2026-09-10");
+  assert.equal(next.plans.find((item) => item.id === "lesson")?.date, "2026-09-10");
 });
