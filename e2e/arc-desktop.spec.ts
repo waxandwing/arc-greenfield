@@ -19,6 +19,18 @@ async function completeFirstRun(page: import("@playwright/test").Page) {
   await page.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByText("Labor Day", { exact: true })).toBeVisible();
 
+  await page.getByText("Quarter dates", { exact: false }).click();
+  const quarters = [
+    ["2026-08-10", "2026-10-09"],
+    ["2026-10-12", "2026-12-18"],
+    ["2027-01-04", "2027-03-12"],
+    ["2027-03-15", "2027-05-28"]
+  ];
+  for (let index = 0; index < quarters.length; index += 1) {
+    await page.getByLabel(`Quarter ${index + 1} start`).fill(quarters[index][0]);
+    await page.getByLabel(`Quarter ${index + 1} end`).fill(quarters[index][1]);
+  }
+
   await page.getByRole("button", { name: "Open my desk" }).click();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
 }
@@ -45,6 +57,26 @@ test("first run reaches a functional Arc desk without a fake calendar source", a
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
   await page.getByRole("button", { name: "Week", exact: true }).click();
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
+});
+
+test("Arc color scheme is user-selectable, asset-derived, and persists", async ({ page }) => {
+  await completeFirstRun(page);
+
+  const palette = page.getByRole("button", { name: /Palette · Arc Studio/ });
+  await expect(palette).toBeVisible();
+  await palette.click();
+  await expect(page.getByRole("radiogroup", { name: "Arc color scheme" })).toBeVisible();
+  await page.getByRole("radio", { name: /Blueprint/ }).click();
+
+  await page.waitForLoadState("domcontentloaded");
+  await expect(page.getByRole("button", { name: /Palette · Blueprint/ })).toBeVisible();
+  await expect(page.locator(".arcWorkspace")).toHaveAttribute("data-color-scheme", "blueprint");
+
+  const stored = await page.evaluate(() => {
+    const raw = localStorage.getItem("arc.greenfield.workspace.v1");
+    return raw ? JSON.parse(raw).preferences.colorScheme : null;
+  });
+  expect(stored).toBe("blueprint");
 });
 
 test("desktop planning shell stays inside the viewport at supported laptop sizes", async ({ page }) => {
