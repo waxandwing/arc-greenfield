@@ -30,8 +30,14 @@ export function ArcEntry({ buildId, gitSha }: { buildId: string; gitSha: string 
     });
   }
 
+  function openSetup() {
+    const current = loadWorkspace();
+    setWorkspace(current);
+    setComplete(false);
+  }
+
   if (!loaded) return <main className="loadingShell">Opening Arc…</main>;
-  if (complete) return <ArcShell buildId={buildId} gitSha={gitSha} />;
+  if (complete) return <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} />;
 
   return <OnboardingScreen workspace={workspace} onUpdate={updateWorkspace} onComplete={() => { saveWorkspace(workspace); setComplete(true); }} />;
 }
