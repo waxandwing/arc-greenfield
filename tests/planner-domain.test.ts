@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import type { Plan, Workspace } from "../lib/domain";
 import { applyCut, createClipboard, pasteClipboard } from "../lib/clipboard";
+import { removeCourseSafely } from "../lib/course-operations";
 import { clonePlanTree, collectPlanTree, movePlanTreeToIdeas, shiftPlanTree } from "../lib/plan-tree";
 import { quarterRange } from "../lib/view-ranges";
 
@@ -117,6 +118,24 @@ test("copying one nested Lesson pastes it as a standalone Lesson, not back into 
   assert.equal(pastedLesson?.parentUnitId, null);
   assert.equal(pastedLesson?.date, "2026-12-01");
   assert.equal(pastedLesson?.courseId, "course-b");
+});
+
+test("removing a course preserves its plans by moving them to Ideas on a remaining class", () => {
+  const source = workspace();
+  const result = removeCourseSafely(source, "course-a");
+  assert.deepEqual(result.courses.map((course) => course.id), ["course-b"]);
+  assert.ok(result.plans.every((item) => item.courseId === "course-b"));
+  assert.ok(result.plans.every((item) => item.location === "ideas"));
+  assert.equal(result.plans.find((item) => item.id === "lesson-b")?.parentUnitId, "unit-1");
+});
+
+test("removing the final course keeps plans recoverable in Ideas without a course", () => {
+  const source = workspace();
+  source.courses = source.courses.filter((course) => course.id === "course-a");
+  const result = removeCourseSafely(source, "course-a");
+  assert.equal(result.courses.length, 0);
+  assert.ok(result.plans.every((item) => item.courseId === null));
+  assert.ok(result.plans.every((item) => item.location === "ideas"));
 });
 
 test("Quarter rejects an end date earlier than its start date", () => {
