@@ -53,11 +53,17 @@ export function pasteClipboard(workspace: Workspace, clipboard: ArcClipboard, ta
 
   const targetDate = target.location === "ideas" ? null : target.date;
   const clones = clonePlanTree(clipboard.tree, clipboard.sourceRootId, targetDate, target.courseId);
-  const pastedRoot = clones.find((plan) => plan.id !== undefined && plan.parentUnitId === null) ?? clones[0] ?? null;
+  const pastedRoot = clones.find((plan) => plan.parentUnitId === null) ?? clones[0] ?? null;
   const normalized = clones.map((plan) => ({ ...plan, location: target.location, courseId: target.courseId }));
+  const nextWorkspace = { ...workspace, plans: [...workspace.plans, ...normalized] };
+
+  // Copy stays reusable. Cut is intentionally one-shot: once the removed tree has
+  // been restored somewhere, its snapshot is consumed so a second paste cannot
+  // silently duplicate a move. The shell can later clear the empty clipboard UI.
+  if (clipboard.mode === "cut") clipboard.tree.length = 0;
 
   return {
-    workspace: { ...workspace, plans: [...workspace.plans, ...normalized] },
+    workspace: nextWorkspace,
     pastedRootId: pastedRoot?.id ?? null
   };
 }
