@@ -19,6 +19,12 @@ export type QuarterRange = {
   weeks: CalendarWeek[];
 };
 
+export type YearMonth = {
+  key: string;
+  date: Date;
+  quarterIds: string[];
+};
+
 function dateKey(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -103,4 +109,34 @@ export function availableQuarterRanges(calendar: SchoolCalendar): QuarterRange[]
   return calendar.quarterBoundaries
     .map((quarter) => quarterRange(calendar, quarter.id))
     .filter((quarter): quarter is QuarterRange => Boolean(quarter));
+}
+
+/**
+ * Returns every school-year month exactly once. A month that crosses a quarter
+ * boundary carries both quarter IDs so the Year Map can show the transition
+ * without rendering a duplicate mini-month.
+ */
+export function yearMonths(calendar: SchoolCalendar): YearMonth[] {
+  if (!calendar.firstStudentDay || !calendar.lastStudentDay || calendar.firstStudentDay > calendar.lastStudentDay) return [];
+  const ranges = availableQuarterRanges(calendar);
+  const cursor = parseDate(`${calendar.firstStudentDay.slice(0, 7)}-01`);
+  const last = parseDate(`${calendar.lastStudentDay.slice(0, 7)}-01`);
+  const months: YearMonth[] = [];
+
+  while (cursor <= last && months.length < 18) {
+    const key = dateKey(cursor).slice(0, 7);
+    const monthStart = `${key}-01`;
+    const monthEndDate = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0, 12, 0, 0, 0);
+    const monthEnd = dateKey(monthEndDate);
+    const quarterIds = ranges
+      .filter((range) => range.start <= monthEnd && range.end >= monthStart)
+      .map((range) => range.id);
+    months.push({ key, date: new Date(cursor), quarterIds });
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return months;
+}
+
+export function quarterForDate(calendar: SchoolCalendar, value: string): string | null {
+  return availableQuarterRanges(calendar).find((range) => range.start <= value && range.end >= value)?.id ?? null;
 }
