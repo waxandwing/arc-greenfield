@@ -12,8 +12,10 @@ test("richer Day and truthful Year components remain available", () => {
   assert.match(day, /resources/);
   assert.match(year, /export function YearMapView/);
   assert.match(year, /yearMonths\(workspace\.calendar\)/);
-  assert.match(year, /pastInstructional/);
   assert.match(year, /quarterForDate/);
+  assert.match(year, /pastInstructionalAsset/);
+  assert.match(year, /src="\/arc-x\.png"/);
+  assert.equal(/pastInstructional"/.test(year), false, "generic text-X elapsed-day class must not return");
 });
 
 test("live shell uses the richer Day and truthful Year projections", () => {
