@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthPublicPath, isBetaPublicPath } from "./lib/access-routing";
 import { ARC_BETA_COOKIE, betaAccessToken } from "./lib/beta-access";
 import { arcAuthConfig } from "./lib/auth-config";
 
@@ -13,7 +14,7 @@ function redirectTo(request: NextRequest, pathname: string, next?: string) {
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const betaPublic = pathname === "/beta" || pathname.startsWith("/api/beta-access");
+  const betaPublic = isBetaPublicPath(pathname);
   const configuredPassword = process.env.ARC_BETA_PASSWORD;
 
   // Beta access is the outer gate. Auth routes are still beta-only when a beta
@@ -44,7 +45,7 @@ export async function middleware(request: NextRequest) {
   });
 
   const { data: { user } } = await supabase.auth.getUser();
-  const authPublic = pathname === "/login" || pathname.startsWith("/auth/callback") || pathname.startsWith("/api/auth/");
+  const authPublic = isAuthPublicPath(pathname);
 
   if (!user && !authPublic) return redirectTo(request, "/login");
   if (user && pathname === "/login") return redirectTo(request, "/");
