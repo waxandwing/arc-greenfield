@@ -5,6 +5,13 @@ import type { Course, Workspace } from "../lib/domain";
 import { onboardingCompletedCount, onboardingReady, onboardingStepComplete, schoolYearRangeValid, type OnboardingStep } from "../lib/onboarding-state";
 
 const COLORS = ["#2f6f73", "#557b93", "#d2a64a", "#d97965", "#6f7d5b", "#8a6d82"];
+const MEETING_DAYS = [
+  { day: 1, label: "M", name: "Monday" },
+  { day: 2, label: "T", name: "Tuesday" },
+  { day: 3, label: "W", name: "Wednesday" },
+  { day: 4, label: "Th", name: "Thursday" },
+  { day: 5, label: "F", name: "Friday" }
+] as const;
 
 type Props = {
   workspace: Workspace;
@@ -40,11 +47,28 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
       id: crypto.randomUUID(),
       name: draftCourse.trim(),
       periodLabel: draftPeriod.trim(),
-      color: COLORS[workspace.courses.length % COLORS.length]
+      color: COLORS[workspace.courses.length % COLORS.length],
+      meetingPattern: { kind: "weekdays", weekdays: [1, 2, 3, 4, 5] }
     };
     onUpdate((current) => ({ ...current, courses: [...current.courses, course] }));
     setDraftCourse("");
     setDraftPeriod("");
+  }
+
+  function toggleCourseMeetingDay(courseId: string, weekday: number) {
+    onUpdate((current) => ({
+      ...current,
+      courses: current.courses.map((course) => {
+        if (course.id !== courseId) return course;
+        const currentDays = course.meetingPattern?.kind === "weekdays" && course.meetingPattern.weekdays.length
+          ? course.meetingPattern.weekdays
+          : [1, 2, 3, 4, 5];
+        const next = currentDays.includes(weekday)
+          ? currentDays.filter((day) => day !== weekday)
+          : [...currentDays, weekday].sort((a, b) => a - b);
+        return { ...course, meetingPattern: { kind: "weekdays", weekdays: next } };
+      })
+    }));
   }
 
   function updateQuarter(index: number, field: "start" | "end", value: string) {
@@ -135,8 +159,12 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
 
             {step === "classes" && <div className="setupPreviewSection">
               <div className="courseSetupRow"><input autoFocus value={draftCourse} onChange={(e) => setDraftCourse(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCourse(); }} placeholder="Course name" /><input value={draftPeriod} onChange={(e) => setDraftPeriod(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCourse(); }} placeholder="Period / block" /><button type="button" onClick={addCourse}>Add class</button></div>
-              <div className="classPreviewList">{workspace.courses.map((course) => <div key={course.id} className="classPreviewRow"><i style={{ background: course.color }} /><span><strong>{course.name}</strong><small>{course.periodLabel || "No period set"}</small></span><button type="button" aria-label={`Remove ${course.name}`} onClick={() => onUpdate((current) => ({ ...current, courses: current.courses.filter((item) => item.id !== course.id) }))}>×</button></div>)}</div>
+              <div className="classPreviewList">{workspace.courses.map((course) => {
+                const meetingDays = course.meetingPattern?.kind === "weekdays" && course.meetingPattern.weekdays.length ? course.meetingPattern.weekdays : [1, 2, 3, 4, 5];
+                return <div key={course.id} className="classPreviewRow"><i style={{ background: course.color }} /><span className="classPreviewMain"><strong>{course.name}</strong><small>{course.periodLabel || "No period set"}</small><span className="meetingDayPicker" role="group" aria-label={`${course.name} meeting days`}>{MEETING_DAYS.map(({ day, label, name }) => <button type="button" key={day} className={meetingDays.includes(day) ? "active" : ""} aria-pressed={meetingDays.includes(day)} aria-label={`${course.name} meets ${name}`} onClick={() => toggleCourseMeetingDay(course.id, day)}>{label}</button>)}</span></span><button type="button" className="removeClassButton" aria-label={`Remove ${course.name}`} onClick={() => onUpdate((current) => ({ ...current, courses: current.courses.filter((item) => item.id !== course.id) }))}>×</button></div>;
+              })}</div>
               {!workspace.courses.length && <p className="setupEmptyState">Your class rows will appear here as you add them.</p>}
+              {workspace.courses.length > 0 && <p className="meetingPatternNote">Meeting days drive Tack, Extend, Copy next, and Shift. Leave all five selected for a daily class.</p>}
             </div>}
 
             {step === "calendar" && <div className="setupPreviewSection calendarSetupSection">
