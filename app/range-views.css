@@ -124,7 +124,16 @@
   line-height: 1.25;
   cursor: grab;
 }
-.monthPlan.unit,.quarterPlan.unit { border-left: 4px solid var(--teal); font-weight: 800; }
+.monthPlan.unit,.quarterPlan.unit {
+  border-left: 4px solid var(--teal);
+  background: rgba(47,111,115,.10);
+  font-weight: 800;
+}
+.monthPlan.unit.spanStart,.quarterPlan.unit.spanStart { border-radius: 8px 2px 2px 8px; border-right-color: transparent; }
+.monthPlan.unit.spanMiddle,.quarterPlan.unit.spanMiddle { border-radius: 2px; border-left-width: 1px; border-left-color: transparent; border-right-color: transparent; justify-content: center; }
+.monthPlan.unit.spanEnd,.quarterPlan.unit.spanEnd { border-radius: 2px 8px 8px 2px; border-left-width: 1px; border-left-color: transparent; }
+.monthPlan.unit.spanSingle,.quarterPlan.unit.spanSingle { border-radius: 8px; }
+.monthPlan.unit.spanMiddle > span,.monthPlan.unit.spanEnd > span,.quarterPlan.unit.spanMiddle > span,.quarterPlan.unit.spanEnd > span { opacity: .42; font-size: .72rem; }
 .monthPlan small,.quarterPlan small { color: var(--muted); font-size: .54rem; text-transform: uppercase; letter-spacing: .05em; }
 .monthPlan.selected,.quarterPlan.selected { outline: 2px solid var(--coral); outline-offset: 1px; }
 .monthDay.pasteTarget,.quarterDay.pasteTarget { box-shadow: inset 0 0 0 2px var(--coral); background: rgba(217,121,101,.06); }
