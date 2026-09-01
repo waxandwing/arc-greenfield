@@ -92,6 +92,11 @@ test("Day is the teach-from-it surface and Year renders each school month once",
   await expect(page.getByText("Each month appears once. Quarter color changes on the actual boundary date.", { exact: true })).toBeVisible();
   await expect(page.locator(".yearMiniMonth")).toHaveCount(10);
   await expect(page.locator(".yearMiniMonth").filter({ hasText: "October" })).toHaveCount(1);
+  const paintedXs = page.locator('img[src="/arc-x.png"]');
+  await expect(paintedXs.first()).toBeVisible();
+  expect(await paintedXs.count()).toBeGreaterThan(0);
+  const loaded = await paintedXs.first().evaluate((image) => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0);
+  expect(loaded).toBeTruthy();
   await page.screenshot({ path: testInfo.outputPath("year-map.png"), fullPage: false });
 });
 
