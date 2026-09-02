@@ -1,6 +1,13 @@
 import { test, expect, type Page } from "@playwright/test";
 import { completeFirstRun } from "./helpers";
 
+const QUARTERS: Array<[string, string]> = [
+  ["2026-08-10", "2026-10-09"],
+  ["2026-10-12", "2026-12-18"],
+  ["2027-01-04", "2027-03-12"],
+  ["2027-03-15", "2027-05-28"]
+];
+
 async function createUnitWithLesson(page: Page) {
   await page.getByRole("button", { name: "＋ Unit" }).click();
   await page.getByPlaceholder("Unit title").fill("Foundations");
@@ -29,22 +36,54 @@ test("core Unit workflow creates a real Unit tree and opens Unit Focus without l
   await page.screenshot({ path: "test-results/ui-week-unit-focus.png", fullPage: true });
 });
 
-test("Month is an editing surface: select a Unit, copy it, choose a date, and paste a new tree", async ({ page }) => {
+test("Month copy paste has a complete non-drag keyboard path", async ({ page }) => {
   await completeFirstRun(page, { teacherName: "Arc Beta Teacher" });
   await createUnitWithLesson(page);
 
-  await page.getByRole("button", { name: "Month" }).click();
+  await page.getByRole("button", { name: "Month" }).focus();
+  await page.keyboard.press("Enter");
   await expect(page.locator(".monthSurface")).toBeVisible();
-  const foundationUnit = page.getByRole("button", { name: /Foundations, Unit from/ }).first();
-  await foundationUnit.click();
-  await page.getByRole("button", { name: "Copy" }).click();
 
-  const targetDay = page.locator(".monthDay").filter({ has: page.locator(".monthDate") }).nth(10);
-  await targetDay.click();
+  const foundationUnit = page.getByRole("button", { name: /Foundations, Unit from/ }).first();
+  await foundationUnit.focus();
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: "Copy" }).focus();
+  await page.keyboard.press("Enter");
+
+  const targetDate = page.getByRole("button", { name: "Select 2026-09-15 as paste target", exact: true });
+  await targetDate.focus();
+  await page.keyboard.press("Enter");
   await expect(page.getByRole("button", { name: "Paste" })).toBeEnabled();
-  await page.getByRole("button", { name: "Paste" }).click();
+  await page.getByRole("button", { name: "Paste" }).focus();
+  await page.keyboard.press("Enter");
+
   await expect(page.getByRole("button", { name: /Foundations, Unit from/ })).toHaveCount(2);
-  await page.screenshot({ path: "test-results/ui-month-copy-paste.png", fullPage: true });
+  await page.screenshot({ path: "test-results/ui-month-keyboard-copy-paste.png", fullPage: true });
+});
+
+test("Quarter copy paste has a complete non-drag keyboard path", async ({ page }) => {
+  await completeFirstRun(page, { teacherName: "Arc Beta Teacher", quarters: QUARTERS });
+  await createUnitWithLesson(page);
+
+  await page.getByRole("button", { name: "Quarter" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".quarterSurface")).toBeVisible();
+
+  const foundationUnit = page.getByRole("button", { name: /Foundations, Unit from/ }).first();
+  await foundationUnit.focus();
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: "Copy" }).focus();
+  await page.keyboard.press("Enter");
+
+  const targetDate = page.getByRole("button", { name: "Select 2026-09-15 as paste target", exact: true });
+  await targetDate.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Paste" })).toBeEnabled();
+  await page.getByRole("button", { name: "Paste" }).focus();
+  await page.keyboard.press("Enter");
+
+  await expect(page.getByRole("button", { name: /Foundations, Unit from/ })).toHaveCount(2);
+  await page.screenshot({ path: "test-results/ui-quarter-keyboard-copy-paste.png", fullPage: true });
 });
 
 test("Must Should Could is one lifecycle: add, red-circle, cross out, then delete", async ({ page }) => {
