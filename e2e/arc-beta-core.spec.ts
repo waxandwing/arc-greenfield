@@ -53,8 +53,9 @@ test("Month copy paste has a complete non-drag keyboard path", async ({ page }) 
   const targetDate = page.getByRole("button", { name: "Select 2026-09-15 as paste target", exact: true });
   await targetDate.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("button", { name: "Paste" })).toBeEnabled();
-  await page.getByRole("button", { name: "Paste" }).focus();
+  const pasteButton = page.getByRole("button", { name: "Paste", exact: true });
+  await expect(pasteButton).toBeEnabled();
+  await pasteButton.focus();
   await page.keyboard.press("Enter");
 
   await expect(page.getByRole("button", { name: /Foundations, Unit from/ })).toHaveCount(2);
@@ -78,8 +79,9 @@ test("Quarter copy paste has a complete non-drag keyboard path", async ({ page }
   const targetDate = page.getByRole("button", { name: "Select 2026-09-15 as paste target", exact: true });
   await targetDate.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("button", { name: "Paste" })).toBeEnabled();
-  await page.getByRole("button", { name: "Paste" }).focus();
+  const pasteButton = page.getByRole("button", { name: "Paste", exact: true });
+  await expect(pasteButton).toBeEnabled();
+  await pasteButton.focus();
   await page.keyboard.press("Enter");
 
   await expect(page.getByRole("button", { name: /Foundations, Unit from/ })).toHaveCount(2);
