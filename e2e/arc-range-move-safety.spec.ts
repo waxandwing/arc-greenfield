@@ -27,7 +27,16 @@ test("Month uses the same meeting-day move safety as Week", async ({ page }) => 
 });
 
 test("Quarter uses the same meeting-day move safety as Week", async ({ page }) => {
-  await completeFirstRun(page, { teacherName: "Quarter Safety Teacher", meetingWeekdays: [1, 3, 5] });
+  await completeFirstRun(page, {
+    teacherName: "Quarter Safety Teacher",
+    meetingWeekdays: [1, 3, 5],
+    quarters: [
+      ["2026-08-10", "2026-10-09"],
+      ["2026-10-12", "2026-12-18"],
+      ["2027-01-04", "2027-03-12"],
+      ["2027-03-15", "2027-05-28"]
+    ]
+  });
   await addMondayLesson(page);
   await page.getByRole("button", { name: "Quarter", exact: true }).click();
   await dragLessonToTuesday(page);
