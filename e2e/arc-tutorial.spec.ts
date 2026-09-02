@@ -14,6 +14,7 @@ async function completeSetup(page: Page) {
   await page.getByLabel("Last student day", { exact: true }).fill("2027-05-28");
   await page.getByRole("button", { name: "Open my desk" }).click();
   await expect(page.getByRole("heading", { name: "Getting to Know Arc" })).toBeVisible();
+  await expect(page.locator(".arcCalendarViewport")).toBeVisible();
   await expect(page.getByRole("button", { name: "Back to Arc", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Back to Arc", exact: true }).click();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
@@ -23,9 +24,11 @@ async function openExploreArc(page: Page) {
   await page.getByRole("button", { name: "More", exact: true }).click();
   await page.getByRole("button", { name: "Review Arc tutorial", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Getting to Know Arc" })).toBeVisible();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.locator(".arcCalendarViewport")).toBeVisible();
 }
 
-test("new teachers get a lightweight Explore Arc handoff before the real calendar", async ({ page }, testInfo) => {
+test("new teachers get a lightweight Explore Arc overlay on the real calendar", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
@@ -39,11 +42,14 @@ test("new teachers get a lightweight Explore Arc handoff before the real calenda
   await page.getByLabel("Last student day", { exact: true }).fill("2027-05-28");
   await page.getByRole("button", { name: "Open my desk" }).click();
 
+  await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Getting to Know Arc" })).toBeVisible();
   await expect(page.getByRole("tablist", { name: "Explore Arc topics" })).toBeVisible();
-  await page.screenshot({ path: testInfo.outputPath("first-use-explore-arc.png"), fullPage: false });
+  await expect(page.locator(".arcCalendarViewport")).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("first-use-explore-arc-overlay.png"), fullPage: false });
 
   await page.getByRole("button", { name: "Back to Arc", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
   await expect(page.getByRole("button", { name: "Fridge", exact: true })).toBeVisible();
 
@@ -99,7 +105,7 @@ test("exploring help does not alter teacher setup", async ({ page }) => {
   await expect(page.getByText("2", { exact: true }).first()).toBeVisible();
 });
 
-test("Explore Arc can be navigated without a pointer", async ({ page }) => {
+test("Explore Arc can be navigated without a pointer and Escape returns to planning", async ({ page }) => {
   await completeSetup(page);
   await openExploreArc(page);
 
@@ -119,4 +125,7 @@ test("Explore Arc can be navigated without a pointer", async ({ page }) => {
   await page.getByRole("button", { name: "Next", exact: true }).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("The Fridge is where good plans can wait.", { exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
 });
