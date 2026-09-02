@@ -24,8 +24,6 @@ const HELP_PREFERENCE_KEYS = [
   "exploreWelcomeDismissed"
 ] as const;
 
-type HelpPreferenceKey = (typeof HELP_PREFERENCE_KEYS)[number];
-
 function migrateWorkspace(parsed: Workspace | WorkspaceV1): Workspace {
   const defaults = emptyWorkspace();
   const migratedPlans = parsed.schemaVersion === 1
@@ -71,9 +69,9 @@ function storedHelpPreferences(ownerId: string | null): Partial<Workspace["prefe
   if (!raw) return {};
   try {
     const parsed = JSON.parse(raw) as Partial<Workspace>;
-    const preferences = parsed.preferences ?? {};
+    const preferences = (parsed.preferences ?? {}) as Partial<Workspace["preferences"]>;
     return HELP_PREFERENCE_KEYS.reduce((result, key) => {
-      const value = preferences[key as HelpPreferenceKey];
+      const value = preferences[key];
       if (value !== undefined) (result as Record<string, unknown>)[key] = value;
       return result;
     }, {} as Partial<Workspace["preferences"]>);
