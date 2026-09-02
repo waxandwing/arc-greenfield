@@ -13,11 +13,11 @@ class FakeStorage {
   get length() { return this.values.size; }
 }
 
-function withFakeWindow(run: () => void) {
+function withFakeWindow(run: (localStorage: FakeStorage) => void) {
   const previous = Object.getOwnPropertyDescriptor(globalThis, "window");
   const localStorage = new FakeStorage();
   Object.defineProperty(globalThis, "window", { value: { localStorage }, configurable: true });
-  try { run(); }
+  try { run(localStorage); }
   finally {
     if (previous) Object.defineProperty(globalThis, "window", previous);
     else delete (globalThis as { window?: unknown }).window;
@@ -61,5 +61,28 @@ test("ArcShell-style ownerless load follows the active authenticated owner marke
     setActiveWorkspaceOwner(null);
     assert.equal(loadWorkspace().teacherName, "");
     assert.equal(loadWorkspace().ownerId, null);
+  });
+});
+
+test("brand-new workspaces remain eligible for the optional Getting to Know Arc welcome", () => {
+  assert.equal(emptyWorkspace().preferences.exploreWelcomeDismissed, false);
+});
+
+test("older stored workspaces gain help defaults without being treated as brand-new users", () => {
+  withFakeWindow((localStorage) => {
+    const older = emptyWorkspace();
+    older.teacherName = "Experienced Teacher";
+    const serialized = JSON.parse(JSON.stringify(older));
+    delete serialized.preferences.helpMarksVisible;
+    delete serialized.preferences.firstTimeHelpEnabled;
+    delete serialized.preferences.exploredHelpIds;
+    delete serialized.preferences.exploreWelcomeDismissed;
+    localStorage.setItem(workspaceStorageKey(null), JSON.stringify(serialized));
+
+    const loaded = loadWorkspace(null);
+    assert.equal(loaded.preferences.helpMarksVisible, true);
+    assert.equal(loaded.preferences.firstTimeHelpEnabled, true);
+    assert.deepEqual(loaded.preferences.exploredHelpIds, []);
+    assert.equal(loaded.preferences.exploreWelcomeDismissed, true);
   });
 });
