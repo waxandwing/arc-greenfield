@@ -19,7 +19,7 @@
 }
 
 .deliveryOptions button {
-  min-height: 38px;
+  min-height: 44px;
   padding: 0 11px;
   border: 1px solid color-mix(in srgb, var(--arc-deep) 25%, transparent);
   border-radius: 999px;
