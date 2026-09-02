@@ -37,6 +37,6 @@ test("weekend opt-in is visible in Week, Month, and Quarter", async ({ page }) =
   await page.getByRole("button", { name: "Quarter" }).click();
   const firstQuarterWeek = page.locator(".quarterWeek").first();
   await expect(firstQuarterWeek.locator(".quarterDay")).toHaveCount(7);
-  await expect(firstQuarterWeek.getByRole("button", { name: /Sat/ })).toBeVisible();
-  await expect(firstQuarterWeek.getByRole("button", { name: /Sun/ })).toBeVisible();
+  await expect(firstQuarterWeek.locator(".quarterDate").filter({ hasText: "Sat" })).toBeVisible();
+  await expect(firstQuarterWeek.locator(".quarterDate").filter({ hasText: "Sun" })).toBeVisible();
 });
