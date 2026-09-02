@@ -48,6 +48,14 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
     setShowExploreArc(true);
   }
 
+  function completeOnboarding() {
+    const stored = loadWorkspace(ownerId);
+    setWorkspace(stored);
+    if (!isReady(stored)) return;
+    setComplete(true);
+    setShowExploreArc(true);
+  }
+
   if (!loaded) return <main className="loadingShell">Opening Arc...</main>;
   if (complete) {
     return (
@@ -61,11 +69,5 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
     );
   }
 
-  return <OnboardingScreen workspace={workspace} onUpdate={updateWorkspace} onComplete={() => {
-    const next = { ...workspace, ownerId };
-    saveWorkspace(next, ownerId);
-    setWorkspace(next);
-    setComplete(true);
-    setShowExploreArc(true);
-  }} />;
+  return <OnboardingScreen workspace={workspace} onUpdate={updateWorkspace} onComplete={completeOnboarding} />;
 }
