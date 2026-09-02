@@ -1,5 +1,11 @@
 .card {
+  position: fixed;
+  right: 18px;
+  bottom: 74px;
+  z-index: 90;
   width: min(360px, calc(100vw - 32px));
+  max-height: min(520px, calc(100vh - 108px));
+  overflow: auto;
   display: grid;
   gap: 12px;
   padding: 16px;
@@ -89,6 +95,15 @@
 .secondary:focus-visible {
   outline: 3px solid #f0d538;
   outline-offset: 2px;
+}
+
+@media (max-width: 760px), (max-height: 560px) {
+  .card {
+    right: 10px;
+    bottom: 10px;
+    width: min(360px, calc(100vw - 20px));
+    max-height: calc(100vh - 20px);
+  }
 }
 
 @media (forced-colors: active) {
