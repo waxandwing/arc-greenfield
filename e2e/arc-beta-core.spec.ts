@@ -1,19 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-
-async function completeFirstRun(page: Page) {
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Make Arc yours." })).toBeVisible();
-  await page.getByPlaceholder("What should Arc call you?").fill("Arc Beta Teacher");
-  await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByPlaceholder("Course name").fill("Studio Art");
-  await page.getByPlaceholder("Period / block").fill("2");
-  await page.getByRole("button", { name: "Add class" }).click();
-  await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("First student day").fill("2026-08-10");
-  await page.getByLabel("Last student day").fill("2027-05-28");
-  await page.getByRole("button", { name: "Open my desk" }).click();
-  await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
-}
+import { completeFirstRun } from "./helpers";
 
 async function createUnitWithLesson(page: Page) {
   await page.getByRole("button", { name: "＋ Unit" }).click();
@@ -33,7 +19,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("core Unit workflow creates a real Unit tree and opens Unit Focus without leaving Week", async ({ page }) => {
-  await completeFirstRun(page);
+  await completeFirstRun(page, { teacherName: "Arc Beta Teacher" });
   await createUnitWithLesson(page);
 
   await page.locator(".unitMagnet").filter({ hasText: "Foundations" }).first().click();
@@ -44,7 +30,7 @@ test("core Unit workflow creates a real Unit tree and opens Unit Focus without l
 });
 
 test("Month is an editing surface: select a Unit, copy it, choose a date, and paste a new tree", async ({ page }) => {
-  await completeFirstRun(page);
+  await completeFirstRun(page, { teacherName: "Arc Beta Teacher" });
   await createUnitWithLesson(page);
 
   await page.getByRole("button", { name: "Month" }).click();
@@ -62,7 +48,7 @@ test("Month is an editing surface: select a Unit, copy it, choose a date, and pa
 });
 
 test("Must Should Could is one lifecycle: add, red-circle, cross out, then delete", async ({ page }) => {
-  await completeFirstRun(page);
+  await completeFirstRun(page, { teacherName: "Arc Beta Teacher" });
 
   await page.getByRole("button", { name: "Must", exact: true }).click();
   await page.getByPlaceholder("Add to must").fill("Call family");
@@ -80,7 +66,7 @@ test("Must Should Could is one lifecycle: add, red-circle, cross out, then delet
 
 test("full-screen shell does not grow the document when Fridge and priorities are open", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
-  await completeFirstRun(page);
+  await completeFirstRun(page, { teacherName: "Arc Beta Teacher" });
   await page.getByRole("button", { name: "Fridge" }).click();
   await expect(page.getByRole("heading", { name: "Fridge Door" })).toBeVisible();
   await page.getByRole("button", { name: "Must", exact: true }).click();
