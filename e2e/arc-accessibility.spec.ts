@@ -1,20 +1,5 @@
-import { test, expect, type Page } from "@playwright/test";
-
-async function completeFirstRun(page: Page) {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Make Arc yours." })).toBeVisible();
-  await page.getByPlaceholder("What should Arc call you?").fill("Arc Accessibility Teacher");
-  await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByPlaceholder("Course name").fill("Studio Art");
-  await page.getByPlaceholder("Period / block").fill("2");
-  await page.getByRole("button", { name: "Add class" }).click();
-  await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("First student day", { exact: true }).fill("2026-08-10");
-  await page.getByLabel("Last student day", { exact: true }).fill("2027-05-28");
-  await page.getByRole("button", { name: "Open my desk" }).click();
-  await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
-}
+import { test, expect } from "@playwright/test";
+import { completeFirstRun } from "./helpers";
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.clear());
@@ -22,7 +7,8 @@ test.beforeEach(async ({ page }) => {
 
 test("Arc remains operable at an effective 200 percent desktop viewport", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "zoom-200");
-  await completeFirstRun(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await completeFirstRun(page, { teacherName: "Arc Accessibility Teacher" });
   await page.setViewportSize({ width: 720, height: 450 });
 
   await expect(page.getByRole("button", { name: "Fridge", exact: true })).toBeVisible();
@@ -51,7 +37,7 @@ test("Arc remains operable at an effective 200 percent desktop viewport", async 
 test("reduced motion and forced colors keep the primary planning path reachable", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "reduced-motion-high-contrast");
   await page.emulateMedia({ reducedMotion: "reduce", forcedColors: "active" });
-  await completeFirstRun(page);
+  await completeFirstRun(page, { teacherName: "Arc Accessibility Teacher" });
 
   const media = await page.evaluate(() => ({
     reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
