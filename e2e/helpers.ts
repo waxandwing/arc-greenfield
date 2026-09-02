@@ -11,6 +11,7 @@ type FirstRunOptions = {
   clearStorageOnce?: boolean;
   completeTutorial?: boolean;
   weekendsVisible?: boolean;
+  contextualHelp?: boolean;
 };
 
 export async function completeFirstRun(page: Page, options: FirstRunOptions = {}) {
@@ -24,7 +25,8 @@ export async function completeFirstRun(page: Page, options: FirstRunOptions = {}
     quarters = null,
     clearStorageOnce = false,
     completeTutorial = false,
-    weekendsVisible = false
+    weekendsVisible = false,
+    contextualHelp = false
   } = options;
 
   await page.goto("/");
@@ -77,4 +79,15 @@ export async function completeFirstRun(page: Page, options: FirstRunOptions = {}
   }
 
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
+
+  if (!contextualHelp) {
+    await page.evaluate(() => {
+      const key = "arc.greenfield.workspace.v1";
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const workspace = JSON.parse(raw);
+      workspace.preferences = { ...workspace.preferences, firstTimeHelpEnabled: false };
+      localStorage.setItem(key, JSON.stringify(workspace));
+    });
+  }
 }
