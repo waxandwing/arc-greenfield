@@ -11,6 +11,10 @@ export type SaveState = {
   savedAt: string;
 };
 
+export type SaveWorkspaceOptions = {
+  overwriteHelpPreferences?: boolean;
+};
+
 type WorkspaceV1 = Omit<Workspace, "schemaVersion" | "plans" | "preferences"> & {
   schemaVersion: 1;
   plans: Array<Omit<Plan, "endDate">>;
@@ -63,15 +67,14 @@ function activeOwnerId(): string | null {
   return window.localStorage.getItem(ACTIVE_OWNER_KEY);
 }
 
-function storedHelpState(ownerId: string | null): { updatedAt: string | null; preferences: Partial<Workspace["preferences"]> } {
-  if (typeof window === "undefined") return { updatedAt: null, preferences: {} };
+function storedHelpState(ownerId: string | null): { preferences: Partial<Workspace["preferences"]> } {
+  if (typeof window === "undefined") return { preferences: {} };
   const raw = window.localStorage.getItem(workspaceStorageKey(ownerId));
-  if (!raw) return { updatedAt: null, preferences: {} };
+  if (!raw) return { preferences: {} };
   try {
     const parsed = JSON.parse(raw) as Partial<Workspace>;
     const preferences = (parsed.preferences ?? {}) as Partial<Workspace["preferences"]>;
     return {
-      updatedAt: parsed.updatedAt ?? null,
       preferences: HELP_PREFERENCE_KEYS.reduce((result, key) => {
         const value = preferences[key];
         if (value !== undefined) (result as Record<string, unknown>)[key] = value;
@@ -79,17 +82,8 @@ function storedHelpState(ownerId: string | null): { updatedAt: string | null; pr
       }, {} as Partial<Workspace["preferences"]>)
     };
   } catch {
-    return { updatedAt: null, preferences: {} };
+    return { preferences: {} };
   }
-}
-
-function isNewer(storedAt: string | null, incomingAt: string | null | undefined): boolean {
-  if (!storedAt) return false;
-  const storedTime = Date.parse(storedAt);
-  const incomingTime = incomingAt ? Date.parse(incomingAt) : Number.NaN;
-  if (Number.isNaN(storedTime)) return false;
-  if (Number.isNaN(incomingTime)) return true;
-  return storedTime > incomingTime;
 }
 
 export function setActiveWorkspaceOwner(ownerId: string | null): void {
@@ -129,15 +123,15 @@ export function loadWorkspace(ownerId?: string | null): Workspace {
   }
 }
 
-export function saveWorkspace(workspace: Workspace, ownerId?: string | null): SaveState {
+export function saveWorkspace(workspace: Workspace, ownerId?: string | null, options: SaveWorkspaceOptions = {}): SaveState {
   const savedAt = new Date().toISOString();
   const resolvedOwnerId = ownerId === undefined ? activeOwnerId() ?? workspace.ownerId : ownerId;
   const stored = storedHelpState(resolvedOwnerId ?? null);
-  const preserveNewerStoredHelp = isNewer(stored.updatedAt, workspace.updatedAt);
+  const preserveStoredHelp = !options.overwriteHelpPreferences && Object.keys(stored.preferences).length > 0;
   const next = {
     ...workspace,
     ownerId: resolvedOwnerId ?? null,
-    preferences: preserveNewerStoredHelp
+    preferences: preserveStoredHelp
       ? { ...workspace.preferences, ...stored.preferences }
       : workspace.preferences,
     updatedAt: savedAt
