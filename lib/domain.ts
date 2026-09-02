@@ -88,6 +88,10 @@ export type WorkspacePreferences = {
   compactMode?: boolean;
   darkMode?: boolean;
   tutorialCompleted?: boolean;
+  helpMarksVisible?: boolean;
+  firstTimeHelpEnabled?: boolean;
+  exploredHelpIds?: string[];
+  exploreWelcomeDismissed?: boolean;
 };
 
 export type Workspace = {
@@ -138,7 +142,11 @@ export function emptyWorkspace(): Workspace {
       colorScheme: "studio",
       compactMode: false,
       darkMode: false,
-      tutorialCompleted: false
+      tutorialCompleted: false,
+      helpMarksVisible: true,
+      firstTimeHelpEnabled: true,
+      exploredHelpIds: [],
+      exploreWelcomeDismissed: false
     },
     checkpoints: [],
     updatedAt: new Date().toISOString()
