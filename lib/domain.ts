@@ -87,6 +87,7 @@ export type WorkspacePreferences = {
   colorScheme?: ArcColorScheme;
   compactMode?: boolean;
   darkMode?: boolean;
+  tutorialCompleted?: boolean;
 };
 
 export type Workspace = {
@@ -136,7 +137,8 @@ export function emptyWorkspace(): Workspace {
       contentFilter: "everything",
       colorScheme: "studio",
       compactMode: false,
-      darkMode: false
+      darkMode: false,
+      tutorialCompleted: false
     },
     checkpoints: [],
     updatedAt: new Date().toISOString()
