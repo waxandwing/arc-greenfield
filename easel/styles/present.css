@@ -1,0 +1,12 @@
+/* PRESENT: projected classroom surface. Minimal private chrome; stable hierarchy. */
+body.present{background:var(--paper)}
+body.present .mainStage,body.present .interactionStage,body.present .utility{box-shadow:none}
+body.present .teacherDock{border-radius:14px;border-color:#d6c8b3;backdrop-filter:blur(10px)}
+body.present .phasebar{font-size:clamp(13px,1vw,16px)}
+body.present .phaseBtn{font-weight:850}
+body.present .presentExit{opacity:.58;transition:opacity .15s ease}
+body.present .presentExit:hover,body.present .presentExit:focus-visible{opacity:1}
+body.present .phaseLabel{letter-spacing:.14em}
+body.present .headline{max-width:18ch;text-wrap:balance}
+body.present .direction{max-width:44ch}
+body.present .planOverlay{display:none!important}
