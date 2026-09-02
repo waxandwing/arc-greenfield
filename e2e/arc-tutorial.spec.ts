@@ -1,11 +1,10 @@
 import { test, expect } from "@playwright/test";
 
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
-});
-
 test("new teachers can complete the eight-step Arc walkthrough and are not forced through it again", async ({ page }, testInfo) => {
   await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+
   await page.getByPlaceholder("What should Arc call you?").fill("Tutorial Teacher");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByPlaceholder("Course name").fill("Studio Art");
