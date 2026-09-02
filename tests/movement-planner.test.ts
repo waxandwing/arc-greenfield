@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { planInstructionalShift } from "../lib/movement-planner";
+import { planInstructionalShift, planParkToFridge } from "../lib/movement-planner";
 import { veteranArtTeacherWeekFixture } from "./fixtures/veteran-art-teacher-week";
 
 test("planning a Shift returns command plus impact without mutating the workspace", () => {
@@ -49,4 +49,48 @@ test("multi-section planning declares linked-section scope instead of inferring 
   assert.equal(planned.command.scope, "linked-sections");
   assert.equal(planned.command.target.kind, "calendar");
   if (planned.command.target.kind === "calendar") assert.equal(planned.command.target.sectionId, null);
+});
+
+test("Park preview keeps a Unit tree together and does not mutate it", () => {
+  const workspace = veteranArtTeacherWeekFixture();
+  const before = structuredClone(workspace);
+  const planned = planParkToFridge({
+    workspace,
+    sourceId: "three-d-paper-structure",
+    commandId: "cmd-park-1"
+  });
+
+  assert.deepEqual(workspace, before);
+  assert.equal(planned.command.operation, "PARK");
+  assert.equal(planned.command.scope, "unit-sequence");
+  assert.deepEqual(planned.command.sourceIds, ["three-d-paper-structure", "three-d-slot-joints"]);
+  assert.equal(planned.impact.errors.length, 0);
+  assert.equal(planned.impact.landing.length, 2);
+  assert.ok(planned.impact.warnings.some((message) => /move to the Fridge together/i.test(message)));
+});
+
+test("Park preview blocks a Unit tree that contains a fixed assessment", () => {
+  const workspace = veteranArtTeacherWeekFixture();
+  const planned = planParkToFridge({
+    workspace,
+    sourceId: "studio-seeing-drawing",
+    commandId: "cmd-park-2"
+  });
+
+  assert.equal(planned.impact.landing.length, 0);
+  assert.ok(planned.impact.protected.some((item) => item.id === "studio-portfolio-check"));
+  assert.ok(planned.impact.errors.some((message) => /must be unlocked/i.test(message)));
+});
+
+test("Park preview fails safely when the selected object no longer exists", () => {
+  const workspace = veteranArtTeacherWeekFixture();
+  const planned = planParkToFridge({
+    workspace,
+    sourceId: "missing-plan",
+    commandId: "cmd-park-missing"
+  });
+
+  assert.equal(planned.command.sourceIds.length, 0);
+  assert.equal(planned.impact.landing.length, 0);
+  assert.ok(planned.impact.errors.some((message) => /no longer exists/i.test(message)));
 });
