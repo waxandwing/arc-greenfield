@@ -1,0 +1,15 @@
+{
+  "metrics": {
+    "html_bytes": 118033,
+    "css_bytes": 115009,
+    "js_bytes": 170740,
+    "css_selector_occurrences": 611,
+    "duplicate_selector_names": 85,
+    "important_declarations": 15,
+    "media_queries": 17,
+    "js_named_functions": 134
+  },
+  "top_duplicate_selectors": [
+    [".welcomeLesson",6],[".lessonTitle",5],[".headerActions",5],[".welcomeBrand",4],[".topbar",4],[".brandmark",4],[".lessonMeta",4],[".phaseBtn",4],[".workspace",4],[".activeClassPill",4],[".present .board",4],[".present .board.mediaFocus",4],[".present .board.utilityLeft",4],[".present .board.mediaFocus.utilityLeft",4],[".present .mainStage",4],[".present .headline",4]
+  ]
+}
