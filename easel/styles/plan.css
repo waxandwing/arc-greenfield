@@ -1,0 +1,10 @@
+/* PLAN: private teacher workspace. Deliberately denser and warmer than Present. */
+body:not(.present) .planOverlay{background:#f3ede2;color:var(--ink)}
+body:not(.present) .planHeader{background:#fffaf2;border-bottom:1px solid #d8cbb8;box-shadow:0 2px 0 rgba(23,79,100,.03)}
+body:not(.present) .planHeader h1{font-size:28px;letter-spacing:-.02em}
+body:not(.present) .planSidebar{background:#eee6d8;border-right:1px solid #d6c8b3}
+body:not(.present) .planMain{background:#f7f1e7}
+body:not(.present) .planModule,body:not(.present) .metricCard,body:not(.present) .passSummaryTable{box-shadow:none}
+body:not(.present) .planModule{border-radius:14px}
+body:not(.present) .planEyebrow::after{content:" · teacher workspace";letter-spacing:.06em;text-transform:none;color:var(--muted)}
+body:not(.present) .deviceSaveNote{background:#fffaf2}
