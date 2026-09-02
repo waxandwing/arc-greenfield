@@ -23,6 +23,9 @@ function migrateWorkspace(parsed: Workspace | WorkspaceV1): Workspace {
     ? parsed.plans.map((plan) => ({ ...plan, endDate: null }))
     : parsed.plans;
   const existingPreferences = parsed.preferences ?? defaults.preferences;
+  const collapsedUnitIds = parsed.schemaVersion === 1
+    ? []
+    : parsed.preferences.collapsedUnitIds ?? [];
 
   return {
     ...defaults,
@@ -33,7 +36,7 @@ function migrateWorkspace(parsed: Workspace | WorkspaceV1): Workspace {
     preferences: {
       ...defaults.preferences,
       ...existingPreferences,
-      collapsedUnitIds: existingPreferences.collapsedUnitIds ?? [],
+      collapsedUnitIds,
       exploredHelpIds: existingPreferences.exploredHelpIds ?? [],
       // Existing stored workspaces should not suddenly receive a first-visit welcome
       // after this feature ships. New workspaces explicitly store `false` from
