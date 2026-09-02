@@ -19,6 +19,21 @@ function nextLesson(workspace: Workspace, courseId: string, date: string) {
     .sort((a, b) => (a.date ?? "").localeCompare(b.date ?? "") || (a.childOrder ?? 0) - (b.childOrder ?? 0))[0] ?? null;
 }
 
+type DeliveryState = "taught" | "partial" | "missed";
+
+const DELIVERY_OPTIONS: Array<{ value: DeliveryState; label: string }> = [
+  { value: "taught", label: "Taught" },
+  { value: "partial", label: "Partly taught" },
+  { value: "missed", label: "Didn’t get to it" }
+];
+
+function deliveryState(lesson: Plan): DeliveryState | null {
+  const stored = lesson.details.deliveryState;
+  if (stored === "taught" || stored === "partial" || stored === "missed") return stored;
+  if (lesson.details.taught === "true") return "taught";
+  return null;
+}
+
 export function DayPlanningView({ workspace, date, onSelectPlan, onPatchPlan }: {
   workspace: Workspace;
   date: string;
@@ -54,11 +69,34 @@ export function DayPlanningView({ workspace, date, onSelectPlan, onPatchPlan }: 
 
               <div className="dayLessonList">
                 {lessons.map((lesson) => {
-                  const taught = lesson.details.taught === "true";
-                  return <section className={`dayLessonCard${taught ? " taught" : ""}`} key={lesson.id}>
-                    <div className="dayLessonTop"><button type="button" className="dayLessonTitle" onClick={() => onSelectPlan(lesson)}>{lesson.title}</button><button type="button" className="taughtToggle" aria-pressed={taught} onClick={() => onPatchPlan(lesson.id, { details: { ...lesson.details, taught: taught ? "false" : "true", taughtOn: taught ? "" : date } })}>{taught ? "✓ Taught" : "Mark taught"}</button></div>
+                  const state = deliveryState(lesson);
+                  const recoveryNeeded = state === "partial" || state === "missed";
+                  return <section className={`dayLessonCard${state === "taught" ? " taught" : ""}${recoveryNeeded ? " recoveryNeeded" : ""}`} key={lesson.id}>
+                    <div className="dayLessonTop"><button type="button" className="dayLessonTitle" onClick={() => onSelectPlan(lesson)}>{lesson.title}</button></div>
                     {lesson.notes && <p className="dayLessonNotes">{lesson.notes}</p>}
                     {lesson.resources.length > 0 && <div className="dayResources" aria-label={`${lesson.title} resources`}>{lesson.resources.map((resource) => <a key={resource.id} href={resource.url} target="_blank" rel="noreferrer">{resource.label}</a>)}</div>}
+
+                    <fieldset className="dayDeliveryState">
+                      <legend>What actually happened?</legend>
+                      <div>
+                        {DELIVERY_OPTIONS.map((option) => <button
+                          type="button"
+                          key={option.value}
+                          aria-pressed={state === option.value}
+                          onClick={() => onPatchPlan(lesson.id, {
+                            details: {
+                              ...lesson.details,
+                              deliveryState: option.value,
+                              taught: option.value === "taught" ? "true" : "false",
+                              taughtOn: option.value === "taught" ? date : "",
+                              recoveryHandled: option.value === "taught" ? "" : lesson.details.recoveryHandled ?? ""
+                            }
+                          })}
+                        >{option.label}</button>)}
+                      </div>
+                    </fieldset>
+
+                    {recoveryNeeded && <p className="dayRecoveryCue">Keep the record here. Recovery can carry the unfinished work forward without pretending today went differently.</p>}
                     <label className="dayReflection"><span>What changed?</span><textarea rows={2} value={lesson.details.dayReflection ?? ""} onChange={(event) => onPatchPlan(lesson.id, { details: { ...lesson.details, dayReflection: event.target.value } })} placeholder="A sentence is enough." /></label>
                   </section>;
                 })}
