@@ -1,4 +1,5 @@
-import type { Plan } from "./domain";
+import type { Plan, Workspace } from "./domain";
+import { courseMeetsOnDate } from "./efficiency-operations";
 import { collectPlanTree } from "./plan-tree";
 
 export type DirectMoveReview = {
@@ -6,6 +7,7 @@ export type DirectMoveReview = {
   reason: string | null;
   conflictingPlanId: string | null;
   protectedPlanId: string | null;
+  invalidMeetingPlanId: string | null;
 };
 
 function parseDate(value: string) {
@@ -31,32 +33,55 @@ function dateDelta(from: string, to: string) {
   return Math.round((parseDate(to).getTime() - parseDate(from).getTime()) / 86400000);
 }
 
-export function reviewDirectCalendarMove(plans: Plan[], planId: string, targetDate: string, targetCourseId: string): DirectMoveReview {
+function readableDate(value: string) {
+  return parseDate(value).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+}
+
+function blocked(reason: string, patch: Partial<DirectMoveReview> = {}): DirectMoveReview {
+  return {
+    allowed: false,
+    reason,
+    conflictingPlanId: null,
+    protectedPlanId: null,
+    invalidMeetingPlanId: null,
+    ...patch
+  };
+}
+
+export function reviewDirectCalendarMove(workspace: Workspace, planId: string, targetDate: string, targetCourseId: string): DirectMoveReview {
+  const plans = workspace.plans;
   const source = plans.find((plan) => plan.id === planId);
-  if (!source) return { allowed: false, reason: "That plan is no longer available.", conflictingPlanId: null, protectedPlanId: null };
+  if (!source) return blocked("That plan is no longer available.");
 
   const tree = source.type === "unit" ? collectPlanTree(plans, source.id) : [source];
   const movingIds = new Set(tree.map((plan) => plan.id));
   const placementChanges = source.date !== targetDate || source.courseId !== targetCourseId || source.location !== "calendar";
   const protectedPlan = placementChanges ? tree.find((plan) => plan.fixedDate) : null;
   if (protectedPlan) {
-    return {
-      allowed: false,
-      reason: protectedPlan.id === source.id
+    return blocked(
+      protectedPlan.id === source.id
         ? `${protectedPlan.title} is fixed to its current date.`
         : `${protectedPlan.title} is fixed inside this Unit, so the Unit stays put.`,
-      conflictingPlanId: null,
-      protectedPlanId: protectedPlan.id
-    };
+      { protectedPlanId: protectedPlan.id }
+    );
   }
 
   const delta = source.date ? dateDelta(source.date, targetDate) : 0;
   const lessons = tree.filter((plan) => plan.type === "lesson");
+  const targetCourse = workspace.courses.find((course) => course.id === targetCourseId);
   for (const lesson of lessons) {
     const landingDate = source.type === "unit"
       ? (source.date ? shiftDate(lesson.date, delta) : lesson.date ?? targetDate)
       : targetDate;
     if (!landingDate) continue;
+
+    if (!courseMeetsOnDate(workspace, targetCourseId, landingDate)) {
+      return blocked(
+        `${lesson.title} would land on ${readableDate(landingDate)}, when ${targetCourse?.name ?? "that class"} does not meet. Nothing moved.`,
+        { invalidMeetingPlanId: lesson.id }
+      );
+    }
+
     const collision = plans.find((candidate) =>
       !movingIds.has(candidate.id) &&
       candidate.location === "calendar" &&
@@ -65,14 +90,9 @@ export function reviewDirectCalendarMove(plans: Plan[], planId: string, targetDa
       candidate.date === landingDate
     );
     if (collision) {
-      return {
-        allowed: false,
-        reason: `${collision.title} is already scheduled there. Nothing moved.`,
-        conflictingPlanId: collision.id,
-        protectedPlanId: null
-      };
+      return blocked(`${collision.title} is already scheduled there. Nothing moved.`, { conflictingPlanId: collision.id });
     }
   }
 
-  return { allowed: true, reason: null, conflictingPlanId: null, protectedPlanId: null };
+  return { allowed: true, reason: null, conflictingPlanId: null, protectedPlanId: null, invalidMeetingPlanId: null };
 }
