@@ -61,7 +61,7 @@ export function ArcTutorialScreen({ workspace, onComplete }: { workspace: Worksp
             <h1 id="arc-explore-title">Getting to Know Arc</h1>
             <p id="arc-explore-intro">This is a reference, not a required course. Look around, open what is useful, then go straight back to the calendar.</p>
           </div>
-          <button type="button" className={styles.close} onClick={onComplete} aria-label="Back to Arc">×</button>
+          <button type="button" className={styles.close} onClick={onComplete} aria-label="Close Explore Arc">×</button>
         </header>
 
         <div className={styles.body}>
