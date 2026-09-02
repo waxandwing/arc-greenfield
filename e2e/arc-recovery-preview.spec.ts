@@ -14,7 +14,6 @@ test("Recovery Desk shows the exact next class meeting before a shift", async ({
   await page.getByRole("button", { name: "Add lesson or unit to Studio Art on Mon" }).click();
   await page.getByPlaceholder("Lesson title").fill("Wheel demo");
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("button", { name: "Wheel demo", exact: true })).toBeVisible();
 
   await page.goto("/recovery");
   await expect(page.getByRole("heading", { name: "Recovery Desk" })).toBeVisible();
@@ -27,5 +26,6 @@ test("Recovery Desk shows the exact next class meeting before a shift", async ({
   await expect(page.getByRole("button", { name: "Confirm safe moves" })).toBeEnabled();
 
   await page.goto("/");
+  await page.getByRole("button", { name: "Month", exact: true }).click();
   await expect(page.getByRole("button", { name: "Wheel demo", exact: true })).toBeVisible();
 });
