@@ -17,6 +17,15 @@ type WorkspaceV1 = Omit<Workspace, "schemaVersion" | "plans" | "preferences"> & 
   preferences: Omit<Workspace["preferences"], "collapsedUnitIds">;
 };
 
+const HELP_PREFERENCE_KEYS = [
+  "helpMarksVisible",
+  "firstTimeHelpEnabled",
+  "exploredHelpIds",
+  "exploreWelcomeDismissed"
+] as const;
+
+type HelpPreferenceKey = (typeof HELP_PREFERENCE_KEYS)[number];
+
 function migrateWorkspace(parsed: Workspace | WorkspaceV1): Workspace {
   const defaults = emptyWorkspace();
   const migratedPlans = parsed.schemaVersion === 1
@@ -54,6 +63,23 @@ export function workspaceStorageKey(ownerId: string | null): string {
 function activeOwnerId(): string | null {
   if (typeof window === "undefined") return null;
   return window.localStorage.getItem(ACTIVE_OWNER_KEY);
+}
+
+function storedHelpPreferences(ownerId: string | null): Partial<Workspace["preferences"]> {
+  if (typeof window === "undefined") return {};
+  const raw = window.localStorage.getItem(workspaceStorageKey(ownerId));
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as Partial<Workspace>;
+    const preferences = parsed.preferences ?? {};
+    return HELP_PREFERENCE_KEYS.reduce((result, key) => {
+      const value = preferences[key as HelpPreferenceKey];
+      if (value !== undefined) (result as Record<string, unknown>)[key] = value;
+      return result;
+    }, {} as Partial<Workspace["preferences"]>);
+  } catch {
+    return {};
+  }
 }
 
 export function setActiveWorkspaceOwner(ownerId: string | null): void {
@@ -96,7 +122,13 @@ export function loadWorkspace(ownerId?: string | null): Workspace {
 export function saveWorkspace(workspace: Workspace, ownerId?: string | null): SaveState {
   const savedAt = new Date().toISOString();
   const resolvedOwnerId = ownerId === undefined ? activeOwnerId() ?? workspace.ownerId : ownerId;
-  const next = { ...workspace, ownerId: resolvedOwnerId ?? null, updatedAt: savedAt };
+  const helpPreferences = storedHelpPreferences(resolvedOwnerId ?? null);
+  const next = {
+    ...workspace,
+    ownerId: resolvedOwnerId ?? null,
+    preferences: { ...workspace.preferences, ...helpPreferences },
+    updatedAt: savedAt
+  };
   window.localStorage.setItem(workspaceStorageKey(resolvedOwnerId ?? null), JSON.stringify(next));
   return { destination: "device", savedAt };
 }
