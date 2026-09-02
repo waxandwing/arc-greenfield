@@ -1,14 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { completeFirstRun } from "./helpers";
 
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
-});
-
 test("Recovery Desk shows the exact next class meeting before a shift", async ({ page }) => {
   await completeFirstRun(page, {
     teacherName: "Recovery Preview Teacher",
-    meetingWeekdays: [1, 3, 5]
+    meetingWeekdays: [1, 3, 5],
+    clearStorageOnce: true
   });
 
   await page.getByRole("button", { name: "Add lesson or unit to Studio Art on Mon" }).click();
@@ -17,6 +14,7 @@ test("Recovery Desk shows the exact next class meeting before a shift", async ({
 
   await page.goto("/recovery");
   await expect(page.getByRole("heading", { name: "Recovery Desk" })).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: /Studio Art/ })).toBeChecked();
   await page.getByLabel("Date", { exact: true }).fill("2026-08-31");
   await page.getByRole("button", { name: "Preview the ripple" }).click();
 
