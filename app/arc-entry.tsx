@@ -43,6 +43,8 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
 
   function openExploreArc() {
     setWorkspace(loadWorkspace(ownerId));
+    const openMore = document.querySelector<HTMLButtonElement>(".moreTab[aria-pressed='true']");
+    openMore?.click();
     setShowExploreArc(true);
   }
 
