@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Course, Plan, Workspace } from "../lib/domain";
+import { reviewDirectCalendarMove } from "../lib/direct-move-review";
 import { orderedUnitChildren } from "../lib/plan-tree";
 import styles from "./week-planner.module.css";
 
@@ -69,6 +70,7 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
   const [unitDraft, setUnitDraft] = useState<UnitDraft | null>(null);
   const [childDraft, setChildDraft] = useState<{ unitId: string; title: string } | null>(null);
   const [editDraft, setEditDraft] = useState<{ id: string; title: string } | null>(null);
+  const [moveMessage, setMoveMessage] = useState("");
   const visibleDays = useMemo(() => visibleWeekDays(days, workspace.calendar.weekendsVisible), [days, workspace.calendar.weekendsVisible]);
   const lastVisibleDay = visibleDays.at(-1) ?? days.at(-1);
   const visibleWeekLabel = workspace.calendar.weekendsVisible && days[0] && lastVisibleDay
@@ -93,12 +95,23 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
     setEditDraft(null);
   }
 
+  function attemptMove(planId: string, date: string, courseId: string) {
+    const review = reviewDirectCalendarMove(workspace.plans, planId, date, courseId);
+    if (!review.allowed) {
+      setMoveMessage(review.reason ?? "That move is blocked. Nothing changed.");
+      return false;
+    }
+    setMoveMessage("");
+    onMovePlan(planId, date, courseId);
+    return true;
+  }
+
   function moveOneDay(plan: Plan, direction: -1 | 1) {
     if (!plan.date || !plan.courseId) return;
     const index = visibleDays.findIndex((day) => day.key === plan.date);
     const target = visibleDays[index + direction];
     if (!target) return;
-    onMovePlan(plan.id, target.key, plan.courseId);
+    attemptMove(plan.id, target.key, plan.courseId);
   }
 
   function actionRow(plan: Plan) {
@@ -124,6 +137,7 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
 
   return <>
     <div className="calendarHeader"><div><span className="viewName">{visibleWeekLabel}</span><strong>Units hold the sequence. Lessons live on the day you teach them.</strong></div></div>
+    {moveMessage && <p className={styles.moveStatus} role="status">{moveMessage}</p>}
     <div className="weekHeader" style={{ gridTemplateColumns: `126px repeat(${visibleDays.length},minmax(0,1fr))` }}><span />{visibleDays.map((day) => <div key={day.key} className={isWeekend(day) ? styles.weekendHeader : undefined}><span>{day.label}</span><b>{day.number}</b></div>)}</div>
     <div className="classRows" style={{ minWidth: visibleDays.length === 7 ? 980 : 760 }}>{workspace.courses.map((course) => {
       const classUnitEditing = unitDraft?.courseId === course.id;
@@ -136,7 +150,7 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
           const nestedLessons = workspace.plans.filter((plan) => plan.location === "calendar" && plan.courseId === course.id && plan.type === "lesson" && Boolean(plan.parentUnitId) && plan.date === day.key);
           const editing = cellDraft?.courseId === course.id && cellDraft.date === day.key;
           const dayClassName = `${target ? "dayCell pasteTarget" : "dayCell"}${isWeekend(day) ? ` ${styles.weekendCell}` : ""}`;
-          return <div className={dayClassName} key={day.key} onClick={() => onSelectDate(course.id, day.key)} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/arc-plan"); if (id) onMovePlan(id, day.key, course.id); }}>
+          return <div className={dayClassName} key={day.key} onClick={() => onSelectDate(course.id, day.key)} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const id = e.dataTransfer.getData("text/arc-plan"); if (id) attemptMove(id, day.key, course.id); }}>
             <div className="cellPlans">
               {roots.map((plan) => {
                 const selected = selectedPlanId === plan.id;
