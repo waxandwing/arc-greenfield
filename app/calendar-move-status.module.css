@@ -1,0 +1,20 @@
+.status {
+  margin: 0;
+  padding: 9px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--arc-coral, #ee8f74) 42%, var(--arc-line, #ddd5c6));
+  background: color-mix(in srgb, var(--arc-coral, #ee8f74) 10%, var(--arc-card, #fffdf8));
+  color: var(--arc-deep, #0b4f66);
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+@media (forced-colors: active) {
+  .status {
+    border: 1px solid CanvasText;
+    border-left: 0;
+    border-right: 0;
+    background: Canvas;
+    color: CanvasText;
+  }
+}
