@@ -28,6 +28,8 @@ test("class meeting days persist from onboarding into the Arc workspace", async 
   await page.getByLabel("First student day", { exact: true }).fill("2026-08-10");
   await page.getByLabel("Last student day", { exact: true }).fill("2027-05-28");
   await page.getByRole("button", { name: "Open my desk" }).click();
+  await expect(page.getByRole("heading", { name: "How Arc works." })).toBeVisible();
+  await page.getByRole("button", { name: "Skip tutorial", exact: true }).click();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
 
   const stored = await page.evaluate(() => {
