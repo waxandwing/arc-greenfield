@@ -56,13 +56,18 @@ export async function completeFirstRun(page: Page, options: FirstRunOptions = {}
   }
 
   await page.getByRole("button", { name: "Open my desk" }).click();
-  await expect(page.getByRole("heading", { name: "How Arc works." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Getting to Know Arc" })).toBeVisible();
+  await expect(page.getByRole("tablist", { name: "Explore Arc topics" })).toBeVisible();
 
   if (completeTutorial) {
-    for (let index = 0; index < 7; index += 1) await page.getByRole("button", { name: "Next", exact: true }).click();
-    await page.getByRole("button", { name: "Open Arc", exact: true }).click();
+    for (let guard = 0; guard < 20; guard += 1) {
+      const next = page.getByRole("button", { name: "Next", exact: true });
+      if ((await next.count()) === 0) break;
+      await next.click();
+    }
+    await page.getByRole("button", { name: "Done exploring", exact: true }).click();
   } else {
-    await page.getByRole("button", { name: "Skip tutorial", exact: true }).click();
+    await page.getByRole("button", { name: "Back to Arc", exact: true }).click();
   }
 
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
