@@ -25,19 +25,10 @@ test("direct Week move names a collision and preserves both Lessons", async ({ p
 });
 
 test("direct Week move refuses a day the class does not meet", async ({ page }) => {
-  await completeFirstRun(page, { teacherName: "Arc MWF Teacher" });
-  await expect(page.locator(".arcSaveStatus")).toContainText("Saved on this device");
-  await page.evaluate(() => {
-    const key = "arc.greenfield.workspace.v1";
-    const raw = localStorage.getItem(key);
-    if (!raw) return;
-    const workspace = JSON.parse(raw);
-    workspace.courses[0].meetingPattern = { kind: "weekdays", weekdays: [1, 3, 5] };
-    workspace.updatedAt = new Date(Date.now() + 5).toISOString();
-    localStorage.setItem(key, JSON.stringify(workspace));
+  await completeFirstRun(page, {
+    teacherName: "Arc MWF Teacher",
+    meetingWeekdays: [1, 3, 5]
   });
-  await page.reload();
-  await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
 
   await addLesson(page, "Mon", "Wheel demo");
   const actions = page.locator('.magnetActions[aria-label="Actions for Wheel demo"]');
