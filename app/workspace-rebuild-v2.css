@@ -293,3 +293,61 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Hardening cycle: presentation only. Keep interaction grammar and calendar behavior unchanged. */
+.arcWorkspace { grid-template-rows: 82px minmax(0, 1fr); }
+.arcWorkspaceHeader { grid-template-columns: 70px minmax(220px, 1fr) auto; gap: 16px; padding: 9px 18px 9px 12px; }
+.arcWorkspaceTitle small { font-size: .62rem; letter-spacing: .14em; }
+.arcWorkspaceTitle span { font-size: .67rem; font-weight: 600; }
+
+.arcCalendarToolbar { min-height: 50px; gap: 12px; padding: 7px 12px; }
+.arcFilters { gap: 7px; }
+.arcFilters select { height: 36px; min-height: 36px; border-radius: 9px; padding-inline: 9px; font-size: .64rem; }
+.arcCalendarToolbarRight { gap: 5px; }
+.arcCalendarToolbarRight button { height: 36px; min-width: 36px; border-radius: 9px; padding: 0 9px; font-size: .61rem; }
+.arcCalendarToolbarRight .primaryTool { padding-inline: 12px; }
+
+.arcFolderInner { gap: 8px; padding: 14px 12px 12px; }
+.fridgeComposer { align-self: start; grid-template-columns: minmax(0, 1fr) 92px; grid-auto-rows: min-content; gap: 6px; padding: 8px; }
+.fridgeKind button { min-height: 34px; padding: 5px 3px; font-size: .56rem; }
+.fridgeComposer input, .fridgeComposer select { min-height: 38px; height: 38px; padding: 7px 8px; font-size: .68rem; }
+.fridgeComposer .addFridge { min-height: 38px; height: 38px; font-size: .64rem; }
+
+.arcPriorityHeader { min-height: 34px; }
+.arcPriorityHeader button { min-height: 34px; font-size: .58rem; letter-spacing: .025em; }
+.arcPriorityBody { max-height: 148px; }
+.priorityLane { padding: 6px; }
+.priorityCard { margin-bottom: 4px; padding: 4px; }
+.priorityAdd input { height: 34px; min-height: 34px; }
+.priorityAdd button { min-width: 34px; min-height: 34px; }
+
+.dayTeachingDesk { min-width: 720px; padding-bottom: 28px; }
+.dayCourseStack { width: min(1080px, calc(100% - 28px)); margin: 0 auto; gap: 12px; padding: 14px 0 24px; }
+.teachingCard { padding: 15px 16px 16px; border-radius: 12px; box-shadow: 0 3px 12px rgba(38, 51, 58, .045); }
+.dayCourseHeader h3 { font-size: 1.08rem; }
+.dayLessonList { gap: 9px; margin-top: 10px; }
+.dayLessonCard { padding: 12px; border-radius: 10px; background: color-mix(in srgb, var(--arc-card) 76%, var(--arc-blue) 24%); }
+.dayLessonTitle { font-size: .9rem; }
+.dayLessonNotes { margin: 7px 0; font-size: .67rem; line-height: 1.45; }
+.dayReflection { gap: 5px; margin-top: 10px; }
+.dayReflection textarea { min-height: 64px; padding: 8px 9px; font-size: .65rem; line-height: 1.4; }
+
+.monthWeeks { grid-auto-rows: minmax(104px, auto); }
+.monthDay { padding: 7px; }
+.monthPlan, .quarterPlan { gap: 2px; padding: 6px 7px; font-size: .59rem; line-height: 1.2; }
+.quarterWeeks { gap: 9px; padding: 10px; }
+.quarterDay { min-height: 78px; padding: 5px; }
+
+@media (max-width: 1366px) {
+  .arcWorkspaceHeader { grid-template-columns: 64px minmax(180px, 1fr) auto; padding-right: 10px; }
+  .arcCalendarToolbar { min-height: 48px; gap: 7px; padding-inline: 7px; }
+  .arcFilters select { max-width: 112px; height: 34px; min-height: 34px; }
+  .arcCalendarToolbarRight { gap: 3px; }
+  .arcCalendarToolbarRight button { height: 34px; min-width: 34px; padding: 0 6px; font-size: .56rem; }
+  .arcPriorityBody { max-height: 136px; }
+  .dayCourseStack { width: calc(100% - 20px); padding-top: 10px; }
+}
+
+@media (max-width: 1100px) {
+  .arcCalendarToolbarRight button { min-width: 32px; padding-inline: 5px; }
+}
