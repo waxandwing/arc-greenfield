@@ -29,17 +29,19 @@ async function seedTeachFromDay(page: import("@playwright/test").Page) {
   const lessonEditor = page.locator('.arcMagnetEditor[aria-label="Lesson details"]');
   await expect(lessonEditor).toBeVisible();
   await expect(lessonEditor.getByLabel("Title")).toHaveValue("Blind contour warm-up");
-  await expect(lessonEditor.getByText("Unit: Seeing + Drawing", { exact: true })).toBeVisible();
+  await expect(lessonEditor.getByText("Lesson in", { exact: true })).toBeVisible();
+  await expect(lessonEditor.getByRole("button", { name: "Seeing + Drawing", exact: true })).toBeVisible();
   await lessonEditor.getByLabel("Notes").fill("Two slow drawings. Keep eyes on the object, not the page.");
   const resources = lessonEditor.locator(".editorUnitList").filter({ hasText: "Resources" });
   await resources.getByPlaceholder("Label").fill("Contour reference");
   await resources.getByPlaceholder("https://").fill("https://example.com/contour");
   await resources.getByRole("button", { name: "＋", exact: true }).click();
-  await lessonEditor.getByRole("button", { name: "×", exact: true }).click();
+  await lessonEditor.getByRole("button", { name: /Close Lesson details/ }).click();
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
 });
 
 test("first run reaches a functional Arc desk without a fake calendar source", async ({ page }) => {
