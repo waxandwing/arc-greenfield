@@ -16,6 +16,14 @@ async function reachTutorial(page: Page) {
   await expect(page.getByRole("heading", { name: "How Arc works." })).toBeVisible();
 }
 
+async function finishTutorial(page: Page) {
+  for (let index = 0; index < 7; index += 1) {
+    await page.getByRole("button", { name: "Next", exact: true }).click();
+  }
+  await page.getByRole("button", { name: "Open Arc", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
+}
+
 test("new teachers can complete the eight-step Arc walkthrough and are not forced through it again", async ({ page }, testInfo) => {
   await reachTutorial(page);
 
@@ -52,6 +60,23 @@ test("new teachers can complete the eight-step Arc walkthrough and are not force
   await page.reload();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "How Arc works." })).toHaveCount(0);
+});
+
+test("returning teachers can review the tutorial without losing setup", async ({ page }) => {
+  await reachTutorial(page);
+  await finishTutorial(page);
+
+  await page.getByRole("button", { name: "More", exact: true }).click();
+  await page.getByRole("button", { name: "Review Arc tutorial", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "How Arc works." })).toBeVisible();
+  await expect(page.getByText("Tutorial Teacher", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Skip tutorial", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
+  await page.getByRole("button", { name: "More", exact: true }).click();
+  await page.getByRole("button", { name: "School + classes setup", exact: true }).click();
+  await expect(page.getByDisplayValue("Tutorial Teacher")).toBeVisible();
+  await expect(page.getByText("Studio Art", { exact: true })).toBeVisible();
 });
 
 test("the tutorial can be navigated without a pointer", async ({ page }) => {
