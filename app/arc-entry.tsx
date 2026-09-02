@@ -6,6 +6,7 @@ import { loadWorkspace, saveWorkspace, setActiveWorkspaceOwner } from "../lib/wo
 import { ArcShell } from "./arc-shell";
 import { ArcTutorialScreen } from "./arc-tutorial-screen";
 import { OnboardingScreen } from "./onboarding-screen";
+import { RecoveryShortcut } from "./recovery-shortcut";
 
 function isReady(workspace: Workspace) {
   return Boolean(workspace.teacherName.trim() && workspace.courses.length > 0 && workspace.calendar.firstStudentDay && workspace.calendar.lastStudentDay);
@@ -44,9 +45,16 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
     setShowExploreArc(true);
   }
 
-  if (!loaded) return <main className="loadingShell">Opening Arc…</main>;
+  if (!loaded) return <main className="loadingShell">Opening Arc...</main>;
   if (complete && showExploreArc) return <ArcTutorialScreen workspace={workspace} onComplete={() => setShowExploreArc(false)} />;
-  if (complete) return <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} onOpenTutorial={openExploreArc} />;
+  if (complete) {
+    return (
+      <>
+        <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} onOpenTutorial={openExploreArc} />
+        <RecoveryShortcut />
+      </>
+    );
+  }
 
   return <OnboardingScreen workspace={workspace} onUpdate={updateWorkspace} onComplete={() => {
     saveWorkspace({ ...workspace, ownerId }, ownerId);
