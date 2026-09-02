@@ -37,3 +37,17 @@ test("persistent question mark reopens help on demand", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("heading", { name: "The calendar is home." })).toBeVisible();
 });
+
+test("teacher can hide the question mark and stop automatic first-time tips", async ({ page }) => {
+  await completeFirstRun(page, { teacherName: "Arc Help Choice" });
+  await page.getByRole("button", { name: "Open Arc help" }).click();
+  await page.getByText("Help preferences", { exact: true }).click();
+  await page.getByLabel("Show first-time tips").uncheck();
+  await page.getByLabel("Show the ? help button").uncheck();
+  await page.getByRole("button", { name: "Got it" }).click();
+  await expect(page.getByRole("button", { name: "Open Arc help" })).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Fridge", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Fridge Door" })).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+});
