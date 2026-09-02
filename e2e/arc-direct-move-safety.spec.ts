@@ -16,7 +16,7 @@ test("direct Week move names a collision and preserves both Lessons", async ({ p
   await addLesson(page, "Mon", "Discussion");
   await addLesson(page, "Tue", "Quiz");
 
-  const actions = page.getByRole("group", { name: "Actions for Discussion" });
+  const actions = page.locator('.magnetActions[aria-label="Actions for Discussion"]');
   await actions.getByRole("button", { name: "Move Discussion later" }).click();
 
   await expect(page.getByRole("status")).toContainText("Quiz is already scheduled there. Nothing moved.");
