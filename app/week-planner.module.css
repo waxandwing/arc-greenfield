@@ -1,0 +1,12 @@
+.weekendHeader {
+  background: color-mix(in srgb, var(--arc-deep) 4%, var(--arc-paper));
+}
+
+.weekendCell {
+  background: color-mix(in srgb, var(--arc-deep) 3%, var(--arc-card));
+}
+
+.weekendHeader span,
+.weekendHeader b {
+  opacity: 0.72;
+}
