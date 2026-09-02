@@ -57,7 +57,10 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
   }
 
   return <OnboardingScreen workspace={workspace} onUpdate={updateWorkspace} onComplete={() => {
-    saveWorkspace({ ...workspace, ownerId }, ownerId);
+    const next = { ...workspace, ownerId };
+    saveWorkspace(next, ownerId);
+    setWorkspace(next);
     setComplete(true);
+    setShowExploreArc(true);
   }} />;
 }
