@@ -96,7 +96,7 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
   }
 
   function attemptMove(planId: string, date: string, courseId: string) {
-    const review = reviewDirectCalendarMove(workspace.plans, planId, date, courseId);
+    const review = reviewDirectCalendarMove(workspace, planId, date, courseId);
     if (!review.allowed) {
       setMoveMessage(review.reason ?? "That move is blocked. Nothing changed.");
       return false;
