@@ -8,14 +8,27 @@ test.beforeEach(async ({ page }) => {
 test("Fridge explains itself once, then the same click opens the tool", async ({ page }) => {
   await completeFirstRun(page, { teacherName: "Arc Help Teacher", contextualHelp: true });
 
-  await page.getByRole("button", { name: "Fridge", exact: true }).click();
+  const fridge = page.getByRole("button", { name: "Fridge", exact: true });
+  await fridge.click();
   await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "The Fridge keeps work without forcing a date." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The Fridge is where good plans can wait." })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Fridge Door" })).toHaveCount(0);
 
   await page.getByRole("button", { name: "Got it" }).click();
-  await page.getByRole("button", { name: "Fridge", exact: true }).click();
+  await expect(fridge).toBeFocused();
+  await fridge.click();
   await expect(page.getByRole("heading", { name: "Fridge Door" })).toBeVisible();
+});
+
+test("Escape closes first-use help and returns focus to the trigger", async ({ page }) => {
+  await completeFirstRun(page, { teacherName: "Arc Help Keyboard", contextualHelp: true });
+  const shift = page.getByRole("button", { name: "Shift", exact: true });
+  await shift.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(shift).toBeFocused();
 });
 
 test("explored contextual help stays explored after reload", async ({ page }) => {
