@@ -97,15 +97,14 @@ export async function completeFirstRun(page: Page, options: FirstRunOptions = {}
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
 
   if (!contextualHelp) {
-    await expect(page.locator(".arcSaveStatus")).toContainText("Saved on this device");
-    await page.evaluate(() => {
-      const key = "arc.greenfield.workspace.v1";
-      const raw = localStorage.getItem(key);
-      if (!raw) return;
-      const workspace = JSON.parse(raw);
-      workspace.preferences = { ...workspace.preferences, firstTimeHelpEnabled: false };
-      workspace.updatedAt = new Date(Date.now() + 5).toISOString();
-      localStorage.setItem(key, JSON.stringify(workspace));
-    });
+    await page.getByRole("button", { name: "Open Arc help" }).click();
+    const helpDialog = page.getByRole("dialog");
+    await expect(helpDialog).toBeVisible();
+    await helpDialog.getByText("Help preferences", { exact: true }).click();
+    const firstTimeTips = helpDialog.getByLabel("Show first-time tips");
+    await expect(firstTimeTips).toBeChecked();
+    await firstTimeTips.uncheck();
+    await helpDialog.getByRole("button", { name: "Got it", exact: true }).click();
+    await expect(helpDialog).toBeHidden();
   }
 }
