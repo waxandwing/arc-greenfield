@@ -15,14 +15,13 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
   const [workspace, setWorkspace] = useState<Workspace>(() => emptyWorkspace());
   const [loaded, setLoaded] = useState(false);
   const [complete, setComplete] = useState(false);
-  const [tutorialComplete, setTutorialComplete] = useState(false);
+  const [showExploreArc, setShowExploreArc] = useState(false);
 
   useEffect(() => {
     setActiveWorkspaceOwner(ownerId);
     const stored = loadWorkspace(ownerId);
     setWorkspace(stored);
     setComplete(isReady(stored));
-    setTutorialComplete(stored.preferences.tutorialCompleted === true);
     setLoaded(true);
   }, [ownerId]);
 
@@ -40,28 +39,14 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
     setComplete(false);
   }
 
-  function openTutorial() {
+  function openExploreArc() {
     setWorkspace(loadWorkspace(ownerId));
-    setTutorialComplete(false);
-  }
-
-  function finishTutorial() {
-    setWorkspace((current) => {
-      const next = {
-        ...current,
-        ownerId,
-        preferences: { ...current.preferences, tutorialCompleted: true },
-        updatedAt: new Date().toISOString()
-      };
-      saveWorkspace(next, ownerId);
-      return next;
-    });
-    setTutorialComplete(true);
+    setShowExploreArc(true);
   }
 
   if (!loaded) return <main className="loadingShell">Opening Arc…</main>;
-  if (complete && !tutorialComplete) return <ArcTutorialScreen workspace={workspace} onComplete={finishTutorial} />;
-  if (complete) return <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} onOpenTutorial={openTutorial} />;
+  if (complete && showExploreArc) return <ArcTutorialScreen workspace={workspace} onComplete={() => setShowExploreArc(false)} />;
+  if (complete) return <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} onOpenTutorial={openExploreArc} />;
 
   return <OnboardingScreen workspace={workspace} onUpdate={updateWorkspace} onComplete={() => {
     saveWorkspace({ ...workspace, ownerId }, ownerId);
