@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Plan, Workspace } from "../lib/domain";
 import { orderedUnitChildren } from "../lib/plan-tree";
+import { minimumUnitEndDate, reviewUnitEndDate } from "../lib/unit-range";
 
 export function MagnetEditor({ plan, unit, workspace, onClose, onRename, onPatch, onMoveDate, onSelectPlan, onTack, onExtend, onCopyNext, onFridge, onDelete, onAddChild, onReorderChild, onDetachChild }: {
   plan: Plan;
@@ -24,10 +25,12 @@ export function MagnetEditor({ plan, unit, workspace, onClose, onRename, onPatch
 }) {
   const [resourceDraft, setResourceDraft] = useState({ label: "", url: "" });
   const [childTitle, setChildTitle] = useState("");
+  const [rangeMessage, setRangeMessage] = useState("");
 
   useEffect(() => {
     setResourceDraft({ label: "", url: "" });
     setChildTitle("");
+    setRangeMessage("");
   }, [plan.id]);
 
   const editorLabel = plan.type === "unit"
@@ -40,6 +43,7 @@ export function MagnetEditor({ plan, unit, workspace, onClose, onRename, onPatch
   const children = plan.type === "unit" ? orderedUnitChildren(workspace.plans, plan.id) : [];
   const parentUnit = plan.type === "lesson" && unit?.type === "unit" ? unit : null;
   const protectedFromFridge = plan.fixedDate || children.some((child) => child.fixedDate);
+  const minimumEnd = plan.type === "unit" ? minimumUnitEndDate(plan, children) : null;
 
   return (
     <aside className="arcMagnetEditor" aria-label={editorLabel}>
@@ -50,6 +54,29 @@ export function MagnetEditor({ plan, unit, workspace, onClose, onRename, onPatch
         <label>Notes<textarea defaultValue={plan.notes} key={plan.id + plan.notes} rows={3} onBlur={(event) => onPatch(plan.id, { notes: event.target.value })} /></label>
         {plan.type !== "idea" && <label><span><input type="checkbox" checked={plan.fixedDate} onChange={(event) => onPatch(plan.id, { fixedDate: event.target.checked })} /> Fixed date</span></label>}
         {plan.courseId && <label>Move / schedule<input type="date" value={plan.date ?? ""} onChange={(event) => { if (event.target.value && plan.courseId) onMoveDate(plan.id, event.target.value, plan.courseId); }} /></label>}
+
+        {plan.type === "unit" && plan.date && <>
+          <label>Unit end<input
+            type="date"
+            aria-describedby={`${plan.id}-unit-range-help`}
+            min={minimumEnd ?? plan.date}
+            value={plan.endDate ?? plan.date}
+            onChange={(event) => {
+              const review = reviewUnitEndDate(plan, children, event.target.value);
+              if (!review.allowed) {
+                setRangeMessage(review.reason ?? "That range cannot be used.");
+                return;
+              }
+              setRangeMessage("");
+              onPatch(plan.id, { endDate: event.target.value });
+            }}
+          /></label>
+          <p className="editorContext" id={`${plan.id}-unit-range-help`} role={rangeMessage ? "status" : undefined}>
+            {rangeMessage || (minimumEnd && minimumEnd > plan.date
+              ? `Scheduled Lessons keep this Unit open through ${minimumEnd}.`
+              : "Adjust the Unit range without rebuilding it. Drag is optional.")}
+          </p>
+        </>}
 
         {plan.type === "lesson" && <div className="editorQuickActions">
           <button type="button" disabled={plan.fixedDate || !plan.date} onClick={() => onTack(plan.id)}>Tack →</button>
