@@ -6,6 +6,7 @@ import {
   detachLesson,
   movePlan,
   movePlanToCalendarDate,
+  movePlanTreeToLocation,
   nestLesson
 } from "../lib/plan-operations";
 
@@ -68,6 +69,21 @@ test("moving a Unit to the Fridge carries every nested Lesson without flattening
   assert.ok(moved.every((item) => item.location === "fridge"));
   assert.equal(moved.find((item) => item.id === "one")?.parentUnitId, "unit");
   assert.equal(moved.find((item) => item.id === "two")?.childOrder, 1);
+});
+
+test("a Unit containing a fixed Lesson cannot be moved to the Fridge through the direct operation path", () => {
+  const unit = plan({ id: "unit", title: "Prehistory", type: "unit" });
+  const lesson = plan({ id: "fixed", title: "Assessment", type: "lesson", parentUnitId: "unit", childOrder: 0, fixedDate: true });
+  const plans = [unit, lesson];
+  assert.deepEqual(movePlan(plans, "unit", { kind: "fridge" }), plans);
+  assert.deepEqual(movePlanTreeToLocation(plans, "unit", "fridge"), plans);
+});
+
+test("a fixed nested Lesson cannot detach directly to the Fridge", () => {
+  const unit = plan({ id: "unit", title: "Prehistory", type: "unit" });
+  const fixed = plan({ id: "fixed", title: "Assessment", type: "lesson", parentUnitId: "unit", childOrder: 0, fixedDate: true });
+  const plans = [unit, fixed];
+  assert.deepEqual(detachLesson(plans, "fixed", { kind: "fridge" }), plans);
 });
 
 test("dragging a Lesson onto a Unit nests it, adopts the Unit course, and clamps timing into the Unit", () => {
