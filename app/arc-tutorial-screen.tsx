@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Workspace } from "../lib/domain";
 
-type TutorialStep = {
+type ExploreStep = {
   id: string;
   title: string;
   short: string;
@@ -11,7 +11,7 @@ type TutorialStep = {
   bullets: string[];
 };
 
-const STEPS: TutorialStep[] = [
+const STEPS: ExploreStep[] = [
   {
     id: "calendar",
     title: "The calendar is home.",
@@ -76,25 +76,25 @@ export function ArcTutorialScreen({ workspace, onComplete }: { workspace: Worksp
   const last = index === STEPS.length - 1;
 
   return (
-    <section className="arcOnboarding" aria-label="Arc tutorial">
+    <section className="arcOnboarding" aria-label="Getting to know Arc">
       <header className="onboardingIntro">
         <div>
-          <p className="eyebrow">Before you start planning</p>
-          <h1>How Arc works.</h1>
-          <p>This is the whole mental model. Eight short stops, using the same words and controls you will see on the desk.</p>
+          <p className="eyebrow">Explore Arc</p>
+          <h1>Getting to Know Arc</h1>
+          <p>Use this whenever you want a quick look at how the main planning tools fit together. You never have to finish it to use Arc.</p>
         </div>
-        <div className="onboardingProgress" aria-label={`Tutorial step ${index + 1} of ${STEPS.length}`}>
+        <div className="onboardingProgress" aria-label={`Explore Arc section ${index + 1} of ${STEPS.length}`}>
           {STEPS.map((item, stepIndex) => <span key={item.id} className={stepIndex <= index ? "complete" : ""} />)}
         </div>
       </header>
 
       <div className="onboardingStage previewOpen">
-        <div className="onboardingChoices" role="tablist" aria-label="Tutorial steps">
+        <div className="onboardingChoices" role="tablist" aria-label="Explore Arc topics">
           {STEPS.map((item, stepIndex) => (
             <button key={item.id} type="button" role="tab" aria-selected={index === stepIndex} className={index === stepIndex ? "selected" : ""} onClick={() => setIndex(stepIndex)}>
               <span className="setupChoiceNumber">{stepIndex + 1}</span>
-              <span><strong>{item.short}</strong><small>{stepIndex < index ? "Reviewed" : stepIndex === index ? "Current" : "Up next"}</small></span>
-              <b>{stepIndex < index ? "Done" : ""}</b>
+              <span><strong>{item.short}</strong><small>{stepIndex < index ? "Explored" : stepIndex === index ? "Open" : "Take a look"}</small></span>
+              <b>{stepIndex < index ? "Seen" : ""}</b>
             </button>
           ))}
         </div>
@@ -115,11 +115,11 @@ export function ArcTutorialScreen({ workspace, onComplete }: { workspace: Worksp
             </div>
 
             <div className="setupPopoutFooter">
-              <button type="button" className="secondarySetupAction" onClick={onComplete}>Skip tutorial</button>
+              <button type="button" className="secondarySetupAction" onClick={onComplete}>Back to Arc</button>
               <button type="button" className="secondarySetupAction" disabled={index === 0} onClick={() => setIndex((current) => Math.max(0, current - 1))}>Back</button>
               {!last
                 ? <button type="button" className="primarySetupAction" onClick={() => setIndex((current) => Math.min(STEPS.length - 1, current + 1))}>Next</button>
-                : <button type="button" className="primarySetupAction" onClick={onComplete}>Open Arc</button>}
+                : <button type="button" className="primarySetupAction" onClick={onComplete}>Done exploring</button>}
             </div>
           </div>
         </aside>
