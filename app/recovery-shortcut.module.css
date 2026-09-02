@@ -1,0 +1,40 @@
+.shortcut {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 13px;
+  border: 1px solid color-mix(in srgb, var(--arc-deep, #302b27) 28%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--arc-paper, #f8f1e5) 91%, transparent);
+  color: var(--arc-deep, #302b27);
+  box-shadow: 0 9px 25px rgb(36 29 23 / 0.11);
+  font: 800 0.72rem/1 system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+}
+
+.shortcut span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--arc-orange, #d66b3d);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--arc-orange, #d66b3d) 17%, transparent);
+}
+
+.shortcut:focus-visible {
+  outline: 3px solid var(--arc-deep, #302b27);
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .shortcut {
+    right: 12px;
+    bottom: 12px;
+  }
+}
