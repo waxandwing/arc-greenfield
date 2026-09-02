@@ -1,10 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
-test("new teachers can complete the eight-step Arc walkthrough and are not forced through it again", async ({ page }, testInfo) => {
+async function reachTutorial(page: Page) {
   await page.goto("/");
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-
   await page.getByPlaceholder("What should Arc call you?").fill("Tutorial Teacher");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByPlaceholder("Course name").fill("Studio Art");
@@ -14,8 +13,12 @@ test("new teachers can complete the eight-step Arc walkthrough and are not force
   await page.getByLabel("First student day", { exact: true }).fill("2026-08-10");
   await page.getByLabel("Last student day", { exact: true }).fill("2027-05-28");
   await page.getByRole("button", { name: "Open my desk" }).click();
-
   await expect(page.getByRole("heading", { name: "How Arc works." })).toBeVisible();
+}
+
+test("new teachers can complete the eight-step Arc walkthrough and are not forced through it again", async ({ page }, testInfo) => {
+  await reachTutorial(page);
+
   await expect(page.getByRole("tab", { name: /Calendar/ })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByText("The calendar is home.", { exact: true })).toBeVisible();
   await expect(page.getByText("The Fridge holds things before they have a date.", { exact: true })).toHaveCount(0);
@@ -49,4 +52,26 @@ test("new teachers can complete the eight-step Arc walkthrough and are not force
   await page.reload();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "How Arc works." })).toHaveCount(0);
+});
+
+test("the tutorial can be navigated without a pointer", async ({ page }) => {
+  await reachTutorial(page);
+
+  await page.getByRole("tab", { name: /Calendar/ }).focus();
+  await page.keyboard.press("Tab");
+  const focusOrder: string[] = [];
+  for (let index = 0; index < 14; index += 1) {
+    const label = await page.evaluate(() => {
+      const active = document.activeElement as HTMLElement | null;
+      return active?.textContent?.trim().replace(/\s+/g, " ").slice(0, 80) || active?.getAttribute("aria-label") || "";
+    });
+    focusOrder.push(label);
+    await page.keyboard.press("Tab");
+  }
+  expect(focusOrder.some((value) => /Skip tutorial/i.test(value))).toBeTruthy();
+  expect(focusOrder.some((value) => /^Next$/i.test(value))).toBeTruthy();
+
+  await page.getByRole("button", { name: "Next", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("The Fridge holds things before they have a date.", { exact: true })).toBeVisible();
 });
