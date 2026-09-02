@@ -1,11 +1,10 @@
 import { test, expect } from "@playwright/test";
 
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
-});
-
 test("a saved Fridge magnet survives a hard reload", async ({ page }) => {
   await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+
   await page.getByPlaceholder("What should Arc call you?").fill("Persistence Teacher");
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByPlaceholder("Course name").fill("Studio Art");
