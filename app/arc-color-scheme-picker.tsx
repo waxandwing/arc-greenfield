@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import type { ArcColorScheme } from "../lib/domain";
 import { ARC_COLOR_SCHEMES, arcColorScheme } from "../lib/arc-color-schemes";
 import { loadWorkspace, saveWorkspace } from "../lib/workspace-store";
+import styles from "./arc-color-scheme-picker.module.css";
 
 function applyScheme(id: ArcColorScheme) {
   const scheme = arcColorScheme(id);
@@ -64,27 +65,20 @@ export function ArcColorSchemePicker() {
   if (!mountNode) return null;
 
   return createPortal(
-    <section aria-label="Color scheme" style={{ display: "grid", gap: 7, margin: "10px 0", padding: 10, border: "1px solid #C8BDAB", borderRadius: 10, background: "#FFFDF8" }}>
+    <section aria-label="Color scheme" className={styles.panel}>
       <div>
-        <strong style={{ display: "block", color: "#174F64", fontFamily: "Georgia, serif", fontWeight: 500 }}>Color scheme</strong>
-        <span style={{ color: "#687175", fontSize: 10 }}>Built from the Arc asset palette.</span>
+        <strong className={styles.heading}>Color scheme</strong>
+        <span className={styles.note}>Built from the Arc asset palette.</span>
       </div>
-      <div role="radiogroup" aria-label="Arc color scheme" style={{ display: "grid", gap: 5 }}>
+      <div role="radiogroup" aria-label="Arc color scheme" className={styles.choices}>
         {ARC_COLOR_SCHEMES.map((scheme) => (
-          <button
-            key={scheme.id}
-            type="button"
-            role="radio"
-            aria-checked={selected === scheme.id}
-            onClick={() => choose(scheme.id)}
-            style={{ width: "100%", display: "grid", gridTemplateColumns: "1fr auto", gap: 7, alignItems: "center", padding: "7px 8px", border: selected === scheme.id ? "2px solid #174F64" : "1px solid #DDD5C6", borderRadius: 8, background: "#FFFDF8", textAlign: "left", cursor: "pointer" }}
-          >
+          <button key={scheme.id} type="button" role="radio" aria-checked={selected === scheme.id} onClick={() => choose(scheme.id)} className={styles.choice}>
             <span>
-              <b style={{ display: "block", fontSize: 12 }}>{scheme.label}</b>
-              <small style={{ color: "#687175", fontSize: 10 }}>{scheme.description}</small>
+              <b>{scheme.label}</b>
+              <small>{scheme.description}</small>
             </span>
-            <span aria-hidden="true" style={{ display: "flex", gap: 2 }}>
-              {[scheme.deep, scheme.blue, scheme.gold, scheme.yellow, scheme.coral].map((color) => <i key={color} style={{ display: "block", width: 11, height: 22, borderRadius: 3, background: color }} />)}
+            <span aria-hidden="true" className={styles.swatches}>
+              {[scheme.deep, scheme.blue, scheme.gold, scheme.yellow, scheme.coral].map((color) => <i key={color} className={styles.swatch} style={{ background: color }} />)}
             </span>
           </button>
         ))}
