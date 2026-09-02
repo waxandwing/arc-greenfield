@@ -81,12 +81,14 @@ export async function completeFirstRun(page: Page, options: FirstRunOptions = {}
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
 
   if (!contextualHelp) {
+    await expect(page.locator(".arcSaveStatus")).toContainText("Saved on this device");
     await page.evaluate(() => {
       const key = "arc.greenfield.workspace.v1";
       const raw = localStorage.getItem(key);
       if (!raw) return;
       const workspace = JSON.parse(raw);
       workspace.preferences = { ...workspace.preferences, firstTimeHelpEnabled: false };
+      workspace.updatedAt = new Date(Date.now() + 5).toISOString();
       localStorage.setItem(key, JSON.stringify(workspace));
     });
   }
