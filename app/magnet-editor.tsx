@@ -39,6 +39,7 @@ export function MagnetEditor({ plan, unit, workspace, onClose, onRename, onPatch
         : "Idea details";
   const children = plan.type === "unit" ? orderedUnitChildren(workspace.plans, plan.id) : [];
   const parentUnit = plan.type === "lesson" && unit?.type === "unit" ? unit : null;
+  const protectedFromFridge = plan.fixedDate || children.some((child) => child.fixedDate);
 
   return (
     <aside className="arcMagnetEditor" aria-label={editorLabel}>
@@ -57,9 +58,10 @@ export function MagnetEditor({ plan, unit, workspace, onClose, onRename, onPatch
         </div>}
 
         <div className="editorQuickActions">
-          <button type="button" onClick={() => onFridge(plan.id)}>Return to Fridge</button>
+          <button type="button" disabled={protectedFromFridge} aria-describedby={protectedFromFridge ? `${plan.id}-fridge-protection` : undefined} onClick={() => onFridge(plan.id)}>Return to Fridge</button>
           <button type="button" onClick={() => onDelete(plan.id)}>Delete</button>
         </div>
+        {protectedFromFridge && <p className="editorContext" id={`${plan.id}-fridge-protection`} role="status">Protected date. Unlock the fixed {plan.type === "unit" && !plan.fixedDate ? "Lesson inside this Unit" : "item"} before parking it on the Fridge.</p>}
 
         <div className="editorUnitList">
           <strong>Resources</strong>
@@ -82,7 +84,7 @@ export function MagnetEditor({ plan, unit, workspace, onClose, onRename, onPatch
             <div>
               <button type="button" disabled={index === 0} onClick={() => onReorderChild(plan.id, child.id, -1)}>↑</button>
               <button type="button" disabled={index === children.length - 1} onClick={() => onReorderChild(plan.id, child.id, 1)}>↓</button>
-              <button type="button" onClick={() => onDetachChild(child.id)}>Fridge</button>
+              <button type="button" disabled={child.fixedDate} title={child.fixedDate ? "Unlock this fixed Lesson before parking it" : undefined} onClick={() => onDetachChild(child.id)}>Fridge</button>
             </div>
           </div>)}
           <div className="priorityAdd">
