@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 import { arcHelpTopic, type ArcHelpTopicId } from "../lib/arc-help-guidance";
 import { markHelpExplored, setFirstTimeHelpEnabled, setHelpMarksVisible, shouldShowFirstTimeHelp } from "../lib/help-guidance-state";
 import { loadWorkspace, saveWorkspace } from "../lib/workspace-store";
@@ -22,12 +22,29 @@ export function ContextualHelpBoundary({ ownerId, children }: { ownerId: string 
   const [topicId, setTopicId] = useState<ArcHelpTopicId | null>(null);
   const [marksVisible, setMarksVisibleState] = useState(true);
   const [tipsEnabled, setTipsEnabledState] = useState(true);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const workspace = loadWorkspace(ownerId);
     setMarksVisibleState(workspace.preferences.helpMarksVisible !== false);
     setTipsEnabledState(workspace.preferences.firstTimeHelpEnabled !== false);
   }, [ownerId]);
+
+  useEffect(() => {
+    if (!topicId) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      closeTopic();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [topicId]);
+
+  function closeTopic() {
+    setTopicId(null);
+    window.setTimeout(() => triggerRef.current?.focus(), 0);
+  }
 
   function updateMarksVisible(visible: boolean) {
     const workspace = loadWorkspace(ownerId);
@@ -41,9 +58,10 @@ export function ContextualHelpBoundary({ ownerId, children }: { ownerId: string 
     setTipsEnabledState(enabled);
   }
 
-  function openTopic(nextTopicId: ArcHelpTopicId) {
+  function openTopic(nextTopicId: ArcHelpTopicId, trigger?: HTMLElement | null) {
     const workspace = loadWorkspace(ownerId);
     if (!shouldShowFirstTimeHelp(workspace, nextTopicId)) return false;
+    triggerRef.current = trigger ?? null;
     saveWorkspace(markHelpExplored(workspace, nextTopicId), ownerId);
     setTopicId(nextTopicId);
     return true;
@@ -55,7 +73,8 @@ export function ContextualHelpBoundary({ ownerId, children }: { ownerId: string 
     if (!(target instanceof HTMLElement)) return;
     const nextTopicId = topicForTarget(target);
     if (!nextTopicId) return;
-    if (!openTopic(nextTopicId)) return;
+    const trigger = target.closest<HTMLElement>("button, [tabindex], a") ?? target;
+    if (!openTopic(nextTopicId, trigger)) return;
     event.preventDefault();
     event.stopPropagation();
   }
@@ -65,19 +84,19 @@ export function ContextualHelpBoundary({ ownerId, children }: { ownerId: string 
   return (
     <div className={styles.boundary} onClickCapture={captureClick}>
       {children}
-      {marksVisible && <button type="button" className={styles.helpButton} aria-label="Open Arc help" onClick={(event) => { event.stopPropagation(); setTopicId("calendar"); }}>?</button>}
-      {topic && <div className={styles.scrim} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setTopicId(null); }}>
-        <section className={styles.card} role="dialog" aria-modal="true" aria-labelledby="arc-context-help-title">
+      {marksVisible && <button type="button" className={styles.helpButton} aria-label="Open Arc help" onClick={(event) => { event.stopPropagation(); triggerRef.current = event.currentTarget; setTopicId("calendar"); }}>?</button>}
+      {topic && <div className={styles.scrim} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeTopic(); }}>
+        <section className={styles.card} role="dialog" aria-modal="true" aria-labelledby="arc-context-help-title" aria-describedby="arc-context-help-body">
           <p className={styles.eyebrow}>{topic.label}</p>
           <h2 id="arc-context-help-title">{topic.title}</h2>
-          <p>{topic.body}</p>
+          <p id="arc-context-help-body">{topic.body}</p>
           <ul>{topic.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>
           <details className={styles.preferences}>
             <summary>Help preferences</summary>
             <label><input type="checkbox" checked={tipsEnabled} onChange={(event) => updateTipsEnabled(event.target.checked)} /> Show first-time tips</label>
             <label><input type="checkbox" checked={marksVisible} onChange={(event) => updateMarksVisible(event.target.checked)} /> Show the ? help button</label>
           </details>
-          <button type="button" className={styles.doneButton} autoFocus onClick={() => setTopicId(null)}>Got it</button>
+          <button type="button" className={styles.doneButton} autoFocus onClick={closeTopic}>Got it</button>
         </section>
       </div>}
     </div>
