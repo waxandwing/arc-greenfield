@@ -1,0 +1,20 @@
+{
+  "status": "FAIL_PREVIEW_ONLY",
+  "score": 48.5,
+  "max": 80,
+  "gates": {
+    "functional_integrity": 7.0,
+    "classroom_usability": 7.0,
+    "accessibility": 5.0,
+    "responsive_integrity": 4.5,
+    "state_data_integrity": 6.5,
+    "visual_brand_quality": 7.0,
+    "performance_code_health": 5.5,
+    "deployment_integrity": 6.0
+  },
+  "zero_tolerance_open": [
+    "200_percent_zoom_live_clearance",
+    "class_lesson_binding_live_clearance",
+    "git_sha_to_preview_traceability"
+  ]
+}
