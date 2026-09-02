@@ -26,13 +26,16 @@ async function seedTeachFromDay(page: import("@playwright/test").Page) {
   await unitEditor.getByPlaceholder("Add lesson").fill("Blind contour warm-up");
   await unitEditor.getByPlaceholder("Add lesson").press("Enter");
 
-  await expect(unitEditor.getByLabel("Title")).toHaveValue("Blind contour warm-up");
-  await unitEditor.getByLabel("Notes").fill("Two slow drawings. Keep eyes on the object, not the page.");
-  const resources = unitEditor.locator(".editorUnitList").filter({ hasText: "Resources" });
+  const lessonEditor = page.locator('.arcMagnetEditor[aria-label="Lesson details"]');
+  await expect(lessonEditor).toBeVisible();
+  await expect(lessonEditor.getByLabel("Title")).toHaveValue("Blind contour warm-up");
+  await expect(lessonEditor.getByText("Unit: Seeing + Drawing", { exact: true })).toBeVisible();
+  await lessonEditor.getByLabel("Notes").fill("Two slow drawings. Keep eyes on the object, not the page.");
+  const resources = lessonEditor.locator(".editorUnitList").filter({ hasText: "Resources" });
   await resources.getByPlaceholder("Label").fill("Contour reference");
   await resources.getByPlaceholder("https://").fill("https://example.com/contour");
   await resources.getByRole("button", { name: "＋", exact: true }).click();
-  await unitEditor.getByRole("button", { name: "×", exact: true }).click();
+  await lessonEditor.getByRole("button", { name: "×", exact: true }).click();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -59,7 +62,7 @@ test("first run reaches a functional Arc desk without a fake calendar source", a
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
 });
 
-test("Arc color scheme is user-selectable, asset-derived, and persists", async ({ page }, testInfo) => {
+test("Arc color scheme is user-selectable, asset-derived, and survives reload", async ({ page }, testInfo) => {
   await completeFirstRun(page, DESKTOP_SETUP);
 
   await expect(page.getByRole("radiogroup", { name: "Arc color scheme" })).toHaveCount(0);
@@ -71,12 +74,15 @@ test("Arc color scheme is user-selectable, asset-derived, and persists", async (
 
   await expect(page.getByRole("radio", { name: /Blueprint/ })).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".arcWorkspace")).toHaveAttribute("data-color-scheme", "blueprint");
-
-  const stored = await page.evaluate(() => {
+  await expect.poll(async () => page.evaluate(() => {
     const raw = localStorage.getItem("arc.greenfield.workspace.v1");
     return raw ? JSON.parse(raw).preferences.colorScheme : null;
-  });
-  expect(stored).toBe("blueprint");
+  })).toBe("blueprint");
+
+  await page.reload();
+  await expect(page.locator(".arcWorkspace")).toHaveAttribute("data-color-scheme", "blueprint");
+  await page.getByRole("button", { name: "More", exact: true }).click();
+  await expect(page.getByRole("radio", { name: /Blueprint/ })).toHaveAttribute("aria-checked", "true");
 });
 
 test("Day is a real teach-from-it surface and Year renders each school month once", async ({ page }, testInfo) => {
