@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("Fridge explains itself once, then the same click opens the tool", async ({ page }) => {
-  await completeFirstRun(page, { teacherName: "Arc Help Teacher" });
+  await completeFirstRun(page, { teacherName: "Arc Help Teacher", contextualHelp: true });
 
   await page.getByRole("button", { name: "Fridge", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -19,7 +19,7 @@ test("Fridge explains itself once, then the same click opens the tool", async ({
 });
 
 test("explored contextual help stays explored after reload", async ({ page }) => {
-  await completeFirstRun(page, { teacherName: "Arc Help Persistence" });
+  await completeFirstRun(page, { teacherName: "Arc Help Persistence", contextualHelp: true });
   await page.getByRole("button", { name: "Shift", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Shift is for the day that went sideways." })).toBeVisible();
   await page.getByRole("button", { name: "Got it" }).click();
@@ -32,14 +32,14 @@ test("explored contextual help stays explored after reload", async ({ page }) =>
 });
 
 test("persistent question mark reopens help on demand", async ({ page }) => {
-  await completeFirstRun(page, { teacherName: "Arc Help Mark" });
+  await completeFirstRun(page, { teacherName: "Arc Help Mark", contextualHelp: true });
   await page.getByRole("button", { name: "Open Arc help" }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("heading", { name: "The calendar is home." })).toBeVisible();
 });
 
 test("teacher can hide the question mark and stop automatic first-time tips", async ({ page }) => {
-  await completeFirstRun(page, { teacherName: "Arc Help Choice" });
+  await completeFirstRun(page, { teacherName: "Arc Help Choice", contextualHelp: true });
   await page.getByRole("button", { name: "Open Arc help" }).click();
   await page.getByText("Help preferences", { exact: true }).click();
   await page.getByLabel("Show first-time tips").uncheck();
