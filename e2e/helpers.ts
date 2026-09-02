@@ -12,7 +12,10 @@ type FirstRunOptions = {
   completeTutorial?: boolean;
   weekendsVisible?: boolean;
   contextualHelp?: boolean;
+  meetingWeekdays?: number[] | null;
 };
+
+const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export async function completeFirstRun(page: Page, options: FirstRunOptions = {}) {
   const {
@@ -26,7 +29,8 @@ export async function completeFirstRun(page: Page, options: FirstRunOptions = {}
     clearStorageOnce = false,
     completeTutorial = false,
     weekendsVisible = false,
-    contextualHelp = false
+    contextualHelp = false,
+    meetingWeekdays = null
   } = options;
 
   await page.goto("/");
@@ -41,6 +45,18 @@ export async function completeFirstRun(page: Page, options: FirstRunOptions = {}
   await page.getByPlaceholder("Course name").fill(courseName);
   await page.getByPlaceholder("Period / block").fill(periodLabel);
   await page.getByRole("button", { name: "Add class" }).click();
+
+  if (meetingWeekdays) {
+    const meetingDays = page.getByRole("group", { name: `${courseName} meeting days` });
+    await expect(meetingDays).toBeVisible();
+    for (const weekday of [1, 2, 3, 4, 5]) {
+      const button = meetingDays.getByRole("button", { name: `${courseName} meets ${WEEKDAY_NAMES[weekday]}` });
+      const pressed = await button.getAttribute("aria-pressed");
+      const shouldMeet = meetingWeekdays.includes(weekday);
+      if ((pressed === "true") !== shouldMeet) await button.click();
+    }
+  }
+
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByLabel("First student day", { exact: true }).fill(firstStudentDay);
   await page.getByLabel("Last student day", { exact: true }).fill(lastStudentDay);
