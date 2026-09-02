@@ -7,9 +7,13 @@ test("richer Day and truthful Year components remain available", () => {
   const day = readFileSync(resolve(process.cwd(), "app/day-planning-view.tsx"), "utf8");
   const year = readFileSync(resolve(process.cwd(), "app/year-map-view.tsx"), "utf8");
   assert.match(day, /export function DayPlanningView/);
-  assert.match(day, /Mark taught/);
+  assert.match(day, /What actually happened\?/);
+  assert.match(day, /Partly taught/);
+  assert.match(day, /Didn’t get to it/);
+  assert.match(day, /deliveryState/);
   assert.match(day, /What changed\?/);
   assert.match(day, /resources/);
+  assert.equal(/Mark taught/.test(day), false, "binary completion control must not replace teaching outcome state");
   assert.match(year, /export function YearMapView/);
   assert.match(year, /yearMonths\(workspace\.calendar\)/);
   assert.match(year, /quarterForDate/);
