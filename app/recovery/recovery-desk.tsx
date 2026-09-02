@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { Plan, Workspace } from "../../lib/domain";
-import { applyInstructionalShift, extendLesson, previewInstructionalShift, type ShiftPreflight } from "../../lib/efficiency-operations";
+import { applyInstructionalShift, extendLesson, nextCourseMeetingDate, previewInstructionalShift, type ShiftPreflight } from "../../lib/efficiency-operations";
 import { clearRecoveryCheckpoint, loadRecoveryCheckpoint, saveRecoveryCheckpoint } from "../../lib/recovery-checkpoint";
 import { loadWorkspace, saveWorkspace } from "../../lib/workspace-store";
 import styles from "./recovery-desk.module.css";
@@ -26,9 +26,9 @@ function readableDate(value: string | null) {
   });
 }
 
-function rootFor(workspace: Workspace, plan: Plan) {
-  if (!plan.parentUnitId) return plan;
-  return workspace.plans.find((candidate) => candidate.id === plan.parentUnitId) ?? plan;
+function recoveryDestination(workspace: Workspace, plan: Plan, direction: 1 | -1) {
+  if (!plan.date) return null;
+  return nextCourseMeetingDate(workspace, plan.courseId, plan.date, direction);
 }
 
 export function RecoveryDesk() {
@@ -113,7 +113,6 @@ export function RecoveryDesk() {
 
   if (!workspace) return <main className={styles.loading}>Opening Recovery Desk...</main>;
 
-  const conflictRoots = new Set(preview?.blockedRootIds ?? []);
   const movableRoots = preview?.movableRootIds.map((id) => planMap.get(id)).filter((plan): plan is Plan => Boolean(plan)) ?? [];
   const blockedRoots = preview?.blockedRootIds.map((id) => planMap.get(id)).filter((plan): plan is Plan => Boolean(plan)) ?? [];
 
@@ -197,13 +196,16 @@ export function RecoveryDesk() {
           <div className={styles.impactColumns}>
             <section>
               <h3>Will move one class meeting</h3>
-              {movableRoots.length ? movableRoots.map((plan) => (
-                <article className={styles.impactItem} key={plan.id}>
-                  <strong>{plan.title}</strong>
-                  <span>{courseMap.get(plan.courseId ?? "")?.name ?? "Class"}</span>
-                  <small>{readableDate(plan.date)} onward</small>
-                </article>
-              )) : <p className={styles.empty}>No safe moves in this preview.</p>}
+              {movableRoots.length ? movableRoots.map((plan) => {
+                const destination = recoveryDestination(workspace, plan, preview.direction);
+                return (
+                  <article className={styles.impactItem} key={plan.id}>
+                    <strong>{plan.title}</strong>
+                    <span>{courseMap.get(plan.courseId ?? "")?.name ?? "Class"}</span>
+                    <small>{readableDate(plan.date)} → {readableDate(destination)}</small>
+                  </article>
+                );
+              }) : <p className={styles.empty}>No safe moves in this preview.</p>}
             </section>
 
             <section>
