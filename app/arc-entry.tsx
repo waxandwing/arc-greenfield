@@ -40,6 +40,11 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
     setComplete(false);
   }
 
+  function openTutorial() {
+    setWorkspace(loadWorkspace(ownerId));
+    setTutorialComplete(false);
+  }
+
   function finishTutorial() {
     setWorkspace((current) => {
       const next = {
@@ -56,7 +61,7 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
 
   if (!loaded) return <main className="loadingShell">Opening Arc…</main>;
   if (complete && !tutorialComplete) return <ArcTutorialScreen workspace={workspace} onComplete={finishTutorial} />;
-  if (complete) return <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} />;
+  if (complete) return <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} onOpenTutorial={openTutorial} />;
 
   return <OnboardingScreen workspace={workspace} onUpdate={updateWorkspace} onComplete={() => {
     saveWorkspace({ ...workspace, ownerId }, ownerId);
