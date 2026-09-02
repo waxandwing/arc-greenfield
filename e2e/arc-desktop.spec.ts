@@ -29,7 +29,7 @@ async function seedTeachFromDay(page: import("@playwright/test").Page) {
   const lessonEditor = page.locator('.arcMagnetEditor[aria-label="Lesson details"]');
   await expect(lessonEditor).toBeVisible();
   await expect(lessonEditor.getByLabel("Title")).toHaveValue("Blind contour warm-up");
-  await expect(lessonEditor.getByText("Lesson in", { exact: true })).toBeVisible();
+  await expect(lessonEditor.locator(".editorContext")).toContainText("Lesson in");
   await expect(lessonEditor.getByRole("button", { name: "Seeing + Drawing", exact: true })).toBeVisible();
   await lessonEditor.getByLabel("Notes").fill("Two slow drawings. Keep eyes on the object, not the page.");
   const resources = lessonEditor.locator(".editorUnitList").filter({ hasText: "Resources" });
@@ -46,17 +46,14 @@ test.beforeEach(async ({ page }) => {
 
 test("first run reaches a functional Arc desk without a fake calendar source", async ({ page }) => {
   await completeFirstRun(page, DESKTOP_SETUP);
-
   await expect(page.getByRole("button", { name: "Fridge", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Shift", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Save now", exact: true })).toBeVisible();
-
   await page.getByRole("button", { name: "Fridge", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Fridge Door", exact: true })).toBeVisible();
   await page.getByPlaceholder("idea title").fill("Try cyanotype warm-up");
   await page.getByRole("button", { name: "Add to Fridge", exact: true }).click();
   await expect(page.getByText("Try cyanotype warm-up", { exact: true })).toBeVisible();
-
   await page.getByRole("button", { name: "Fridge", exact: true }).click();
   await page.getByRole("button", { name: "Month", exact: true }).click();
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
@@ -66,14 +63,12 @@ test("first run reaches a functional Arc desk without a fake calendar source", a
 
 test("Arc color scheme is user-selectable, asset-derived, and survives reload", async ({ page }, testInfo) => {
   await completeFirstRun(page, DESKTOP_SETUP);
-
   await expect(page.getByRole("radiogroup", { name: "Arc color scheme" })).toHaveCount(0);
   await page.getByRole("button", { name: "More", exact: true }).click();
   const palette = page.getByRole("radiogroup", { name: "Arc color scheme" });
   await expect(palette).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("palette-picker.png"), fullPage: false });
   await page.getByRole("radio", { name: /Blueprint/ }).click();
-
   await expect(page.getByRole("radio", { name: /Blueprint/ })).toHaveAttribute("aria-checked", "true");
   await expect(page.locator(".arcWorkspace")).toHaveAttribute("data-color-scheme", "blueprint");
   await expect.poll(async () => page.evaluate(() => {
@@ -83,14 +78,14 @@ test("Arc color scheme is user-selectable, asset-derived, and survives reload", 
 
   await page.reload();
   await expect(page.locator(".arcWorkspace")).toHaveAttribute("data-color-scheme", "blueprint");
-  await page.getByRole("button", { name: "More", exact: true }).click();
+  const reloadedPalette = page.getByRole("radiogroup", { name: "Arc color scheme" });
+  if (await reloadedPalette.count() === 0) await page.getByRole("button", { name: "More", exact: true }).click();
   await expect(page.getByRole("radio", { name: /Blueprint/ })).toHaveAttribute("aria-checked", "true");
 });
 
 test("Day is a real teach-from-it surface and Year renders each school month once", async ({ page }, testInfo) => {
   await completeFirstRun(page, DESKTOP_SETUP);
   await seedTeachFromDay(page);
-
   await page.getByRole("button", { name: "Day", exact: true }).click();
   await expect(page.getByText("Teach from today", { exact: true })).toBeVisible();
   await expect(page.locator(".dayCourse.teachingCard")).toHaveCount(1);
@@ -103,7 +98,6 @@ test("Day is a real teach-from-it surface and Year renders each school month onc
   await reflection.fill("Students needed one more demo before the second drawing.");
   await expect(reflection).toHaveValue("Students needed one more demo before the second drawing.");
   await page.screenshot({ path: testInfo.outputPath("day-teach-surface.png"), fullPage: false });
-
   await page.getByRole("button", { name: "Year", exact: true }).click();
   await expect(page.getByText("Each month appears once. Quarter color changes on the actual boundary date.", { exact: true })).toBeVisible();
   await expect(page.locator(".yearMiniMonth")).toHaveCount(10);
@@ -111,20 +105,13 @@ test("Day is a real teach-from-it surface and Year renders each school month onc
   const paintedXs = page.locator('img[src="/arc-x.png"]');
   await expect(paintedXs.first()).toBeVisible();
   expect(await paintedXs.count()).toBeGreaterThan(0);
-  const loaded = await paintedXs.first().evaluate((image) => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0);
-  expect(loaded).toBeTruthy();
+  expect(await paintedXs.first().evaluate((image) => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0)).toBeTruthy();
   await page.screenshot({ path: testInfo.outputPath("year-map.png"), fullPage: false });
 });
 
 test("desktop planning shell stays inside the viewport at supported laptop sizes", async ({ page }) => {
   await completeFirstRun(page, DESKTOP_SETUP);
-  const measurements = await page.evaluate(() => ({
-    innerHeight: window.innerHeight,
-    scrollHeight: document.documentElement.scrollHeight,
-    innerWidth: window.innerWidth,
-    scrollWidth: document.documentElement.scrollWidth
-  }));
-
+  const measurements = await page.evaluate(() => ({ innerHeight: window.innerHeight, scrollHeight: document.documentElement.scrollHeight, innerWidth: window.innerWidth, scrollWidth: document.documentElement.scrollWidth }));
   expect(measurements.scrollHeight, `vertical overflow ${JSON.stringify(measurements)}`).toBeLessThanOrEqual(measurements.innerHeight + 4);
   expect(measurements.scrollWidth, `horizontal overflow ${JSON.stringify(measurements)}`).toBeLessThanOrEqual(measurements.innerWidth + 4);
 });
@@ -134,11 +121,10 @@ test("core planning controls are keyboard reachable", async ({ page }) => {
   await page.keyboard.press("Tab");
   const focusOrder: string[] = [];
   for (let index = 0; index < 24; index += 1) {
-    const label = await page.evaluate(() => {
+    focusOrder.push(await page.evaluate(() => {
       const active = document.activeElement as HTMLElement | null;
       return active?.getAttribute("aria-label") || active?.textContent?.trim().slice(0, 40) || active?.tagName || "";
-    });
-    focusOrder.push(label);
+    }));
     await page.keyboard.press("Tab");
   }
   expect(focusOrder.some((value) => /Fridge/i.test(value))).toBeTruthy();
