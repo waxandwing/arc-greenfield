@@ -22,99 +22,99 @@ export const ARC_HELP_TOPICS: ArcHelpTopic[] = [
     id: "calendar",
     label: "Calendar",
     title: "The calendar is home.",
-    body: "Arc stays centered on the calendar. Day is for teaching from the plan. Week is for precise instructional movement. Month, Quarter, and Year change the scale without creating another copy of your work.",
+    body: "Arc always comes back to the calendar. Day is what you teach from. Week is where you make the little moves. Month, Quarter, and Year pull back without making a second copy of your plans.",
     bullets: [
-      "Open a plan without leaving the calendar horizon you are using.",
-      "The same Unit and Lesson should remain themselves in every range.",
-      "School dates and class meeting patterns control where Arc may place instruction."
+      "Open a plan and come back to the same place.",
+      "A Unit or Lesson stays the same thing in every view.",
+      "School dates and class schedules matter when Arc moves instruction."
     ]
   },
   {
     id: "fridge",
     label: "Fridge",
-    title: "The Fridge keeps work without forcing a date.",
-    body: "Ideas, Notes, Lessons, and Units can stay on the Fridge before they are scheduled—or return there when a day falls apart. Parking something is not deleting it.",
+    title: "The Fridge is where good plans can wait.",
+    body: "Not everything needs a date yet. Park an Idea, Note, Lesson, or Unit on the Fridge until you know where it belongs. Sending something back is not the same as deleting it.",
     bullets: [
-      "Place a Fridge object on the calendar when it is ready.",
-      "Return a scheduled object to the Fridge without losing its context.",
-      "A Unit keeps its nested Lesson sequence when it moves."
+      "Move something onto the calendar when it is ready.",
+      "Send it back when the week changes again.",
+      "A Unit keeps its Lessons with it."
     ]
   },
   {
     id: "unit",
     label: "Unit",
-    title: "Units own ordered Lessons.",
-    body: "A Unit is a durable container. Lessons can belong to it before every Lesson has a date. Arc should preserve that hierarchy whenever the Unit moves, copies, cuts, parks, or restores.",
+    title: "A Unit keeps the run of Lessons together.",
+    body: "You do not have to know every exact date before you map a Unit. Add Lessons, put them in order, and schedule them as the shape of the Unit becomes clearer.",
     bullets: [
-      "Nest a Lesson inside a Unit without forcing a date.",
-      "Reorder the Lesson sequence from Unit Focus.",
-      "Moving a Unit carries its Lesson tree instead of flattening it."
+      "Add Lessons before every date is decided.",
+      "Reorder the sequence from Unit Focus.",
+      "Move the Unit without leaving its Lessons behind."
     ]
   },
   {
     id: "lesson",
     label: "Lesson",
-    title: "A Lesson can be committed in stages.",
-    body: "A Lesson may belong to a Unit without belonging to a day yet. When it is scheduled, Arc keeps its Unit relationship and class context visible.",
+    title: "A Lesson can be planned before it is pinned down.",
+    body: "A Lesson can belong to a Unit before you know the exact day. Once you schedule it, Arc keeps the class and Unit connection with it.",
     bullets: [
-      "Open Lesson details without changing the current calendar horizon.",
-      "Tack, Extend, and Copy-next use that class's next real meeting.",
-      "Returning a Lesson to the Fridge preserves it for later placement."
+      "Open the Lesson without losing your place on the calendar.",
+      "Tack, Extend, and Copy next follow the days that class actually meets.",
+      "Send a Lesson back to the Fridge if it needs another home."
     ]
   },
   {
     id: "movement",
     label: "Move plans",
-    title: "Move the plan instead of rebuilding it.",
-    body: "Drag when that is fastest. Keyboard, menu, Cut/Copy/Paste, Tack, and Extend are equally valid. The long-term rule is that every input method uses the same movement command and consequence preview.",
+    title: "Move it. Do not rebuild it.",
+    body: "Plans move because school moves. Drag when that is fastest, or use the keyboard and buttons when it is not. Either way, Arc should protect the same dates and warn you about the same conflicts.",
     bullets: [
-      "Nothing should require retyping because the week changed.",
-      "Protected and displaced work must remain visible before commit.",
-      "Undo must restore the complete operation, not just one visible date."
+      "A changed week should not mean retyping your work.",
+      "Arc should tell you what is in the way before anything disappears.",
+      "Undo should put the whole move back."
     ]
   },
   {
     id: "priority",
     label: "Must / Should / Could",
-    title: "This is an attention strip, not another task app.",
-    body: "Use Must / Should / Could when several things are competing for your attention. Link planning objects into the strip instead of creating duplicate copies of them.",
+    title: "This is the stuff yelling the loudest.",
+    body: "Must / Should / Could is a small attention strip for the days when everything feels equally urgent. It is not another task app hiding inside your planner.",
     bullets: [
-      "Red-circle means important; it is separate from completion.",
-      "Cross out first, then delete when you truly want it gone.",
-      "Collapse the strip when the calendar needs the space back."
+      "Circle something when it needs your eye.",
+      "Cross it out when it is done.",
+      "Collapse the strip when you want the calendar space back."
     ]
   },
   {
     id: "shift",
     label: "Shift",
     title: "Shift is for the day that went sideways.",
-    body: "Shift is meant to absorb interruption without rebuilding the week. Arc should show the consequence before anything moves, then let the teacher approve the change once.",
+    body: "Assembly ran long. Fire drill. Half the class was out. Shift is for that. Arc shows the ripple first, then moves only the part that can move safely.",
     bullets: [
-      "No-school days and class meeting patterns are respected.",
-      "Fixed or protected dates remain named and visible.",
-      "Collisions should be explained before commit, never discovered afterward."
+      "No-school days and real class schedules still count.",
+      "Fixed dates stay put.",
+      "If something collides, Arc names it before you commit."
     ]
   },
   {
     id: "day",
     label: "Day",
-    title: "Day is the teach-from-it view.",
-    body: "Day turns planning into a working teaching surface: active Unit context, today's Lesson, resources, notes, what changed, and what comes next.",
+    title: "Day is the view you teach from.",
+    body: "Day should feel more like the paper on your desk while you are teaching. See the Lesson, grab a resource, jot what changed, and keep moving.",
     bullets: [
-      "Mark what was actually taught without maintaining a second calendar.",
-      "Capture a short adjustment while it is fresh.",
-      "Open Lesson details and return to the same Day context."
+      "Record what you actually got through.",
+      "Leave yourself a quick note while you still remember it.",
+      "See what comes next without opening another planner."
     ]
   },
   {
     id: "undo-save",
     label: "Undo + Save",
-    title: "Undo freely. Save state must tell the truth.",
-    body: "Undo is part of normal planning, not an emergency control. Save and sync language should always describe where the work is actually durable.",
+    title: "Undo is normal. Save text should not bluff.",
+    body: "Planning is messy. Undo should be easy to use, and Arc should say where your work is really saved instead of pretending it synced somewhere it did not.",
     bullets: [
-      "Cmd/Ctrl-Z reverses the last recoverable workspace operation.",
+      "Cmd/Ctrl-Z backs up the last recoverable change.",
       "Cmd/Ctrl-S saves now.",
-      "The current beta saves on this device; Arc must not imply cloud sync until it exists."
+      "This beta saves on this device unless Arc clearly tells you otherwise."
     ]
   }
 ];
