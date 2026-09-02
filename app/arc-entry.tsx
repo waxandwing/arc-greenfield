@@ -56,7 +56,7 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
           <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} onOpenTutorial={openExploreArc} />
           <RecoveryShortcut />
         </ContextualHelpBoundary>
-        {showExploreArc && <ArcTutorialScreen workspace={workspace} onComplete={() => setShowExploreArc(false)} />}
+        {showExploreArc && <ArcTutorialScreen onComplete={() => setShowExploreArc(false)} />}
       </>
     );
   }
