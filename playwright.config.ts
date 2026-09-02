@@ -14,7 +14,9 @@ export default defineConfig({
     video: "retain-on-failure"
   },
   projects: [
+    { name: "wide-1728", use: { ...devices["Desktop Chrome"], viewport: { width: 1728, height: 1000 } } },
     { name: "desktop-1440", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
+    { name: "desktop-1280", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } } },
     { name: "laptop-1366", use: { ...devices["Desktop Chrome"], viewport: { width: 1366, height: 768 } } },
     {
       name: "zoom-200",
