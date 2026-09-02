@@ -10,3 +10,14 @@
 .weekendHeader b {
   opacity: 0.72;
 }
+
+.moveStatus {
+  margin: 0;
+  padding: 8px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--arc-orange) 30%, var(--arc-line));
+  background: color-mix(in srgb, var(--arc-orange) 12%, var(--arc-card));
+  color: var(--arc-deep);
+  font-size: 0.72rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
