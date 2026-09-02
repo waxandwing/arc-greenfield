@@ -18,13 +18,29 @@ type WorkspaceV1 = Omit<Workspace, "schemaVersion" | "plans" | "preferences"> & 
 };
 
 function migrateWorkspace(parsed: Workspace | WorkspaceV1): Workspace {
-  if (parsed.schemaVersion === 2) return parsed;
+  const defaults = emptyWorkspace();
+  const migratedPlans = parsed.schemaVersion === 1
+    ? parsed.plans.map((plan) => ({ ...plan, endDate: null }))
+    : parsed.plans;
+  const existingPreferences = parsed.preferences ?? defaults.preferences;
 
   return {
+    ...defaults,
     ...parsed,
     schemaVersion: 2,
-    plans: parsed.plans.map((plan) => ({ ...plan, endDate: null })),
-    preferences: { ...parsed.preferences, collapsedUnitIds: [] }
+    calendar: { ...defaults.calendar, ...parsed.calendar },
+    plans: migratedPlans,
+    preferences: {
+      ...defaults.preferences,
+      ...existingPreferences,
+      collapsedUnitIds: existingPreferences.collapsedUnitIds ?? [],
+      exploredHelpIds: existingPreferences.exploredHelpIds ?? [],
+      // Existing stored workspaces should not suddenly receive a first-visit welcome
+      // after this feature ships. New workspaces explicitly store `false` from
+      // emptyWorkspace(), so only migrated/older workspaces default to dismissed.
+      exploreWelcomeDismissed: existingPreferences.exploreWelcomeDismissed ?? true
+    },
+    checkpoints: parsed.checkpoints ?? []
   };
 }
 
