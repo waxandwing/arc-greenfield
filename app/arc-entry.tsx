@@ -47,13 +47,15 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
   }
 
   if (!loaded) return <main className="loadingShell">Opening Arc...</main>;
-  if (complete && showExploreArc) return <ArcTutorialScreen workspace={workspace} onComplete={() => setShowExploreArc(false)} />;
   if (complete) {
     return (
-      <ContextualHelpBoundary ownerId={ownerId}>
-        <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} onOpenTutorial={openExploreArc} />
-        <RecoveryShortcut />
-      </ContextualHelpBoundary>
+      <>
+        <ContextualHelpBoundary ownerId={ownerId}>
+          <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} onOpenTutorial={openExploreArc} />
+          <RecoveryShortcut />
+        </ContextualHelpBoundary>
+        {showExploreArc && <ArcTutorialScreen workspace={workspace} onComplete={() => setShowExploreArc(false)} />}
+      </>
     );
   }
 
