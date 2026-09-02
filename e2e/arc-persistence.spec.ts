@@ -1,19 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { completeFirstRun } from "./helpers";
 
 test("a saved Fridge magnet survives a hard reload", async ({ page }) => {
-  await page.goto("/");
-  await page.evaluate(() => localStorage.clear());
-  await page.reload();
-
-  await page.getByPlaceholder("What should Arc call you?").fill("Persistence Teacher");
-  await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByPlaceholder("Course name").fill("Studio Art");
-  await page.getByPlaceholder("Period / block").fill("2");
-  await page.getByRole("button", { name: "Add class" }).click();
-  await page.getByRole("button", { name: "Continue" }).click();
-  await page.getByLabel("First student day", { exact: true }).fill("2026-08-10");
-  await page.getByLabel("Last student day", { exact: true }).fill("2027-05-28");
-  await page.getByRole("button", { name: "Open my desk" }).click();
+  await completeFirstRun(page, {
+    teacherName: "Persistence Teacher",
+    clearStorageOnce: true
+  });
 
   await page.getByRole("button", { name: "Fridge", exact: true }).click();
   await page.getByPlaceholder("idea title").fill("Try cyanotype warm-up");
