@@ -30,6 +30,10 @@ function normalizeChildOrder(plans: Plan[], unitId: string): Plan[] {
   return plans.map((plan) => order.has(plan.id) ? { ...plan, childOrder: order.get(plan.id)! } : plan);
 }
 
+function treeContainsFixedDate(plans: Plan[], rootId: string): boolean {
+  return collectPlanTree(plans, rootId).some((item) => item.fixedDate);
+}
+
 export type CalendarTarget = { kind: "calendar"; date: string; courseId: string };
 export type FridgeTarget = { kind: "fridge" };
 export type UnitTarget = { kind: "unit"; unitId: string; position?: number };
@@ -44,6 +48,7 @@ export function movePlan(plans: Plan[], id: string, target: PlanTarget): Plan[] 
   if (!plan) return plans;
 
   if (target.kind === "fridge") {
+    if (treeContainsFixedDate(plans, id)) return plans;
     const ids = new Set(collectPlanTree(plans, id).map((item) => item.id));
     return plans.map((item) => ids.has(item.id) ? { ...item, location: "fridge" as PlanLocation } : item);
   }
@@ -100,6 +105,7 @@ export function nestLesson(plans: Plan[], lessonId: string, unitId: string, posi
 export function detachLesson(plans: Plan[], lessonId: string, target?: CalendarTarget | FridgeTarget): Plan[] {
   const lesson = plans.find((item) => item.id === lessonId);
   if (!lesson || lesson.type !== "lesson" || !lesson.parentUnitId) return plans;
+  if (target?.kind === "fridge" && lesson.fixedDate) return plans;
   const priorUnitId = lesson.parentUnitId;
   let next = plans.map((item) => item.id === lessonId ? { ...item, parentUnitId: null, childOrder: null, location: target?.kind === "fridge" ? "fridge" as const : item.location, date: target?.kind === "calendar" ? target.date : item.date, courseId: target?.kind === "calendar" ? target.courseId : item.courseId } : item);
   next = normalizeChildOrder(next, priorUnitId);
@@ -107,6 +113,7 @@ export function detachLesson(plans: Plan[], lessonId: string, target?: CalendarT
 }
 
 export function movePlanTreeToLocation(plans: Plan[], rootId: string, location: PlanLocation): Plan[] {
+  if (location === "fridge" && treeContainsFixedDate(plans, rootId)) return plans;
   const ids = new Set(collectPlanTree(plans, rootId).map((item) => item.id));
   return plans.map((item) => ids.has(item.id) ? { ...item, location } : item);
 }
