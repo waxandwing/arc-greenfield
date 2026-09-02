@@ -5,6 +5,7 @@ import { emptyWorkspace, type Workspace } from "../lib/domain";
 import { loadWorkspace, saveWorkspace, setActiveWorkspaceOwner } from "../lib/workspace-store";
 import { ArcShell } from "./arc-shell";
 import { ArcTutorialScreen } from "./arc-tutorial-screen";
+import { ContextualHelpBoundary } from "./contextual-help-boundary";
 import { OnboardingScreen } from "./onboarding-screen";
 import { RecoveryShortcut } from "./recovery-shortcut";
 
@@ -49,10 +50,10 @@ export function ArcEntry({ buildId, gitSha, ownerId }: { buildId: string; gitSha
   if (complete && showExploreArc) return <ArcTutorialScreen workspace={workspace} onComplete={() => setShowExploreArc(false)} />;
   if (complete) {
     return (
-      <>
+      <ContextualHelpBoundary ownerId={ownerId}>
         <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} onOpenTutorial={openExploreArc} />
         <RecoveryShortcut />
-      </>
+      </ContextualHelpBoundary>
     );
   }
 
