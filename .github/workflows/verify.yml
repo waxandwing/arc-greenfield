@@ -29,6 +29,7 @@ jobs:
           path: |
             playwright-report
             test-results
-          if-no-files-found: ignore
+            package-lock.json
+          if-no-files-found: error
       - name: Verify canonical build contract exists
         run: test -f CANONICAL_BUILD.json
