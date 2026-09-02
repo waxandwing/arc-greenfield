@@ -1,39 +1,16 @@
 import { test, expect } from "@playwright/test";
+import { completeFirstRun } from "./helpers";
 
-async function completeFirstRun(page: import("@playwright/test").Page) {
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Make Arc yours." })).toBeVisible();
-
-  await page.getByPlaceholder("What should Arc call you?").fill("Arc Test Teacher");
-  await page.getByRole("button", { name: "Continue" }).click();
-
-  await page.getByPlaceholder("Course name").fill("Studio Art");
-  await page.getByPlaceholder("Period / block").fill("2");
-  await page.getByRole("button", { name: "Add class" }).click();
-  await page.getByRole("button", { name: "Continue" }).click();
-
-  await page.getByLabel("First student day", { exact: true }).fill("2026-08-10");
-  await page.getByLabel("Last student day", { exact: true }).fill("2027-05-28");
-  await page.getByLabel("No-school date", { exact: true }).fill("2026-09-07");
-  await page.getByLabel("No-school date label", { exact: true }).fill("Labor Day");
-  await page.getByRole("button", { name: "Add", exact: true }).click();
-  await expect(page.getByText("Labor Day", { exact: true })).toBeVisible();
-
-  await page.locator("details.quarterDetails > summary").click();
-  const quarters = [
+const DESKTOP_SETUP = {
+  teacherName: "Arc Test Teacher",
+  noSchoolDate: { date: "2026-09-07", label: "Labor Day" },
+  quarters: [
     ["2026-08-10", "2026-10-09"],
     ["2026-10-12", "2026-12-18"],
     ["2027-01-04", "2027-03-12"],
     ["2027-03-15", "2027-05-28"]
-  ];
-  for (let index = 0; index < quarters.length; index += 1) {
-    await page.getByLabel(`Quarter ${index + 1} start`).fill(quarters[index][0]);
-    await page.getByLabel(`Quarter ${index + 1} end`).fill(quarters[index][1]);
-  }
-
-  await page.getByRole("button", { name: "Open my desk" }).click();
-  await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
-}
+  ] as Array<[string, string]>
+};
 
 async function seedTeachFromDay(page: import("@playwright/test").Page) {
   await page.getByRole("button", { name: "＋ Unit", exact: true }).click();
@@ -63,7 +40,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("first run reaches a functional Arc desk without a fake calendar source", async ({ page }) => {
-  await completeFirstRun(page);
+  await completeFirstRun(page, DESKTOP_SETUP);
 
   await expect(page.getByRole("button", { name: "Fridge", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Shift", exact: true })).toBeVisible();
@@ -83,7 +60,7 @@ test("first run reaches a functional Arc desk without a fake calendar source", a
 });
 
 test("Arc color scheme is user-selectable, asset-derived, and persists", async ({ page }, testInfo) => {
-  await completeFirstRun(page);
+  await completeFirstRun(page, DESKTOP_SETUP);
 
   await expect(page.getByRole("radiogroup", { name: "Arc color scheme" })).toHaveCount(0);
   await page.getByRole("button", { name: "More", exact: true }).click();
@@ -103,7 +80,7 @@ test("Arc color scheme is user-selectable, asset-derived, and persists", async (
 });
 
 test("Day is a real teach-from-it surface and Year renders each school month once", async ({ page }, testInfo) => {
-  await completeFirstRun(page);
+  await completeFirstRun(page, DESKTOP_SETUP);
   await seedTeachFromDay(page);
 
   await page.getByRole("button", { name: "Day", exact: true }).click();
@@ -132,7 +109,7 @@ test("Day is a real teach-from-it surface and Year renders each school month onc
 });
 
 test("desktop planning shell stays inside the viewport at supported laptop sizes", async ({ page }) => {
-  await completeFirstRun(page);
+  await completeFirstRun(page, DESKTOP_SETUP);
   const measurements = await page.evaluate(() => ({
     innerHeight: window.innerHeight,
     scrollHeight: document.documentElement.scrollHeight,
@@ -145,7 +122,7 @@ test("desktop planning shell stays inside the viewport at supported laptop sizes
 });
 
 test("core planning controls are keyboard reachable", async ({ page }) => {
-  await completeFirstRun(page);
+  await completeFirstRun(page, DESKTOP_SETUP);
   await page.keyboard.press("Tab");
   const focusOrder: string[] = [];
   for (let index = 0; index < 24; index += 1) {
