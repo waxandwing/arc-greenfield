@@ -10,6 +10,7 @@ type FirstRunOptions = {
   quarters?: Array<[string, string]> | null;
   clearStorageOnce?: boolean;
   completeTutorial?: boolean;
+  weekendsVisible?: boolean;
 };
 
 export async function completeFirstRun(page: Page, options: FirstRunOptions = {}) {
@@ -22,7 +23,8 @@ export async function completeFirstRun(page: Page, options: FirstRunOptions = {}
     noSchoolDate = null,
     quarters = null,
     clearStorageOnce = false,
-    completeTutorial = false
+    completeTutorial = false,
+    weekendsVisible = false
   } = options;
 
   await page.goto("/");
@@ -45,6 +47,10 @@ export async function completeFirstRun(page: Page, options: FirstRunOptions = {}
     await page.getByLabel("No-school date", { exact: true }).fill(noSchoolDate.date);
     await page.getByLabel("No-school date label", { exact: true }).fill(noSchoolDate.label);
     await page.getByRole("button", { name: "Add", exact: true }).click();
+  }
+
+  if (weekendsVisible) {
+    await page.getByLabel("Show weekends in calendar views").check();
   }
 
   if (quarters) {
