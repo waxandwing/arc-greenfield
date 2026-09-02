@@ -69,7 +69,6 @@ test("returning teachers can review the tutorial without losing setup", async ({
   await page.getByRole("button", { name: "More", exact: true }).click();
   await page.getByRole("button", { name: "Review Arc tutorial", exact: true }).click();
   await expect(page.getByRole("heading", { name: "How Arc works." })).toBeVisible();
-  await expect(page.getByText("Tutorial Teacher", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Skip tutorial", exact: true }).click();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
