@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   emptyWorkspace,
   type ArcView,
@@ -10,18 +10,22 @@ import {
   type PriorityTier,
   type Workspace
 } from "../lib/domain";
+import { arcColorScheme } from "../lib/arc-color-schemes";
 import { applyCut, createClipboard, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
 import { applyInstructionalShift, checkpointQuarter, copyLessonNext, extendLesson, previewInstructionalShift, reuseWeek, tackLesson } from "../lib/efficiency-operations";
 import { deleteSelection, detachLesson, movePlan, movePlanToCalendarDate, nestLesson } from "../lib/plan-operations";
 import { collectPlanTree, orderedUnitChildren } from "../lib/plan-tree";
-import { crossOutPriority, deletePriority, linkPriorityToPlan, movePriority, reorderPriority, togglePriorityCircle } from "../lib/priority-operations";
+import { crossOutPriority, deletePriority, linkPriorityToPlan, movePriority, togglePriorityCircle } from "../lib/priority-operations";
 import { resolveArcShortcut } from "../lib/shortcuts";
 import { availableQuarterRanges } from "../lib/view-ranges";
 import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "../lib/workspace-history";
 import { loadWorkspace, saveWorkspace } from "../lib/workspace-store";
+import { ArcColorSchemeControl } from "./arc-color-scheme-control";
 import { DayPlanningView } from "./day-planning-view";
+import { MagnetEditor } from "./magnet-editor";
 import { MonthView } from "./month-view";
 import { QuarterView } from "./quarter-view";
+import { SemesterView } from "./semester-view";
 import { WeekPlanner } from "./week-planner";
 import { YearMapView } from "./year-map-view";
 
@@ -91,7 +95,12 @@ function normalizedWorkspace(raw: Workspace): Workspace {
   };
 }
 
-export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gitSha: string; onOpenSetup: () => void }) {
+export function ArcShell({ buildId, gitSha, onOpenSetup, onOpenTutorial }: {
+  buildId: string;
+  gitSha: string;
+  onOpenSetup: () => void;
+  onOpenTutorial: () => void;
+}) {
   const [history, setHistory] = useState<WorkspaceHistory>(() => createWorkspaceHistory(emptyWorkspace()));
   const workspace = history.present;
   const [ready, setReady] = useState(false);
@@ -112,8 +121,6 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   const [fridgeKind, setFridgeKind] = useState<PlanType>("idea");
   const [fridgeCourseId, setFridgeCourseId] = useState("");
   const [priorityDrafts, setPriorityDrafts] = useState<Record<PriorityTier, string>>({ must: "", should: "", could: "" });
-  const [resourceDraft, setResourceDraft] = useState({ label: "", url: "" });
-  const [childTitle, setChildTitle] = useState("");
 
   const days = useMemo(() => weekDays(weekAnchor), [weekAnchor]);
   const weekLabel = `${days[0].month} ${days[0].number} – ${days[4].month} ${days[4].number}`;
@@ -126,6 +133,21 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     : selectedPlan?.parentUnitId
       ? workspace.plans.find((plan) => plan.id === selectedPlan.parentUnitId && plan.type === "unit") ?? null
       : null;
+  const palette = arcColorScheme(workspace.preferences.colorScheme);
+  const workspaceStyle = {
+    "--arc-paper": palette.paper,
+    "--arc-deep": palette.deep,
+    "--arc-teal": palette.blue,
+    "--arc-blue": palette.blue,
+    "--arc-gold": palette.gold,
+    "--arc-yellow": palette.yellow,
+    "--arc-orange": palette.orange,
+    "--arc-coral": palette.coral,
+    "--arc-q1": palette.quarters[0],
+    "--arc-q2": palette.quarters[1],
+    "--arc-q3": palette.quarters[2],
+    "--arc-q4": palette.quarters[3]
+  } as CSSProperties;
 
   const viewWorkspace = useMemo(() => {
     const courseFilter = workspace.preferences.courseFilterId;
@@ -362,10 +384,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
 
   function applyShift() {
     if (!selectedCourseId || !shiftPreview || shiftPreview.movableRootIds.length === 0) return;
-    updateWorkspace((current) => applyInstructionalShift(
-      current,
-      previewInstructionalShift(current, [selectedCourseId], shiftFromDate)
-    ));
+    updateWorkspace((current) => applyInstructionalShift(current, previewInstructionalShift(current, [selectedCourseId], shiftFromDate)));
   }
 
   function runTack(id: string) { updateWorkspace((current) => tackLesson(current, id)); }
@@ -392,7 +411,9 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
 
   function goToday() {
     const now = new Date();
-    setDayDate(dateKey(now)); setWeekAnchor(now); setMonthAnchor(now);
+    setDayDate(dateKey(now));
+    setWeekAnchor(now);
+    setMonthAnchor(now);
     const today = dateKey(now);
     const index = quarterRanges.findIndex((quarter) => quarter.start <= today && quarter.end >= today);
     if (index >= 0) setQuarterIndex(index);
@@ -411,7 +432,8 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     if (!dragging) return;
     if (dragging.kind === "plan") deletePlan(dragging.id);
     else updateWorkspace((current) => deletePriority(current, dragging.id));
-    setDragging(null); setTrashHot(false);
+    setDragging(null);
+    setTrashHot(false);
   }
 
   useEffect(() => {
@@ -437,7 +459,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   const fridgeRoots = workspace.plans.filter((plan) => (plan.location === "fridge" || plan.location === "ideas") && !plan.parentUnitId);
 
   return (
-    <main className="arcWorkspace" onDragStart={onDragStartBubble} onDragEnd={() => { setDragging(null); setTrashHot(false); }}>
+    <main className="arcWorkspace" data-color-scheme={palette.id} style={workspaceStyle} onDragStart={onDragStartBubble} onDragEnd={() => { setDragging(null); setTrashHot(false); }}>
       <header className="arcWorkspaceHeader">
         <button className="arcLogoHome" type="button" onClick={homeView} aria-label="Arc home"><img src="/arc.png" alt="" /></button>
         <div className="arcWorkspaceTitle"><small>{activeView}</small><strong>{activeView === "week" ? weekLabel : activeView === "month" ? monthAnchor.toLocaleDateString(undefined, { month: "long", year: "numeric" }) : activeView === "day" ? parseDate(dayDate).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : activeView === "quarter" ? activeQuarter?.label ?? "Quarter" : activeView === "semester" ? "Semester" : "School Year"}</strong><span>{workspace.teacherName || "Your planning desk"}</span></div>
@@ -463,7 +485,11 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
                 <button className="addFridge" type="button" onClick={addFridgeItem}>Add to Fridge</button>
               </div>
               <div className="arcFolderScroll">
-                {fridgeRoots.map((plan) => { const course = workspace.courses.find((item) => item.id === plan.courseId); const children = plan.type === "unit" ? orderedUnitChildren(workspace.plans, plan.id) : []; return <div key={plan.id}><button type="button" draggable className="fridgeMagnet" style={{ ["--magnet-color" as string]: course?.color || "#eeb834" }} onDragStart={(event) => { event.dataTransfer.setData("text/arc-plan", plan.id); event.dataTransfer.effectAllowed = "move"; }} onClick={() => selectPlan(plan)}><small>{plan.type}</small><strong>{plan.title}</strong><span>{course?.name ?? "Loose planning"}{plan.type === "unit" ? ` · ${children.length} lessons` : ""}</span></button>{children.length > 0 && <div className="fridgeUnitChildren">{children.map((child) => <button key={child.id} type="button" draggable onDragStart={(event) => { event.dataTransfer.setData("text/arc-plan", child.id); event.dataTransfer.effectAllowed = "move"; }} onClick={() => selectPlan(child)}>{child.title}</button>)}</div>}</div>; })}
+                {fridgeRoots.map((plan) => {
+                  const course = workspace.courses.find((item) => item.id === plan.courseId);
+                  const children = plan.type === "unit" ? orderedUnitChildren(workspace.plans, plan.id) : [];
+                  return <div key={plan.id}><button type="button" draggable className="fridgeMagnet" style={{ ["--magnet-color" as string]: course?.color || "#eeb834" }} onDragStart={(event) => { event.dataTransfer.setData("text/arc-plan", plan.id); event.dataTransfer.effectAllowed = "move"; }} onClick={() => selectPlan(plan)}><small>{plan.type}</small><strong>{plan.title}</strong><span>{course?.name ?? "Loose planning"}{plan.type === "unit" ? ` · ${children.length} lessons` : ""}</span></button>{children.length > 0 && <div className="fridgeUnitChildren">{children.map((child) => <button key={child.id} type="button" draggable onDragStart={(event) => { event.dataTransfer.setData("text/arc-plan", child.id); event.dataTransfer.effectAllowed = "move"; }} onClick={() => selectPlan(child)}>{child.title}</button>)}</div>}</div>;
+                })}
                 {fridgeRoots.length === 0 && <p className="emptyNote">Nothing on the Fridge yet.</p>}
               </div>
               <div />
@@ -487,6 +513,8 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
               <p className="arcFolderIntro">Preferences and deliberate planning tools.</p>
               <div className="arcFolderScroll">
                 <button type="button" className="secondary" onClick={onOpenSetup}>School + classes setup</button>
+                <button type="button" className="secondary" onClick={onOpenTutorial}>Review Arc tutorial</button>
+                <ArcColorSchemeControl selected={workspace.preferences.colorScheme ?? "studio"} onChange={(colorScheme) => updatePreferences({ colorScheme })} />
                 <label className="rangeCoursePicker"><span>Home view</span><select value={workspace.preferences.landingView} onChange={(event) => updatePreferences({ landingView: event.target.value as ArcView | "last-used" })}><option value="last-used">Last used</option>{VIEW_LABELS.map((view) => <option value={view.id} key={view.id}>{view.label}</option>)}</select></label>
                 <label><input type="checkbox" checked={workspace.preferences.lapsedDayXsVisible !== false} onChange={(event) => updatePreferences({ lapsedDayXsVisible: event.target.checked })} /> Yellow X on elapsed school days</label>
                 <button type="button" className="secondary" onClick={runReuseWeek}>Reuse this week → next week</button>
@@ -541,7 +569,24 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
               </div>
             </section>
 
-            {selectedPlan && <MagnetEditor plan={selectedPlan} unit={focusUnit} workspace={workspace} childTitle={childTitle} setChildTitle={setChildTitle} resourceDraft={resourceDraft} setResourceDraft={setResourceDraft} onClose={() => setSelectedPlanId(null)} onRename={renamePlan} onPatch={patchPlan} onMoveDate={movePlanToDate} onSelectChild={(id) => setSelectedPlanId(id)} onTack={runTack} onExtend={runExtend} onCopyNext={runCopyNext} onFridge={returnToFridge} onDelete={deletePlan} onAddChild={addChildLesson} onReorderChild={reorderUnitChild} onDetachChild={(id) => updateWorkspace((current) => ({ ...current, plans: detachLesson(current.plans, id, { kind: "fridge" }) }))} />}
+            {selectedPlan && <MagnetEditor
+              plan={selectedPlan}
+              unit={focusUnit}
+              workspace={workspace}
+              onClose={() => setSelectedPlanId(null)}
+              onRename={renamePlan}
+              onPatch={patchPlan}
+              onMoveDate={movePlanToDate}
+              onSelectPlan={(id) => setSelectedPlanId(id)}
+              onTack={runTack}
+              onExtend={runExtend}
+              onCopyNext={runCopyNext}
+              onFridge={returnToFridge}
+              onDelete={deletePlan}
+              onAddChild={addChildLesson}
+              onReorderChild={reorderUnitChild}
+              onDetachChild={(id) => updateWorkspace((current) => ({ ...current, plans: detachLesson(current.plans, id, { kind: "fridge" }) }))}
+            />}
           </section>
         </div>
 
@@ -549,38 +594,4 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
       </section>
     </main>
   );
-}
-
-function MagnetEditor({ plan, unit, workspace, childTitle, setChildTitle, resourceDraft, setResourceDraft, onClose, onRename, onPatch, onMoveDate, onSelectChild, onTack, onExtend, onCopyNext, onFridge, onDelete, onAddChild, onReorderChild, onDetachChild }: {
-  plan: Plan; unit: Plan | null; workspace: Workspace; childTitle: string; setChildTitle: (value: string) => void;
-  resourceDraft: { label: string; url: string }; setResourceDraft: (value: { label: string; url: string }) => void;
-  onClose: () => void; onRename: (id: string, title: string) => void; onPatch: (id: string, patch: Partial<Plan>) => void;
-  onMoveDate: (id: string, date: string, courseId: string) => void; onSelectChild: (id: string) => void;
-  onTack: (id: string) => void; onExtend: (id: string) => void; onCopyNext: (id: string) => void; onFridge: (id: string) => void; onDelete: (id: string) => void;
-  onAddChild: (unit: Plan, title: string) => void; onReorderChild: (unitId: string, childId: string, direction: -1 | 1) => void; onDetachChild: (id: string) => void;
-}) {
-  const focus = unit ?? plan;
-  const children = focus.type === "unit" ? orderedUnitChildren(workspace.plans, focus.id) : [];
-  return <aside className="arcMagnetEditor" aria-label={focus.type === "unit" ? "Unit Focus" : "Magnet details"}>
-    <header><h3>{focus.type === "unit" ? "Unit Focus" : "Magnet details"}</h3><button type="button" onClick={onClose}>×</button></header>
-    <div className="editorBody">
-      <label>Title<input defaultValue={plan.title} key={plan.id + plan.title} onBlur={(event) => onRename(plan.id, event.target.value)} /></label>
-      <label>Notes<textarea defaultValue={plan.notes} key={plan.id + plan.notes} rows={3} onBlur={(event) => onPatch(plan.id, { notes: event.target.value })} /></label>
-      {plan.type !== "idea" && <label><span><input type="checkbox" checked={plan.fixedDate} onChange={(event) => onPatch(plan.id, { fixedDate: event.target.checked })} /> Fixed date</span></label>}
-      {plan.courseId && <label>Move / schedule<input type="date" value={plan.date ?? ""} onChange={(event) => { if (event.target.value && plan.courseId) onMoveDate(plan.id, event.target.value, plan.courseId); }} /></label>}
-      {plan.type === "lesson" && <div className="editorQuickActions"><button type="button" disabled={plan.fixedDate || !plan.date} onClick={() => onTack(plan.id)}>Tack →</button><button type="button" disabled={!plan.date} onClick={() => onExtend(plan.id)}>Extend +1 day</button><button type="button" disabled={!plan.date} onClick={() => onCopyNext(plan.id)}>Copy → next</button></div>}
-      <div className="editorQuickActions"><button type="button" onClick={() => onFridge(plan.id)}>Return to Fridge</button><button type="button" onClick={() => onDelete(plan.id)}>Delete</button></div>
-      <div className="editorUnitList"><strong>Resources</strong>{plan.resources.map((resource) => <a key={resource.id} href={resource.url} target="_blank" rel="noreferrer">{resource.label}</a>)}<div className="priorityAdd"><input value={resourceDraft.label} onChange={(event) => setResourceDraft({ ...resourceDraft, label: event.target.value })} placeholder="Label" /><input value={resourceDraft.url} onChange={(event) => setResourceDraft({ ...resourceDraft, url: event.target.value })} placeholder="https://" /><button type="button" onClick={() => { if (!resourceDraft.label.trim() || !resourceDraft.url.trim()) return; onPatch(plan.id, { resources: [...plan.resources, { id: crypto.randomUUID(), label: resourceDraft.label.trim(), url: resourceDraft.url.trim() }] }); setResourceDraft({ label: "", url: "" }); }}>＋</button></div></div>
-      {focus.type === "unit" && <div className="editorUnitList"><strong>Lesson sequence</strong>{children.map((child, index) => <div className="editorUnitChild" key={child.id}><button type="button" onClick={() => onSelectChild(child.id)}>{index + 1}. {child.title}</button><div><button type="button" disabled={index === 0} onClick={() => onReorderChild(focus.id, child.id, -1)}>↑</button><button type="button" disabled={index === children.length - 1} onClick={() => onReorderChild(focus.id, child.id, 1)}>↓</button><button type="button" onClick={() => onDetachChild(child.id)}>Fridge</button></div></div>)}<div className="priorityAdd"><input value={childTitle} onChange={(event) => setChildTitle(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && childTitle.trim()) { onAddChild(focus, childTitle); setChildTitle(""); } }} placeholder="Add lesson" /><button type="button" onClick={() => { if (!childTitle.trim()) return; onAddChild(focus, childTitle); setChildTitle(""); }}>＋</button></div></div>}
-    </div>
-  </aside>;
-}
-
-function SemesterView({ workspace, quarterRanges, quarterIndex, onSelectPlan }: { workspace: Workspace; quarterRanges: ReturnType<typeof availableQuarterRanges>; quarterIndex: number; onSelectPlan: (plan: Plan) => void }) {
-  if (!quarterRanges.length) return <section className="arcSemesterView"><h2>Semester</h2><p>Add real quarter dates in Setup first.</p></section>;
-  const startIndex = quarterIndex >= 2 ? 2 : 0;
-  const ranges = quarterRanges.slice(startIndex, startIndex + 2);
-  const start = ranges[0]?.start; const end = ranges[ranges.length - 1]?.end;
-  const units = workspace.plans.filter((plan) => plan.type === "unit" && plan.location === "calendar" && plan.date && start && end && plan.date <= end && (plan.endDate ?? plan.date) >= start);
-  return <section className="arcSemesterView"><h2>{startIndex === 0 ? "Semester 1" : "Semester 2"}</h2><div className="semesterTracks">{units.map((unit) => { const course = workspace.courses.find((item) => item.id === unit.courseId); return <div className="semesterUnit" key={unit.id}><span>{course?.name}</span><button type="button" style={{ ["--course-color" as string]: course?.color || "#eeb834" }} onClick={() => onSelectPlan(unit)}>{unit.title}</button></div>; })}</div></section>;
 }
