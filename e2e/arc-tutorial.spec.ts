@@ -21,11 +21,13 @@ async function completeSetup(page: Page) {
 }
 
 async function openExploreArc(page: Page) {
-  await page.getByRole("button", { name: "More", exact: true }).click();
+  const more = page.getByRole("button", { name: "More", exact: true });
+  await more.click();
   await page.getByRole("button", { name: "Review Arc tutorial", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Getting to Know Arc" })).toBeVisible();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
+  await expect(more).toHaveAttribute("aria-pressed", "false");
 }
 
 test("new teachers get a lightweight Explore Arc overlay on the real calendar", async ({ page }, testInfo) => {
@@ -52,6 +54,7 @@ test("new teachers get a lightweight Explore Arc overlay on the real calendar", 
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.locator(".arcCalendarViewport")).toBeVisible();
   await expect(page.getByRole("button", { name: "Fridge", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "More", exact: true })).toHaveAttribute("aria-pressed", "false");
 
   await page.reload();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
@@ -85,17 +88,20 @@ test("Explore Arc is optional, restartable, and uses the canonical help topics",
   await expect(page.getByText("This beta saves on this device unless Arc clearly tells you otherwise.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Done exploring", exact: true }).click();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "More", exact: true })).toHaveAttribute("aria-pressed", "false");
 
   await openExploreArc(page);
   await expect(page.getByText("The calendar is home.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Back to Arc", exact: true }).click();
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "More", exact: true })).toHaveAttribute("aria-pressed", "false");
 });
 
 test("exploring help does not alter teacher setup", async ({ page }) => {
   await completeSetup(page);
   await openExploreArc(page);
   await page.getByRole("button", { name: "Back to Arc", exact: true }).click();
+  await expect(page.getByRole("button", { name: "More", exact: true })).toHaveAttribute("aria-pressed", "false");
 
   await page.getByRole("button", { name: "More", exact: true }).click();
   await page.getByRole("button", { name: "School + classes setup", exact: true }).click();
@@ -128,4 +134,5 @@ test("Explore Arc can be navigated without a pointer and Escape returns to plann
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Arc home" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "More", exact: true })).toHaveAttribute("aria-pressed", "false");
 });
