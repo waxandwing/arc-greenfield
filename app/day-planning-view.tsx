@@ -1,6 +1,7 @@
 "use client";
 
 import type { Plan, Workspace } from "../lib/domain";
+import styles from "./day-recovery.module.css";
 
 function parseDate(value: string) {
   const [year, month, day] = value.split("-").map(Number);
@@ -71,14 +72,14 @@ export function DayPlanningView({ workspace, date, onSelectPlan, onPatchPlan }: 
                 {lessons.map((lesson) => {
                   const state = deliveryState(lesson);
                   const recoveryNeeded = state === "partial" || state === "missed";
-                  return <section className={`dayLessonCard${state === "taught" ? " taught" : ""}${recoveryNeeded ? " recoveryNeeded" : ""}`} key={lesson.id}>
+                  return <section className={`dayLessonCard${state === "taught" ? " taught" : ""}${recoveryNeeded ? ` ${styles.recoveryNeeded}` : ""}`} key={lesson.id}>
                     <div className="dayLessonTop"><button type="button" className="dayLessonTitle" onClick={() => onSelectPlan(lesson)}>{lesson.title}</button></div>
                     {lesson.notes && <p className="dayLessonNotes">{lesson.notes}</p>}
                     {lesson.resources.length > 0 && <div className="dayResources" aria-label={`${lesson.title} resources`}>{lesson.resources.map((resource) => <a key={resource.id} href={resource.url} target="_blank" rel="noreferrer">{resource.label}</a>)}</div>}
 
-                    <fieldset className="dayDeliveryState">
+                    <fieldset className={styles.deliveryState}>
                       <legend>What actually happened?</legend>
-                      <div>
+                      <div className={styles.deliveryOptions}>
                         {DELIVERY_OPTIONS.map((option) => <button
                           type="button"
                           key={option.value}
@@ -96,7 +97,7 @@ export function DayPlanningView({ workspace, date, onSelectPlan, onPatchPlan }: 
                       </div>
                     </fieldset>
 
-                    {recoveryNeeded && <p className="dayRecoveryCue">Keep the record here. Recovery can carry the unfinished work forward without pretending today went differently.</p>}
+                    {recoveryNeeded && <p className={styles.recoveryCue}>Keep the record here. Recovery can carry the unfinished work forward without pretending today went differently.</p>}
                     <label className="dayReflection"><span>What changed?</span><textarea rows={2} value={lesson.details.dayReflection ?? ""} onChange={(event) => onPatchPlan(lesson.id, { details: { ...lesson.details, dayReflection: event.target.value } })} placeholder="A sentence is enough." /></label>
                   </section>;
                 })}
