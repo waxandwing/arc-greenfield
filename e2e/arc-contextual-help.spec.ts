@@ -2,7 +2,8 @@ import { test, expect } from "@playwright/test";
 import { completeFirstRun } from "./helpers";
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
 });
 
 test("Fridge explains itself once, then the same click opens the tool", async ({ page }) => {
