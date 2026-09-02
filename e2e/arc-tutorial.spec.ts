@@ -75,7 +75,9 @@ test("returning teachers can review the tutorial without losing setup", async ({
   await page.getByRole("button", { name: "More", exact: true }).click();
   await page.getByRole("button", { name: "School + classes setup", exact: true }).click();
   await expect(page.getByPlaceholder("What should Arc call you?")).toHaveValue("Tutorial Teacher");
+  await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(page.getByText("Studio Art", { exact: true })).toBeVisible();
+  await expect(page.getByText("2", { exact: true }).first()).toBeVisible();
 });
 
 test("the tutorial can be navigated without a pointer", async ({ page }) => {
