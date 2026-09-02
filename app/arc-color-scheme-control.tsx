@@ -2,7 +2,7 @@
 
 import type { ArcColorScheme } from "../lib/domain";
 import { ARC_COLOR_SCHEMES } from "../lib/arc-color-schemes";
-import styles from "./arc-color-scheme-picker.module.css";
+import styles from "./arc-color-scheme-control.module.css";
 
 export function ArcColorSchemeControl({ selected, onChange }: { selected: ArcColorScheme; onChange: (id: ArcColorScheme) => void }) {
   return (
