@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./onboarding-screen.css";
 import "./workspace-rebuild-v2.css";
-import "./day-recovery.css";
 
 export const metadata: Metadata = {
   title: "Arc by Wax & Wing",
