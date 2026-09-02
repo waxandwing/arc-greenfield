@@ -48,13 +48,13 @@ export function ContextualHelpBoundary({ ownerId, children }: { ownerId: string 
 
   function updateMarksVisible(visible: boolean) {
     const workspace = loadWorkspace(ownerId);
-    saveWorkspace(setHelpMarksVisible(workspace, visible), ownerId);
+    saveWorkspace(setHelpMarksVisible(workspace, visible), ownerId, { overwriteHelpPreferences: true });
     setMarksVisibleState(visible);
   }
 
   function updateTipsEnabled(enabled: boolean) {
     const workspace = loadWorkspace(ownerId);
-    saveWorkspace(setFirstTimeHelpEnabled(workspace, enabled), ownerId);
+    saveWorkspace(setFirstTimeHelpEnabled(workspace, enabled), ownerId, { overwriteHelpPreferences: true });
     setTipsEnabledState(enabled);
   }
 
@@ -62,7 +62,7 @@ export function ContextualHelpBoundary({ ownerId, children }: { ownerId: string 
     const workspace = loadWorkspace(ownerId);
     if (!shouldShowFirstTimeHelp(workspace, nextTopicId)) return false;
     triggerRef.current = trigger ?? null;
-    saveWorkspace(markHelpExplored(workspace, nextTopicId), ownerId);
+    saveWorkspace(markHelpExplored(workspace, nextTopicId), ownerId, { overwriteHelpPreferences: true });
     setTopicId(nextTopicId);
     return true;
   }
