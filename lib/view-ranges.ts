@@ -46,15 +46,15 @@ function mondayFor(date: Date) {
   return next;
 }
 
-function fridayFor(date: Date) {
+function weekEndFor(date: Date, weekendsVisible: boolean) {
   const monday = mondayFor(date);
-  const friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
-  return friday;
+  const end = new Date(monday);
+  end.setDate(monday.getDate() + (weekendsVisible ? 6 : 4));
+  return end;
 }
 
-function schoolWeek(startMonday: Date, primaryMonth?: number): CalendarWeek {
-  const days = Array.from({ length: 5 }, (_, index) => {
+function calendarWeek(startMonday: Date, primaryMonth?: number, weekendsVisible = false): CalendarWeek {
+  const days = Array.from({ length: weekendsVisible ? 7 : 5 }, (_, index) => {
     const date = new Date(startMonday);
     date.setDate(startMonday.getDate() + index);
     return {
@@ -66,17 +66,17 @@ function schoolWeek(startMonday: Date, primaryMonth?: number): CalendarWeek {
   return { key: days[0].key, days };
 }
 
-export function monthWeeks(anchor: Date): CalendarWeek[] {
+export function monthWeeks(anchor: Date, weekendsVisible = false): CalendarWeek[] {
   const year = anchor.getFullYear();
   const month = anchor.getMonth();
   const first = new Date(year, month, 1, 12, 0, 0, 0);
   const last = new Date(year, month + 1, 0, 12, 0, 0, 0);
   let cursor = mondayFor(first);
-  const end = fridayFor(last);
+  const end = weekEndFor(last, weekendsVisible);
   const weeks: CalendarWeek[] = [];
 
   while (cursor <= end) {
-    weeks.push(schoolWeek(cursor, month));
+    weeks.push(calendarWeek(cursor, month, weekendsVisible));
     const next = new Date(cursor);
     next.setDate(cursor.getDate() + 7);
     cursor = next;
@@ -93,10 +93,10 @@ export function quarterRange(calendar: SchoolCalendar, quarterId: string): Quart
   if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate > endDate) return null;
 
   let cursor = mondayFor(startDate);
-  const end = fridayFor(endDate);
+  const end = weekEndFor(endDate, calendar.weekendsVisible);
   const weeks: CalendarWeek[] = [];
   while (cursor <= end) {
-    weeks.push(schoolWeek(cursor));
+    weeks.push(calendarWeek(cursor, undefined, calendar.weekendsVisible));
     const next = new Date(cursor);
     next.setDate(cursor.getDate() + 7);
     cursor = next;
