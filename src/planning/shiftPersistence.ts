@@ -19,9 +19,14 @@ type StoredShiftState = {
   input: ShiftPersistenceInput
 }
 
+type ParsedShiftState = {
+  input: ShiftPersistenceInput
+  undoStatus: 'none' | 'parsed' | 'malformed'
+}
+
 export type ShiftLoadResult =
   | { status: 'empty' }
-  | { status: 'restored'; input: ShiftPersistenceInput; undoRestored: boolean }
+  | { status: 'restored'; input: ShiftPersistenceInput; undoStatus: 'none' | 'restored' | 'discarded' }
   | { status: 'invalid' }
   | { status: 'unavailable' }
 
@@ -30,24 +35,7 @@ export function serializeShiftState(input: ShiftPersistenceInput): string {
 }
 
 export function deserializeShiftState(raw: string): ShiftPersistenceInput | null {
-  try {
-    const parsed = JSON.parse(raw) as Partial<StoredShiftState>
-    if (parsed.schemaVersion !== 1 || !parsed.input) return null
-    if (typeof parsed.input.calendarId !== 'string') return null
-    if (!Array.isArray(parsed.input.overrides)) return null
-
-    const overrides = parseOverrides(parsed.input.overrides)
-    if (!overrides) return null
-
-    const undo = parsed.input.undo === null ? null : parseUndoToken(parsed.input.undo)
-    if (parsed.input.undo !== null && !undo) {
-      return { calendarId: parsed.input.calendarId, overrides, undo: null }
-    }
-
-    return { calendarId: parsed.input.calendarId, overrides, undo }
-  } catch {
-    return null
-  }
+  return parseStoredShiftState(raw)?.input ?? null
 }
 
 export function validateShiftPersistenceInput(
@@ -88,21 +76,51 @@ export function loadShiftStateFromBrowser(
   }
 
   if (!raw) return { status: 'empty' }
-  const input = deserializeShiftState(raw)
-  if (!input) return { status: 'invalid' }
-  if (input.calendarId !== calendar.id) return { status: 'empty' }
+  const parsed = parseStoredShiftState(raw)
+  if (!parsed) return { status: 'invalid' }
+  if (parsed.input.calendarId !== calendar.id) return { status: 'empty' }
 
-  const validation = validateShiftPersistenceInput(input, calendar, planning, units, lessons)
+  const validation = validateShiftPersistenceInput(parsed.input, calendar, planning, units, lessons)
   if (validation.scheduleErrors.length > 0) return { status: 'invalid' }
-  if (!validation.undoValid) {
+
+  if (parsed.undoStatus === 'malformed' || !validation.undoValid) {
     return {
       status: 'restored',
-      input: { ...input, undo: null },
-      undoRestored: false,
+      input: { ...parsed.input, undo: null },
+      undoStatus: 'discarded',
     }
   }
 
-  return { status: 'restored', input, undoRestored: Boolean(input.undo) }
+  return {
+    status: 'restored',
+    input: parsed.input,
+    undoStatus: parsed.input.undo ? 'restored' : 'none',
+  }
+}
+
+function parseStoredShiftState(raw: string): ParsedShiftState | null {
+  try {
+    const parsed = JSON.parse(raw) as Partial<StoredShiftState>
+    if (parsed.schemaVersion !== 1 || !parsed.input) return null
+    if (typeof parsed.input.calendarId !== 'string') return null
+    if (!Array.isArray(parsed.input.overrides)) return null
+
+    const overrides = parseOverrides(parsed.input.overrides)
+    if (!overrides) return null
+
+    if (parsed.input.undo === null) {
+      return { input: { calendarId: parsed.input.calendarId, overrides, undo: null }, undoStatus: 'none' }
+    }
+
+    const undo = parseUndoToken(parsed.input.undo)
+    if (!undo) {
+      return { input: { calendarId: parsed.input.calendarId, overrides, undo: null }, undoStatus: 'malformed' }
+    }
+
+    return { input: { calendarId: parsed.input.calendarId, overrides, undo }, undoStatus: 'parsed' }
+  } catch {
+    return null
+  }
 }
 
 function validateUndoAgainstSchedule(
