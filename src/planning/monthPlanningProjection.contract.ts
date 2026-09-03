@@ -29,7 +29,7 @@ const calendar = hydrateSchoolCalendar({
 const course = createCourse({ id: 'course-apah', title: 'AP Art History' })
 const p2 = createSection({ id: 'section-p2', courseId: course.id, calendarId: calendar.id, name: 'Period 2' })
 const p5 = createSection({ id: 'section-p5', courseId: course.id, calendarId: calendar.id, name: 'Period 5' })
-const p7 = createSection({ id: 'section-p7', courseId: course.id, calendarId: calendar.id, name: 'Period 7' })
+const p7 = createSection({ id: 'section-p7', courseId: course.id, calendarId: calendar.id, name: 'Period 2' })
 const planning: PlanningWorkspace = { calendarId: calendar.id, courses: [course], sections: [p2, p5, p7] }
 
 const egypt = placeUnit(createUnit({ id: 'unit-egypt', calendarId: calendar.id, courseId: course.id, title: 'Egypt' }), calendar, { startDate: '2026-09-14', endDate: '2026-09-25' })
@@ -59,25 +59,26 @@ assert(unitSegments[1].continuesBefore, 'Second Unit segment must identify conti
 
 const sep16 = projection.weeks.flatMap((week) => week.days).find((day) => day.date === '2026-09-16')!
 const l17Sep16 = sep16.lessonSignals.find((signal) => signal.lessonId === l17.id)!
-assert(l17Sep16.sectionIds.length === 2, 'Shared Lesson signal should group P2 and P7 rather than render duplicate Lesson cards.')
-assert(l17Sep16.sectionIds.includes(p2.id) && l17Sep16.sectionIds.includes(p7.id), 'Shared Lesson signal must retain the exact Sections scheduled that day.')
-assert(!l17Sep16.sectionIds.includes(p5.id), 'P5 Shift must remove P5 from the shared Wednesday signal.')
-assert(l17Sep16.statusCounts.completed === 1 && l17Sep16.statusCounts['not-started'] === 1, 'Month signal must preserve Section status counts without cloning curriculum.')
+assert(l17Sep16.sections.length === 2, 'Shared Lesson signal should group P2 and P7 rather than render duplicate Lesson cards.')
+assert(l17Sep16.sections.some((scope) => scope.sectionId === p2.id) && l17Sep16.sections.some((scope) => scope.sectionId === p7.id), 'Shared Lesson signal must retain the exact Sections scheduled that day.')
+assert(!l17Sep16.sections.some((scope) => scope.sectionId === p5.id), 'P5 Shift must remove P5 from the shared Wednesday signal.')
+assert(l17Sep16.sections.filter((scope) => scope.sectionName === 'Period 2').length === 2, 'Distinct Sections with the same display name must remain distinct Section scopes.')
+assert(l17Sep16.sections.filter((scope) => scope.deliveryStatus === 'completed').length === 1 && l17Sep16.sections.filter((scope) => scope.deliveryStatus === 'not-started').length === 1, 'Month signal must preserve each Section status without a duplicate aggregate state.')
 
 const sep17 = projection.weeks.flatMap((week) => week.days).find((day) => day.date === '2026-09-17')!
 const l17Sep17 = sep17.lessonSignals.find((signal) => signal.lessonId === l17.id)!
-assert(l17Sep17.sectionIds.length === 1 && l17Sep17.sectionIds[0] === p5.id, 'P5 continuation must appear as its own effective Thursday signal.')
-assert(l17Sep17.shiftedSectionIds.length === 1 && l17Sep17.shiftedSectionIds[0] === p5.id, 'Month must expose that P5 placement is Section-specific.')
+assert(l17Sep17.sections.length === 1 && l17Sep17.sections[0].sectionId === p5.id, 'P5 continuation must appear as its own effective Thursday signal.')
+assert(l17Sep17.sections[0].isSectionOverride, 'Month must expose that P5 placement is Section-specific on the Section scope itself.')
 const l18Sep17 = sep17.lessonSignals.find((signal) => signal.lessonId === l18.id)!
-assert(l18Sep17.sectionIds.length === 2 && !l18Sep17.sectionIds.includes(p5.id), 'P5 Lesson 18 Shift must not move P2/P7 from Thursday.')
+assert(l18Sep17.sections.length === 2 && !l18Sep17.sections.some((scope) => scope.sectionId === p5.id), 'P5 Lesson 18 Shift must not move P2/P7 from Thursday.')
 
 const sep18 = projection.weeks.flatMap((week) => week.days).find((day) => day.date === '2026-09-18')!
 const fixedSignal = sep18.lessonSignals.find((signal) => signal.lessonId === test.id)!
-assert(fixedSignal.datePolicy === 'fixed' && fixedSignal.sectionIds.length === 3, 'Fixed shared assessment must remain one signal covering all Sections.')
+assert(fixedSignal.datePolicy === 'fixed' && fixedSignal.sections.length === 3, 'Fixed shared assessment must remain one signal covering all Sections.')
 
 const sep21 = projection.weeks.flatMap((week) => week.days).find((day) => day.date === '2026-09-21')!
 const l18Sep21 = sep21.lessonSignals.find((signal) => signal.lessonId === l18.id)!
-assert(l18Sep21.sectionIds.length === 1 && l18Sep21.shiftedSectionIds[0] === p5.id, 'Cross-week P5 Shift must surface in the correct Month day.')
+assert(l18Sep21.sections.length === 1 && l18Sep21.sections[0].sectionId === p5.id && l18Sep21.sections[0].isSectionOverride, 'Cross-week P5 Shift must surface in the correct Month day.')
 
 const emptyPlanning = projectMonthPlanning({ month, planning, units: null, lessons: null, overrides: [] })
 assert(emptyPlanning.weeks.every((week) => week.unitSegments.length === 0), 'Classes-only Month must not fabricate Unit segments.')
