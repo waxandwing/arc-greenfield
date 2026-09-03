@@ -13,11 +13,12 @@ import {
 type Props = {
   calendarId: string
   initialValue: PlanningWorkspaceInput | null
+  protectedCourseIds?: Set<string>
   onSave: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
   onCancel: () => void
 }
 
-export function ClassSetup({ calendarId, initialValue, onSave, onCancel }: Props) {
+export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new Set(), onSave, onCancel }: Props) {
   const [courses, setCourses] = useState<Course[]>(() => initialValue?.courses.map((course) => ({ ...course })) ?? [])
   const [sections, setSections] = useState<Section[]>(() => initialValue?.sections.map((section) => ({ ...section })) ?? [])
   const [errors, setErrors] = useState<string[]>([])
@@ -27,6 +28,10 @@ export function ClassSetup({ calendarId, initialValue, onSave, onCancel }: Props
   }
 
   function removeCourse(courseId: string) {
+    if (protectedCourseIds.has(courseId)) {
+      setErrors(['This course still has Units. Remove or move those Units before removing the course.'])
+      return
+    }
     setCourses((current) => current.filter((course) => course.id !== courseId))
     setSections((current) => current.filter((section) => section.courseId !== courseId))
   }
@@ -79,6 +84,7 @@ export function ClassSetup({ calendarId, initialValue, onSave, onCancel }: Props
 
         {courses.map((course) => {
           const courseSections = sectionsForWorkspaceCourse({ calendarId, courses, sections }, course.id)
+          const protectedByUnit = protectedCourseIds.has(course.id)
           return (
             <section className="class-course" key={course.id} aria-labelledby={`${course.id}-label`}>
               <div className="class-course-heading">
@@ -90,8 +96,17 @@ export function ClassSetup({ calendarId, initialValue, onSave, onCancel }: Props
                     onChange={(event) => setCourses((current) => current.map((item) => item.id === course.id ? { ...item, title: event.target.value } : item))}
                   />
                 </label>
-                <button type="button" className="text-button" onClick={() => removeCourse(course.id)}>Remove course</button>
+                <button
+                  type="button"
+                  className="text-button"
+                  aria-describedby={protectedByUnit ? `${course.id}-protected-note` : undefined}
+                  onClick={() => removeCourse(course.id)}
+                >
+                  Remove course
+                </button>
               </div>
+
+              {protectedByUnit && <p className="class-protected-note" id={`${course.id}-protected-note`}>This course has Units, so Arc will not remove it until those Units are moved or removed.</p>}
 
               <div className="class-section-list">
                 {courseSections.map((section) => (
