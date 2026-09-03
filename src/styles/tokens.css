@@ -15,6 +15,7 @@
 
   --line-subtle:rgba(44,46,46,.12);
   --line-strong:rgba(44,46,46,.22);
+  --control-border:rgba(44,46,46,.55);
   --shadow-hairline:0 1px 0 rgba(44,46,46,.04);
 
   --space-1:4px;
