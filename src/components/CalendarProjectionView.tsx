@@ -2,9 +2,11 @@ import type { ReactNode } from 'react'
 import type { CalendarView } from '../navigation/calendarViews'
 import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
+import { projectDayContinuity } from '../planning/dayContinuityProjection'
 import { projectPlanningRange } from '../planning/planningProjection'
 import { projectMonthPlanning } from '../planning/monthPlanningProjection'
 import type { LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, UnitWorkspace } from '../planning'
+import { PlanningDayContinuityView } from './PlanningDayContinuityView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
 import { CalendarDayCell, MissingBoundary, ProjectionHeading, RangeProjection, TermContext } from './CalendarProjectionPrimitives'
@@ -42,7 +44,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
       return (
         <PlanningDayStrip
           title={formatLongDate(projection.date)}
-          days={[projection.day]}
+          day={projection.day}
           planningContext={planningContext}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
         />
@@ -119,15 +121,24 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, days, planningContext, termContext }: { title: string; days: ProjectedDay[]; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
+function PlanningDayStrip({ title, day, planningContext, termContext }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
       {planningContext ? (
-        <PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} single />
+        <PlanningDayContinuityView
+          day={day}
+          continuity={projectDayContinuity({
+            date: day.date,
+            planning: planningContext.planning,
+            units: planningContext.units,
+            lessons: planningContext.lessons,
+            overrides: planningContext.shiftState?.overrides ?? [],
+          })}
+        />
       ) : (
         <div className="projection-day-strip projection-day-strip--single">
-          {days.map((day) => <CalendarDayCell key={day.date} day={day} showWeekday />)}
+          <CalendarDayCell day={day} showWeekday />
         </div>
       )}
     </section>
