@@ -99,10 +99,8 @@ async function auditViewport(browser, width, height) {
 
   await page.getByRole('button', { name: 'Next Day' }).click()
 
-  const held = page.getByText('Arc is holding your place', { exact: true })
-  const planned = page.getByText('Planned today', { exact: true })
-  assert(await held.isVisible(), `${width}px: unfinished carryover is not visibly separated.`)
-  assert(await planned.isVisible(), `${width}px: today's conflicting plan is not visibly separated.`)
+  assert(await page.getByText('Arc is holding your place', { exact: true }).isVisible(), `${width}px: unfinished carryover is not visibly separated.`)
+  assert(await page.getByText('Planned today', { exact: true }).isVisible(), `${width}px: today's conflicting plan is not visibly separated.`)
   assert(await page.getByText(resumeNote, { exact: true }).isVisible(), `${width}px: resume note disappeared.`)
   assert(await page.getByText(lesson17Title, { exact: true }).isVisible(), `${width}px: long carryover Lesson title is not visible.`)
   assert(await page.getByText(lesson18Title, { exact: true }).first().isVisible(), `${width}px: long planned Lesson title is not visible.`)
@@ -116,23 +114,25 @@ async function auditViewport(browser, width, height) {
   assert(geometry.documentWidth <= geometry.viewportWidth + 1, `${width}px: page creates horizontal document overflow (${geometry.documentWidth}px > ${geometry.viewportWidth}px).`)
   assert(geometry.stageWidth <= geometry.stageClientWidth + 1, `${width}px: Day stage creates horizontal overflow (${geometry.stageWidth}px > ${geometry.stageClientWidth}px).`)
 
-  await dayButton.focus()
+  // Pointer focus should stay quiet. Move away and back with the keyboard to prove :focus-visible.
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Tab')
+  assert(await dayButton.evaluate((node) => document.activeElement === node), `${width}px: keyboard navigation did not return focus to active Day.`)
   const focus = await dayButton.evaluate((node) => {
     const style = getComputedStyle(node)
     return { outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth || '0') }
   })
-  assert(focus.outlineStyle !== 'none' && focus.outlineWidth >= 3, `${width}px: active navigation focus is not visibly strong enough.`)
+  assert(focus.outlineStyle !== 'none' && focus.outlineWidth >= 3, `${width}px: keyboard focus is not visibly strong enough.`)
 
   const mobileNavFontSize = await dayButton.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))
   assert(mobileNavFontSize >= 16, `${width}px: primary calendar navigation fell below 16px (${mobileNavFontSize}px).`)
 
   const canvas = page.locator('.calendar-canvas')
   await canvas.evaluate((node) => { node.scrollTop = node.scrollHeight })
-  const bottomRail = page.locator('.arc-view-rail')
-  const lastSection = page.locator('.day-continuity-section').last()
-  const railBox = await bottomRail.boundingBox()
-  const lastBox = await lastSection.boundingBox()
+  const railBox = await page.locator('.arc-view-rail').boundingBox()
+  const lastBox = await page.locator('.day-continuity-section').last().boundingBox()
   assert(railBox && lastBox, `${width}px: could not measure final content against the mobile rail.`)
+  assert(lastBox.bottom <= railBox.y + 1, `${width}px: fixed mobile navigation covers the final Day Section when scrolled to the bottom.`)
 
   assert(runtimeErrors.length === 0, `${width}px: runtime errors detected: ${runtimeErrors.join(' | ')}`)
   await context.close()
