@@ -19,7 +19,7 @@ All other historical branches are non-authoritative. Their continued existence i
 Do not add duplicate handoff, audit, blueprint, or design-system documents to this repository.
 
 ## Current integrated scope
-Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore → safe period navigation.
+Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore → safe period navigation → pre-planning audit hardening.
 
 Implemented:
 - global shell geometry and canonical brand tokens
@@ -48,7 +48,14 @@ Implemented:
 - Quarter/Semester move only through confirmed term boundaries
 - Year Map does not fake navigation to an unloaded school year
 - Today is available only when the current local date belongs to the loaded school year
-- calendar truth, projection, hydration, persistence, and navigation contracts gated into every build
+- unavailable Quarter/Semester views remain visibly unavailable instead of opening dead calendar states
+- readable localized calendar labels and weekday orientation
+- overlapping/malformed term boundaries rejected before hydration
+- stable calendar identity across label/date edits
+- date edits preserve existing quarter and semester boundaries
+- AA-safe focus, control-border, and text-action contrast tokens
+- exact top-level runtime/build dependency versions pinned
+- calendar truth, projection, hydration, persistence, navigation, and manual-setup contracts gated into every build
 
 ## Standing calendar rules
 - Missing dates are `unknown`, never silently instructional.
@@ -59,6 +66,18 @@ Implemented:
 - Persistence stores declarations, not hydrated runtime objects.
 - Reloaded data must validate again before Arc uses it.
 - Period navigation never invents unavailable years or term boundaries.
+- Editing calendar dates must not change calendar identity or erase unrelated calendar structures.
+- Term boundaries of the same type may not overlap.
+
+## Pre-planning audit status
+- exact audited preview commit: `4074170fa94007ae923a692dade8516ff6581a26`
+- six calendar contracts passed
+- TypeScript compile passed
+- Vite production bundle passed
+- Vercel preview reached READY and returned HTTP 200
+- source-level accessibility contrast failures found in the audit were corrected
+- interactive browser click/keyboard automation is not available in the current runtime, so that physical interaction pass remains unverified rather than assumed
+- top-level packages are pinned, but a committed package lockfile is still required before release-level reproducibility clearance
 
 ## Not built yet
 - school/district import adapters
@@ -69,4 +88,4 @@ Implemented:
 - production deployment
 
 ## Release wall
-Preview builds come from non-main branches and identify branch + commit SHA. Nothing moves to `main` until the current rebuild passes the agreed product, functional, visual, accessibility, persistence, regression, and exact-build gates and is explicitly cleared for release.
+Preview builds come from non-main branches and identify branch + commit SHA. Nothing moves to `main` until the current rebuild passes the agreed product, functional, visual, accessibility, persistence, regression, exact-build, browser-interaction, and dependency-lock gates and is explicitly cleared for release.
