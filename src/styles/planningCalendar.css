@@ -36,6 +36,7 @@
 .planning-row-label{
   display:flex;
   align-items:flex-start;
+  overflow-wrap:anywhere;
   border-right:1px solid var(--line-subtle);
   color:var(--ink);
 }
@@ -85,10 +86,17 @@
 
 .planning-course-heading h2{
   margin:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
   font-family:Georgia,'Times New Roman',serif;
   font-size:18px;
   font-weight:600;
   color:var(--ink);
+}
+
+.planning-unit-stack{
+  display:grid;
+  gap:4px;
 }
 
 .planning-unit-grid{
@@ -179,6 +187,8 @@
 }
 
 .planning-lesson-title{
+  min-width:0;
+  overflow-wrap:anywhere;
   font-size:16px;
   font-weight:700;
   line-height:1.25;
@@ -204,6 +214,7 @@
 .planning-resume-note{
   margin:0;
   padding-top:6px;
+  overflow-wrap:anywhere;
   border-top:1px solid var(--line-subtle);
   font-size:16px;
   line-height:1.4;
