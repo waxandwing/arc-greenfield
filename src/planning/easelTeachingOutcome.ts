@@ -1,9 +1,12 @@
 import { isConfirmedInstructionalDay } from '../calendar/schoolCalendar'
-import type { SchoolCalendar } from '../calendar/types'
-import type { Section } from './courses'
+import type { ISODate, SchoolCalendar } from '../calendar/types'
+import { projectDayContinuity } from './dayContinuityProjection'
 import { effectiveLessonDeliveryState, updateLessonDeliveryState, type LessonDeliveryState } from './deliveryState'
-import type { EaselSessionProjection } from './easelSessionProjection'
-import type { Lesson } from './lessons'
+import { projectEaselSession, type EaselSessionProjection } from './easelSessionProjection'
+import type { LessonWorkspace } from './lessonWorkspace'
+import type { SectionLessonDateOverride } from './sectionSchedule'
+import type { UnitWorkspace } from './unitWorkspace'
+import type { PlanningWorkspace } from './workspace'
 
 export type EaselTeachingOutcome =
   | { kind: 'completed' }
@@ -12,34 +15,65 @@ export type EaselTeachingOutcome =
 
 export function applyEaselTeachingOutcome(input: {
   session: EaselSessionProjection
+  liveDate: ISODate
   calendar: SchoolCalendar
-  lesson: Lesson
-  section: Section
-  deliveryStates: LessonDeliveryState[]
+  planning: PlanningWorkspace
+  units: UnitWorkspace
+  lessons: LessonWorkspace
+  overrides: SectionLessonDateOverride[]
   outcome: EaselTeachingOutcome
 }): LessonDeliveryState {
-  const { session, calendar, lesson, section, deliveryStates, outcome } = input
-  validateSessionIdentity(session, calendar, lesson, section)
+  const { session, liveDate, calendar, planning, units, lessons, overrides, outcome } = input
 
-  const current = effectiveLessonDeliveryState(deliveryStates, lesson, section)
-  validateSessionFreshness(session, current)
-  validateOutcomeTransition(current, outcome)
-
-  if ((outcome.kind === 'completed' || outcome.kind === 'stopped') && !isConfirmedInstructionalDay(calendar, session.date)) {
-    throw new Error('Easel cannot record teaching progress on a date that is not a confirmed instructional day.')
+  if (session.date !== liveDate) {
+    throw new Error('Easel refused a teaching outcome from a session that is no longer on the current Day. Return to Day and reopen the Lesson.')
   }
+  if (!isConfirmedInstructionalDay(calendar, liveDate)) {
+    throw new Error('Easel cannot record a live teaching outcome on a date that is not a confirmed instructional day.')
+  }
+  validateWorkspaceOwnership(calendar, planning, units, lessons)
+
+  const lesson = lessons.lessons.find((candidate) => candidate.id === session.lessonId)
+  const section = planning.sections.find((candidate) => candidate.id === session.sectionId)
+  if (!lesson || !section) {
+    throw new Error('Easel refused the teaching outcome because the Lesson or Section no longer exists in Arc.')
+  }
+
+  const currentDay = projectDayContinuity({
+    date: liveDate,
+    planning,
+    units,
+    lessons,
+    overrides,
+  })
+  let currentSession: EaselSessionProjection
+  try {
+    currentSession = projectEaselSession({
+      day: currentDay,
+      sectionId: section.id,
+      lessonId: lesson.id,
+      calendar,
+      liveDate,
+    })
+  } catch {
+    throw new Error('Easel refused to overwrite changed Arc planning state. Return to Day and reopen the Lesson.')
+  }
+  validateSessionFreshness(session, currentSession)
+
+  const current = effectiveLessonDeliveryState(lessons.deliveryStates, lesson, section)
+  validateOutcomeTransition(current, outcome)
 
   if (outcome.kind === 'stopped') {
     return updateLessonDeliveryState(current, lesson, section, {
       status: 'in-progress',
-      taughtDate: session.date,
+      taughtDate: liveDate,
       resumeNote: outcome.resumeNote,
     })
   }
   if (outcome.kind === 'completed') {
     return updateLessonDeliveryState(current, lesson, section, {
       status: 'completed',
-      taughtDate: session.date,
+      taughtDate: liveDate,
       resumeNote: null,
     })
   }
@@ -50,28 +84,35 @@ export function applyEaselTeachingOutcome(input: {
   })
 }
 
-function validateSessionIdentity(
-  session: EaselSessionProjection,
+function validateWorkspaceOwnership(
   calendar: SchoolCalendar,
-  lesson: Lesson,
-  section: Section,
+  planning: PlanningWorkspace,
+  units: UnitWorkspace,
+  lessons: LessonWorkspace,
 ): void {
-  const errors: string[] = []
-  if (session.lessonId !== lesson.id) errors.push('Easel session belongs to a different Lesson.')
-  if (session.sectionId !== section.id) errors.push('Easel session belongs to a different Section.')
-  if (session.courseId !== lesson.courseId || session.courseId !== section.courseId) errors.push('Easel session Course ownership no longer matches Arc.')
-  if (session.unitId !== lesson.unitId) errors.push('Easel session Unit ownership no longer matches Arc.')
-  if (lesson.calendarId !== section.calendarId || lesson.calendarId !== calendar.id) errors.push('Easel session calendar ownership no longer matches Arc.')
-  if (errors.length > 0) throw new Error(`Easel refused the teaching outcome. ${errors.join(' ')}`)
+  if (planning.calendarId !== calendar.id || units.calendarId !== calendar.id || lessons.calendarId !== calendar.id) {
+    throw new Error('Easel refused the teaching outcome because Arc workspace ownership no longer matches the loaded school calendar.')
+  }
 }
 
-function validateSessionFreshness(session: EaselSessionProjection, current: LessonDeliveryState): void {
-  if (
-    current.status !== session.deliveryStatus
-    || current.taughtDate !== session.taughtDate
-    || current.resumeNote !== session.resumeNote
-  ) {
-    throw new Error('Easel refused to overwrite newer Arc teaching state. Return to Day and reopen the Lesson.')
+function validateSessionFreshness(opened: EaselSessionProjection, current: EaselSessionProjection): void {
+  const same =
+    opened.date === current.date
+    && opened.courseId === current.courseId
+    && opened.sectionId === current.sectionId
+    && opened.lessonId === current.lessonId
+    && opened.unitId === current.unitId
+    && opened.source === current.source
+    && opened.datePolicy === current.datePolicy
+    && opened.sharedPlannedDate === current.sharedPlannedDate
+    && opened.effectiveDate === current.effectiveDate
+    && opened.isSectionOverride === current.isSectionOverride
+    && opened.deliveryStatus === current.deliveryStatus
+    && opened.taughtDate === current.taughtDate
+    && opened.resumeNote === current.resumeNote
+
+  if (!same) {
+    throw new Error('Easel refused to overwrite newer or changed Arc state. Return to Day and reopen the Lesson.')
   }
 }
 
