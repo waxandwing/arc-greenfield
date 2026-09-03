@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test:contracts": "node tests/run-contracts.mjs",
+    "test:contracts": "tsc -p tsconfig.contracts.json && node tests/run-contracts.mjs",
     "build": "npm run test:contracts && tsc -b && vite build",
     "preview": "vite preview"
   },
