@@ -55,7 +55,7 @@ export function PlanningDayContinuityView({
                     ) : null}
 
                     <div className="day-continuity-planned" aria-label={`${section.sectionName} plan for today`}>
-                      <p className="day-continuity-kicker">Today’s plan</p>
+                      <p className="day-continuity-kicker">{section.carryovers.length > 0 ? 'Planned today' : 'Today’s plan'}</p>
                       {section.scheduledLessons.length > 0 ? (
                         section.scheduledLessons.map((lesson) => (
                           <ContinuityLesson key={lesson.lessonId} lesson={lesson} />
@@ -95,18 +95,27 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
         <strong>{lesson.title}</strong>
         {lesson.datePolicy === 'fixed' ? <span className="day-continuity-fixed">Fixed</span> : null}
       </div>
+
+      {carryover && lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
+        <p className="day-continuity-resume">{lesson.resumeNote}</p>
+      ) : null}
+
+      {carryover && lesson.taughtDate ? (
+        <p className="day-continuity-last-taught">Last taught {formatShortDate(lesson.taughtDate)}</p>
+      ) : null}
+
       <p className="day-continuity-lesson-meta">
         <span>{lesson.unitTitle}</span>
         <span>{status}</span>
         {lesson.isSectionOverride ? <span>Shifted for this class</span> : null}
         {carryover && lesson.effectiveDate === null ? <span>No planned date</span> : null}
       </p>
-      {carryover && lesson.taughtDate ? (
-        <p className="day-continuity-last-taught">Last taught {formatShortDate(lesson.taughtDate)}</p>
-      ) : !carryover && actualDateDiffers && lesson.taughtDate ? (
+
+      {!carryover && actualDateDiffers && lesson.taughtDate ? (
         <p className="day-continuity-last-taught">Taught {formatShortDate(lesson.taughtDate)}</p>
       ) : null}
-      {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
+
+      {!carryover && lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</p>
       ) : null}
     </div>
