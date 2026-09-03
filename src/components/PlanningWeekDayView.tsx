@@ -3,21 +3,16 @@ import type { ISODate } from '../calendar/types'
 import type { DayContinuityLesson, DayContinuityProjection } from '../planning/dayContinuityProjection'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
 import { formatLongDate, formatShortDate, formatWeekday } from './dateLabels'
-import { isCalendarObjectSelected, type CalendarObjectSelection } from './calendarObjectSelection'
 
 export function PlanningWeekDayView({
   days,
   planning,
   continuity,
-  selection,
-  onSelect,
   single = false,
 }: {
   days: ProjectedDay[]
   planning: PlanningRangeProjection
   continuity: DayContinuityProjection[]
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
   single?: boolean
 }) {
   if (planning.courses.length === 0) {
@@ -28,15 +23,7 @@ export function PlanningWeekDayView({
     <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'}>
       <PlanningDateHeader days={days} single={single} />
       {planning.courses.map((course) => (
-        <PlanningCourse
-          key={course.course.id}
-          course={course}
-          days={days}
-          continuity={continuity}
-          selection={selection}
-          onSelect={onSelect}
-          single={single}
-        />
+        <PlanningCourse key={course.course.id} course={course} days={days} continuity={continuity} single={single} />
       ))}
     </div>
   )
@@ -61,15 +48,11 @@ function PlanningCourse({
   course,
   days,
   continuity,
-  selection,
-  onSelect,
   single,
 }: {
   course: PlanningCourseGroup
   days: ProjectedDay[]
   continuity: DayContinuityProjection[]
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
   single: boolean
 }) {
   return (
@@ -82,16 +65,13 @@ function PlanningCourse({
           {course.unitSpans.map((unit, index) => (
             <div className="planning-unit-grid" style={gridTemplate(days.length)} key={unit.unitId}>
               <span className="planning-row-label planning-row-label--unit">{index === 0 ? 'Unit' : ''}</span>
-              <button
-                type="button"
-                className="calendar-object-select planning-unit-span planning-unit-select"
+              <div
+                className="planning-unit-span"
                 style={{ gridColumn: `${unit.startIndex + 2} / ${unit.endIndex + 3}` }}
                 title={`${unit.title}: ${unit.startDate} through ${unit.endDate}`}
-                aria-pressed={isCalendarObjectSelected(selection, 'unit', unit.unitId)}
-                onClick={() => onSelect({ kind: 'unit', id: unit.unitId })}
               >
                 {unit.title}
-              </button>
+              </div>
             </div>
           ))}
         </div>
@@ -112,12 +92,8 @@ function PlanningCourse({
                   className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}`}
                   aria-label={`${row.section.name}, ${formatLongDate(slot.date)}`}
                 >
-                  {carryovers.map((lesson) => (
-                    <CarryoverTile key={`carryover-${lesson.lessonId}`} lesson={lesson} selection={selection} onSelect={onSelect} />
-                  ))}
-                  {slot.lessons.map((lesson) => (
-                    <LessonTile key={lesson.lessonId} lesson={lesson} selection={selection} onSelect={onSelect} />
-                  ))}
+                  {carryovers.map((lesson) => <CarryoverTile key={`carryover-${lesson.lessonId}`} lesson={lesson} />)}
+                  {slot.lessons.map((lesson) => <LessonTile key={lesson.lessonId} lesson={lesson} />)}
                   {single && carryovers.length === 0 && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
                 </div>
               )
@@ -129,71 +105,45 @@ function PlanningCourse({
   )
 }
 
-function CarryoverTile({
-  lesson,
-  selection,
-  onSelect,
-}: {
-  lesson: DayContinuityLesson
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
-}) {
+function CarryoverTile({ lesson }: { lesson: DayContinuityLesson }) {
   return (
-    <button
-      type="button"
-      className="calendar-object-select planning-lesson planning-lesson--carryover planning-lesson-select"
-      aria-pressed={isCalendarObjectSelected(selection, 'lesson', lesson.lessonId)}
-      onClick={() => onSelect({ kind: 'lesson', id: lesson.lessonId })}
-    >
-      <span className="planning-continuity-label">Continue</span>
-      <span className="planning-lesson-title-row">
+    <article className="planning-lesson planning-lesson--carryover">
+      <p className="planning-continuity-label">Continue</p>
+      <div className="planning-lesson-title-row">
         <span className="planning-lesson-title">{lesson.title}</span>
         {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title="Fixed date">Fixed</span> : null}
-      </span>
-      {lesson.resumeNote ? <span className="planning-resume-note">{lesson.resumeNote}</span> : null}
-      <span className="planning-lesson-meta">
+      </div>
+      {lesson.resumeNote ? <p className="planning-resume-note">{lesson.resumeNote}</p> : null}
+      <div className="planning-lesson-meta">
         <span>{lesson.unitTitle}</span>
         {lesson.taughtDate ? <span>Last taught {formatShortDate(lesson.taughtDate)}</span> : null}
         {lesson.isSectionOverride ? <span>Shifted for this class</span> : null}
-      </span>
-    </button>
+      </div>
+    </article>
   )
 }
 
-function LessonTile({
-  lesson,
-  selection,
-  onSelect,
-}: {
-  lesson: PlanningLessonPlacement
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
-}) {
+function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
   const statusLabel = humanizeStatus(lesson.deliveryStatus)
   const taughtLabel = lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate
     ? `Taught ${formatShortDate(lesson.taughtDate)}`
     : null
 
   return (
-    <button
-      type="button"
-      className={`calendar-object-select planning-lesson planning-lesson-select planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}`}
-      aria-pressed={isCalendarObjectSelected(selection, 'lesson', lesson.lessonId)}
-      onClick={() => onSelect({ kind: 'lesson', id: lesson.lessonId })}
-    >
-      <span className="planning-lesson-title-row">
+    <article className={`planning-lesson planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}`}>
+      <div className="planning-lesson-title-row">
         <span className="planning-lesson-title">{lesson.title}</span>
         {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title="Fixed date">Fixed</span> : null}
-      </span>
-      <span className="planning-lesson-meta">
+      </div>
+      <div className="planning-lesson-meta">
         <span>{statusLabel}</span>
         {taughtLabel ? <span>{taughtLabel}</span> : null}
         {lesson.isSectionOverride ? <span>Shifted for this class</span> : null}
-      </span>
+      </div>
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
-        <span className="planning-resume-note">Continue: {lesson.resumeNote}</span>
+        <p className="planning-resume-note">Continue: {lesson.resumeNote}</p>
       ) : null}
-    </button>
+    </article>
   )
 }
 
