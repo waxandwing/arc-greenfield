@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test:contracts": "tsc -p tsconfig.contracts.json && node tests/generated/tests/calendar.contract.js && node tests/generated/src/calendar/projections.contract.js && node tests/generated/src/calendar/hydration.contract.js && node tests/generated/src/calendar/persistence.contract.js && node tests/generated/src/calendar/navigation.contract.js && node tests/generated/src/calendar/manualSetup.contract.js && node tests/generated/src/calendar/terms.contract.js && node tests/generated/src/planning/courses.contract.js && node tests/generated/src/planning/units.contract.js && node tests/generated/src/planning/workspace.contract.js",
+    "test:contracts": "tsc -p tsconfig.contracts.json && node tests/generated/tests/calendar.contract.js && node tests/generated/src/calendar/projections.contract.js && node tests/generated/src/calendar/hydration.contract.js && node tests/generated/src/calendar/persistence.contract.js && node tests/generated/src/calendar/navigation.contract.js && node tests/generated/src/calendar/manualSetup.contract.js && node tests/generated/src/calendar/terms.contract.js && node tests/generated/src/planning/courses.contract.js && node tests/generated/src/planning/units.contract.js && node tests/generated/src/planning/workspace.contract.js && node tests/generated/src/planning/unitWorkspace.contract.js",
     "build": "npm run test:contracts && tsc -b && vite build",
     "preview": "vite preview"
   },
