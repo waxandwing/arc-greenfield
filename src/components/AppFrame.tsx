@@ -47,6 +47,7 @@ export function AppFrame() {
                 type="button"
                 className="view-nav-item"
                 aria-current={isCurrent ? 'page' : undefined}
+                disabled={showSetup}
                 onClick={() => setActiveView(view)}
               >
                 {view}
