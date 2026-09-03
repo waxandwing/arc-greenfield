@@ -1,3 +1,11 @@
+:focus-visible{
+  outline-color:var(--focus-blue);
+}
+
+.weekday-option input:focus-visible+span{
+  outline-color:var(--focus-blue);
+}
+
 .view-nav-item[aria-disabled='true']{
   opacity:.48;
   cursor:not-allowed;
