@@ -1,8 +1,36 @@
 :root {
-  --paper:#F3EBDD; --ink:#2C2E2E; --mustard:#E4B33D; --terracotta:#C96845; --dusty-blue:#7C9CAD;
-  --sage:#9AAA89; --dusty-pink:#C99A9E; --lavender:#AAA0B8; --kraft:#C6A77D; --soft-charcoal:#4A4945;
-  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px; --space-8:32px; --space-12:48px; --space-16:64px;
-  --radius-sm:4px; --radius-md:8px; --radius-lg:12px;
-  --font-ui:'Nunito Sans','Avenir Next',Avenir,system-ui,sans-serif;
-  --font-editorial:Georgia,'Times New Roman',serif;
+  --paper:#F3EBDD;
+  --paper-raised:#F7F1E7;
+  --ink:#2C2E2E;
+  --mustard:#E4B33D;
+  --terracotta:#C96845;
+  --dusty-blue:#7C9CAD;
+  --sage:#9AAA89;
+  --dusty-pink:#C99A9E;
+  --lavender:#AAA0B8;
+  --kraft:#C6A77D;
+  --soft-charcoal:#4A4945;
+
+  --line-subtle:rgba(44,46,46,.12);
+  --line-strong:rgba(44,46,46,.22);
+  --shadow-hairline:0 1px 0 rgba(44,46,46,.04);
+
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-6:24px;
+  --space-8:32px;
+  --space-12:48px;
+  --space-16:64px;
+
+  --radius-sm:4px;
+  --radius-md:8px;
+  --radius-lg:12px;
+
+  --page-gutter:32px;
+  --mobile-gutter:20px;
+
+  --font-ui:'Nunito Sans','Avenir Next Rounded','Avenir Next',Avenir,system-ui,sans-serif;
+  --font-editorial:Georgia,'Source Serif 4','Newsreader',serif;
 }
