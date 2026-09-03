@@ -6,6 +6,10 @@
   outline-color:var(--focus-blue);
 }
 
+input,select,.quiet-button,.primary-button,.weekday-option span{
+  border-color:var(--control-border);
+}
+
 .text-button{
   color:var(--terracotta-text);
 }
