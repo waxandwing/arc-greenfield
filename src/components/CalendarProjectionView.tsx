@@ -1,6 +1,6 @@
 import type { CalendarView } from '../navigation/calendarViews'
 import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
-import type { ISODate, SchoolCalendar } from '../calendar/types'
+import type { ISODate, SchoolCalendar, TermBoundary } from '../calendar/types'
 
 type Props = {
   view: CalendarView
@@ -23,17 +23,33 @@ export function CalendarProjectionView({ view, calendar, anchorDate }: Props) {
   switch (view) {
     case 'Day': {
       const projection = projectDay(calendar, anchorDate)
-      return <DayStrip title={formatLongDate(projection.date)} days={[projection.day]} single />
+      return (
+        <DayStrip
+          title={formatLongDate(projection.date)}
+          days={[projection.day]}
+          single
+          termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
+        />
+      )
     }
     case 'Week': {
       const projection = projectWeek(calendar, anchorDate)
-      return <DayStrip title={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} />
+      return (
+        <DayStrip
+          title={formatDateRange(projection.startDate, projection.endDate)}
+          days={projection.days}
+          termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
+        />
+      )
     }
     case 'Month': {
       const projection = projectMonth(calendar, anchorDate)
       return (
         <section className="projection-section month-section" aria-label={`${formatMonth(anchorDate)} calendar`}>
-          <p className="projection-range-label">{formatMonth(anchorDate)}</p>
+          <div className="projection-heading-row">
+            <p className="projection-range-label">{formatMonth(anchorDate)}</p>
+            <TermContext quarters={projection.quarters} semesters={projection.semesters} />
+          </div>
           <div className="month-weekday-row" aria-hidden="true">
             {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
           </div>
@@ -49,23 +65,39 @@ export function CalendarProjectionView({ view, calendar, anchorDate }: Props) {
     }
     case 'Quarter': {
       const projection = projectQuarter(calendar, anchorDate)
-      return projection ? <RangeProjection title={projection.label} days={projection.days} /> : <MissingBoundary label="Quarter dates are not configured for this part of the school year." />
+      return projection ? <RangeProjection title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} /> : <MissingBoundary label="Quarter dates are not configured for this part of the school year." />
     }
     case 'Semester': {
       const projection = projectSemester(calendar, anchorDate)
-      return projection ? <RangeProjection title={projection.label} days={projection.days} /> : <MissingBoundary label="Semester dates are not configured for this part of the school year." />
+      return projection ? <RangeProjection title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} /> : <MissingBoundary label="Semester dates are not configured for this part of the school year." />
     }
     case 'Year Map': {
       const projection = projectYearMap(calendar)
-      return <RangeProjection title={calendar.schoolYearLabel} days={projection.days} compact />
+      return (
+        <section className="projection-section" aria-label={`${calendar.schoolYearLabel} year map`}>
+          <div className="projection-heading-row projection-heading-row--year">
+            <div>
+              <p className="projection-range-label">{calendar.schoolYearLabel}</p>
+              <p className="projection-subtitle">{formatDateRange(projection.startDate, projection.endDate)}</p>
+            </div>
+            <TermContext quarters={projection.quarters} semesters={projection.semesters} detailed />
+          </div>
+          <div className="projection-range projection-range--compact">
+            {projection.days.map((day) => <CalendarDayCell key={day.date} day={day} compact />)}
+          </div>
+        </section>
+      )
     }
   }
 }
 
-function DayStrip({ title, days, single = false }: { title: string; days: ProjectedDay[]; single?: boolean }) {
+function DayStrip({ title, days, single = false, termContext }: { title: string; days: ProjectedDay[]; single?: boolean; termContext?: React.ReactNode }) {
   return (
     <section className="projection-section" aria-label={title}>
-      <p className="projection-range-label">{title}</p>
+      <div className="projection-heading-row">
+        <p className="projection-range-label">{title}</p>
+        {termContext}
+      </div>
       <div className={single ? 'projection-day-strip projection-day-strip--single' : 'projection-day-strip'}>
         {days.map((day) => <CalendarDayCell key={day.date} day={day} showWeekday />)}
       </div>
@@ -73,14 +105,38 @@ function DayStrip({ title, days, single = false }: { title: string; days: Projec
   )
 }
 
-function RangeProjection({ title, days, compact = false }: { title: string; days: ProjectedDay[]; compact?: boolean }) {
+function RangeProjection({ title, subtitle, days }: { title: string; subtitle: string; days: ProjectedDay[] }) {
   return (
     <section className="projection-section" aria-label={title}>
-      <p className="projection-range-label">{title}</p>
-      <div className={compact ? 'projection-range projection-range--compact' : 'projection-range'}>
-        {days.map((day) => <CalendarDayCell key={day.date} day={day} compact={compact} />)}
+      <div className="projection-heading-row">
+        <div>
+          <p className="projection-range-label">{title}</p>
+          <p className="projection-subtitle">{subtitle}</p>
+        </div>
+      </div>
+      <div className="projection-range">
+        {days.map((day) => <CalendarDayCell key={day.date} day={day} />)}
       </div>
     </section>
+  )
+}
+
+function TermContext({ quarters, semesters, detailed = false }: { quarters: TermBoundary[]; semesters: TermBoundary[]; detailed?: boolean }) {
+  if (quarters.length === 0 && semesters.length === 0) return null
+
+  return (
+    <div className={`term-context${detailed ? ' term-context--detailed' : ''}`} aria-label="Term context">
+      {semesters.map((term) => (
+        <span className="term-context-item term-context-item--semester" key={term.id}>
+          {term.label}{detailed ? ` · ${formatDateRange(term.startDate, term.endDate)}` : ''}
+        </span>
+      ))}
+      {quarters.map((term) => (
+        <span className="term-context-item" key={term.id}>
+          {term.label}{detailed ? ` · ${formatDateRange(term.startDate, term.endDate)}` : ''}
+        </span>
+      ))}
+    </div>
   )
 }
 
