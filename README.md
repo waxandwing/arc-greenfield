@@ -19,7 +19,7 @@ All other historical branches are non-authoritative. Their continued existence i
 Do not add duplicate handoff, audit, blueprint, or design-system documents to this repository.
 
 ## Current integrated scope
-Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup.
+Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore.
 
 Implemented:
 - global shell geometry and canonical brand tokens
@@ -40,7 +40,10 @@ Implemented:
 - exact declaration preservation for editing
 - Cancel-safe editing
 - view navigation locked while setup/editing is open
-- calendar truth, projection, and hydration contracts gated into every build
+- versioned persistence of the teacher's original calendar declaration
+- reload restore that re-validates and re-hydrates instead of trusting serialized runtime state
+- explicit invalid/unavailable storage status rather than silent fallback
+- calendar truth, projection, hydration, and persistence contracts gated into every build
 
 ## Standing calendar rules
 - Missing dates are `unknown`, never silently instructional.
@@ -48,12 +51,14 @@ Implemented:
 - Complete-looking is not enough; structural planning requires confirmed truth.
 - Every view derives from the same calendar state.
 - Editing reopens the original declarations; Arc does not reverse-engineer a pattern.
+- Persistence stores declarations, not hydrated runtime objects.
+- Reloaded data must validate again before Arc uses it.
 
 ## Not built yet
-- persisted calendar storage / reload restoration
 - school/district import adapters
 - previous / next / Today controls
 - term-boundary editing UI
+- account-backed persistence/sync
 - Units, Lessons, Notes, Ideas, Shift
 - Easel/integrations
 - production deployment
