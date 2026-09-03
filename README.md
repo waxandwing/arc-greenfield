@@ -19,7 +19,7 @@ All other historical branches are non-authoritative. Their continued existence i
 Do not add duplicate handoff, audit, blueprint, or design-system documents to this repository.
 
 ## Current integrated scope
-Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore.
+Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore → safe period navigation.
 
 Implemented:
 - global shell geometry and canonical brand tokens
@@ -43,7 +43,12 @@ Implemented:
 - versioned persistence of the teacher's original calendar declaration
 - reload restore that re-validates and re-hydrates instead of trusting serialized runtime state
 - explicit invalid/unavailable storage status rather than silent fallback
-- calendar truth, projection, hydration, and persistence contracts gated into every build
+- view-aware previous / Today / next controls
+- Day moves one calendar day; Week seven days; Month one month with safe day clamping
+- Quarter/Semester move only through confirmed term boundaries
+- Year Map does not fake navigation to an unloaded school year
+- Today is available only when the current local date belongs to the loaded school year
+- calendar truth, projection, hydration, persistence, and navigation contracts gated into every build
 
 ## Standing calendar rules
 - Missing dates are `unknown`, never silently instructional.
@@ -53,10 +58,10 @@ Implemented:
 - Editing reopens the original declarations; Arc does not reverse-engineer a pattern.
 - Persistence stores declarations, not hydrated runtime objects.
 - Reloaded data must validate again before Arc uses it.
+- Period navigation never invents unavailable years or term boundaries.
 
 ## Not built yet
 - school/district import adapters
-- previous / next / Today controls
 - term-boundary editing UI
 - account-backed persistence/sync
 - Units, Lessons, Notes, Ideas, Shift
