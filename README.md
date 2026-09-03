@@ -84,6 +84,7 @@ Implemented:
 
 ## Verification status
 - pre-planning audit hardening is integrated in `develop`
+- quarter/semester truth milestone is integrated in `develop`
 - current term milestone is verified independently in GitHub Actions
 - seven calendar contracts pass
 - dependency installation is reproducible from committed `package-lock.json` using `npm ci`
