@@ -16,6 +16,12 @@ export type RestoredCalendar = {
   calendar: SchoolCalendar
 }
 
+export type BrowserCalendarLoadResult =
+  | { status: 'none' }
+  | { status: 'restored'; restored: RestoredCalendar }
+  | { status: 'invalid' }
+  | { status: 'unavailable' }
+
 export function serializeCalendarInput(input: CalendarHydrationInput): string {
   const errors = validateHydrationInput(input)
   if (errors.length > 0) throw new Error(`Cannot persist invalid calendar declaration. ${errors.join(' ')}`)
@@ -73,14 +79,15 @@ export function saveCalendarToBrowser(input: CalendarHydrationInput): boolean {
   }
 }
 
-export function loadCalendarFromBrowser(): RestoredCalendar | null {
-  if (typeof window === 'undefined') return null
+export function loadCalendarFromBrowser(): BrowserCalendarLoadResult {
+  if (typeof window === 'undefined') return { status: 'unavailable' }
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    return restoreCalendarFromRaw(raw)
+    if (!raw) return { status: 'none' }
+    const restored = restoreCalendarFromRaw(raw)
+    return restored ? { status: 'restored', restored } : { status: 'invalid' }
   } catch {
-    return null
+    return { status: 'unavailable' }
   }
 }
 
