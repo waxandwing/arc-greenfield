@@ -28,6 +28,14 @@ export function createLessonDeliveryState(input: {
   return state
 }
 
+export function effectiveLessonDeliveryState(
+  states: LessonDeliveryState[],
+  lesson: Lesson,
+  section: Section,
+): LessonDeliveryState {
+  return deliveryStateFor(states, lesson.id, section.id) ?? createLessonDeliveryState({ lesson, section })
+}
+
 export function updateLessonDeliveryState(
   current: LessonDeliveryState,
   lesson: Lesson,
@@ -52,6 +60,9 @@ export function updateLessonDeliveryState(
   if (next.status === 'completed' || next.status === 'skipped') {
     next.resumeNote = null
   }
+  if (next.status === 'skipped') {
+    next.taughtDate = null
+  }
 
   const errors = validateLessonDeliveryState(next, lesson, section)
   if (errors.length > 0) throw new Error(`Cannot update delivery state. ${errors.join(' ')}`)
@@ -67,8 +78,11 @@ export function validateLessonDeliveryState(
   if (state.status === 'in-progress' && !state.resumeNote) {
     errors.push('An in-progress Lesson needs a resume note so Arc can hold the teacher’s place.')
   }
-  if (state.status !== 'not-started' && !state.taughtDate) {
-    errors.push('A started, completed, or skipped Lesson needs the actual teaching date.')
+  if ((state.status === 'in-progress' || state.status === 'completed') && !state.taughtDate) {
+    errors.push('An in-progress or completed Lesson needs the actual teaching date.')
+  }
+  if (state.status === 'not-started' && (state.taughtDate || state.resumeNote)) {
+    errors.push('A not-started Lesson cannot carry teaching progress.')
   }
   return [...new Set(errors)]
 }
