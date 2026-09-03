@@ -105,6 +105,8 @@ export function TermBoundarySetup({ input, onSave, onCancel }: Props) {
           title="Semesters"
           description="Use your official semester boundaries. Leave this empty if your school does not use semesters."
           boundaries={semesters}
+          firstDay={input.firstDay}
+          lastDay={input.lastDay}
           onAdd={() => addBoundary('semester')}
           onUpdate={(id, patch) => updateBoundary('semester', id, patch)}
           onRemove={(id) => removeBoundary('semester', id)}
@@ -115,6 +117,8 @@ export function TermBoundarySetup({ input, onSave, onCancel }: Props) {
           title="Quarters"
           description="Quarters may have gaps for breaks, but each quarter must sit entirely inside one semester when semesters are configured."
           boundaries={quarters}
+          firstDay={input.firstDay}
+          lastDay={input.lastDay}
           onAdd={() => addBoundary('quarter')}
           onUpdate={(id, patch) => updateBoundary('quarter', id, patch)}
           onRemove={(id) => removeBoundary('quarter', id)}
@@ -137,12 +141,14 @@ type TermSectionProps = {
   title: string
   description: string
   boundaries: DraftBoundary[]
+  firstDay: ISODate
+  lastDay: ISODate
   onAdd: () => void
   onUpdate: (id: string, patch: Partial<DraftBoundary>) => void
   onRemove: (id: string) => void
 }
 
-function TermSection({ kind, title, description, boundaries, onAdd, onUpdate, onRemove }: TermSectionProps) {
+function TermSection({ kind, title, description, boundaries, firstDay, lastDay, onAdd, onUpdate, onRemove }: TermSectionProps) {
   return (
     <fieldset className="term-section">
       <legend>{title}</legend>
@@ -169,7 +175,8 @@ function TermSection({ kind, title, description, boundaries, onAdd, onUpdate, on
                 <span>Starts</span>
                 <input
                   type="date"
-                  min={undefined}
+                  min={firstDay}
+                  max={lastDay}
                   value={boundary.startDate}
                   onChange={(event) => onUpdate(boundary.id, { startDate: event.target.value })}
                 />
@@ -178,6 +185,8 @@ function TermSection({ kind, title, description, boundaries, onAdd, onUpdate, on
                 <span>Ends</span>
                 <input
                   type="date"
+                  min={firstDay}
+                  max={lastDay}
                   value={boundary.endDate}
                   onChange={(event) => onUpdate(boundary.id, { endDate: event.target.value })}
                 />
