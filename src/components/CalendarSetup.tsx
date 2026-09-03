@@ -1,5 +1,7 @@
 import { FormEvent, useMemo, useState } from 'react'
 import {
+  buildManualCalendarInput,
+  createManualCalendarId,
   hydrateSchoolCalendar,
   validateHydrationInput,
   type CalendarDay,
@@ -42,6 +44,7 @@ type Props = {
 }
 
 export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) {
+  const [calendarId] = useState(() => initialValue?.id ?? createManualCalendarId())
   const [schoolYearLabel, setSchoolYearLabel] = useState(initialValue?.schoolYearLabel ?? '')
   const [firstDay, setFirstDay] = useState(initialValue?.firstDay ?? '')
   const [lastDay, setLastDay] = useState(initialValue?.lastDay ?? '')
@@ -54,14 +57,12 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
   })))
   const [errors, setErrors] = useState<string[]>([])
 
-  const input = useMemo<CalendarHydrationInput>(() => ({
-    id: schoolYearLabel.trim() ? `manual-${schoolYearLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}` : 'manual-school-year',
-    schoolYearLabel: schoolYearLabel.trim(),
-    firstDay: firstDay as ISODate,
-    lastDay: lastDay as ISODate,
+  const input = useMemo<CalendarHydrationInput>(() => buildManualCalendarInput({
+    calendarId,
+    schoolYearLabel,
+    firstDay,
+    lastDay,
     instructionalWeekdays: weekdays,
-    patternSource: 'manual',
-    patternConfidence: 'confirmed',
     exceptions: exceptions
       .filter((item) => item.date)
       .map<CalendarDay>((item) => ({
@@ -71,9 +72,9 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
         source: 'manual',
         confidence: 'confirmed',
       })),
-    quarters: initialValue?.quarters ? [...initialValue.quarters] : [],
-    semesters: initialValue?.semesters ? [...initialValue.semesters] : [],
-  }), [schoolYearLabel, firstDay, lastDay, weekdays, exceptions, initialValue])
+    quarters: initialValue?.quarters,
+    semesters: initialValue?.semesters,
+  }), [calendarId, schoolYearLabel, firstDay, lastDay, weekdays, exceptions, initialValue])
 
   function toggleWeekday(day: Weekday) {
     setWeekdays((current) => current.includes(day)
