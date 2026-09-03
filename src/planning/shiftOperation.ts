@@ -1,5 +1,6 @@
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Section } from './courses'
+import { effectiveLessonDeliveryState, type LessonDeliveryState } from './deliveryState'
 import { effectiveLessonDate, removeSectionLessonOverride, setSectionLessonOverride, validateSectionLessonOverride, type SectionLessonDateOverride } from './sectionSchedule'
 import type { Lesson } from './lessons'
 import type { Unit } from './units'
@@ -47,11 +48,12 @@ export function validateShiftOperation(input: {
   operation: ShiftOperation
   section: Section
   lessons: Lesson[]
+  deliveryStates: LessonDeliveryState[]
   units: Unit[]
   calendar: SchoolCalendar
   overrides: SectionLessonDateOverride[]
 }): string[] {
-  const { operation, section, lessons, units, calendar, overrides } = input
+  const { operation, section, lessons, deliveryStates, units, calendar, overrides } = input
   const errors: string[] = []
 
   if (!operation.id.trim()) errors.push('Shift operation ID is required.')
@@ -83,6 +85,12 @@ export function validateShiftOperation(input: {
     }
     if (lesson.courseId !== section.courseId || lesson.calendarId !== section.calendarId) {
       errors.push(`${lesson.title} does not belong to this Section's Course and calendar.`)
+      continue
+    }
+
+    const delivery = effectiveLessonDeliveryState(deliveryStates, lesson, section)
+    if (delivery.status === 'completed' || delivery.status === 'skipped') {
+      errors.push(`${lesson.title} is already ${delivery.status} for ${section.name} and cannot be moved by recovery Shift.`)
       continue
     }
 
@@ -138,6 +146,7 @@ export function applyShiftOperation(input: {
   operation: ShiftOperation
   section: Section
   lessons: Lesson[]
+  deliveryStates: LessonDeliveryState[]
   units: Unit[]
   calendar: SchoolCalendar
   overrides: SectionLessonDateOverride[]
