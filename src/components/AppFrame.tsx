@@ -24,18 +24,22 @@ import {
   courseIdsProtectedByUnits,
   loadLessonsFromBrowser,
   loadPlanningWorkspaceFromBrowser,
+  loadShiftStateFromBrowser,
   loadUnitsFromBrowser,
   saveLessonsToBrowser,
   savePlanningWorkspaceToBrowser,
+  saveShiftStateToBrowser,
   saveUnitsToBrowser,
   sectionIdsProtectedByDelivery,
   unitIdsProtectedByLessons,
   validateLessonWorkspace,
+  validateShiftPersistenceInput,
   validateUnitWorkspace,
   type LessonWorkspace,
   type LessonWorkspaceInput,
   type PlanningWorkspace,
   type PlanningWorkspaceInput,
+  type ShiftPersistenceInput,
   type UnitWorkspace,
   type UnitWorkspaceInput,
 } from '../planning'
@@ -49,6 +53,10 @@ export function AppFrame() {
   const restoredUnits = initialUnitLoad.status === 'restored' ? initialUnitLoad : null
   const [initialLessonLoad] = useState(() => restored && restoredPlanning && restoredUnits ? loadLessonsFromBrowser(restored.calendar, restoredPlanning.workspace, restoredUnits.workspace) : { status: 'empty' as const })
   const restoredLessons = initialLessonLoad.status === 'restored' ? initialLessonLoad : null
+  const [initialShiftLoad] = useState(() => restored && restoredPlanning && restoredUnits && restoredLessons
+    ? loadShiftStateFromBrowser(restored.calendar, restoredPlanning.workspace, restoredUnits.workspace, restoredLessons.workspace)
+    : { status: 'empty' as const })
+  const restoredShift = initialShiftLoad.status === 'restored' ? initialShiftLoad : null
 
   const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
   const [calendar, setCalendar] = useState<SchoolCalendar | null>(restored?.calendar ?? null)
@@ -60,6 +68,7 @@ export function AppFrame() {
   const [unitInput, setUnitInput] = useState<UnitWorkspaceInput | null>(restoredUnits?.input ?? null)
   const [lessonWorkspace, setLessonWorkspace] = useState<LessonWorkspace | null>(restoredLessons?.workspace ?? null)
   const [lessonInput, setLessonInput] = useState<LessonWorkspaceInput | null>(restoredLessons?.input ?? null)
+  const [shiftState, setShiftState] = useState<ShiftPersistenceInput | null>(restoredShift?.input ?? (restored ? { calendarId: restored.calendar.id, overrides: [], undo: null } : null))
   const [editingCalendar, setEditingCalendar] = useState(false)
   const [editingTerms, setEditingTerms] = useState(false)
   const [editingClasses, setEditingClasses] = useState(false)
@@ -75,6 +84,9 @@ export function AppFrame() {
     if (initialUnitLoad.status === 'unavailable') return 'Unit storage is unavailable in this browser. Unit changes may last only for this session.'
     if (initialLessonLoad.status === 'invalid') return 'Arc found saved Lesson progress it could not verify. Calendar, Classes, and Units are safe; please confirm the Lessons again.'
     if (initialLessonLoad.status === 'unavailable') return 'Lesson storage is unavailable in this browser. Lesson progress may last only for this session.'
+    if (initialShiftLoad.status === 'invalid') return 'Arc found saved Section schedule changes it could not verify. Earlier planning data is safe; the Section schedule was not restored.'
+    if (initialShiftLoad.status === 'unavailable') return 'Section schedule storage is unavailable in this browser. Shift changes may last only for this session.'
+    if (restoredShift && !restoredShift.undoRestored && restoredShift.input.overrides.length > 0) return 'Arc restored the Section schedule, but its previous Undo was no longer safe and was discarded.'
     return null
   })
 
@@ -85,6 +97,31 @@ export function AppFrame() {
     setEditingUnits(false)
     setEditingLessons(false)
     setReviewingRecovery(false)
+  }
+
+  function reconcileShiftState(
+    nextCalendar: SchoolCalendar,
+    nextPlanning: PlanningWorkspace | null,
+    nextUnits: UnitWorkspace | null,
+    nextLessons: LessonWorkspace | null,
+  ): { allowed: boolean; next: ShiftPersistenceInput | null; undoDropped: boolean } {
+    if (!shiftState) return { allowed: true, next: { calendarId: nextCalendar.id, overrides: [], undo: null }, undoDropped: false }
+    if (!nextPlanning || !nextUnits || !nextLessons) {
+      if (shiftState.overrides.length > 0) return { allowed: false, next: shiftState, undoDropped: false }
+      return { allowed: true, next: { calendarId: nextCalendar.id, overrides: [], undo: null }, undoDropped: Boolean(shiftState.undo) }
+    }
+
+    const candidate: ShiftPersistenceInput = { ...shiftState, calendarId: nextCalendar.id }
+    const validation = validateShiftPersistenceInput(candidate, nextCalendar, nextPlanning, nextUnits, nextLessons)
+    if (validation.scheduleErrors.length > 0) return { allowed: false, next: shiftState, undoDropped: false }
+    if (!validation.undoValid && candidate.undo) return { allowed: true, next: { ...candidate, undo: null }, undoDropped: true }
+    return { allowed: true, next: candidate, undoDropped: false }
+  }
+
+  function persistReconciledShift(next: ShiftPersistenceInput | null): boolean {
+    if (!next) return true
+    setShiftState(next)
+    return saveShiftStateToBrowser(next)
   }
 
   function useCalendar(nextCalendar: SchoolCalendar, input: CalendarHydrationInput) {
@@ -103,18 +140,34 @@ export function AppFrame() {
       }
     }
 
-    const persisted = saveCalendarToBrowser(input)
+    const shift = reconcileShiftState(nextCalendar, planningWorkspace, unitWorkspace, lessonWorkspace)
+    if (!shift.allowed) {
+      setStorageNotice('That calendar change would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the calendar.')
+      return
+    }
+
+    const calendarPersisted = saveCalendarToBrowser(input)
+    const shiftPersisted = persistReconciledShift(shift.next)
     setCalendar(nextCalendar)
     setCalendarInput(input)
     setAnchorDate(nextCalendar.firstDay)
     setActiveView(DEFAULT_HOME_VIEW)
     closeSecondaryStates()
-    setStorageNotice(persisted ? null : 'This calendar is active for this session, but Arc could not save it in this browser.')
+    if (!calendarPersisted || !shiftPersisted) setStorageNotice('This change is active for this session, but Arc could not save all related planning state in this browser.')
+    else if (shift.undoDropped) setStorageNotice('Calendar updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
+    else setStorageNotice(null)
   }
 
   function useTerms(input: CalendarHydrationInput) {
     const nextCalendar = hydrateSchoolCalendar(input)
-    const persisted = saveCalendarToBrowser(input)
+    const shift = reconcileShiftState(nextCalendar, planningWorkspace, unitWorkspace, lessonWorkspace)
+    if (!shift.allowed) {
+      setStorageNotice('Those term changes would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the terms.')
+      return
+    }
+
+    const calendarPersisted = saveCalendarToBrowser(input)
+    const shiftPersisted = persistReconciledShift(shift.next)
     setCalendar(nextCalendar)
     setCalendarInput(input)
     setEditingTerms(false)
@@ -124,7 +177,9 @@ export function AppFrame() {
       if (activeView === 'Quarter' && !quarterStillContainsAnchor) setActiveView(DEFAULT_HOME_VIEW)
       if (activeView === 'Semester' && !semesterStillContainsAnchor) setActiveView(DEFAULT_HOME_VIEW)
     }
-    setStorageNotice(persisted ? null : 'These term dates are active for this session, but Arc could not save them in this browser.')
+    if (!calendarPersisted || !shiftPersisted) setStorageNotice('These term dates are active for this session, but Arc could not save all related planning state in this browser.')
+    else if (shift.undoDropped) setStorageNotice('Terms updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
+    else setStorageNotice(null)
   }
 
   function useClasses(input: PlanningWorkspaceInput, workspace: PlanningWorkspace) {
@@ -134,6 +189,20 @@ export function AppFrame() {
         setStorageNotice('That class change would orphan existing Lesson progress. Resolve the affected Lesson history first; Arc has not changed the classes.')
         return
       }
+      const shift = reconcileShiftState(calendar, workspace, unitWorkspace, lessonWorkspace)
+      if (!shift.allowed) {
+        setStorageNotice('That class change would orphan an existing Section schedule. Resolve the affected Shift history first; Arc has not changed the classes.')
+        return
+      }
+      const classesPersisted = savePlanningWorkspaceToBrowser(input)
+      const shiftPersisted = persistReconciledShift(shift.next)
+      setPlanningWorkspace(workspace)
+      setPlanningInput(input)
+      setEditingClasses(false)
+      if (!classesPersisted || !shiftPersisted) setStorageNotice('These classes are active for this session, but Arc could not save all related planning state in this browser.')
+      else if (shift.undoDropped) setStorageNotice('Classes updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
+      else setStorageNotice(null)
+      return
     }
     const persisted = savePlanningWorkspaceToBrowser(input)
     setPlanningWorkspace(workspace)
@@ -149,6 +218,20 @@ export function AppFrame() {
         setStorageNotice('That Unit change would invalidate one or more Lessons. Move or update those Lessons first; Arc has not changed the Units.')
         return
       }
+      const shift = reconcileShiftState(calendar, planningWorkspace, workspace, lessonWorkspace)
+      if (!shift.allowed) {
+        setStorageNotice('That Unit change would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the Units.')
+        return
+      }
+      const unitsPersisted = saveUnitsToBrowser(input)
+      const shiftPersisted = persistReconciledShift(shift.next)
+      setUnitWorkspace(workspace)
+      setUnitInput(input)
+      setEditingUnits(false)
+      if (!unitsPersisted || !shiftPersisted) setStorageNotice('These Units are active for this session, but Arc could not save all related planning state in this browser.')
+      else if (shift.undoDropped) setStorageNotice('Units updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
+      else setStorageNotice(null)
+      return
     }
     const persisted = saveUnitsToBrowser(input)
     setUnitWorkspace(workspace)
@@ -158,6 +241,22 @@ export function AppFrame() {
   }
 
   function useLessons(input: LessonWorkspaceInput, workspace: LessonWorkspace) {
+    if (calendar && planningWorkspace && unitWorkspace) {
+      const shift = reconcileShiftState(calendar, planningWorkspace, unitWorkspace, workspace)
+      if (!shift.allowed) {
+        setStorageNotice('That Lesson change would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the Lessons.')
+        return
+      }
+      const lessonsPersisted = saveLessonsToBrowser(input)
+      const shiftPersisted = persistReconciledShift(shift.next)
+      setLessonWorkspace(workspace)
+      setLessonInput(input)
+      setEditingLessons(false)
+      if (!lessonsPersisted || !shiftPersisted) setStorageNotice('These Lessons are active for this session, but Arc could not save all related planning state in this browser.')
+      else if (shift.undoDropped) setStorageNotice('Lessons updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
+      else setStorageNotice(null)
+      return
+    }
     const persisted = saveLessonsToBrowser(input)
     setLessonWorkspace(workspace)
     setLessonInput(input)
@@ -234,7 +333,7 @@ export function AppFrame() {
               : editingClasses && calendar ? <ClassSetup calendarId={calendar.id} initialValue={planningInput} protectedCourseIds={protectedCourseIds} protectedSectionIds={protectedSectionIds} onSave={useClasses} onCancel={() => setEditingClasses(false)} />
               : editingUnits && calendar && planningWorkspace ? <UnitSetup calendar={calendar} planning={planningWorkspace} initialValue={unitInput} protectedUnitIds={protectedUnitIds} onSave={useUnits} onCancel={() => setEditingUnits(false)} />
               : editingLessons && calendar && planningWorkspace && unitWorkspace ? <LessonSetup calendar={calendar} planning={planningWorkspace} units={unitWorkspace} initialValue={lessonInput} onSave={useLessons} onCancel={() => setEditingLessons(false)} />
-              : reviewingRecovery && calendar && planningWorkspace && lessonWorkspace ? <RecoveryReview calendar={calendar} planning={planningWorkspace} lessons={lessonWorkspace} onClose={() => setReviewingRecovery(false)} />
+              : reviewingRecovery && calendar && planningWorkspace && lessonWorkspace ? <RecoveryReview calendar={calendar} planning={planningWorkspace} lessons={lessonWorkspace} overrides={shiftState?.overrides ?? []} onClose={() => setReviewingRecovery(false)} />
               : <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />}
           </section>
         </main>
