@@ -14,6 +14,12 @@ export type UnitActionContext = {
 
 export type LessonActionContext = UnitActionContext
 
+export type LessonUnplaceResult = {
+  lessons: LessonWorkspace
+  overrides: SectionLessonDateOverride[]
+  removedOverrides: SectionLessonDateOverride[]
+}
+
 export function moveUnit(input: UnitActionContext & { unitId: string; placement: UnitPlacement }): UnitWorkspace {
   const { calendar, units, lessons, overrides, unitId, placement } = input
   const unit = requireUnit(units, unitId)
@@ -79,19 +85,18 @@ export function moveLesson(input: LessonActionContext & { lessonId: string; plan
   }
 }
 
-export function unplaceLessonFromCalendar(input: LessonActionContext & { lessonId: string }): {
-  lessons: LessonWorkspace
-  overrides: SectionLessonDateOverride[]
-} {
+export function unplaceLessonFromCalendar(input: LessonActionContext & { lessonId: string }): LessonUnplaceResult {
   const { lessons, overrides, lessonId } = input
   const lesson = requireLesson(lessons, lessonId)
   const next: Lesson = { ...lesson, plannedDate: null, datePolicy: 'flexible' }
+  const removedOverrides = overrides.filter((override) => override.lessonId === lessonId).map((override) => ({ ...override }))
   return {
     lessons: {
       ...lessons,
       lessons: lessons.lessons.map((candidate) => candidate.id === lessonId ? next : candidate),
     },
     overrides: overrides.filter((override) => override.lessonId !== lessonId),
+    removedOverrides,
   }
 }
 
