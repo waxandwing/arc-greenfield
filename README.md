@@ -9,7 +9,7 @@ Clean frame-first rebuild.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point
 
 ## Current build scope
-Frame + navigation + calendar truth + projections + render skeleton + hydration boundary.
+Frame + navigation + calendar truth + projections + render skeleton + hydration + teacher-facing calendar setup.
 
 Implemented:
 - global shell geometry and canonical brand tokens
@@ -30,10 +30,13 @@ Implemented:
 - one pure projection layer for Day / Week / Month / Quarter / Semester / Year Map
 - Monday-aligned week and month-grid calculations
 - projection flags for weekend and school-year membership without changing calendar truth
-- rendered calendar components for all six horizons, ready to consume real canonical calendar state
-- honest unconfigured state when no real calendar has been supplied
+- rendered calendar components for all six horizons
 - explicit hydration boundary that expands a declared instructional-week pattern across school-year bounds
 - exception overrides with provenance preservation and duplicate/out-of-range rejection
+- teacher-facing manual calendar setup for school-year bounds, normal weekdays, and exceptions
+- exact setup declarations retained for later editing rather than reverse-engineered from hydrated output
+- Cancel-safe calendar editing that leaves the prior calendar untouched
+- calendar-view navigation locked while setup/editing is onscreen
 - one public calendar-domain API through `src/calendar/index.ts`
 - calendar truth, projection, and hydration contract tests gated into every build
 
@@ -45,12 +48,13 @@ Readiness rule: complete-looking is not enough. Structural planning requires eve
 
 Projection rule: every calendar horizon is derived from the same `SchoolCalendar`; views may change presentation, never date truth.
 
-Live-workspace rule: fabricated render fixtures never appear in the actual Arc shell. Until real calendar state exists, the shell says that calendar setup is required.
+Setup rule: editing reopens the teacher's original declarations. Arc never infers a new weekly pattern from previously hydrated dates.
 
 Intentionally excluded:
-- school/district import adapters and setup UI
-- persisted calendar storage
+- school/district import adapters
+- persisted calendar storage / reload restoration
 - previous/next/today period controls
+- term-boundary editing UI
 - Units, Lessons, Notes, Ideas, Shift UI, Search, Help, Profile
 - landing-preference persistence
 - Easel and integrations
