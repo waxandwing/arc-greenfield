@@ -97,6 +97,19 @@ async function auditViewport(browser, width, height) {
   assert(dayBox, `${width}px: active Day button has no rendered bounds.`)
   assert(dayBox.x >= -0.5 && dayBox.x + dayBox.width <= width + 0.5, `${width}px: active Day button is not fully visible in the mobile horizon rail.`)
 
+  // Pointer selection should stay visually quiet; keyboard travel away and back must reveal focus.
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Tab')
+  assert(await dayButton.evaluate((node) => document.activeElement === node), `${width}px: keyboard navigation did not return focus to active Day.`)
+  const focus = await dayButton.evaluate((node) => {
+    const style = getComputedStyle(node)
+    return { outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth || '0') }
+  })
+  assert(focus.outlineStyle !== 'none' && focus.outlineWidth >= 3, `${width}px: keyboard focus is not visibly strong enough.`)
+
+  const mobileNavFontSize = await dayButton.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))
+  assert(mobileNavFontSize >= 16, `${width}px: primary calendar navigation fell below 16px (${mobileNavFontSize}px).`)
+
   await page.getByRole('button', { name: 'Next Day' }).click()
 
   assert(await page.getByText('Arc is holding your place', { exact: true }).isVisible(), `${width}px: unfinished carryover is not visibly separated.`)
@@ -113,19 +126,6 @@ async function auditViewport(browser, width, height) {
   }))
   assert(geometry.documentWidth <= geometry.viewportWidth + 1, `${width}px: page creates horizontal document overflow (${geometry.documentWidth}px > ${geometry.viewportWidth}px).`)
   assert(geometry.stageWidth <= geometry.stageClientWidth + 1, `${width}px: Day stage creates horizontal overflow (${geometry.stageWidth}px > ${geometry.stageClientWidth}px).`)
-
-  // Pointer focus should stay quiet. Move away and back with the keyboard to prove :focus-visible.
-  await page.keyboard.press('Shift+Tab')
-  await page.keyboard.press('Tab')
-  assert(await dayButton.evaluate((node) => document.activeElement === node), `${width}px: keyboard navigation did not return focus to active Day.`)
-  const focus = await dayButton.evaluate((node) => {
-    const style = getComputedStyle(node)
-    return { outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth || '0') }
-  })
-  assert(focus.outlineStyle !== 'none' && focus.outlineWidth >= 3, `${width}px: keyboard focus is not visibly strong enough.`)
-
-  const mobileNavFontSize = await dayButton.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))
-  assert(mobileNavFontSize >= 16, `${width}px: primary calendar navigation fell below 16px (${mobileNavFontSize}px).`)
 
   const canvas = page.locator('.calendar-canvas')
   await canvas.evaluate((node) => { node.scrollTop = node.scrollHeight })
