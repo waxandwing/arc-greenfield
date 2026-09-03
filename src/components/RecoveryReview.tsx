@@ -98,7 +98,7 @@ export function RecoveryReview({ calendar, planning, lessons, onClose }: Props) 
                       {preview.fixedAnchor ? (
                         <p><strong>{preview.fixedAnchor.title}</strong><span>{formatDate(preview.fixedAnchor.plannedDate)} · stays fixed</span></p>
                       ) : (
-                        <p>No fixed Lesson appears before the end of this Unit sequence.</p>
+                        <p>No fixed Lesson appears later in the current course plan.</p>
                       )}
                     </section>
                   </div>
