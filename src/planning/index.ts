@@ -1,5 +1,7 @@
 export * from './courses'
 export * from './units'
+export * from './lessons'
+export * from './deliveryState'
 export * from './workspace'
 export * from './workspacePersistence'
 export * from './unitWorkspace'
