@@ -13,23 +13,22 @@ export function saveLessonAndShiftStateToBrowser(
   shiftInput: ShiftPersistenceInput,
 ): LessonShiftSaveResult {
   let previousLessons: string | null
-  let previousShift: string | null
 
   try {
     previousLessons = window.localStorage.getItem(LESSON_STORAGE_KEY)
-    previousShift = window.localStorage.getItem(SHIFT_STORAGE_KEY)
   } catch {
     return { saved: false, rollbackSucceeded: true }
   }
 
+  let lessonWritten = false
   try {
     window.localStorage.setItem(LESSON_STORAGE_KEY, serializeLessons(lessonInput))
+    lessonWritten = true
     window.localStorage.setItem(SHIFT_STORAGE_KEY, serializeShiftState(shiftInput))
     return { saved: true, rollbackSucceeded: true }
   } catch {
-    const lessonRestored = restoreStorageValue(LESSON_STORAGE_KEY, previousLessons)
-    const shiftRestored = restoreStorageValue(SHIFT_STORAGE_KEY, previousShift)
-    return { saved: false, rollbackSucceeded: lessonRestored && shiftRestored }
+    if (!lessonWritten) return { saved: false, rollbackSucceeded: true }
+    return { saved: false, rollbackSucceeded: restoreStorageValue(LESSON_STORAGE_KEY, previousLessons) }
   }
 }
 
