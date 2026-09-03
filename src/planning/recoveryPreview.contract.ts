@@ -49,6 +49,23 @@ assert(preview.fixedAnchor?.plannedDate === '2026-09-18', 'Fixed Friday test dat
 assert(preview.mutationApplied === false, 'Creating a recovery preview must never mutate the schedule.')
 assert(JSON.stringify([lesson17, lesson18, fridayTest, interrupted]) === before, 'Recovery preview must be a pure read of planning state.')
 
+const alreadyShiftedPreview = createRecoveryPreview({
+  calendar,
+  section: p5,
+  lesson: lesson17,
+  state: interrupted,
+  lessons: [lesson17, lesson18, fridayTest],
+  overrides: [{ sectionId: p5.id, lessonId: lesson18.id, plannedDate: '2026-09-21' }],
+})
+assert(alreadyShiftedPreview.affectedFlexibleLessons.length === 0, 'Recovery preview must use the Section effective schedule instead of re-reporting a shared-date collision already moved for that Section.')
+assert(alreadyShiftedPreview.fixedAnchor?.lessonId === fridayTest.id, 'Existing Section overrides must not hide the next fixed anchor.')
+
+const nextUnit = placeUnit(createUnit({ id: 'unit-next', calendarId: calendar.id, courseId: course.id, title: 'Next Unit' }), calendar, { startDate: '2026-09-21', endDate: '2026-09-30' })
+const laterSameUnitFixed = createLesson({ id: 'later-fixed', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Later same-unit anchor', sequence: 20, plannedDate: '2026-09-23', datePolicy: 'fixed' })
+const earlierCrossUnitFixed = createLesson({ id: 'cross-unit-fixed', calendarId: calendar.id, courseId: course.id, unitId: nextUnit.id, title: 'Next-unit fixed anchor', sequence: 1, plannedDate: '2026-09-22', datePolicy: 'fixed' })
+const crossUnitPreview = createRecoveryPreview({ calendar, section: p5, lesson: lesson17, state: interrupted, lessons: [lesson17, lesson18, laterSameUnitFixed, earlierCrossUnitFixed] })
+assert(crossUnitPreview.fixedAnchor?.lessonId === earlierCrossUnitFixed.id, 'Recovery must choose the earliest fixed anchor across the Course, even when it belongs to another Unit.')
+
 let fixedWithoutDateRejected = false
 try {
   createLesson({ id: 'bad-fixed', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Fixed without a day', sequence: 20, datePolicy: 'fixed' })
