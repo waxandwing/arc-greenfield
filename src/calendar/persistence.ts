@@ -1,4 +1,5 @@
 import { hydrateSchoolCalendar, validateHydrationInput, type CalendarHydrationInput } from './hydration'
+import { validateSchoolCalendar } from './schoolCalendar'
 import type { CalendarDay, CalendarSource, Confidence, DayKind, ISODate, SchoolCalendar, TermBoundary } from './types'
 
 const STORAGE_KEY = 'arc.calendar.v1'
@@ -18,6 +19,10 @@ export type RestoredCalendar = {
 export function serializeCalendarInput(input: CalendarHydrationInput): string {
   const errors = validateHydrationInput(input)
   if (errors.length > 0) throw new Error(`Cannot persist invalid calendar declaration. ${errors.join(' ')}`)
+
+  const calendar = hydrateSchoolCalendar(input)
+  const calendarErrors = validateSchoolCalendar(calendar)
+  if (calendarErrors.length > 0) throw new Error(`Cannot persist structurally invalid calendar. ${calendarErrors.join(' ')}`)
 
   const envelope: PersistedCalendarEnvelope = {
     schemaVersion: SCHEMA_VERSION,
@@ -50,27 +55,43 @@ export function restoreCalendarFromRaw(raw: string): RestoredCalendar | null {
   if (!input) return null
 
   try {
-    return { input, calendar: hydrateSchoolCalendar(input) }
+    const calendar = hydrateSchoolCalendar(input)
+    if (validateSchoolCalendar(calendar).length > 0) return null
+    return { input, calendar }
   } catch {
     return null
   }
 }
 
-export function saveCalendarToBrowser(input: CalendarHydrationInput): void {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(STORAGE_KEY, serializeCalendarInput(input))
+export function saveCalendarToBrowser(input: CalendarHydrationInput): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    window.localStorage.setItem(STORAGE_KEY, serializeCalendarInput(input))
+    return true
+  } catch {
+    return false
+  }
 }
 
 export function loadCalendarFromBrowser(): RestoredCalendar | null {
   if (typeof window === 'undefined') return null
-  const raw = window.localStorage.getItem(STORAGE_KEY)
-  if (!raw) return null
-  return restoreCalendarFromRaw(raw)
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return restoreCalendarFromRaw(raw)
+  } catch {
+    return null
+  }
 }
 
-export function clearCalendarFromBrowser(): void {
-  if (typeof window === 'undefined') return
-  window.localStorage.removeItem(STORAGE_KEY)
+export function clearCalendarFromBrowser(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    window.localStorage.removeItem(STORAGE_KEY)
+    return true
+  } catch {
+    return false
+  }
 }
 
 function parseHydrationInput(value: Record<string, unknown>): CalendarHydrationInput | null {
