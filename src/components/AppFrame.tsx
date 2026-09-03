@@ -71,7 +71,7 @@ export function AppFrame() {
   const [unitInput, setUnitInput] = useState<UnitWorkspaceInput | null>(restoredUnits?.input ?? null)
   const [lessonWorkspace, setLessonWorkspace] = useState<LessonWorkspace | null>(restoredLessons?.workspace ?? null)
   const [lessonInput, setLessonInput] = useState<LessonWorkspaceInput | null>(restoredLessons?.input ?? null)
-  const [shiftState, setShiftState] = useState<ShiftPersistenceInput | null>(restoredShift?.input ?? (restored ? { calendarId: restored.calendar.id, overrides: [], undo: null } : null))
+  const [shiftState, setShiftState] = useState<ShiftPersistenceInput | null>(restoredShift?.input ?? (restored ? { calendarId: restored.calendar.id, overrides: [], sameDayApprovals: [], undo: null } : null))
   const [editingCalendar, setEditingCalendar] = useState(false)
   const [editingTerms, setEditingTerms] = useState(false)
   const [editingClasses, setEditingClasses] = useState(false)
@@ -108,10 +108,10 @@ export function AppFrame() {
     nextUnits: UnitWorkspace | null,
     nextLessons: LessonWorkspace | null,
   ): { allowed: boolean; next: ShiftPersistenceInput | null; undoDropped: boolean } {
-    if (!shiftState) return { allowed: true, next: { calendarId: nextCalendar.id, overrides: [], undo: null }, undoDropped: false }
+    if (!shiftState) return { allowed: true, next: { calendarId: nextCalendar.id, overrides: [], sameDayApprovals: [], undo: null }, undoDropped: false }
     if (!nextPlanning || !nextUnits || !nextLessons) {
-      if (shiftState.overrides.length > 0) return { allowed: false, next: shiftState, undoDropped: false }
-      return { allowed: true, next: { calendarId: nextCalendar.id, overrides: [], undo: null }, undoDropped: Boolean(shiftState.undo) }
+      if (shiftState.overrides.length > 0 || shiftState.sameDayApprovals.length > 0) return { allowed: false, next: shiftState, undoDropped: false }
+      return { allowed: true, next: { calendarId: nextCalendar.id, overrides: [], sameDayApprovals: [], undo: null }, undoDropped: Boolean(shiftState.undo) }
     }
 
     const candidate: ShiftPersistenceInput = { ...shiftState, calendarId: nextCalendar.id }
@@ -283,8 +283,14 @@ export function AppFrame() {
         units: unitWorkspace.units,
         calendar,
         overrides: shiftState.overrides,
+        sameDayApprovals: shiftState.sameDayApprovals,
       })
-      const candidate: ShiftPersistenceInput = { calendarId: calendar.id, overrides: applied.overrides, undo: applied.undo }
+      const candidate: ShiftPersistenceInput = {
+        calendarId: calendar.id,
+        overrides: applied.overrides,
+        sameDayApprovals: shiftState.sameDayApprovals,
+        undo: applied.undo,
+      }
       const validation = validateShiftPersistenceInput(candidate, calendar, planningWorkspace, unitWorkspace, lessonWorkspace)
       if (validation.scheduleErrors.length > 0 || !validation.undoValid) {
         return 'Arc refused this Shift because the resulting Section schedule did not pass its integrity check. Nothing changed.'
@@ -306,7 +312,12 @@ export function AppFrame() {
     const section = planningWorkspace.sections.find((candidate) => candidate.id === shiftState.undo?.sectionId)
     try {
       const overrides = undoShiftOperation(shiftState.overrides, shiftState.undo)
-      const candidate: ShiftPersistenceInput = { calendarId: calendar.id, overrides, undo: null }
+      const candidate: ShiftPersistenceInput = {
+        calendarId: calendar.id,
+        overrides,
+        sameDayApprovals: shiftState.sameDayApprovals,
+        undo: null,
+      }
       const validation = validateShiftPersistenceInput(candidate, calendar, planningWorkspace, unitWorkspace, lessonWorkspace)
       if (validation.scheduleErrors.length > 0) {
         setStorageNotice('Arc could not safely undo that Shift because the previous Section schedule is no longer valid. Nothing changed.')
