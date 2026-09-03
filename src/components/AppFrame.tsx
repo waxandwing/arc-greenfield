@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { CalendarProjectionView } from './CalendarProjectionView'
 import { CalendarSetup } from './CalendarSetup'
+import { TermBoundarySetup } from './TermBoundarySetup'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
 import {
   currentLocalISODate,
+  hydrateSchoolCalendar,
   loadCalendarFromBrowser,
   moveAnchor,
   saveCalendarToBrowser,
@@ -23,6 +25,7 @@ export function AppFrame() {
   const [calendarInput, setCalendarInput] = useState<CalendarHydrationInput | null>(restored?.input ?? null)
   const [anchorDate, setAnchorDate] = useState<ISODate | null>(restored?.calendar.firstDay ?? null)
   const [editingCalendar, setEditingCalendar] = useState(false)
+  const [editingTerms, setEditingTerms] = useState(false)
   const [storageNotice, setStorageNotice] = useState<string | null>(() => {
     if (initialLoad.status === 'invalid') return 'Arc found saved calendar data it could not verify. Nothing was restored; please confirm the calendar again.'
     if (initialLoad.status === 'unavailable') return 'Calendar storage is unavailable in this browser. Changes may last only for this session.'
@@ -36,7 +39,21 @@ export function AppFrame() {
     setAnchorDate(nextCalendar.firstDay)
     setActiveView(DEFAULT_HOME_VIEW)
     setEditingCalendar(false)
+    setEditingTerms(false)
     setStorageNotice(persisted ? null : 'This calendar is active for this session, but Arc could not save it in this browser.')
+  }
+
+  function useTerms(input: CalendarHydrationInput) {
+    const nextCalendar = hydrateSchoolCalendar(input)
+    const persisted = saveCalendarToBrowser(input)
+    setCalendar(nextCalendar)
+    setCalendarInput(input)
+    setEditingTerms(false)
+
+    if (activeView === 'Quarter' && nextCalendar.quarters.length === 0) setActiveView(DEFAULT_HOME_VIEW)
+    if (activeView === 'Semester' && nextCalendar.semesters.length === 0) setActiveView(DEFAULT_HOME_VIEW)
+
+    setStorageNotice(persisted ? null : 'These term dates are active for this session, but Arc could not save them in this browser.')
   }
 
   function movePeriod(direction: PeriodDirection) {
@@ -58,10 +75,12 @@ export function AppFrame() {
     return { available: true }
   }
 
-  const showSetup = !calendar || !anchorDate || editingCalendar
+  const showCalendarSetup = !calendar || !anchorDate || editingCalendar
+  const showEditor = showCalendarSetup || editingTerms
   const previousTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'previous') : null
   const nextTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'next') : null
   const todayTarget = calendar ? todayAnchor(calendar, currentLocalISODate()) : null
+  const hasTerms = Boolean(calendar && (calendar.quarters.length > 0 || calendar.semesters.length > 0))
 
   return (
     <div className="arc-shell">
@@ -72,7 +91,9 @@ export function AppFrame() {
           className="arc-wordmark"
           type="button"
           aria-label={`Return to ${DEFAULT_HOME_VIEW} view`}
-          onClick={() => setActiveView(DEFAULT_HOME_VIEW)}
+          onClick={() => {
+            if (!showEditor) setActiveView(DEFAULT_HOME_VIEW)
+          }}
         >
           arc
         </button>
@@ -91,10 +112,10 @@ export function AppFrame() {
                 type="button"
                 className="view-nav-item"
                 aria-current={isCurrent ? 'page' : undefined}
-                aria-disabled={!showSetup && unavailable ? 'true' : undefined}
-                aria-label={!showSetup && unavailable ? `${view}. ${availability.reason}` : view}
-                title={!showSetup && unavailable ? availability.reason : undefined}
-                disabled={showSetup}
+                aria-disabled={!showEditor && unavailable ? 'true' : undefined}
+                aria-label={!showEditor && unavailable ? `${view}. ${availability.reason}` : view}
+                title={!showEditor && unavailable ? availability.reason : undefined}
+                disabled={showEditor}
                 onClick={() => {
                   if (!unavailable) setActiveView(view)
                 }}
@@ -109,10 +130,10 @@ export function AppFrame() {
           <header className="calendar-stage-header">
             <div>
               <p className="section-label">Calendar</p>
-              <h1 className="view-title" aria-live="polite">{activeView}</h1>
+              <h1 className="view-title" aria-live="polite">{editingTerms ? 'Terms' : activeView}</h1>
             </div>
 
-            {calendar && !editingCalendar && anchorDate && (
+            {calendar && !showEditor && anchorDate && (
               <div className="calendar-header-tools">
                 <div className="period-controls" aria-label={`${activeView} date navigation`}>
                   <button type="button" className="quiet-button period-button" disabled={!previousTarget} onClick={() => movePeriod('previous')} aria-label={`Previous ${activeView}`}>←</button>
@@ -122,6 +143,7 @@ export function AppFrame() {
                 <div className="calendar-context-group">
                   <p className="calendar-context" aria-label="Current school calendar">{calendar.schoolYearLabel}</p>
                   <button type="button" className="text-button" onClick={() => setEditingCalendar(true)}>Edit dates</button>
+                  <button type="button" className="text-button" onClick={() => setEditingTerms(true)}>{hasTerms ? 'Edit terms' : 'Set terms'}</button>
                 </div>
               </div>
             )}
@@ -129,12 +151,18 @@ export function AppFrame() {
 
           {storageNotice && <p className="storage-notice" role="status">{storageNotice}</p>}
 
-          <section className="calendar-canvas" aria-label={`${activeView} calendar workspace`}>
-            {showSetup ? (
+          <section className="calendar-canvas" aria-label={`${editingTerms ? 'Term setup' : activeView} calendar workspace`}>
+            {showCalendarSetup ? (
               <CalendarSetup
                 initialValue={calendarInput}
                 onSave={useCalendar}
                 onCancel={calendar ? () => setEditingCalendar(false) : undefined}
+              />
+            ) : editingTerms && calendarInput ? (
+              <TermBoundarySetup
+                input={calendarInput}
+                onSave={useTerms}
+                onCancel={() => setEditingTerms(false)}
               />
             ) : (
               <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />
