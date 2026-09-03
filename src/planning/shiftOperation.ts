@@ -20,8 +20,8 @@ export type ShiftOperation = {
 export type ShiftUndoToken = {
   operationId: string
   sectionId: string
-  previousOverrides: SectionLessonDateOverride[]
-  appliedOverrides: SectionLessonDateOverride[]
+  previousSectionOverrides: SectionLessonDateOverride[]
+  appliedSectionOverrides: SectionLessonDateOverride[]
 }
 
 export type AppliedShift = {
@@ -141,6 +141,10 @@ export function applyShiftOperation(input: {
   if (errors.length > 0) throw new Error(`Cannot apply Shift. ${errors.join(' ')}`)
 
   let next = input.overrides.map((override) => ({ ...override }))
+  const previousSectionOverrides = input.overrides
+    .filter((override) => override.sectionId === input.section.id)
+    .map((override) => ({ ...override }))
+
   for (const change of input.operation.changes) {
     const lesson = input.lessons.find((candidate) => candidate.id === change.lessonId)!
     if (change.toDate === lesson.plannedDate) {
@@ -154,24 +158,32 @@ export function applyShiftOperation(input: {
     }
   }
 
-  const appliedOverrides = next.map((override) => ({ ...override }))
+  const appliedSectionOverrides = next
+    .filter((override) => override.sectionId === input.section.id)
+    .map((override) => ({ ...override }))
+
   return {
     operation: { ...input.operation, changes: input.operation.changes.map((change) => ({ ...change })) },
-    overrides: appliedOverrides,
+    overrides: next.map((override) => ({ ...override })),
     undo: {
       operationId: input.operation.id,
       sectionId: input.section.id,
-      previousOverrides: input.overrides.map((override) => ({ ...override })),
-      appliedOverrides: appliedOverrides.map((override) => ({ ...override })),
+      previousSectionOverrides,
+      appliedSectionOverrides,
     },
   }
 }
 
 export function undoShiftOperation(currentOverrides: SectionLessonDateOverride[], token: ShiftUndoToken): SectionLessonDateOverride[] {
-  if (!sameOverrides(currentOverrides, token.appliedOverrides)) {
-    throw new Error('Cannot undo Shift because the Section schedule changed after that operation. Review the current schedule instead of overwriting newer work.')
+  const currentSectionOverrides = currentOverrides.filter((override) => override.sectionId === token.sectionId)
+  if (!sameOverrides(currentSectionOverrides, token.appliedSectionOverrides)) {
+    throw new Error('Cannot undo Shift because this Section schedule changed after that operation. Review the current schedule instead of overwriting newer work.')
   }
-  return token.previousOverrides.map((override) => ({ ...override }))
+
+  return [
+    ...currentOverrides.filter((override) => override.sectionId !== token.sectionId).map((override) => ({ ...override })),
+    ...token.previousSectionOverrides.map((override) => ({ ...override })),
+  ]
 }
 
 function sameOverrides(left: SectionLessonDateOverride[], right: SectionLessonDateOverride[]): boolean {
