@@ -41,11 +41,13 @@ export function finalizeRecoveryShiftDraft(
   chosenDates: Record<string, ISODate>,
 ): ShiftOperation {
   const changes = draft.changes.map((change) => {
-    const toDate = change.lessonId === draft.interruptedLessonId
-      ? draft.resumeDate
-      : chosenDates[change.lessonId]
+    const interrupted = change.lessonId === draft.interruptedLessonId
+    const toDate = interrupted ? draft.resumeDate : chosenDates[change.lessonId]
 
     if (!toDate) throw new Error(`Recovery Shift still needs a destination date for Lesson ${change.lessonId}.`)
+    if (!interrupted && toDate <= draft.resumeDate) {
+      throw new Error(`Recovery Shift destination for Lesson ${change.lessonId} must be after the class resume date.`)
+    }
 
     return { lessonId: change.lessonId, fromDate: change.fromDate, toDate }
   })
