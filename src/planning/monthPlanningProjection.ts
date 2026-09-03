@@ -20,16 +20,20 @@ export type MonthUnitSegment = {
   continuesAfter: boolean
 }
 
+export type MonthLessonSectionScope = {
+  sectionId: string
+  sectionName: string
+  isSectionOverride: boolean
+  deliveryStatus: PlanningLessonPlacement['deliveryStatus']
+}
+
 export type MonthLessonSignal = {
   lessonId: string
   courseId: string
   courseTitle: string
   title: string
   datePolicy: LessonDatePolicy
-  sectionIds: string[]
-  sectionNames: string[]
-  shiftedSectionIds: string[]
-  statusCounts: Record<PlanningLessonPlacement['deliveryStatus'], number>
+  sections: MonthLessonSectionScope[]
 }
 
 export type MonthDayPlanning = {
@@ -64,14 +68,13 @@ export function projectMonthPlanning(input: {
   return {
     weeks: month.weeks.map((week, weekIndex) => {
       const dates = week.days.map((day) => day.date)
-      const dateSet = new Set(dates)
       return {
         weekIndex,
         dates,
         unitSegments: projectUnitSegments(range, courseById, dates, weekIndex),
         days: dates.map((date) => ({
           date,
-          lessonSignals: projectLessonSignals(range, courseById, sectionById, dateSet, date),
+          lessonSignals: projectLessonSignals(range, courseById, sectionById, date),
         })),
       }
     }),
@@ -116,10 +119,8 @@ function projectLessonSignals(
   range: ReturnType<typeof projectPlanningRange>,
   courseById: Map<string, Course>,
   sectionById: Map<string, Section>,
-  weekDateSet: Set<ISODate>,
   date: ISODate,
 ): MonthLessonSignal[] {
-  if (!weekDateSet.has(date)) return []
   const grouped = new Map<string, MonthLessonSignal>()
 
   for (const courseGroup of range.courses) {
@@ -129,23 +130,25 @@ function projectLessonSignals(
       if (!day) continue
       for (const lesson of day.lessons) {
         const key = `${lesson.courseId}:${lesson.lessonId}`
-        const existing = grouped.get(key) ?? {
+        const signal = grouped.get(key) ?? {
           lessonId: lesson.lessonId,
           courseId: lesson.courseId,
           courseTitle: course.title,
           title: lesson.title,
           datePolicy: lesson.datePolicy,
-          sectionIds: [],
-          sectionNames: [],
-          shiftedSectionIds: [],
-          statusCounts: { 'not-started': 0, 'in-progress': 0, completed: 0, skipped: 0 },
+          sections: [],
         }
         const section = sectionById.get(sectionRow.section.id) ?? sectionRow.section
-        existing.sectionIds.push(section.id)
-        existing.sectionNames.push(section.name)
-        if (lesson.isSectionOverride) existing.shiftedSectionIds.push(section.id)
-        existing.statusCounts[lesson.deliveryStatus] += 1
-        grouped.set(key, existing)
+        if (signal.sections.some((scope) => scope.sectionId === section.id)) {
+          throw new Error(`Month planning received duplicate Section placement for ${section.id}, ${lesson.lessonId}, ${date}.`)
+        }
+        signal.sections.push({
+          sectionId: section.id,
+          sectionName: section.name,
+          isSectionOverride: lesson.isSectionOverride,
+          deliveryStatus: lesson.deliveryStatus,
+        })
+        grouped.set(key, signal)
       }
     }
   }
@@ -153,13 +156,7 @@ function projectLessonSignals(
   return [...grouped.values()]
     .map((signal) => ({
       ...signal,
-      sectionIds: unique(signal.sectionIds),
-      sectionNames: unique(signal.sectionNames),
-      shiftedSectionIds: unique(signal.shiftedSectionIds),
+      sections: [...signal.sections].sort((a, b) => a.sectionName.localeCompare(b.sectionName) || a.sectionId.localeCompare(b.sectionId)),
     }))
     .sort((a, b) => a.courseTitle.localeCompare(b.courseTitle) || a.title.localeCompare(b.title))
-}
-
-function unique(values: string[]): string[] {
-  return [...new Set(values)]
 }
