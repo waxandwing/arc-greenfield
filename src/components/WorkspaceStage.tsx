@@ -139,5 +139,16 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     )
   }
 
-  return <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />
+  const planningContext = planningWorkspace && unitWorkspace && lessonWorkspace
+    ? { planning: planningWorkspace, units: unitWorkspace, lessons: lessonWorkspace, shiftState }
+    : null
+
+  return (
+    <CalendarProjectionView
+      view={activeView}
+      calendar={calendar}
+      anchorDate={anchorDate}
+      planningContext={planningContext}
+    />
+  )
 }
