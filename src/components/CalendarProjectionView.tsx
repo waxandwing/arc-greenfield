@@ -4,15 +4,24 @@ import type { ISODate, SchoolCalendar } from '../calendar/types'
 
 type Props = {
   view: CalendarView
-  calendar: SchoolCalendar
-  anchorDate: ISODate
+  calendar: SchoolCalendar | null
+  anchorDate: ISODate | null
 }
 
 export function CalendarProjectionView({ view, calendar, anchorDate }: Props) {
+  if (!calendar || !anchorDate) {
+    return (
+      <section className="calendar-unconfigured" aria-label="Calendar not configured">
+        <p className="projection-range-label">{view}</p>
+        <p className="projection-empty-state">Calendar setup is required before Arc can place dates.</p>
+      </section>
+    )
+  }
+
   switch (view) {
     case 'Day': {
       const projection = projectDay(calendar, anchorDate)
-      return <DayStrip title={projection.date} days={[projection.day]} />
+      return <DayStrip title={projection.date} days={[projection.day]} single />
     }
     case 'Week': {
       const projection = projectWeek(calendar, anchorDate)
@@ -45,11 +54,11 @@ export function CalendarProjectionView({ view, calendar, anchorDate }: Props) {
   }
 }
 
-function DayStrip({ title, days }: { title: string; days: ProjectedDay[] }) {
+function DayStrip({ title, days, single = false }: { title: string; days: ProjectedDay[]; single?: boolean }) {
   return (
     <section className="projection-section" aria-label={title}>
       <p className="projection-range-label">{title}</p>
-      <div className="projection-day-strip">
+      <div className={single ? 'projection-day-strip projection-day-strip--single' : 'projection-day-strip'}>
         {days.map((day) => <CalendarDayCell key={day.date} day={day} />)}
       </div>
     </section>
