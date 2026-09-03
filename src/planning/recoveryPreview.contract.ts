@@ -1,6 +1,7 @@
 import { hydrateSchoolCalendar } from '../calendar/hydration'
 import { createCourse, createSection } from './courses'
 import { createLessonDeliveryState, updateLessonDeliveryState } from './deliveryState'
+import { deserializeLessons } from './lessonPersistence'
 import { createLesson } from './lessons'
 import { createRecoveryPreview } from './recoveryPreview'
 import { createUnit, placeUnit } from './units'
@@ -47,6 +48,33 @@ assert(preview.fixedAnchor?.lessonId === fridayTest.id, 'Friday test must be sur
 assert(preview.fixedAnchor?.plannedDate === '2026-09-18', 'Fixed Friday test date must remain visible and unchanged.')
 assert(preview.mutationApplied === false, 'Creating a recovery preview must never mutate the schedule.')
 assert(JSON.stringify([lesson17, lesson18, fridayTest, interrupted]) === before, 'Recovery preview must be a pure read of planning state.')
+
+let fixedWithoutDateRejected = false
+try {
+  createLesson({ id: 'bad-fixed', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Fixed without a day', sequence: 20, datePolicy: 'fixed' })
+} catch {
+  fixedWithoutDateRejected = true
+}
+assert(fixedWithoutDateRejected, 'A fixed Lesson without a real planned date must be rejected.')
+
+const legacyPayload = JSON.stringify({
+  schemaVersion: 1,
+  input: {
+    calendarId: calendar.id,
+    lessons: [{
+      id: 'legacy-lesson',
+      calendarId: calendar.id,
+      courseId: course.id,
+      unitId: unit.id,
+      title: 'Legacy Lesson',
+      sequence: 1,
+      plannedDate: '2026-09-16',
+    }],
+    deliveryStates: [],
+  },
+})
+const legacyRestored = deserializeLessons(legacyPayload)
+assert(legacyRestored?.lessons[0]?.datePolicy === 'flexible', 'Saved Lessons created before date-policy support must migrate to flexible, never fixed.')
 
 const noResumeCalendar = hydrateSchoolCalendar({
   id: 'short-calendar',
