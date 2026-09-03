@@ -1,0 +1,20 @@
+.calendar-header-tools{display:flex;align-items:center;justify-content:flex-end;gap:var(--space-4);min-width:0}
+.period-controls{display:flex;align-items:center;gap:var(--space-1)}
+.period-controls .quiet-button{min-width:44px;padding-inline:10px;background:var(--paper-raised)}
+.period-controls .today-button{min-width:68px}
+.period-controls button:disabled,.view-nav-item:disabled{cursor:not-allowed;opacity:.38}
+.calendar-context-group{display:flex;align-items:center;gap:var(--space-2);min-width:0}
+.calendar-context-group .calendar-context{margin:0;white-space:nowrap}
+.storage-notice{margin:0 0 var(--space-3);padding:10px 12px;border-left:3px solid var(--dusty-blue);background:rgba(124,156,173,.08);font-size:14px;color:var(--soft-charcoal)}
+
+@media (max-width:800px){
+  .calendar-stage-header{align-items:flex-start}
+  .calendar-header-tools{align-items:flex-end;flex-direction:column;gap:var(--space-2)}
+}
+
+@media (max-width:520px){
+  .calendar-stage-header{display:grid;grid-template-columns:1fr;align-items:start}
+  .calendar-header-tools{align-items:stretch}
+  .period-controls{justify-content:flex-start}
+  .calendar-context-group{justify-content:space-between}
+}
