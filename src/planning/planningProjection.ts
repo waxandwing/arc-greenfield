@@ -3,8 +3,9 @@ import type { Course, Section } from './courses'
 import { effectiveLessonDeliveryState, type DeliveryStatus, type LessonDeliveryState } from './deliveryState'
 import type { Lesson, LessonDatePolicy } from './lessons'
 import { effectiveLessonDate, type SectionLessonDateOverride } from './sectionSchedule'
+import type { Unit } from './units'
 import type { PlanningWorkspace } from './workspace'
-import type { Unit, UnitWorkspace } from './unitWorkspace'
+import type { UnitWorkspace } from './unitWorkspace'
 import type { LessonWorkspace } from './lessonWorkspace'
 
 export type PlanningUnitSpan = {
