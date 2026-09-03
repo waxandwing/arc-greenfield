@@ -59,6 +59,20 @@ export function createRecoveryPreview(input: {
     }
   }
 
+  if (lesson.datePolicy === 'fixed' && interruptedEffectiveDate !== resumeDate) {
+    return {
+      sectionId: section.id,
+      interruptedLessonId: lesson.id,
+      interruptedEffectiveDate,
+      resumeDate,
+      resumeNote: state.resumeNote!,
+      affectedFlexibleLessons: [],
+      fixedAnchor: interruptedEffectiveDate ? { lessonId: lesson.id, title: lesson.title, effectiveDate: interruptedEffectiveDate } : null,
+      blockedReason: 'This interrupted Lesson is fixed. Arc kept the stopping point, but recovery Shift will not move a fixed Lesson.',
+      mutationApplied: false,
+    }
+  }
+
   const futureCoursePlan = lessons
     .filter((candidate) => candidate.id !== lesson.id && candidate.courseId === section.courseId && candidate.calendarId === section.calendarId)
     .filter((candidate) => {
