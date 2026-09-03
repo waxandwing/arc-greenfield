@@ -5,12 +5,10 @@ export function getCalendarDay(calendar: SchoolCalendar, date: ISODate): Calenda
   const explicit = calendar.days[date]
   if (explicit) return explicit
 
-  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay()
-  const isWeekend = weekday === 0 || weekday === 6
-
   return {
     date,
-    kind: isWeekend ? 'no-school' : 'instructional',
+    kind: 'unknown',
+    confidence: 'inferred',
   }
 }
 
@@ -35,6 +33,10 @@ export function previousInstructionalDay(calendar: SchoolCalendar, from: ISODate
 
 export function instructionalDaysBetween(calendar: SchoolCalendar, start: ISODate, end: ISODate): ISODate[] {
   return eachCalendarDay(start, end).filter((date) => isInstructionalDay(calendar, date))
+}
+
+export function unknownDaysBetween(calendar: SchoolCalendar, start: ISODate, end: ISODate): ISODate[] {
+  return eachCalendarDay(start, end).filter((date) => getCalendarDay(calendar, date).kind === 'unknown')
 }
 
 export function findContainingBoundary(boundaries: TermBoundary[], date: ISODate): TermBoundary | null {
