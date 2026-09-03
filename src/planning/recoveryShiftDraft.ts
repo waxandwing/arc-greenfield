@@ -14,7 +14,7 @@ export type RecoveryShiftDraft = {
 }
 
 export function createRecoveryShiftDraft(preview: RecoveryPreview): RecoveryShiftDraft | null {
-  if (preview.blockedReason || !preview.resumeDate) return null
+  if (preview.blockedReason || !preview.resumeDate || !preview.interruptedEffectiveDate) return null
 
   return {
     sectionId: preview.sectionId,
@@ -23,7 +23,7 @@ export function createRecoveryShiftDraft(preview: RecoveryPreview): RecoveryShif
     changes: [
       {
         lessonId: preview.interruptedLessonId,
-        fromDate: null,
+        fromDate: preview.interruptedEffectiveDate,
         toDate: preview.resumeDate,
       },
       ...preview.affectedFlexibleLessons.map((lesson) => ({
