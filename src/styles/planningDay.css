@@ -162,12 +162,10 @@
 }
 
 .day-continuity-lesson-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
   color: var(--soft-charcoal);
   font-size: 14px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .day-continuity-last-taught,
