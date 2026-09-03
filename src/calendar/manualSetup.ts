@@ -1,5 +1,5 @@
-import type { CalendarDay, CalendarHydrationInput, Weekday } from './hydration'
-import type { ISODate, TermBoundary } from './types'
+import type { CalendarHydrationInput, Weekday } from './hydration'
+import type { CalendarDay, ISODate, TermBoundary } from './types'
 
 export type ManualCalendarDraft = {
   calendarId: string
