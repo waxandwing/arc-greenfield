@@ -177,10 +177,6 @@
   overflow-wrap: anywhere;
 }
 
-.day-continuity-lesson--held .day-continuity-resume {
-  color: var(--ink);
-}
-
 .day-continuity-resume {
   color: var(--ink);
 }
