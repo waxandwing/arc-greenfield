@@ -42,7 +42,7 @@
 }
 
 .planning-month-unit-lane{
-  min-height:34px;
+  min-height:36px;
 }
 
 .planning-month-unit-band{
@@ -70,13 +70,13 @@
 .planning-month-unit-title{
   overflow:hidden;
   text-overflow:ellipsis;
-  font-size:14px;
+  font-size:16px;
   font-weight:700;
 }
 
 .planning-month-day{
   min-width:0;
-  min-height:126px;
+  min-height:132px;
   padding:8px;
   border-right:1px solid var(--line-subtle);
   border-bottom:1px solid var(--line-subtle);
@@ -162,7 +162,7 @@
 .planning-month-signal-title{
   min-width:0;
   overflow-wrap:anywhere;
-  font-size:14px;
+  font-size:16px;
   font-weight:700;
   line-height:1.25;
 }
