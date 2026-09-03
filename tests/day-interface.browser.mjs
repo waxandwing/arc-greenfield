@@ -97,7 +97,6 @@ async function auditViewport(browser, width, height) {
   assert(dayBox, `${width}px: active Day button has no rendered bounds.`)
   assert(dayBox.x >= -0.5 && dayBox.x + dayBox.width <= width + 0.5, `${width}px: active Day button is not fully visible in the mobile horizon rail.`)
 
-  // Pointer selection should stay visually quiet; keyboard travel away and back must reveal focus.
   await page.keyboard.press('Shift+Tab')
   await page.keyboard.press('Tab')
   assert(await dayButton.evaluate((node) => document.activeElement === node), `${width}px: keyboard navigation did not return focus to active Day.`)
@@ -128,10 +127,26 @@ async function auditViewport(browser, width, height) {
   assert(geometry.stageWidth <= geometry.stageClientWidth + 1, `${width}px: Day stage creates horizontal overflow (${geometry.stageWidth}px > ${geometry.stageClientWidth}px).`)
 
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
-  const railBox = await page.locator('.arc-view-rail').boundingBox()
-  const lastBox = await page.locator('.day-continuity-section').last().boundingBox()
-  assert(railBox && lastBox, `${width}px: could not measure final content against the mobile rail.`)
-  assert(lastBox.bottom <= railBox.y + 1, `${width}px: fixed mobile navigation covers the final Day Section when the document is scrolled to the bottom.`)
+  const overlapGeometry = await page.evaluate(() => {
+    const rail = document.querySelector('.arc-view-rail')?.getBoundingClientRect()
+    const sections = document.querySelectorAll('.day-continuity-section')
+    const last = sections.length ? sections[sections.length - 1].getBoundingClientRect() : null
+    const root = document.documentElement
+    return {
+      railY: rail?.y ?? null,
+      railHeight: rail?.height ?? null,
+      lastBottom: last?.bottom ?? null,
+      viewportHeight: window.innerHeight,
+      documentHeight: root.scrollHeight,
+      scrollY: window.scrollY,
+      maxScrollY: Math.max(0, root.scrollHeight - window.innerHeight),
+    }
+  })
+  assert(overlapGeometry.railY !== null && overlapGeometry.lastBottom !== null, `${width}px: could not measure final content against the mobile rail.`)
+  assert(
+    overlapGeometry.lastBottom <= overlapGeometry.railY + 1,
+    `${width}px: fixed mobile navigation covers the final Day Section. railY=${overlapGeometry.railY}, railHeight=${overlapGeometry.railHeight}, lastBottom=${overlapGeometry.lastBottom}, viewportHeight=${overlapGeometry.viewportHeight}, documentHeight=${overlapGeometry.documentHeight}, scrollY=${overlapGeometry.scrollY}, maxScrollY=${overlapGeometry.maxScrollY}.`,
+  )
 
   assert(runtimeErrors.length === 0, `${width}px: runtime errors detected: ${runtimeErrors.join(' | ')}`)
   await context.close()
