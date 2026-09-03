@@ -57,8 +57,8 @@ export type PlanningRangeProjection = {
 export function projectPlanningRange(input: {
   dates: ISODate[]
   planning: PlanningWorkspace
-  units: UnitWorkspace
-  lessons: LessonWorkspace
+  units: UnitWorkspace | null
+  lessons: LessonWorkspace | null
   overrides: SectionLessonDateOverride[]
 }): PlanningRangeProjection {
   const { dates, planning, units, lessons, overrides } = input
@@ -69,15 +69,18 @@ export function projectPlanningRange(input: {
   const dateIndexes = new Map(dates.map((date, index) => [date, index]))
   const firstDate = dates[0]
   const lastDate = dates[dates.length - 1]
+  const unitList = units?.units ?? []
+  const lessonList = lessons?.lessons ?? []
+  const deliveryStates = lessons?.deliveryStates ?? []
 
   return {
     dates: [...dates],
     courses: planning.courses.map((course) => ({
       course,
-      unitSpans: projectUnitSpans(units.units, course.id, firstDate, lastDate, dateIndexes),
+      unitSpans: projectUnitSpans(unitList, course.id, firstDate, lastDate, dateIndexes),
       sections: planning.sections
         .filter((section) => section.courseId === course.id)
-        .map((section) => projectSectionRow(section, course.id, dates, lessons.lessons, lessons.deliveryStates, overrides)),
+        .map((section) => projectSectionRow(section, course.id, dates, lessonList, deliveryStates, overrides)),
     })),
   }
 }
@@ -152,11 +155,11 @@ function projectSectionRow(
 
 function validateProjectionOwnership(
   planning: PlanningWorkspace,
-  units: UnitWorkspace,
-  lessons: LessonWorkspace,
+  units: UnitWorkspace | null,
+  lessons: LessonWorkspace | null,
 ): void {
-  const calendarIds = new Set([planning.calendarId, units.calendarId, lessons.calendarId])
-  if (calendarIds.size !== 1) {
+  const calendarIds = [planning.calendarId, units?.calendarId, lessons?.calendarId].filter((value): value is string => Boolean(value))
+  if (new Set(calendarIds).size !== 1) {
     throw new Error('Cannot project planning state from different school calendars.')
   }
 }
