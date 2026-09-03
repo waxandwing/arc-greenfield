@@ -2,18 +2,24 @@ import { useState } from 'react'
 import { CalendarProjectionView } from './CalendarProjectionView'
 import { CalendarSetup } from './CalendarSetup'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
-import type { ISODate, SchoolCalendar } from '../calendar'
+import type { CalendarHydrationInput, ISODate, SchoolCalendar } from '../calendar'
 
 export function AppFrame() {
   const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
   const [calendar, setCalendar] = useState<SchoolCalendar | null>(null)
+  const [calendarInput, setCalendarInput] = useState<CalendarHydrationInput | null>(null)
   const [anchorDate, setAnchorDate] = useState<ISODate | null>(null)
+  const [editingCalendar, setEditingCalendar] = useState(false)
 
-  function useCalendar(nextCalendar: SchoolCalendar) {
+  function useCalendar(nextCalendar: SchoolCalendar, input: CalendarHydrationInput) {
     setCalendar(nextCalendar)
+    setCalendarInput(input)
     setAnchorDate(nextCalendar.firstDay)
     setActiveView(DEFAULT_HOME_VIEW)
+    setEditingCalendar(false)
   }
+
+  const showSetup = !calendar || !anchorDate || editingCalendar
 
   return (
     <div className="arc-shell">
@@ -55,18 +61,23 @@ export function AppFrame() {
               <p className="section-label">Calendar</p>
               <h1 className="view-title" aria-live="polite">{activeView}</h1>
             </div>
-            {calendar && (
-              <p className="calendar-context" aria-label="Current school calendar">
-                {calendar.schoolYearLabel}
-              </p>
+            {calendar && !editingCalendar && (
+              <div className="calendar-context-group">
+                <p className="calendar-context" aria-label="Current school calendar">{calendar.schoolYearLabel}</p>
+                <button type="button" className="text-button" onClick={() => setEditingCalendar(true)}>Edit dates</button>
+              </div>
             )}
           </header>
 
           <section className="calendar-canvas" aria-label={`${activeView} calendar workspace`}>
-            {calendar && anchorDate ? (
-              <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />
+            {showSetup ? (
+              <CalendarSetup
+                initialValue={calendarInput}
+                onSave={useCalendar}
+                onCancel={calendar ? () => setEditingCalendar(false) : undefined}
+              />
             ) : (
-              <CalendarSetup onSave={useCalendar} />
+              <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />
             )}
           </section>
         </main>
