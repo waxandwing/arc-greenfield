@@ -32,10 +32,11 @@ const test = createLesson({ id: 'lesson-test', calendarId: calendar.id, courseId
 const lessons = [lesson17, lesson18, test]
 const units = [unit]
 const overrides: SectionLessonDateOverride[] = []
+const approvals = []
 const deliveryStates: LessonDeliveryState[] = []
 
 function validate(operation: ShiftOperation, nextOverrides = overrides, states = deliveryStates) {
-  return validateShiftOperation({ operation, section: p5, lessons, deliveryStates: states, units, calendar, overrides: nextOverrides })
+  return validateShiftOperation({ operation, section: p5, lessons, deliveryStates: states, units, calendar, overrides: nextOverrides, sameDayApprovals: approvals })
 }
 
 const incomplete = createShiftOperation({
@@ -56,8 +57,9 @@ const operation = createShiftOperation({
 assert(validate(operation).length === 0, 'Explicit collision-resolving Shift should validate.')
 
 const sharedBefore = JSON.stringify(lessons)
-const applied = applyShiftOperation({ operation, section: p5, lessons, deliveryStates, units, calendar, overrides })
+const applied = applyShiftOperation({ operation, section: p5, lessons, deliveryStates, units, calendar, overrides, sameDayApprovals: approvals })
 assert(applied.overrides.length === 2, 'Atomic Shift should create exactly the two explicit P5 overrides.')
+assert(applied.sameDayApprovals.length === 0, 'Ordinary Shift must not invent same-day approval state.')
 assert(effectiveLessonDate(lesson17, p5.id, applied.overrides) === '2026-09-17', 'P5 Lesson 17 should resume Thursday after Shift.')
 assert(effectiveLessonDate(lesson18, p5.id, applied.overrides) === '2026-09-21', 'P5 Lesson 18 should use the teacher-chosen Monday date.')
 assert(effectiveLessonDate(test, p5.id, applied.overrides) === '2026-09-18', 'Friday fixed test must remain fixed for P5.')
@@ -65,13 +67,14 @@ assert(effectiveLessonDate(lesson17, p2.id, applied.overrides) === '2026-09-16',
 assert(effectiveLessonDate(lesson18, p2.id, applied.overrides) === '2026-09-17', 'P2 must retain the shared Lesson 18 plan.')
 assert(JSON.stringify(lessons) === sharedBefore, 'Applying a Section Shift must not mutate shared Lesson objects.')
 
-const undone = undoShiftOperation(applied.overrides, applied.undo)
-assert(undone.length === 0, 'Whole-operation Undo must restore the exact prior P5 override state.')
+const undone = undoShiftOperation(applied.overrides, applied.sameDayApprovals, applied.undo)
+assert(undone.overrides.length === 0, 'Whole-operation Undo must restore the exact prior P5 override state.')
+assert(undone.sameDayApprovals.length === 0, 'Whole-operation Undo must restore the exact prior P5 approval state.')
 
 const unrelatedP2Change: SectionLessonDateOverride = { sectionId: p2.id, lessonId: lesson17.id, plannedDate: '2026-09-15' }
-const p5UndoneWithoutClobberingP2 = undoShiftOperation([...applied.overrides, unrelatedP2Change], applied.undo)
-assert(effectiveLessonDate(lesson17, p2.id, p5UndoneWithoutClobberingP2) === '2026-09-15', 'P5 Undo must preserve newer P2 schedule work.')
-assert(effectiveLessonDate(lesson17, p5.id, p5UndoneWithoutClobberingP2) === '2026-09-16', 'P5 Undo must still restore P5 when another Section changed later.')
+const p5UndoneWithoutClobberingP2 = undoShiftOperation([...applied.overrides, unrelatedP2Change], applied.sameDayApprovals, applied.undo)
+assert(effectiveLessonDate(lesson17, p2.id, p5UndoneWithoutClobberingP2.overrides) === '2026-09-15', 'P5 Undo must preserve newer P2 schedule work.')
+assert(effectiveLessonDate(lesson17, p5.id, p5UndoneWithoutClobberingP2.overrides) === '2026-09-16', 'P5 Undo must still restore P5 when another Section changed later.')
 
 const fixedMove = createShiftOperation({ id: 'shift-fixed', sectionId: p5.id, changes: [{ lessonId: test.id, fromDate: '2026-09-18', toDate: '2026-09-21' }] })
 assert(validate(fixedMove).some((error) => error.includes('fixed')), 'Shift must reject moving a fixed Lesson.')
@@ -94,7 +97,7 @@ assert(validate(operation, overrides, [skipped18]).some((error) => error.include
 const newerP5Overrides = [...applied.overrides, { sectionId: p5.id, lessonId: 'some-newer-lesson', plannedDate: '2026-09-22' as const }]
 let staleUndoBlocked = false
 try {
-  undoShiftOperation(newerP5Overrides, applied.undo)
+  undoShiftOperation(newerP5Overrides, applied.sameDayApprovals, applied.undo)
 } catch {
   staleUndoBlocked = true
 }
