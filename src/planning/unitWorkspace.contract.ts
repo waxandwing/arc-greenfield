@@ -42,6 +42,45 @@ const restored = deserializeUnits(raw)
 assert(restored?.units[0]?.id === 'unit-egypt', 'Unit identity must survive persistence serialization.')
 assert(restored?.units[0]?.placement?.endDate === '2026-09-25', 'Unit placement must survive persistence serialization.')
 
+const shortenedCalendar = hydrateSchoolCalendar({
+  id: calendar.id,
+  schoolYearLabel: calendar.schoolYearLabel,
+  firstDay: calendar.firstDay,
+  lastDay: '2026-09-18',
+  instructionalWeekdays: [1, 2, 3, 4, 5],
+  patternSource: 'manual',
+  patternConfidence: 'confirmed',
+  exceptions: [],
+  quarters: [],
+  semesters: [],
+})
+assert(validateUnitWorkspace(workspace, shortenedCalendar, planning).some((error) => error.includes('outside the school-year bounds')), 'Calendar edits must be rejected when they would strand an existing Unit placement outside the school year.')
+
+const noInstructionCalendar = hydrateSchoolCalendar({
+  id: calendar.id,
+  schoolYearLabel: calendar.schoolYearLabel,
+  firstDay: calendar.firstDay,
+  lastDay: calendar.lastDay,
+  instructionalWeekdays: [1, 2, 3, 4, 5],
+  patternSource: 'manual',
+  patternConfidence: 'confirmed',
+  exceptions: [
+    { date: '2026-09-14', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+    { date: '2026-09-15', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+    { date: '2026-09-16', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+    { date: '2026-09-17', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+    { date: '2026-09-18', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+    { date: '2026-09-21', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+    { date: '2026-09-22', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+    { date: '2026-09-23', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+    { date: '2026-09-24', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+    { date: '2026-09-25', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' },
+  ],
+  quarters: [],
+  semesters: [],
+})
+assert(validateUnitWorkspace(workspace, noInstructionCalendar, planning).some((error) => error.includes('at least one confirmed instructional day')), 'Calendar edits must be rejected when they would remove every instructional day from an existing Unit placement.')
+
 const orphanWorkspace = { ...workspace, units: [{ ...placedUnit, courseId: 'course-missing' }] }
 assert(validateUnitWorkspace(orphanWorkspace, calendar, planning).some((error) => error.includes('does not exist')), 'Units cannot silently survive without their Course.')
 
