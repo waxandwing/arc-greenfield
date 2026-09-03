@@ -22,7 +22,8 @@ export function validateHydrationInput(input: CalendarHydrationInput): string[] 
   try { assertISODate(input.firstDay) } catch (error) { errors.push(messageOf(error)) }
   try { assertISODate(input.lastDay) } catch (error) { errors.push(messageOf(error)) }
 
-  if (errors.length === 0 && compareISODate(input.firstDay, input.lastDay) > 0) {
+  const validSchoolBounds = errors.length === 0
+  if (validSchoolBounds && compareISODate(input.firstDay, input.lastDay) > 0) {
     errors.push('School year begins after it ends.')
   }
 
@@ -38,11 +39,16 @@ export function validateHydrationInput(input: CalendarHydrationInput): string[] 
   const exceptionDates = new Set<ISODate>()
   for (const exception of input.exceptions ?? []) {
     try { assertISODate(exception.date) } catch (error) { errors.push(messageOf(error)); continue }
-    if (compareISODate(exception.date, input.firstDay) < 0 || compareISODate(exception.date, input.lastDay) > 0) {
+    if (validSchoolBounds && (compareISODate(exception.date, input.firstDay) < 0 || compareISODate(exception.date, input.lastDay) > 0)) {
       errors.push(`Calendar exception ${exception.date} falls outside the school-year bounds.`)
     }
     if (exceptionDates.has(exception.date)) errors.push(`Calendar exception ${exception.date} is duplicated.`)
     exceptionDates.add(exception.date)
+  }
+
+  if (validSchoolBounds) {
+    errors.push(...validateTermBoundaries('Quarter', input.quarters ?? [], input.firstDay, input.lastDay))
+    errors.push(...validateTermBoundaries('Semester', input.semesters ?? [], input.firstDay, input.lastDay))
   }
 
   return errors
@@ -85,6 +91,45 @@ export function hydrateSchoolCalendar(input: CalendarHydrationInput): SchoolCale
     quarters: [...(input.quarters ?? [])],
     semesters: [...(input.semesters ?? [])],
   }
+}
+
+function validateTermBoundaries(kind: 'Quarter' | 'Semester', boundaries: TermBoundary[], firstDay: ISODate, lastDay: ISODate): string[] {
+  const errors: string[] = []
+  const ids = new Set<string>()
+  const valid: TermBoundary[] = []
+
+  for (const boundary of boundaries) {
+    if (!boundary.id.trim()) errors.push(`${kind} boundary is missing an id.`)
+    if (!boundary.label.trim()) errors.push(`${kind} ${boundary.id || 'boundary'} is missing a label.`)
+    if (ids.has(boundary.id)) errors.push(`${kind} boundary id ${boundary.id} is duplicated.`)
+    ids.add(boundary.id)
+
+    let datesValid = true
+    try { assertISODate(boundary.startDate) } catch (error) { errors.push(messageOf(error)); datesValid = false }
+    try { assertISODate(boundary.endDate) } catch (error) { errors.push(messageOf(error)); datesValid = false }
+    if (!datesValid) continue
+
+    if (compareISODate(boundary.startDate, boundary.endDate) > 0) {
+      errors.push(`${kind} ${boundary.label || boundary.id} begins after it ends.`)
+      continue
+    }
+    if (compareISODate(boundary.startDate, firstDay) < 0 || compareISODate(boundary.endDate, lastDay) > 0) {
+      errors.push(`${kind} ${boundary.label || boundary.id} falls outside the school-year bounds.`)
+      continue
+    }
+    valid.push(boundary)
+  }
+
+  const sorted = [...valid].sort((a, b) => compareISODate(a.startDate, b.startDate))
+  for (let index = 1; index < sorted.length; index += 1) {
+    const previous = sorted[index - 1]
+    const current = sorted[index]
+    if (compareISODate(current.startDate, previous.endDate) <= 0) {
+      errors.push(`${kind} ${current.label || current.id} overlaps ${previous.label || previous.id}.`)
+    }
+  }
+
+  return errors
 }
 
 function messageOf(error: unknown): string {
