@@ -36,6 +36,8 @@ assert(week.days.length === 7, 'Week projection must expose seven calendar days.
 assert(week.days[2].kind === 'no-school', 'Week projection must preserve no-school truth.')
 assert(week.days[5].isWeekend, 'Week projection must identify Saturday as weekend.')
 assert(week.days[6].isWeekend, 'Week projection must identify Sunday as weekend.')
+assert(week.quarters.map((term) => term.id).join(',') === 'q1', 'Week projection must expose intersecting quarter context.')
+assert(week.semesters.map((term) => term.id).join(',') === 's1', 'Week projection must expose intersecting semester context.')
 
 const month = projectMonth(calendar, '2026-08-12')
 assert(month.monthKey === '2026-08', 'Month projection must identify anchor month.')
@@ -43,6 +45,8 @@ assert(month.gridStartDate === '2026-07-27', 'Month projection must begin on the
 assert(month.gridEndDate === '2026-09-06', 'Month projection must end on the Sunday covering month end.')
 assert(month.weeks.length === 6, 'August 2026 requires six Monday–Sunday grid rows.')
 assert(month.weeks.every((row) => row.days.length === 7), 'Every month row must contain seven days.')
+assert(month.quarters.map((term) => term.id).join(',') === 'q1', 'Month projection must expose quarter context for the visible month.')
+assert(month.semesters.map((term) => term.id).join(',') === 's1', 'Month projection must expose semester context for the visible month.')
 
 const quarter = projectQuarter(calendar, '2026-08-12')
 assert(quarter?.id === 'q1', 'Quarter projection must use canonical boundary identity.')
