@@ -17,6 +17,12 @@ export function isInstructionalDay(calendar: SchoolCalendar, date: ISODate): boo
   return getCalendarDay(calendar, date).kind === 'instructional'
 }
 
+export function isConfirmedInstructionalDay(calendar: SchoolCalendar, date: ISODate): boolean {
+  if (compareISODate(date, calendar.firstDay) < 0 || compareISODate(date, calendar.lastDay) > 0) return false
+  const day = getCalendarDay(calendar, date)
+  return day.kind === 'instructional' && day.confidence === 'confirmed'
+}
+
 export function nextInstructionalDay(calendar: SchoolCalendar, from: ISODate): ISODate | null {
   for (let cursor = addCalendarDays(from, 1); compareISODate(cursor, calendar.lastDay) <= 0; cursor = addCalendarDays(cursor, 1)) {
     if (isInstructionalDay(calendar, cursor)) return cursor
