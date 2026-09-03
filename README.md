@@ -18,10 +18,10 @@ All other historical branches are non-authoritative. Their continued existence i
 
 Do not add duplicate handoff, audit, blueprint, or design-system documents to this repository.
 
-## Current integrated scope
-Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore → safe period navigation → pre-planning audit hardening → quarter/semester truth.
+## Current build scope
+Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore → safe period navigation → pre-planning audit hardening → quarter/semester truth → Unit domain foundation.
 
-Implemented:
+Implemented and integrated through terms:
 - global shell geometry and canonical brand tokens
 - responsive calendar stage and accessibility baseline
 - Year Map / Semester / Quarter / Month / Week / Day navigation
@@ -38,34 +38,39 @@ Implemented:
 - teacher-facing manual calendar setup
 - exact declaration preservation for editing
 - Cancel-safe editing
-- view navigation locked while setup/editing is open
-- versioned persistence of the teacher's original calendar declaration
-- reload restore that re-validates and re-hydrates instead of trusting serialized runtime state
-- explicit invalid/unavailable storage status rather than silent fallback
+- versioned persistence and reload re-validation
 - view-aware previous / Today / next controls
-- Day moves one calendar day; Week seven days; Month one month with safe day clamping
-- Quarter/Semester move only through confirmed term boundaries
-- Year Map does not fake navigation to an unloaded school year
-- Today is available only when the current local date belongs to the loaded school year
-- unavailable Quarter/Semester views remain visibly unavailable instead of opening dead calendar states
-- readable localized calendar labels and weekday orientation
-- teacher-facing Quarter and Semester configuration, separate from date editing
-- stable term identities across edits
-- term dates are never inferred
-- same-type overlaps, malformed dates, duplicate IDs, and out-of-year term boundaries are rejected
-- when both systems exist, each quarter must fit entirely inside one semester
-- term edits preserve calendar identity, instructional-day declarations, and exceptions
-- term boundaries survive persistence and rehydration
-- Day / Week / Month expose quiet current term context
-- Quarter / Semester show confirmed term span
-- Year Map exposes the full configured term structure
-- active Quarter/Semester view falls back safely if an edit leaves its anchor outside any remaining term
-- stable calendar identity across label/date edits
+- teacher-facing Quarter and Semester configuration
+- stable term identities and cross-term validation
+- term context across Day / Week / Month / Quarter / Semester / Year Map
+- stable calendar identity across edits
 - AA-safe focus, control-border, and text-action contrast tokens
-- exact top-level runtime/build dependency versions pinned
-- committed npm package lockfile for the full dependency tree
-- independent GitHub Actions verification gate using Node 22 + `npm ci`
-- calendar truth, projection, hydration, persistence, navigation, manual-setup, and term-configuration contracts gated into every build
+- exact dependencies + committed package lockfile
+- independent GitHub Actions verification using Node 22 + `npm ci`
+
+Current Unit-domain foundation:
+- `Course` is the shared curriculum identity.
+- `Section` is a specific teaching group that references a Course and school calendar.
+- `Unit` belongs to a Course and calendar, never directly to a Section.
+- Multiple Sections may share one Course/Unit plan without duplicating curriculum objects.
+- Section-specific teaching progress is intentionally not stored on Unit; that belongs to the later delivery/recovery state layer.
+- A Unit has stable identity and may exist unplaced.
+- Placing, moving, or unplacing a Unit does not change its identity or Course ownership.
+- Unit placement requires a complete confirmed school calendar and at least one instructional day.
+- Unit placement cannot cross outside the loaded school year or silently attach to another calendar.
+- Unit quarter/semester membership and instructional-day count are derived from current calendar truth rather than stored as stale foreign keys.
+- Course and Section ownership have explicit validation helpers.
+- the former calendar-only contract compiler has been replaced by a domain-wide contract suite.
+
+## Standing planning rules
+- Course owns the shared curriculum plan.
+- Section owns the eventual per-group teaching state.
+- Unit is a stable curriculum object, not a date range identity.
+- Calendar placement is optional and independently mutable.
+- Moving a Unit never changes its identity.
+- A Unit cannot be structurally placed against incomplete/unconfirmed calendar truth.
+- Unit term membership is derived, never duplicated.
+- Unit UI must not be built against fake Course/Section data; real planning scope comes first.
 
 ## Standing calendar rules
 - Missing dates are `unknown`, never silently instructional.
@@ -83,20 +88,20 @@ Implemented:
 - Editing terms must not alter instructional-day truth or calendar identity.
 
 ## Verification status
-- pre-planning audit hardening is integrated in `develop`
-- quarter/semester truth milestone is integrated in `develop`
-- current term milestone is verified independently in GitHub Actions
-- seven calendar contracts pass
+- terms are integrated in `develop`
+- Unit domain is under active feature verification
+- domain contract suite now includes calendar truth, projections, hydration, persistence, navigation, manual setup, term configuration, Course/Section scope, and Unit behavior
 - dependency installation is reproducible from committed `package-lock.json` using `npm ci`
-- TypeScript compile passes
-- Vite production bundle passes
-- Vercel Hobby preview builds are currently rate-limited; that is an infrastructure limit, not being bypassed with another preview project
+- TypeScript compile and Vite bundle remain required on every verification run
+- Vercel Hobby preview builds are rate-limited; this is not being bypassed with duplicate preview infrastructure
 - interactive browser click/keyboard automation remains an explicit release gate rather than an assumed pass
 
 ## Not built yet
+- Course/Section teacher-facing setup or persistence
+- Unit teacher-facing UI or persistence
+- Lessons, delivery-state divergence, Notes, Ideas, Shift
 - school/district calendar import adapters
 - account-backed persistence/sync
-- Units, Lessons, Notes, Ideas, Shift
 - Easel/integrations
 - production deployment
 
