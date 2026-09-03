@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { DayContinuityLesson, DayContinuityProjection } from '../planning/dayContinuityProjection'
 import { formatShortDate } from './dateLabels'
@@ -5,9 +6,13 @@ import { formatShortDate } from './dateLabels'
 export function PlanningDayContinuityView({
   day,
   continuity,
+  onOpenUnit,
+  onOpenLesson,
 }: {
   day: ProjectedDay
   continuity: DayContinuityProjection
+  onOpenUnit?: (unitId: string) => void
+  onOpenLesson?: (unitId: string, lessonId: string) => void
 }) {
   if (continuity.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -27,10 +32,14 @@ export function PlanningDayContinuityView({
           <header className="day-continuity-course-heading">
             <h2>{course.courseTitle}</h2>
             {course.activeUnits.length > 0 ? (
-              <p className="day-continuity-units">
+              <div className="day-continuity-units">
                 <span>Unit</span>
-                <strong>{course.activeUnits.map((unit) => unit.title).join(' · ')}</strong>
-              </p>
+                <div className="day-continuity-unit-links">
+                  {course.activeUnits.map((unit) => (
+                    <button key={unit.unitId} type="button" onClick={() => onOpenUnit?.(unit.unitId)}>{unit.title}</button>
+                  ))}
+                </div>
+              </div>
             ) : null}
           </header>
 
@@ -49,7 +58,7 @@ export function PlanningDayContinuityView({
                       <div className="day-continuity-held">
                         <p className="day-continuity-kicker">Arc is holding your place</p>
                         {section.carryovers.map((lesson) => (
-                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} carryover />
+                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} carryover onOpenLesson={onOpenLesson} />
                         ))}
                       </div>
                     ) : null}
@@ -58,7 +67,7 @@ export function PlanningDayContinuityView({
                       <p className="day-continuity-kicker">{section.carryovers.length > 0 ? 'Planned today' : 'Today’s plan'}</p>
                       {section.scheduledLessons.length > 0 ? (
                         section.scheduledLessons.map((lesson) => (
-                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} />
+                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} onOpenLesson={onOpenLesson} />
                         ))
                       ) : (
                         <p className="day-continuity-empty">No Lesson placed for this class.</p>
@@ -75,7 +84,7 @@ export function PlanningDayContinuityView({
   )
 }
 
-function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuityLesson; carryover?: boolean }) {
+function ContinuityLesson({ lesson, carryover = false, onOpenLesson }: { lesson: DayContinuityLesson; carryover?: boolean; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
   const status = humanizeStatus(lesson.deliveryStatus)
   const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
   const visibleMeta = [
@@ -84,9 +93,16 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
     lesson.isSectionOverride ? 'Shifted for this class' : null,
     carryover && lesson.effectiveDate === null ? 'No planned date' : null,
   ].filter(Boolean).join(' · ')
+  const open = () => onOpenLesson?.(lesson.unitId, lesson.lessonId)
 
   return (
-    <div className="day-continuity-lesson">
+    <div
+      className="day-continuity-lesson day-continuity-lesson--openable"
+      role={onOpenLesson ? 'button' : undefined}
+      tabIndex={onOpenLesson ? 0 : undefined}
+      onClick={open}
+      onKeyDown={(event) => activateOnKeyboard(event, open)}
+    >
       <div className="day-continuity-lesson-heading">
         <strong>{lesson.title}</strong>
         {lesson.datePolicy === 'fixed' ? <span className="day-continuity-fixed">Fixed</span> : null}
@@ -111,6 +127,12 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
       ) : null}
     </div>
   )
+}
+
+function activateOnKeyboard(event: KeyboardEvent<HTMLElement>, action: () => void) {
+  if (event.key !== 'Enter' && event.key !== ' ') return
+  event.preventDefault()
+  action()
 }
 
 function humanizeStatus(status: DayContinuityLesson['deliveryStatus']): string {
