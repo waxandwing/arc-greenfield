@@ -6,6 +6,10 @@
   outline-color:var(--focus-blue);
 }
 
+.text-button{
+  color:var(--terracotta-text);
+}
+
 .view-nav-item[aria-disabled='true']{
   opacity:.48;
   cursor:not-allowed;
