@@ -1,14 +1,18 @@
 import type { ProjectedDay } from '../calendar/projections'
+import type { ISODate } from '../calendar/types'
+import type { DayContinuityLesson, DayContinuityProjection } from '../planning/dayContinuityProjection'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
 import { formatLongDate, formatShortDate, formatWeekday } from './dateLabels'
 
 export function PlanningWeekDayView({
   days,
   planning,
+  continuity,
   single = false,
 }: {
   days: ProjectedDay[]
   planning: PlanningRangeProjection
+  continuity: DayContinuityProjection[]
   single?: boolean
 }) {
   if (planning.courses.length === 0) {
@@ -19,7 +23,7 @@ export function PlanningWeekDayView({
     <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'}>
       <PlanningDateHeader days={days} single={single} />
       {planning.courses.map((course) => (
-        <PlanningCourse key={course.course.id} course={course} days={days} single={single} />
+        <PlanningCourse key={course.course.id} course={course} days={days} continuity={continuity} single={single} />
       ))}
     </div>
   )
@@ -43,10 +47,12 @@ function PlanningDateHeader({ days, single }: { days: ProjectedDay[]; single: bo
 function PlanningCourse({
   course,
   days,
+  continuity,
   single,
 }: {
   course: PlanningCourseGroup
   days: ProjectedDay[]
+  continuity: DayContinuityProjection[]
   single: boolean
 }) {
   return (
@@ -55,7 +61,7 @@ function PlanningCourse({
         <h2>{course.course.title}</h2>
       </div>
       {course.unitSpans.length > 0 ? (
-        <div className="planning-unit-stack" aria-label={`${course.course.title} Unit spans`}>
+        <div className="planning-unit-stack">
           {course.unitSpans.map((unit, index) => (
             <div className="planning-unit-grid" style={gridTemplate(days.length)} key={unit.unitId}>
               <span className="planning-row-label planning-row-label--unit">{index === 0 ? 'Unit' : ''}</span>
@@ -78,20 +84,42 @@ function PlanningCourse({
             <div className="planning-row-label">
               <strong>{row.section.name}</strong>
             </div>
-            {row.days.map((slot, index) => (
-              <div
-                key={slot.date}
-                className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}`}
-                aria-label={`${row.section.name}, ${formatLongDate(slot.date)}`}
-              >
-                {slot.lessons.map((lesson) => <LessonTile key={lesson.lessonId} lesson={lesson} />)}
-                {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
-              </div>
-            ))}
+            {row.days.map((slot, index) => {
+              const carryovers = carryoversFor(continuity, slot.date, course.course.id, row.section.id)
+              return (
+                <div
+                  key={slot.date}
+                  className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}`}
+                  aria-label={`${row.section.name}, ${formatLongDate(slot.date)}`}
+                >
+                  {carryovers.map((lesson) => <CarryoverTile key={`carryover-${lesson.lessonId}`} lesson={lesson} />)}
+                  {slot.lessons.map((lesson) => <LessonTile key={lesson.lessonId} lesson={lesson} />)}
+                  {single && carryovers.length === 0 && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
+                </div>
+              )
+            })}
           </div>
         ))}
       </div>
     </section>
+  )
+}
+
+function CarryoverTile({ lesson }: { lesson: DayContinuityLesson }) {
+  return (
+    <article className="planning-lesson planning-lesson--carryover">
+      <p className="planning-continuity-label">Continue</p>
+      <div className="planning-lesson-title-row">
+        <span className="planning-lesson-title">{lesson.title}</span>
+        {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title="Fixed date">Fixed</span> : null}
+      </div>
+      {lesson.resumeNote ? <p className="planning-resume-note">{lesson.resumeNote}</p> : null}
+      <div className="planning-lesson-meta">
+        <span>{lesson.unitTitle}</span>
+        {lesson.taughtDate ? <span>Last taught {formatShortDate(lesson.taughtDate)}</span> : null}
+        {lesson.isSectionOverride ? <span>Shifted for this class</span> : null}
+      </div>
+    </article>
   )
 }
 
@@ -100,20 +128,9 @@ function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
   const taughtLabel = lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate
     ? `Taught ${formatShortDate(lesson.taughtDate)}`
     : null
-  const accessible = [
-    lesson.title,
-    lesson.datePolicy === 'fixed' ? 'fixed date' : 'flexible date',
-    lesson.isSectionOverride ? 'Section-specific date' : 'shared Course plan',
-    statusLabel,
-    taughtLabel,
-    lesson.resumeNote ? `Resume note: ${lesson.resumeNote}` : null,
-  ].filter(Boolean).join('. ')
 
   return (
-    <article
-      className={`planning-lesson planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}`}
-      aria-label={accessible}
-    >
+    <article className={`planning-lesson planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}`}>
       <div className="planning-lesson-title-row">
         <span className="planning-lesson-title">{lesson.title}</span>
         {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title="Fixed date">Fixed</span> : null}
@@ -128,6 +145,17 @@ function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
       ) : null}
     </article>
   )
+}
+
+function carryoversFor(
+  continuity: DayContinuityProjection[],
+  date: ISODate,
+  courseId: string,
+  sectionId: string,
+): DayContinuityLesson[] {
+  const day = continuity.find((item) => item.date === date)
+  const course = day?.courses.find((item) => item.courseId === courseId)
+  return course?.sections.find((item) => item.sectionId === sectionId)?.carryovers ?? []
 }
 
 function gridTemplate(dayCount: number): { gridTemplateColumns: string } {
