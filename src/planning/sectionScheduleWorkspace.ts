@@ -71,6 +71,7 @@ export function validateSectionScheduleWorkspace(
     errors.push(...validateSameDayLessonApproval({ approval, calendar, section, lessons: lessons.lessons }).map((error) => `${section.name}: ${error}`))
   }
 
+  const usedApprovalKeys = new Set<string>()
   for (const section of planning.sections) {
     const byDate = new Map<ISODate, Array<{ id: string; title: string }>>()
     const sectionLessons = lessons.lessons.filter((candidate) => candidate.courseId === section.courseId && candidate.calendarId === section.calendarId)
@@ -86,8 +87,19 @@ export function validateSectionScheduleWorkspace(
     }
     for (const [date, sameDate] of byDate) {
       if (sameDate.length <= 1) continue
-      const approved = approvals.some((approval) => sameDayApprovalCovers(approval, section.id, date, sameDate.map((lesson) => lesson.id)))
-      if (!approved) errors.push(`${section.name} has multiple live Lessons on ${date}: ${sameDate.map((lesson) => lesson.title).join(', ')}.`)
+      const approval = approvals.find((candidate) => sameDayApprovalCovers(candidate, section.id, date, sameDate.map((lesson) => lesson.id)))
+      if (!approval) {
+        errors.push(`${section.name} has multiple live Lessons on ${date}: ${sameDate.map((lesson) => lesson.title).join(', ')}.`)
+      } else {
+        usedApprovalKeys.add(sameDayApprovalKey(approval))
+      }
+    }
+  }
+
+  for (const approval of approvals) {
+    const key = sameDayApprovalKey(approval)
+    if (!usedApprovalKeys.has(key)) {
+      errors.push(`Same-day approval for ${approval.sectionId} on ${approval.date} no longer matches a current live Lesson collision.`)
     }
   }
 
