@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { CalendarView } from '../navigation/calendarViews'
 import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
-import { projectDayContinuity } from '../planning/dayContinuityProjection'
+import { projectDayContinuity, type DayContinuityProjection } from '../planning/dayContinuityProjection'
 import { projectPlanningRange } from '../planning/planningProjection'
 import { projectMonthPlanning } from '../planning/monthPlanningProjection'
 import type { LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, UnitWorkspace } from '../planning'
@@ -128,13 +128,7 @@ function PlanningDayStrip({ title, day, planningContext, termContext }: { title:
       {planningContext ? (
         <PlanningDayContinuityView
           day={day}
-          continuity={projectDayContinuity({
-            date: day.date,
-            planning: planningContext.planning,
-            units: planningContext.units,
-            lessons: planningContext.lessons,
-            overrides: planningContext.shiftState?.overrides ?? [],
-          })}
+          continuity={continuityForDay(day.date, planningContext)}
         />
       ) : (
         <div className="projection-day-strip projection-day-strip--single">
@@ -151,7 +145,11 @@ function PlanningWeekStrip({ title, days, planningContext, termContext }: { titl
       <ProjectionHeading title={title} termContext={termContext} />
       {planningContext ? (
         <div className="planning-scroll-frame">
-          <PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} />
+          <PlanningWeekDayView
+            days={days}
+            planning={planningForDays(days, planningContext)}
+            continuity={days.map((day) => continuityForDay(day.date, planningContext))}
+          />
         </div>
       ) : (
         <div className="projection-day-strip">
@@ -182,6 +180,16 @@ function CalendarOnlyMonth({ projection, label }: { projection: ReturnType<typeo
 function planningForDays(days: ProjectedDay[], context: PlanningContext) {
   return projectPlanningRange({
     dates: days.map((day) => day.date),
+    planning: context.planning,
+    units: context.units,
+    lessons: context.lessons,
+    overrides: context.shiftState?.overrides ?? [],
+  })
+}
+
+function continuityForDay(date: ISODate, context: PlanningContext): DayContinuityProjection {
+  return projectDayContinuity({
+    date,
     planning: context.planning,
     units: context.units,
     lessons: context.lessons,
