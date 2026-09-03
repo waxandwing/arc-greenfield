@@ -93,12 +93,13 @@ function MonthDayCell({
 
 function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
   const statusSummary = summarizeStatuses(signal)
-  const shiftedNames = signal.sectionNames.filter((_, index) => signal.shiftedSectionIds.includes(signal.sectionIds[index]))
+  const shiftedNames = signal.sections.filter((section) => section.isSectionOverride).map((section) => section.sectionName)
+  const sectionNames = signal.sections.map((section) => section.sectionName)
   const accessible = [
     signal.courseTitle,
     signal.title,
     signal.datePolicy === 'fixed' ? 'fixed date' : null,
-    `Sections: ${signal.sectionNames.join(', ')}`,
+    `Sections: ${sectionNames.join(', ')}`,
     shiftedNames.length ? `Shifted for ${shiftedNames.join(', ')}` : null,
     statusSummary,
   ].filter(Boolean).join('. ')
@@ -110,7 +111,7 @@ function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
         {signal.datePolicy === 'fixed' ? <span className="planning-month-fixed">Fixed</span> : null}
       </div>
       <span className="planning-month-signal-course">{signal.courseTitle}</span>
-      <span className="planning-month-signal-sections">{signal.sectionNames.join(' · ')}</span>
+      <span className="planning-month-signal-sections">{sectionNames.join(' · ')}</span>
       {shiftedNames.length ? <span className="planning-month-shifted">Shifted: {shiftedNames.join(', ')}</span> : null}
       {statusSummary ? <span className="planning-month-status-summary">{statusSummary}</span> : null}
     </article>
@@ -118,10 +119,16 @@ function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
 }
 
 function summarizeStatuses(signal: MonthLessonSignal): string | null {
+  const counts = { 'in-progress': 0, completed: 0, skipped: 0 }
+  for (const section of signal.sections) {
+    if (section.deliveryStatus === 'in-progress') counts['in-progress'] += 1
+    if (section.deliveryStatus === 'completed') counts.completed += 1
+    if (section.deliveryStatus === 'skipped') counts.skipped += 1
+  }
   const pieces: string[] = []
-  if (signal.statusCounts['in-progress']) pieces.push(`${signal.statusCounts['in-progress']} in progress`)
-  if (signal.statusCounts.completed) pieces.push(`${signal.statusCounts.completed} completed`)
-  if (signal.statusCounts.skipped) pieces.push(`${signal.statusCounts.skipped} skipped`)
+  if (counts['in-progress']) pieces.push(`${counts['in-progress']} in progress`)
+  if (counts.completed) pieces.push(`${counts.completed} completed`)
+  if (counts.skipped) pieces.push(`${counts.skipped} skipped`)
   return pieces.length ? pieces.join(' · ') : null
 }
 
