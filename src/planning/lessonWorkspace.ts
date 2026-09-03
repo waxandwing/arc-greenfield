@@ -1,4 +1,4 @@
-import { getCalendarDay } from '../calendar/schoolCalendar'
+import { isConfirmedInstructionalDay } from '../calendar/schoolCalendar'
 import type { SchoolCalendar } from '../calendar/types'
 import type { PlanningWorkspace } from './workspace'
 import type { UnitWorkspace } from './unitWorkspace'
@@ -72,11 +72,8 @@ export function validateLessonWorkspace(
     }
 
     errors.push(...validateLessonDeliveryState(state, lesson, section))
-    if (state.taughtDate) {
-      const day = getCalendarDay(calendar, state.taughtDate)
-      if (!day || day.kind !== 'instructional' || day.confidence !== 'confirmed') {
-        errors.push(`${section.name} has Lesson progress recorded on a date that is not a confirmed instructional day.`)
-      }
+    if (state.taughtDate && !isConfirmedInstructionalDay(calendar, state.taughtDate)) {
+      errors.push(`${section.name} has Lesson progress recorded on a date that is not a confirmed instructional day.`)
     }
   }
 
