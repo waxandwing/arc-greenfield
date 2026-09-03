@@ -1,0 +1,31 @@
+.build-fingerprint {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  z-index: 1000;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  max-width: calc(100vw - 16px);
+  padding: 4px 6px;
+  border: 1px solid var(--arc-control-border);
+  border-radius: var(--arc-radius-small);
+  background: color-mix(in srgb, var(--arc-paper) 92%, transparent);
+  color: var(--arc-ink);
+  font-size: 11px;
+  line-height: 1.2;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.build-fingerprint code {
+  overflow: hidden;
+  max-width: 18ch;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: inherit;
+}
+
+@media (max-width: 520px) {
+  .build-fingerprint code { display: none; }
+}
