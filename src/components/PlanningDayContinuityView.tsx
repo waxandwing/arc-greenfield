@@ -78,6 +78,12 @@ export function PlanningDayContinuityView({
 function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuityLesson; carryover?: boolean }) {
   const status = humanizeStatus(lesson.deliveryStatus)
   const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
+  const visibleMeta = [
+    lesson.unitTitle,
+    status,
+    lesson.isSectionOverride ? 'Shifted for this class' : null,
+    carryover && lesson.effectiveDate === null ? 'No planned date' : null,
+  ].filter(Boolean).join(' · ')
   const accessible = [
     lesson.title,
     lesson.unitTitle,
@@ -104,12 +110,7 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
         <p className="day-continuity-last-taught">Last taught {formatShortDate(lesson.taughtDate)}</p>
       ) : null}
 
-      <p className="day-continuity-lesson-meta">
-        <span>{lesson.unitTitle}</span>
-        <span>{status}</span>
-        {lesson.isSectionOverride ? <span>Shifted for this class</span> : null}
-        {carryover && lesson.effectiveDate === null ? <span>No planned date</span> : null}
-      </p>
+      <p className="day-continuity-lesson-meta">{visibleMeta}</p>
 
       {!carryover && actualDateDiffers && lesson.taughtDate ? (
         <p className="day-continuity-last-taught">Taught {formatShortDate(lesson.taughtDate)}</p>
