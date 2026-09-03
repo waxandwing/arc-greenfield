@@ -4,12 +4,14 @@ import {
   type LessonWorkspace,
   type PlanningWorkspace,
   type RecoveryPreview,
+  type SectionLessonDateOverride,
 } from '../planning'
 
 type Props = {
   calendar: SchoolCalendar
   planning: PlanningWorkspace
   lessons: LessonWorkspace
+  overrides: SectionLessonDateOverride[]
   onClose: () => void
 }
 
@@ -19,7 +21,7 @@ type ReviewItem = {
   preview: RecoveryPreview
 }
 
-export function RecoveryReview({ calendar, planning, lessons, onClose }: Props) {
+export function RecoveryReview({ calendar, planning, lessons, overrides, onClose }: Props) {
   const items: ReviewItem[] = lessons.deliveryStates
     .filter((state) => state.status === 'in-progress')
     .map((state) => {
@@ -36,6 +38,7 @@ export function RecoveryReview({ calendar, planning, lessons, onClose }: Props) 
           state,
           lessons: lessons.lessons,
           deliveryStates: lessons.deliveryStates,
+          overrides,
         }),
       }
     })
