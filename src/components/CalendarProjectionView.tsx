@@ -2,16 +2,27 @@ import type { ReactNode } from 'react'
 import type { CalendarView } from '../navigation/calendarViews'
 import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
 import type { ISODate, SchoolCalendar, TermBoundary } from '../calendar/types'
+import { projectPlanningRange } from '../planning/planningProjection'
+import type { LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, UnitWorkspace } from '../planning'
+import { PlanningWeekDayView } from './PlanningWeekDayView'
+
+type PlanningContext = {
+  planning: PlanningWorkspace
+  units: UnitWorkspace
+  lessons: LessonWorkspace
+  shiftState: ShiftPersistenceInput | null
+}
 
 type Props = {
   view: CalendarView
   calendar: SchoolCalendar | null
   anchorDate: ISODate | null
+  planningContext?: PlanningContext | null
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -24,21 +35,24 @@ export function CalendarProjectionView({ view, calendar, anchorDate }: Props) {
   switch (view) {
     case 'Day': {
       const projection = projectDay(calendar, anchorDate)
+      const days = [projection.day]
       return (
-        <DayStrip
+        <PlanningDayStrip
           title={formatLongDate(projection.date)}
-          days={[projection.day]}
-          single
+          days={days}
+          planningContext={planningContext}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
         />
       )
     }
     case 'Week': {
       const projection = projectWeek(calendar, anchorDate)
+      const weekdays = projection.days.filter((day) => !day.isWeekend)
       return (
-        <DayStrip
-          title={formatDateRange(projection.startDate, projection.endDate)}
-          days={projection.days}
+        <PlanningWeekStrip
+          title={formatDateRange(weekdays[0]?.date ?? projection.startDate, weekdays[weekdays.length - 1]?.date ?? projection.endDate)}
+          days={weekdays}
+          planningContext={planningContext}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
         />
       )
@@ -92,17 +106,54 @@ export function CalendarProjectionView({ view, calendar, anchorDate }: Props) {
   }
 }
 
-function DayStrip({ title, days, single = false, termContext }: { title: string; days: ProjectedDay[]; single?: boolean; termContext?: ReactNode }) {
+function PlanningDayStrip({ title, days, planningContext, termContext }: { title: string; days: ProjectedDay[]; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
   return (
     <section className="projection-section" aria-label={title}>
-      <div className="projection-heading-row">
-        <p className="projection-range-label">{title}</p>
-        {termContext}
-      </div>
-      <div className={single ? 'projection-day-strip projection-day-strip--single' : 'projection-day-strip'}>
-        {days.map((day) => <CalendarDayCell key={day.date} day={day} showWeekday />)}
-      </div>
+      <ProjectionHeading title={title} termContext={termContext} />
+      {planningContext ? (
+        <PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} single />
+      ) : (
+        <div className="projection-day-strip projection-day-strip--single">
+          {days.map((day) => <CalendarDayCell key={day.date} day={day} showWeekday />)}
+        </div>
+      )}
     </section>
+  )
+}
+
+function PlanningWeekStrip({ title, days, planningContext, termContext }: { title: string; days: ProjectedDay[]; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
+  return (
+    <section className="projection-section" aria-label={title}>
+      <ProjectionHeading title={title} termContext={termContext} />
+      {planningContext ? (
+        <div className="planning-scroll-frame">
+          <PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} />
+        </div>
+      ) : (
+        <div className="projection-day-strip">
+          {days.map((day) => <CalendarDayCell key={day.date} day={day} showWeekday />)}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function planningForDays(days: ProjectedDay[], context: PlanningContext) {
+  return projectPlanningRange({
+    dates: days.map((day) => day.date),
+    planning: context.planning,
+    units: context.units,
+    lessons: context.lessons,
+    overrides: context.shiftState?.overrides ?? [],
+  })
+}
+
+function ProjectionHeading({ title, termContext }: { title: string; termContext?: ReactNode }) {
+  return (
+    <div className="projection-heading-row">
+      <p className="projection-range-label">{title}</p>
+      {termContext}
+    </div>
   )
 }
 
