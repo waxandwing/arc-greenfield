@@ -2,9 +2,9 @@ import { assertISODate, compareISODate } from '../calendar/dateMath'
 import { assessCalendarReadiness } from '../calendar/readiness'
 import { instructionalDaysBetween } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
+import type { Course, CourseId, Section } from './courses'
 
 export type UnitId = string
-export type CourseId = string
 
 export type UnitPlacement = {
   startDate: ISODate
@@ -68,6 +68,14 @@ export function validateUnit(unit: Unit): string[] {
   }
 
   return errors
+}
+
+export function validateUnitCourse(unit: Unit, course: Course): string[] {
+  return unit.courseId === course.id ? [] : ['Unit belongs to a different course.']
+}
+
+export function sectionsUsingUnit(unit: Unit, sections: Section[]): Section[] {
+  return sections.filter((section) => section.courseId === unit.courseId && section.calendarId === unit.calendarId)
 }
 
 export function placeUnit(
