@@ -1,18 +1,13 @@
 import type { ProjectedDay } from '../calendar/projections'
 import type { DayContinuityLesson, DayContinuityProjection } from '../planning/dayContinuityProjection'
 import { formatShortDate } from './dateLabels'
-import { isCalendarObjectSelected, type CalendarObjectSelection } from './calendarObjectSelection'
 
 export function PlanningDayContinuityView({
   day,
   continuity,
-  selection,
-  onSelect,
 }: {
   day: ProjectedDay
   continuity: DayContinuityProjection
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
 }) {
   if (continuity.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -32,24 +27,10 @@ export function PlanningDayContinuityView({
           <header className="day-continuity-course-heading">
             <h2>{course.courseTitle}</h2>
             {course.activeUnits.length > 0 ? (
-              <div className="day-continuity-units">
+              <p className="day-continuity-units">
                 <span>Unit</span>
-                <span className="day-continuity-unit-options">
-                  {course.activeUnits.map((unit, index) => (
-                    <span key={unit.unitId}>
-                      {index > 0 ? <span aria-hidden="true"> · </span> : null}
-                      <button
-                        type="button"
-                        className="calendar-object-select day-continuity-unit-select"
-                        aria-pressed={isCalendarObjectSelected(selection, 'unit', unit.unitId)}
-                        onClick={() => onSelect({ kind: 'unit', id: unit.unitId })}
-                      >
-                        {unit.title}
-                      </button>
-                    </span>
-                  ))}
-                </span>
-              </div>
+                <strong>{course.activeUnits.map((unit) => unit.title).join(' · ')}</strong>
+              </p>
             ) : null}
           </header>
 
@@ -68,7 +49,7 @@ export function PlanningDayContinuityView({
                       <div className="day-continuity-held">
                         <p className="day-continuity-kicker">Arc is holding your place</p>
                         {section.carryovers.map((lesson) => (
-                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} carryover selection={selection} onSelect={onSelect} />
+                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} carryover />
                         ))}
                       </div>
                     ) : null}
@@ -77,7 +58,7 @@ export function PlanningDayContinuityView({
                       <p className="day-continuity-kicker">{section.carryovers.length > 0 ? 'Planned today' : 'Today’s plan'}</p>
                       {section.scheduledLessons.length > 0 ? (
                         section.scheduledLessons.map((lesson) => (
-                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} selection={selection} onSelect={onSelect} />
+                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} />
                         ))
                       ) : (
                         <p className="day-continuity-empty">No Lesson placed for this class.</p>
@@ -94,17 +75,7 @@ export function PlanningDayContinuityView({
   )
 }
 
-function ContinuityLesson({
-  lesson,
-  carryover = false,
-  selection,
-  onSelect,
-}: {
-  lesson: DayContinuityLesson
-  carryover?: boolean
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
-}) {
+function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuityLesson; carryover?: boolean }) {
   const status = humanizeStatus(lesson.deliveryStatus)
   const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
   const visibleMeta = [
@@ -115,35 +86,30 @@ function ContinuityLesson({
   ].filter(Boolean).join(' · ')
 
   return (
-    <button
-      type="button"
-      className="calendar-object-select day-continuity-lesson"
-      aria-pressed={isCalendarObjectSelected(selection, 'lesson', lesson.lessonId)}
-      onClick={() => onSelect({ kind: 'lesson', id: lesson.lessonId })}
-    >
-      <span className="day-continuity-lesson-heading">
+    <div className="day-continuity-lesson">
+      <div className="day-continuity-lesson-heading">
         <strong>{lesson.title}</strong>
         {lesson.datePolicy === 'fixed' ? <span className="day-continuity-fixed">Fixed</span> : null}
-      </span>
+      </div>
 
       {carryover && lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
-        <span className="day-continuity-resume">{lesson.resumeNote}</span>
+        <p className="day-continuity-resume">{lesson.resumeNote}</p>
       ) : null}
 
       {carryover && lesson.taughtDate ? (
-        <span className="day-continuity-last-taught">Last taught {formatShortDate(lesson.taughtDate)}</span>
+        <p className="day-continuity-last-taught">Last taught {formatShortDate(lesson.taughtDate)}</p>
       ) : null}
 
-      <span className="day-continuity-lesson-meta">{visibleMeta}</span>
+      <p className="day-continuity-lesson-meta">{visibleMeta}</p>
 
       {!carryover && actualDateDiffers && lesson.taughtDate ? (
-        <span className="day-continuity-last-taught">Taught {formatShortDate(lesson.taughtDate)}</span>
+        <p className="day-continuity-last-taught">Taught {formatShortDate(lesson.taughtDate)}</p>
       ) : null}
 
       {!carryover && lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
-        <span className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</span>
+        <p className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</p>
       ) : null}
-    </button>
+    </div>
   )
 }
 
