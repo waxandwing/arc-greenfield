@@ -76,13 +76,14 @@ assert(effectiveLessonDate(test, p5.id, applied.overrides) === '2026-09-18', 'P5
 assert(effectiveLessonDate(lesson17, p2.id, applied.overrides) === '2026-09-16', 'P2 must remain on the shared Lesson plan.')
 assert(effectiveLessonDate(lesson18, p7.id, applied.overrides) === '2026-09-17', 'P7 must remain on the shared Lesson plan.')
 
-const persisted: ShiftPersistenceInput = { calendarId: calendar.id, overrides: applied.overrides, undo: applied.undo }
+const persisted: ShiftPersistenceInput = { calendarId: calendar.id, overrides: applied.overrides, sameDayApprovals: [], undo: applied.undo }
 const storage = new MemoryStorage()
 Object.defineProperty(globalThis, 'window', { configurable: true, value: { localStorage: storage } })
 assert(saveShiftStateToBrowser(persisted), 'Canonical Shift must persist to browser storage.')
 const restored = loadShiftStateFromBrowser(calendar, planning, units, lessons)
 assert(restored.status === 'restored' && restored.undoStatus === 'restored', 'Reload must restore both the valid Section schedule and valid Undo.')
 if (restored.status !== 'restored') throw new Error('Expected restored Shift state.')
+assert(restored.input.sameDayApprovals.length === 0, 'Ordinary recovery must preserve the explicit empty approval set.')
 
 const afterReloadPreview = createRecoveryPreview({
   calendar,
