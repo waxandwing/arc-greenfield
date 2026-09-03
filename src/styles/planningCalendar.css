@@ -43,7 +43,7 @@
 .planning-row-label--header,
 .planning-row-label--unit{
   align-items:center;
-  font-size:12px;
+  font-size:14px;
   font-weight:700;
   letter-spacing:.04em;
   text-transform:uppercase;
@@ -54,14 +54,14 @@
   display:grid;
   gap:2px;
   border-right:1px solid var(--line-subtle);
-  font-size:13px;
+  font-size:16px;
   font-weight:700;
   color:var(--ink);
 }
 
 .planning-date-weekday,
 .planning-date-kind{
-  font-size:11px;
+  font-size:14px;
   color:var(--soft-charcoal);
 }
 
@@ -92,18 +92,18 @@
 }
 
 .planning-unit-grid{
-  min-height:34px;
+  min-height:40px;
 }
 
 .planning-unit-span{
   align-self:center;
   min-width:0;
   margin:4px 6px;
-  padding:6px 10px;
+  padding:7px 10px;
   overflow:hidden;
   border-left:4px solid var(--terracotta);
   background:rgba(201,104,69,.12);
-  font-size:12px;
+  font-size:14px;
   font-weight:700;
   color:var(--ink);
   text-overflow:ellipsis;
@@ -116,12 +116,12 @@
 }
 
 .planning-section-row{
-  min-height:92px;
+  min-height:104px;
   border-bottom:1px solid var(--line-subtle);
 }
 
 .planning-section-row>.planning-row-label{
-  font-size:13px;
+  font-size:16px;
 }
 
 .planning-day-slot{
@@ -145,8 +145,8 @@
 
 .planning-lesson{
   display:grid;
-  gap:5px;
-  padding:9px 10px;
+  gap:6px;
+  padding:10px 11px;
   border:1px solid var(--line-subtle);
   border-left:4px solid var(--dusty-blue);
   border-radius:4px;
@@ -159,11 +159,11 @@
 }
 
 .planning-lesson--completed{
-  opacity:.68;
+  background:rgba(154,170,137,.09);
 }
 
 .planning-lesson--skipped{
-  opacity:.58;
+  background:rgba(74,73,69,.05);
   text-decoration:line-through;
 }
 
@@ -179,14 +179,14 @@
 }
 
 .planning-lesson-title{
-  font-size:13px;
+  font-size:16px;
   font-weight:700;
   line-height:1.25;
 }
 
 .planning-lesson-anchor{
   flex:0 0 auto;
-  font-size:10px;
+  font-size:14px;
   font-weight:700;
   letter-spacing:.03em;
   text-transform:uppercase;
@@ -197,16 +197,16 @@
   display:flex;
   flex-wrap:wrap;
   gap:4px 8px;
-  font-size:11px;
+  font-size:14px;
   color:var(--soft-charcoal);
 }
 
 .planning-resume-note{
   margin:0;
-  padding-top:5px;
+  padding-top:6px;
   border-top:1px solid var(--line-subtle);
-  font-size:12px;
-  line-height:1.35;
+  font-size:16px;
+  line-height:1.4;
 }
 
 .planning-empty-state,
@@ -218,11 +218,11 @@
 .planning-course-empty{
   margin:0;
   padding:var(--space-3);
-  font-size:13px;
+  font-size:16px;
 }
 
 .planning-day-empty{
-  font-size:12px;
+  font-size:14px;
 }
 
 .planning-grid--day{
@@ -230,7 +230,7 @@
 }
 
 .planning-grid--day .planning-section-row{
-  min-height:112px;
+  min-height:120px;
 }
 
 @media (max-width:900px){
