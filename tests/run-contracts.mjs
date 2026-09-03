@@ -18,6 +18,7 @@ const contracts = [
   'tests/generated/src/planning/recoveryShiftDraft.contract.js',
   'tests/generated/src/planning/recoveryResolution.contract.js',
   'tests/generated/src/planning/recoveryApply.contract.js',
+  'tests/generated/src/planning/sameDayApproval.contract.js',
   'tests/generated/src/planning/sectionScheduleWorkspace.contract.js',
   'tests/generated/src/planning/shiftOperation.contract.js',
   'tests/generated/src/planning/shiftPersistence.contract.js',
