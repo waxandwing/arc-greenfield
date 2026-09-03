@@ -51,9 +51,9 @@ storage.failSetKey = SHIFT_STORAGE_KEY
 const failedSecondWrite = saveLessonAndShiftStateToBrowser(lessons, shift)
 storage.failSetKey = null
 assert(!failedSecondWrite.saved, 'Failure of the second write must fail the combined save.')
-assert(failedSecondWrite.rollbackSucceeded, 'Failure of the second write must restore both prior values.')
+assert(failedSecondWrite.rollbackSucceeded, 'Failure of the second write must restore the completed Lesson write.')
 assert(storage.getItem(LESSON_STORAGE_KEY) === previousLessons, 'Rollback must restore the exact prior Lesson value after Shift write failure.')
-assert(storage.getItem(SHIFT_STORAGE_KEY) === previousShift, 'Rollback must preserve the exact prior Shift value after Shift write failure.')
+assert(storage.getItem(SHIFT_STORAGE_KEY) === previousShift, 'A failed Shift setItem must leave the exact prior Shift value untouched.')
 
 storage.removeItem(LESSON_STORAGE_KEY)
 storage.removeItem(SHIFT_STORAGE_KEY)
@@ -62,16 +62,25 @@ const failedFromEmpty = saveLessonAndShiftStateToBrowser(lessons, shift)
 storage.failSetKey = null
 assert(!failedFromEmpty.saved && failedFromEmpty.rollbackSucceeded, 'A partial save from empty storage must roll back cleanly.')
 assert(storage.getItem(LESSON_STORAGE_KEY) === null, 'Rollback from empty storage must remove a partially written Lesson value.')
-assert(storage.getItem(SHIFT_STORAGE_KEY) === null, 'Rollback from empty storage must leave Shift storage empty.')
+assert(storage.getItem(SHIFT_STORAGE_KEY) === null, 'A failed Shift write from empty storage must leave Shift storage empty.')
 
 storage.seed(LESSON_STORAGE_KEY, previousLessons)
 storage.seed(SHIFT_STORAGE_KEY, previousShift)
+storage.failSetKey = LESSON_STORAGE_KEY
+const failedFirstWrite = saveLessonAndShiftStateToBrowser(lessons, shift)
+storage.failSetKey = null
+assert(!failedFirstWrite.saved && failedFirstWrite.rollbackSucceeded, 'Failure before any write completes must fail closed without requiring rollback.')
+assert(storage.getItem(LESSON_STORAGE_KEY) === previousLessons, 'Failed first write must preserve the prior Lesson value.')
+assert(storage.getItem(SHIFT_STORAGE_KEY) === previousShift, 'Failed first write must never touch Shift state.')
+
+storage.removeItem(LESSON_STORAGE_KEY)
+storage.removeItem(SHIFT_STORAGE_KEY)
 storage.failSetKey = SHIFT_STORAGE_KEY
 storage.failRemoveKey = LESSON_STORAGE_KEY
 const rollbackFailure = saveLessonAndShiftStateToBrowser(lessons, shift)
 storage.failSetKey = null
 storage.failRemoveKey = null
 assert(!rollbackFailure.saved, 'A failed combined save must never report success.')
-assert(rollbackFailure.rollbackSucceeded, 'Restoring a pre-existing Lesson value uses setItem and should remain recoverable in this scenario.')
+assert(!rollbackFailure.rollbackSucceeded, 'Arc must report when browser storage refuses rollback of the completed Lesson write.')
 
 console.log('lesson + shift persistence contract passed')
