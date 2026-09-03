@@ -1,9 +1,19 @@
 import { useState } from 'react'
 import { CalendarProjectionView } from './CalendarProjectionView'
+import { CalendarSetup } from './CalendarSetup'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
+import type { ISODate, SchoolCalendar } from '../calendar'
 
 export function AppFrame() {
   const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
+  const [calendar, setCalendar] = useState<SchoolCalendar | null>(null)
+  const [anchorDate, setAnchorDate] = useState<ISODate | null>(null)
+
+  function useCalendar(nextCalendar: SchoolCalendar) {
+    setCalendar(nextCalendar)
+    setAnchorDate(nextCalendar.firstDay)
+    setActiveView(DEFAULT_HOME_VIEW)
+  }
 
   return (
     <div className="arc-shell">
@@ -45,10 +55,19 @@ export function AppFrame() {
               <p className="section-label">Calendar</p>
               <h1 className="view-title" aria-live="polite">{activeView}</h1>
             </div>
+            {calendar && (
+              <p className="calendar-context" aria-label="Current school calendar">
+                {calendar.schoolYearLabel}
+              </p>
+            )}
           </header>
 
           <section className="calendar-canvas" aria-label={`${activeView} calendar workspace`}>
-            <CalendarProjectionView view={activeView} calendar={null} anchorDate={null} />
+            {calendar && anchorDate ? (
+              <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />
+            ) : (
+              <CalendarSetup onSave={useCalendar} />
+            )}
           </section>
         </main>
 
