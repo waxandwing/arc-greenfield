@@ -19,7 +19,7 @@ All other historical branches are non-authoritative. Their continued existence i
 Do not add duplicate handoff, audit, blueprint, or design-system documents to this repository.
 
 ## Current integrated scope
-Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore → safe period navigation → pre-planning audit hardening.
+Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore → safe period navigation → pre-planning audit hardening → quarter/semester truth.
 
 Implemented:
 - global shell geometry and canonical brand tokens
@@ -30,7 +30,6 @@ Implemented:
 - source + confidence provenance
 - timezone-safe date math
 - instructional-day movement and ranges
-- quarter / semester boundary lookup
 - readiness gates requiring complete confirmed calendar truth
 - one pure projection layer for all six horizons
 - rendered calendar skeletons for all six horizons
@@ -50,12 +49,23 @@ Implemented:
 - Today is available only when the current local date belongs to the loaded school year
 - unavailable Quarter/Semester views remain visibly unavailable instead of opening dead calendar states
 - readable localized calendar labels and weekday orientation
-- overlapping/malformed term boundaries rejected before hydration
+- teacher-facing Quarter and Semester configuration, separate from date editing
+- stable term identities across edits
+- term dates are never inferred
+- same-type overlaps, malformed dates, duplicate IDs, and out-of-year term boundaries are rejected
+- when both systems exist, each quarter must fit entirely inside one semester
+- term edits preserve calendar identity, instructional-day declarations, and exceptions
+- term boundaries survive persistence and rehydration
+- Day / Week / Month expose quiet current term context
+- Quarter / Semester show confirmed term span
+- Year Map exposes the full configured term structure
+- active Quarter/Semester view falls back safely if an edit leaves its anchor outside any remaining term
 - stable calendar identity across label/date edits
-- date edits preserve existing quarter and semester boundaries
 - AA-safe focus, control-border, and text-action contrast tokens
 - exact top-level runtime/build dependency versions pinned
-- calendar truth, projection, hydration, persistence, navigation, and manual-setup contracts gated into every build
+- committed npm package lockfile for the full dependency tree
+- independent GitHub Actions verification gate using Node 22 + `npm ci`
+- calendar truth, projection, hydration, persistence, navigation, manual-setup, and term-configuration contracts gated into every build
 
 ## Standing calendar rules
 - Missing dates are `unknown`, never silently instructional.
@@ -68,24 +78,26 @@ Implemented:
 - Period navigation never invents unavailable years or term boundaries.
 - Editing calendar dates must not change calendar identity or erase unrelated calendar structures.
 - Term boundaries of the same type may not overlap.
+- Quarter/Semester dates must be teacher/source-declared; Arc does not infer them.
+- If quarters and semesters are both configured, every quarter must fit wholly inside one semester.
+- Editing terms must not alter instructional-day truth or calendar identity.
 
-## Pre-planning audit status
-- exact audited preview commit: `4074170fa94007ae923a692dade8516ff6581a26`
-- six calendar contracts passed
-- TypeScript compile passed
-- Vite production bundle passed
-- Vercel preview reached READY and returned HTTP 200
-- source-level accessibility contrast failures found in the audit were corrected
-- interactive browser click/keyboard automation is not available in the current runtime, so that physical interaction pass remains unverified rather than assumed
-- top-level packages are pinned, but a committed package lockfile is still required before release-level reproducibility clearance
+## Verification status
+- pre-planning audit hardening is integrated in `develop`
+- current term milestone is verified independently in GitHub Actions
+- seven calendar contracts pass
+- dependency installation is reproducible from committed `package-lock.json` using `npm ci`
+- TypeScript compile passes
+- Vite production bundle passes
+- Vercel Hobby preview builds are currently rate-limited; that is an infrastructure limit, not being bypassed with another preview project
+- interactive browser click/keyboard automation remains an explicit release gate rather than an assumed pass
 
 ## Not built yet
-- school/district import adapters
-- term-boundary editing UI
+- school/district calendar import adapters
 - account-backed persistence/sync
 - Units, Lessons, Notes, Ideas, Shift
 - Easel/integrations
 - production deployment
 
 ## Release wall
-Preview builds come from non-main branches and identify branch + commit SHA. Nothing moves to `main` until the current rebuild passes the agreed product, functional, visual, accessibility, persistence, regression, exact-build, browser-interaction, and dependency-lock gates and is explicitly cleared for release.
+Preview builds come from non-main branches and identify branch + commit SHA. GitHub Actions is an independent required verification surface and must build from the committed lockfile. Nothing moves to `main` until the current rebuild passes the agreed product, functional, visual, accessibility, persistence, regression, exact-build, browser-interaction, and dependency-lock gates and is explicitly cleared for release.
