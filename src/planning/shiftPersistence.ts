@@ -4,6 +4,7 @@ import type { UnitWorkspace } from './unitWorkspace'
 import type { LessonWorkspace } from './lessonWorkspace'
 import type { SectionLessonDateOverride } from './sectionSchedule'
 import { validateSectionScheduleWorkspace, type SectionScheduleWorkspace } from './sectionScheduleWorkspace'
+import type { SameDayLessonApproval } from './sameDayApproval'
 import type { ShiftUndoToken } from './shiftOperation'
 
 const STORAGE_KEY = 'arc.shift.v1'
@@ -11,11 +12,21 @@ const STORAGE_KEY = 'arc.shift.v1'
 export type ShiftPersistenceInput = {
   calendarId: string
   overrides: SectionLessonDateOverride[]
+  sameDayApprovals: SameDayLessonApproval[]
   undo: ShiftUndoToken | null
 }
 
-type StoredShiftState = {
+type StoredShiftStateV1 = {
   schemaVersion: 1
+  input: {
+    calendarId: string
+    overrides: SectionLessonDateOverride[]
+    undo: ShiftUndoToken | null
+  }
+}
+
+type StoredShiftStateV2 = {
+  schemaVersion: 2
   input: ShiftPersistenceInput
 }
 
@@ -31,7 +42,7 @@ export type ShiftLoadResult =
   | { status: 'unavailable' }
 
 export function serializeShiftState(input: ShiftPersistenceInput): string {
-  return JSON.stringify({ schemaVersion: 1, input } satisfies StoredShiftState)
+  return JSON.stringify({ schemaVersion: 2, input } satisfies StoredShiftStateV2)
 }
 
 export function deserializeShiftState(raw: string): ShiftPersistenceInput | null {
@@ -45,10 +56,14 @@ export function validateShiftPersistenceInput(
   units: UnitWorkspace,
   lessons: LessonWorkspace,
 ): { scheduleErrors: string[]; undoValid: boolean } {
-  const schedule: SectionScheduleWorkspace = { calendarId: input.calendarId, overrides: input.overrides }
+  const schedule: SectionScheduleWorkspace = {
+    calendarId: input.calendarId,
+    overrides: input.overrides,
+    sameDayApprovals: input.sameDayApprovals,
+  }
   const scheduleErrors = validateSectionScheduleWorkspace(schedule, calendar, planning, units, lessons)
   const undoValid = scheduleErrors.length === 0 && (
-    !input.undo || validateUndoAgainstSchedule(input.undo, input.overrides, calendar, planning, units, lessons)
+    !input.undo || validateUndoAgainstSchedule(input.undo, input, calendar, planning, units, lessons)
   )
   return { scheduleErrors, undoValid }
 }
@@ -100,24 +115,34 @@ export function loadShiftStateFromBrowser(
 
 function parseStoredShiftState(raw: string): ParsedShiftState | null {
   try {
-    const parsed = JSON.parse(raw) as Partial<StoredShiftState>
-    if (parsed.schemaVersion !== 1 || !parsed.input) return null
+    const parsed = JSON.parse(raw) as Partial<StoredShiftStateV1 | StoredShiftStateV2>
+    if ((parsed.schemaVersion !== 1 && parsed.schemaVersion !== 2) || !parsed.input) return null
     if (typeof parsed.input.calendarId !== 'string') return null
     if (!Array.isArray(parsed.input.overrides)) return null
 
     const overrides = parseOverrides(parsed.input.overrides)
     if (!overrides) return null
 
-    if (parsed.input.undo === null) {
-      return { input: { calendarId: parsed.input.calendarId, overrides, undo: null }, undoStatus: 'none' }
+    let sameDayApprovals: SameDayLessonApproval[] = []
+    if (parsed.schemaVersion === 2) {
+      const value = (parsed.input as Partial<ShiftPersistenceInput>).sameDayApprovals
+      if (!Array.isArray(value)) return null
+      const approvals = parseSameDayApprovals(value)
+      if (!approvals) return null
+      sameDayApprovals = approvals
     }
 
-    const undo = parseUndoToken(parsed.input.undo)
+    const undoValue = parsed.input.undo
+    if (undoValue === null) {
+      return { input: { calendarId: parsed.input.calendarId, overrides, sameDayApprovals, undo: null }, undoStatus: 'none' }
+    }
+
+    const undo = parseUndoToken(undoValue)
     if (!undo) {
-      return { input: { calendarId: parsed.input.calendarId, overrides, undo: null }, undoStatus: 'malformed' }
+      return { input: { calendarId: parsed.input.calendarId, overrides, sameDayApprovals, undo: null }, undoStatus: 'malformed' }
     }
 
-    return { input: { calendarId: parsed.input.calendarId, overrides, undo }, undoStatus: 'parsed' }
+    return { input: { calendarId: parsed.input.calendarId, overrides, sameDayApprovals, undo }, undoStatus: 'parsed' }
   } catch {
     return null
   }
@@ -125,7 +150,7 @@ function parseStoredShiftState(raw: string): ParsedShiftState | null {
 
 function validateUndoAgainstSchedule(
   token: ShiftUndoToken,
-  currentOverrides: SectionLessonDateOverride[],
+  current: ShiftPersistenceInput,
   calendar: SchoolCalendar,
   planning: PlanningWorkspace,
   units: UnitWorkspace,
@@ -137,16 +162,17 @@ function validateUndoAgainstSchedule(
   if (!allOverridesBelongToSection(token.appliedSectionOverrides, token.sectionId)) return false
   if (hasDuplicateOverrideKeys(token.previousSectionOverrides) || hasDuplicateOverrideKeys(token.appliedSectionOverrides)) return false
 
-  const currentSectionOverrides = normalizeOverrides(currentOverrides.filter((override) => override.sectionId === token.sectionId))
+  const currentSectionOverrides = normalizeOverrides(current.overrides.filter((override) => override.sectionId === token.sectionId))
   const appliedSectionOverrides = normalizeOverrides(token.appliedSectionOverrides)
   if (JSON.stringify(currentSectionOverrides) !== JSON.stringify(appliedSectionOverrides)) return false
 
   const previousFullSchedule: SectionScheduleWorkspace = {
     calendarId: calendar.id,
     overrides: [
-      ...currentOverrides.filter((override) => override.sectionId !== token.sectionId),
+      ...current.overrides.filter((override) => override.sectionId !== token.sectionId),
       ...token.previousSectionOverrides,
     ],
+    sameDayApprovals: current.sameDayApprovals,
   }
   return validateSectionScheduleWorkspace(previousFullSchedule, calendar, planning, units, lessons).length === 0
 }
@@ -163,6 +189,23 @@ function parseOverrides(value: unknown[]): SectionLessonDateOverride[] | null {
       return null
     }
     result.push({ sectionId: override.sectionId, lessonId: override.lessonId, plannedDate: override.plannedDate })
+  }
+  return result
+}
+
+function parseSameDayApprovals(value: unknown[]): SameDayLessonApproval[] | null {
+  const result: SameDayLessonApproval[] = []
+  for (const candidate of value) {
+    if (!candidate || typeof candidate !== 'object') return null
+    const approval = candidate as Partial<SameDayLessonApproval>
+    if (typeof approval.sectionId !== 'string' || typeof approval.date !== 'string' || !Array.isArray(approval.lessonIds)) return null
+    if (!approval.lessonIds.every((lessonId) => typeof lessonId === 'string')) return null
+    try {
+      assertISODate(approval.date)
+    } catch {
+      return null
+    }
+    result.push({ sectionId: approval.sectionId, date: approval.date, lessonIds: [...approval.lessonIds] })
   }
   return result
 }
