@@ -18,7 +18,7 @@ All other historical branches are non-authoritative. Their continued existence i
 
 Do not add duplicate handoff, audit, blueprint, or design-system documents to this repository.
 
-## Current build scope
+## Current integrated scope
 Frame → navigation → calendar truth → projections → rendering → hydration → teacher calendar setup → persisted calendar restore → safe period navigation → pre-planning audit hardening → quarter/semester truth → Unit domain foundation.
 
 Implemented and integrated through terms:
@@ -48,7 +48,7 @@ Implemented and integrated through terms:
 - exact dependencies + committed package lockfile
 - independent GitHub Actions verification using Node 22 + `npm ci`
 
-Current Unit-domain foundation:
+Integrated Unit-domain foundation:
 - `Course` is the shared curriculum identity.
 - `Section` is a specific teaching group that references a Course and school calendar.
 - `Unit` belongs to a Course and calendar, never directly to a Section.
@@ -59,7 +59,7 @@ Current Unit-domain foundation:
 - Unit placement requires a complete confirmed school calendar and at least one instructional day.
 - Unit placement cannot cross outside the loaded school year or silently attach to another calendar.
 - Unit quarter/semester membership and instructional-day count are derived from current calendar truth rather than stored as stale foreign keys.
-- Course and Section ownership have explicit validation helpers.
+- Course, Section, and Unit ownership have explicit validation helpers.
 - the former calendar-only contract compiler has been replaced by a domain-wide contract suite.
 
 ## Standing planning rules
@@ -89,8 +89,8 @@ Current Unit-domain foundation:
 
 ## Verification status
 - terms are integrated in `develop`
-- Unit domain is under active feature verification
-- domain contract suite now includes calendar truth, projections, hydration, persistence, navigation, manual setup, term configuration, Course/Section scope, and Unit behavior
+- Unit domain foundation is integrated in `develop`
+- domain contract suite includes calendar truth, projections, hydration, persistence, navigation, manual setup, term configuration, Course/Section scope, and Unit behavior
 - dependency installation is reproducible from committed `package-lock.json` using `npm ci`
 - TypeScript compile and Vite bundle remain required on every verification run
 - Vercel Hobby preview builds are rate-limited; this is not being bypassed with duplicate preview infrastructure
