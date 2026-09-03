@@ -1,20 +1,15 @@
 import type { MonthProjection, ProjectedDay } from '../calendar/projections'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
-import { formatLongDate, formatShortDate } from './dateLabels'
-import { isCalendarObjectSelected, type CalendarObjectSelection } from './calendarObjectSelection'
+import { formatLongDate, formatMonthKey, formatShortDate } from './dateLabels'
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function PlanningMonthView({
   month,
   planning,
-  selection,
-  onSelect,
 }: {
   month: MonthProjection
   planning: MonthPlanningProjection
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
 }) {
   return (
     <div className="planning-month">
@@ -27,9 +22,7 @@ export function PlanningMonthView({
           <section className="planning-month-week" key={calendarWeek.startDate} aria-label={`Week of ${formatShortDate(calendarWeek.startDate)}`}>
             {planningWeek?.unitSegments.length ? (
               <div className="planning-month-unit-stack">
-                {planningWeek.unitSegments.map((segment) => (
-                  <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} selection={selection} onSelect={onSelect} />
-                ))}
+                {planningWeek.unitSegments.map((segment) => <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} />)}
               </div>
             ) : null}
             <div className="planning-month-days">
@@ -39,8 +32,6 @@ export function PlanningMonthView({
                   day={day}
                   inAnchorMonth={day.date.slice(0, 7) === month.monthKey}
                   signals={planningWeek?.days[dayIndex]?.lessonSignals ?? []}
-                  selection={selection}
-                  onSelect={onSelect}
                 />
               ))}
             </div>
@@ -51,28 +42,17 @@ export function PlanningMonthView({
   )
 }
 
-function MonthUnitLane({
-  segment,
-  selection,
-  onSelect,
-}: {
-  segment: MonthUnitSegment
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
-}) {
+function MonthUnitLane({ segment }: { segment: MonthUnitSegment }) {
   return (
     <div className="planning-month-unit-lane">
-      <button
-        type="button"
-        className="calendar-object-select planning-month-unit-band planning-month-unit-select"
+      <div
+        className="planning-month-unit-band"
         style={{ gridColumn: `${segment.startColumn + 1} / ${segment.endColumn + 2}` }}
         title={`${segment.courseTitle} · ${segment.title}`}
-        aria-pressed={isCalendarObjectSelected(selection, 'unit', segment.unitId)}
-        onClick={() => onSelect({ kind: 'unit', id: segment.unitId })}
       >
         <span className="planning-month-unit-course">{segment.courseTitle}</span>
         <span className="planning-month-unit-title">{segment.title}</span>
-      </button>
+      </div>
     </div>
   )
 }
@@ -81,14 +61,10 @@ function MonthDayCell({
   day,
   inAnchorMonth,
   signals,
-  selection,
-  onSelect,
 }: {
   day: ProjectedDay
   inAnchorMonth: boolean
   signals: MonthLessonSignal[]
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
 }) {
   const dayStatus = day.kind === 'instructional' ? null : day.label || humanizeKind(day.kind)
   const classes = [
@@ -108,47 +84,27 @@ function MonthDayCell({
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
       </div>
       <div className="planning-month-signals">
-        {signals.map((signal) => (
-          <MonthLessonSignalView
-            key={`${signal.courseId}:${signal.lessonId}`}
-            signal={signal}
-            selection={selection}
-            onSelect={onSelect}
-          />
-        ))}
+        {signals.map((signal) => <MonthLessonSignalView key={`${signal.courseId}:${signal.lessonId}`} signal={signal} />)}
       </div>
     </div>
   )
 }
 
-function MonthLessonSignalView({
-  signal,
-  selection,
-  onSelect,
-}: {
-  signal: MonthLessonSignal
-  selection: CalendarObjectSelection
-  onSelect: (selection: Exclude<CalendarObjectSelection, null>) => void
-}) {
+function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
   const statusSummary = summarizeStatuses(signal)
   const shiftedNames = signal.sections.filter((section) => section.isSectionOverride).map((section) => section.sectionName)
   const sectionNames = signal.sections.map((section) => section.sectionName)
 
   return (
-    <button
-      type="button"
-      className={`calendar-object-select planning-month-signal planning-month-signal-select${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}`}
-      aria-pressed={isCalendarObjectSelected(selection, 'lesson', signal.lessonId)}
-      onClick={() => onSelect({ kind: 'lesson', id: signal.lessonId })}
-    >
-      <span className="planning-month-signal-heading">
+    <article className={`planning-month-signal${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}`}>
+      <div className="planning-month-signal-heading">
         <span className="planning-month-signal-title">{signal.title}</span>
         {signal.datePolicy === 'fixed' ? <span className="planning-month-fixed">Fixed</span> : null}
-      </span>
+      </div>
       <span className="planning-month-signal-context">{signal.courseTitle} · {sectionNames.join(' · ')}</span>
       {statusSummary ? <span className="planning-month-status-summary">{statusSummary}</span> : null}
       {shiftedNames.length ? <span className="planning-month-shifted">Shifted: {shiftedNames.join(', ')}</span> : null}
-    </button>
+    </article>
   )
 }
 
