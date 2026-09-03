@@ -2,6 +2,7 @@ import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Section } from './courses'
 import { effectiveLessonDeliveryState, type LessonDeliveryState } from './deliveryState'
 import { effectiveLessonDate, removeSectionLessonOverride, setSectionLessonOverride, validateSectionLessonOverride, type SectionLessonDateOverride } from './sectionSchedule'
+import { sameDayApprovalCovers, validateSameDayLessonApproval, type SameDayLessonApproval } from './sameDayApproval'
 import type { Lesson } from './lessons'
 import type { Unit } from './units'
 
@@ -52,13 +53,19 @@ export function validateShiftOperation(input: {
   units: Unit[]
   calendar: SchoolCalendar
   overrides: SectionLessonDateOverride[]
+  sameDayApprovals?: SameDayLessonApproval[]
 }): string[] {
   const { operation, section, lessons, deliveryStates, units, calendar, overrides } = input
+  const sameDayApprovals = input.sameDayApprovals ?? []
   const errors: string[] = []
 
   if (!operation.id.trim()) errors.push('Shift operation ID is required.')
   if (operation.sectionId !== section.id) errors.push('Shift operation belongs to a different Section.')
   if (operation.changes.length === 0) errors.push('Shift operation must contain at least one explicit change.')
+
+  for (const approval of sameDayApprovals.filter((candidate) => candidate.sectionId === section.id)) {
+    errors.push(...validateSameDayLessonApproval({ approval, calendar, section, lessons }).map((error) => `Same-day approval: ${error}`))
+  }
 
   const changedLessonIds = new Set<string>()
   const prospective = new Map<string, ISODate | null>()
@@ -124,6 +131,8 @@ export function validateShiftOperation(input: {
   if (errors.length === 0) {
     const byDate = new Map<ISODate, Lesson[]>()
     for (const lesson of lessons.filter((candidate) => candidate.courseId === section.courseId && candidate.calendarId === section.calendarId)) {
+      const delivery = effectiveLessonDeliveryState(deliveryStates, lesson, section)
+      if (delivery.status === 'completed' || delivery.status === 'skipped') continue
       const date = prospective.get(lesson.id) ?? null
       if (!date) continue
       const sameDate = byDate.get(date) ?? []
@@ -133,8 +142,10 @@ export function validateShiftOperation(input: {
 
     const targetDates = new Set(operation.changes.map((change) => change.toDate))
     for (const [date, sameDate] of byDate) {
-      if (sameDate.length > 1 && targetDates.has(date)) {
-        errors.push(`Shift would place multiple Lessons on ${date}: ${sameDate.map((lesson) => lesson.title).join(', ')}. Resolve that collision in the preview before applying.`)
+      if (sameDate.length <= 1 || !targetDates.has(date)) continue
+      const approved = sameDayApprovals.some((approval) => sameDayApprovalCovers(approval, section.id, date, sameDate.map((lesson) => lesson.id)))
+      if (!approved) {
+        errors.push(`Shift would place multiple Lessons on ${date}: ${sameDate.map((lesson) => lesson.title).join(', ')}. Explicit same-day approval is required before applying.`)
       }
     }
   }
@@ -150,6 +161,7 @@ export function applyShiftOperation(input: {
   units: Unit[]
   calendar: SchoolCalendar
   overrides: SectionLessonDateOverride[]
+  sameDayApprovals?: SameDayLessonApproval[]
 }): AppliedShift {
   const errors = validateShiftOperation(input)
   if (errors.length > 0) throw new Error(`Cannot apply Shift. ${errors.join(' ')}`)
