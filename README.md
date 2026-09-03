@@ -3,60 +3,81 @@
 Greenfield rebuild. Calendar-first. Trust-first.
 
 ## Authority
-- `main` — release-only.
-- `develop` — integrated pre-release source of truth.
-- current `feature/*` — active implementation only.
+- `main` — release-only. It is not the source for active development.
+- `develop` — the only integrated pre-release source of truth.
+- `feature/redevelopment-audit-cleanup` — the only active implementation branch for this audit checkpoint.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point.
-- all other branches are historical and non-authoritative.
+- every other branch is historical, abandoned, accidental, or reference-only and must not be used as source for new work, previews, audits, or recovery.
 
 Google Drive canonical Product Spec owns product/architecture decisions. Google Drive canonical Brand System owns visual/construction rules. Git history is implementation history. This README is only the repository operating contract.
 
 Do not add duplicate handoff, audit, blueprint, or design-system documents here.
 
-## Current system boundary
-Calendar truth → Courses/Sections → Units → Lessons → per-Section delivery state → recovery consequence preview → explicit recovery resolution → Section-specific atomic Shift → persisted Section schedule + reload-safe whole-operation Undo → explicit same-day approval domain.
+## Current redevelopment position
+The newer constrained rebuild order is authoritative when it conflicts with the older phase list:
 
-Current gate: the same-day Lesson approval domain is integrated in `develop`. Ordinary live collisions remain errors by default. An approval is exact to one Section, one confirmed instructional date, and one exact Lesson set. Persistence ownership and teacher-facing approval controls remain blocked until approval state can survive Apply, Undo, reload, and upstream reconciliation without loss.
+frame/shell → navigation → calendar truth → movement/recovery → Day/Easel continuity → integrations → visual polish/secondary systems.
 
-Core rules:
-- one shared Course/Unit/Lesson plan; Sections carry actual teaching state.
-- missing delivery state means `not-started`; divergence stays sparse.
-- calendar truth is explicit; missing dates are never silently instructional.
-- recovery reads the Section's effective live schedule, including persisted Section overrides.
-- completed/skipped work is not future recovery pressure and cannot be moved by recovery Shift.
-- fixed Lessons are anchors; an interrupted fixed Lesson is blocked before an Apply operation is offered.
-- recovery resolution offers only confirmed instructional dates inside the affected Lesson's Unit and after the resume date.
-- ordinary same-day live collisions remain invalid unless the teacher explicitly approves that exact Section/date/Lesson set.
-- same-day approval does not carry to another date, another Section, or an expanded Lesson set.
-- same-day approval requires a confirmed instructional date.
-- Shift recognizes an exact same-day approval but does not create, infer, broaden, or delete approval state.
-- completed/skipped Lessons do not create future collision pressure in Shift or schedule integrity.
-- an unscheduled interrupted Lesson may recover from `null` placement without inventing a prior date.
-- Shift binds to the exact reviewed effective `fromDate`; stale reviews cannot apply.
-- Shift is explicit and atomic: every unapproved collision must be resolved or nothing applies.
-- Shift may change only the target Section schedule; shared Lessons and unrelated Sections remain untouched.
-- after successful Apply, Arc returns to the calendar where the one available Undo is immediately visible.
-- Undo is scoped to the affected Section and refuses to overwrite newer work in that Section.
-- durable Section schedule state outranks Undo capability; reload distinguishes no Undo, restored Undo, and discarded unsafe Undo.
-- destructive upstream edits must fail rather than orphan or silently repair downstream teaching state.
+Integrated through `develop`:
+- trustworthy shell and six calendar horizons;
+- explicit school-calendar truth, terms, navigation, and local declaration persistence;
+- real Course/Section setup;
+- Unit and Lesson domain/editing foundations with per-Section delivery state;
+- recovery consequence preview;
+- explicit Section-scoped Shift Apply, local persistence, reload-safe Undo, and hostile recovery preflight;
+- exact same-day collision approval domain only.
+
+Not yet complete:
+- auth and account isolation;
+- landing-view preference persistence;
+- Unit/Lesson rendering as actual planning objects across calendar horizons;
+- Day as a real teaching-continuity surface;
+- Easel continuity;
+- Notes, Ideas, Unit Focus, Must/Should/Could, Tack, Extend, filters, Year markers;
+- account-backed/Drive persistence and reconciliation;
+- browser-driven keyboard/touch/responsive release verification.
+
+The old `feature/same-day-approval-persistence` branch is abandoned/reference-only. Its unintegrated persistence work was intentionally stopped after audit showed it was over-engineering an exception before the primary calendar planning loop is rendered. Same-day stacking remains collision-safe by default; its already-integrated exact approval domain may be completed later when ordinary calendar planning can expose the real teacher action that needs it.
+
+## Operational findings
+- Every preview/build must expose the exact Git commit fingerprint. The audit branch adds a visible build fingerprint sourced from Vercel/GitHub build SHA.
+- GitHub Actions is the canonical source/build gate and runs read-only from the committed lockfile.
+- Vercel remains the intended preview platform.
+- A legacy Cloudflare Workers GitHub integration is still attempting builds on this repository. It is not Arc authority and must be disconnected outside this repository; its status must not be mistaken for the Arc verification gate.
+- `main` and `develop` are policy-governed but are not currently technically protected by the accessible GitHub configuration. Branch protection/rulesets remain an external repository-admin cleanup item.
+- `AppFrame.tsx` has accumulated too many orchestration responsibilities. No new major subsystem should be added directly to it; the next structural pass should extract workspace restore/persistence/mutation orchestration before Day/Easel or secondary systems expand the shell.
+
+## Core rules
+- calendar remains the center of the product;
+- one shared Course/Unit/Lesson plan; Sections carry actual teaching state;
+- missing delivery state means `not-started`; divergence stays sparse;
+- calendar truth is explicit; missing dates are never silently instructional;
+- preview before consequence; no silent loss; fixed dates stay fixed;
+- recovery reads the Section's effective live schedule, including persisted Section overrides;
+- completed/skipped work is not future recovery pressure and cannot be moved by recovery Shift;
+- ordinary same-day live collisions remain invalid unless an exact teacher approval exists;
+- Shift binds to the exact reviewed effective `fromDate`; stale reviews cannot apply;
+- Shift changes only the target Section schedule; shared Lessons and unrelated Sections remain untouched;
+- Undo is Section-scoped and refuses to overwrite newer work;
+- destructive upstream edits fail rather than orphan or silently repair downstream state;
+- no fake controls, fake source data, fake saves, or fake deployment claims.
 
 ## Verification
-- exact dependency versions are locked in `package-lock.json`.
-- CI is read-only and installs only with `npm ci`.
-- `npm run build` requires the full domain contract suite, TypeScript compile, and Vite production bundle.
-- contract manifest lives in `tests/run-contracts.mjs`.
-- recovery has an end-to-end contract covering preview → explicit resolution → Apply → persistence → reload → no duplicate Apply → Undo.
-- recovery destination preflight has a separate hostile contract for fixed/live occupancy, closures, completed work, forward-only dates, and duplicate destinations.
-- same-day approval has a contract proving default collision failure, exact-set permission, date/Section/set non-transfer, confirmed-date requirement, Shift recognition, and finished-work collision exclusion.
-- no feature branch advances to `develop` without an exact-head green gate.
-- `develop` must pass again after integration.
+- exact dependency versions are locked in `package-lock.json`;
+- CI installs only with `npm ci`;
+- `npm run build` requires the full domain contract suite, TypeScript compile, and Vite production bundle;
+- contract manifest lives in `tests/run-contracts.mjs`;
+- no feature branch advances to `develop` without an exact-head green gate;
+- `develop` must pass again after integration;
+- browser interaction is a separate release gate and is never inferred from source/build success.
 
-## Open gates
-- same-day approval persistence with one explicit state owner; current Shift persistence does not yet store approvals.
-- teacher-facing same-day approval creation/removal after persistence is proven.
-- Unit/Lesson rendering across calendar horizons.
-- browser-driven keyboard/click/responsive verification of Apply/Undo and the broader shell.
-- account-backed persistence/sync, integrations, and production release.
+## Next authorized work
+1. finish this redevelopment audit and integrate only the verified cleanup;
+2. extract AppFrame workspace orchestration before it becomes a god component;
+3. render real Units/Lessons across calendar horizons, beginning with the Week/Day planning truth;
+4. build Day/Easel teaching continuity from that same state;
+5. restore the missing platform obligations: auth/account isolation and account/Drive persistence before external beta;
+6. only then resume secondary exception systems such as teacher-facing same-day stacking, Tack/Extend, Ideas, priorities, and filters as their primary workflows require them.
 
 ## Release wall
-Nothing moves to `main` until product, functional, visual, accessibility, persistence, regression, exact-build, browser-interaction, and dependency-lock gates are explicitly cleared.
+Nothing moves to `main` until product, functional, visual, accessibility, persistence, account-isolation, regression, exact-build, browser-interaction, and dependency-lock gates are explicitly cleared.
