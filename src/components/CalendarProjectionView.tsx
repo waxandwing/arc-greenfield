@@ -3,7 +3,9 @@ import type { CalendarView } from '../navigation/calendarViews'
 import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
 import type { ISODate, SchoolCalendar, TermBoundary } from '../calendar/types'
 import { projectPlanningRange } from '../planning/planningProjection'
+import { projectMonthPlanning } from '../planning/monthPlanningProjection'
 import type { LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, UnitWorkspace } from '../planning'
+import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
 
 type PlanningContext = {
@@ -59,22 +61,39 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
     }
     case 'Month': {
       const projection = projectMonth(calendar, anchorDate)
+      const monthPlanning = planningContext
+        ? projectMonthPlanning({
+            month: projection,
+            planning: planningContext.planning,
+            units: planningContext.units,
+            lessons: planningContext.lessons,
+            overrides: planningContext.shiftState?.overrides ?? [],
+          })
+        : null
       return (
         <section className="projection-section month-section" aria-label={`${formatMonth(anchorDate)} calendar`}>
           <div className="projection-heading-row">
             <p className="projection-range-label">{formatMonth(anchorDate)}</p>
             <TermContext quarters={projection.quarters} semesters={projection.semesters} />
           </div>
-          <div className="month-weekday-row" aria-hidden="true">
-            {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
-          </div>
-          <div className="month-projection" role="grid" aria-label={`${formatMonth(anchorDate)} calendar grid`}>
-            {projection.weeks.map((week) => (
-              <div className="month-week" role="row" key={week.startDate}>
-                {week.days.map((day) => <CalendarDayCell key={day.date} day={day} role="gridcell" />)}
+          {monthPlanning ? (
+            <div className="planning-scroll-frame">
+              <PlanningMonthView month={projection} planning={monthPlanning} />
+            </div>
+          ) : (
+            <>
+              <div className="month-weekday-row" aria-hidden="true">
+                {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
               </div>
-            ))}
-          </div>
+              <div className="month-projection" role="grid" aria-label={`${formatMonth(anchorDate)} calendar grid`}>
+                {projection.weeks.map((week) => (
+                  <div className="month-week" role="row" key={week.startDate}>
+                    {week.days.map((day) => <CalendarDayCell key={day.date} day={day} role="gridcell" />)}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </section>
       )
     }
