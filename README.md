@@ -9,6 +9,25 @@ Clean frame-first rebuild.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point
 
 ## Current build scope
-Frame only: global shell geometry, canonical brand tokens, responsive calendar stage, overlay layer, and accessibility baseline.
+Frame + navigation only.
 
-No calendar behavior, secondary tools, integrations, or production deployment belong in this pass.
+Implemented:
+- global shell geometry
+- canonical brand tokens
+- responsive calendar stage
+- overlay layer for future secondary tools
+- accessibility baseline
+- one canonical calendar-view state owner
+- Year / Quarter / Month / Week / Day navigation
+- functional Arc home action returning to Month
+- desktop rail and mobile bottom navigation
+
+Intentionally excluded:
+- calendar data or date logic
+- previous/next/today controls
+- Ideas, Shift, Search, Help, Profile
+- persistence of landing preference
+- Easel and integrations
+- production deployment
+
+No production deployment belongs in this pass.
