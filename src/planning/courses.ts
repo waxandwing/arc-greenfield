@@ -13,9 +13,17 @@ export type Section = {
   name: string
 }
 
+export function createCourseId(): CourseId {
+  return createPlanningId('course')
+}
+
+export function createSectionId(): SectionId {
+  return createPlanningId('section')
+}
+
 export function createCourse(input: { id?: CourseId; title: string }): Course {
   const course: Course = {
-    id: input.id ?? createPlanningId('course'),
+    id: input.id ?? createCourseId(),
     title: input.title.trim(),
   }
   const errors = validateCourse(course)
@@ -30,7 +38,7 @@ export function createSection(input: {
   name: string
 }): Section {
   const section: Section = {
-    id: input.id ?? createPlanningId('section'),
+    id: input.id ?? createSectionId(),
     courseId: input.courseId,
     calendarId: input.calendarId,
     name: input.name.trim(),
