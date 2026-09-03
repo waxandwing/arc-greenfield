@@ -1,5 +1,6 @@
 import type { MonthProjection, ProjectedDay } from '../calendar/projections'
-import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
+import type { PlanningLessonSignal } from '../planning/planningLessonSignals'
+import type { MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
 import { formatPlanningLongDate, formatPlanningMonthKey, formatPlanningShortDate } from './planningDateLabels'
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -67,7 +68,7 @@ function MonthDayCell({
 }: {
   day: ProjectedDay
   inAnchorMonth: boolean
-  signals: MonthLessonSignal[]
+  signals: PlanningLessonSignal[]
 }) {
   const dayStatus = day.kind === 'instructional' ? null : day.label || humanizeKind(day.kind)
   const classes = [
@@ -91,7 +92,7 @@ function MonthDayCell({
   )
 }
 
-function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
+function MonthLessonSignalView({ signal }: { signal: PlanningLessonSignal }) {
   const statusSummary = summarizeStatuses(signal)
   const shiftedNames = signal.sections.filter((section) => section.isSectionOverride).map((section) => section.sectionName)
   const sectionNames = signal.sections.map((section) => section.sectionName)
@@ -118,7 +119,7 @@ function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
   )
 }
 
-function summarizeStatuses(signal: MonthLessonSignal): string | null {
+function summarizeStatuses(signal: PlanningLessonSignal): string | null {
   const counts = { 'in-progress': 0, completed: 0, skipped: 0 }
   for (const section of signal.sections) {
     if (section.deliveryStatus === 'in-progress') counts['in-progress'] += 1
