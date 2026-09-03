@@ -15,6 +15,12 @@ function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
 }
 
+class MemoryStorage {
+  private readonly values = new Map<string, string>()
+  getItem(key: string): string | null { return this.values.get(key) ?? null }
+  setItem(key: string, value: string): void { this.values.set(key, value) }
+}
+
 const calendar = hydrateSchoolCalendar({
   id: 'calendar-2026-27',
   schoolYearLabel: '2026–27',
@@ -117,9 +123,3 @@ storage.setItem('arc.shift.v1', serializeShiftState(badSchedule))
 assert(loadShiftStateFromBrowser(calendar, planning, units, lessons).status === 'invalid', 'Invalid durable schedule state must fail closed on reload.')
 
 console.log('shift persistence contract passed')
-
-class MemoryStorage {
-  private readonly values = new Map<string, string>()
-  getItem(key: string): string | null { return this.values.get(key) ?? null }
-  setItem(key: string, value: string): void { this.values.set(key, value) }
-}
