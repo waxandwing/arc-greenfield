@@ -71,6 +71,11 @@ export function validateShiftOperation(input: {
     }
     changedLessonIds.add(change.lessonId)
 
+    if (change.fromDate === change.toDate) {
+      errors.push(`Shift change for Lesson ${change.lessonId} does not move the Lesson.`)
+      continue
+    }
+
     const lesson = lessons.find((candidate) => candidate.id === change.lessonId)
     if (!lesson) {
       errors.push(`Shift change references a Lesson that does not exist: ${change.lessonId}.`)
