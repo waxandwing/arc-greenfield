@@ -2,10 +2,6 @@
   appearance:none;
   width:100%;
   min-width:0;
-  border:0;
-  border-radius:0;
-  background:transparent;
-  padding:0;
   color:inherit;
   font:inherit;
   text-align:left;
@@ -24,10 +20,20 @@
 .day-continuity-unit-select{
   display:inline;
   width:auto;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  padding:0;
   color:var(--ink);
   font-size:16px;
   font-weight:700;
   overflow-wrap:anywhere;
+}
+
+.day-continuity-lesson.calendar-object-select{
+  border:0;
+  border-radius:0;
+  background:transparent;
 }
 
 .day-continuity-lesson-select,
