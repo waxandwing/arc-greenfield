@@ -20,6 +20,8 @@ export type WeekProjection = {
   startDate: ISODate
   endDate: ISODate
   days: ProjectedDay[]
+  quarters: TermBoundary[]
+  semesters: TermBoundary[]
 }
 
 export type MonthWeek = {
@@ -34,6 +36,8 @@ export type MonthProjection = {
   gridStartDate: ISODate
   gridEndDate: ISODate
   weeks: MonthWeek[]
+  quarters: TermBoundary[]
+  semesters: TermBoundary[]
 }
 
 export type BoundaryProjection = {
@@ -74,6 +78,8 @@ export function projectWeek(calendar: SchoolCalendar, anchorDate: ISODate): Week
     startDate,
     endDate,
     days: eachCalendarDay(startDate, endDate).map((date) => projectCalendarDay(calendar, date)),
+    quarters: boundariesIntersectingRange(calendar.quarters, startDate, endDate),
+    semesters: boundariesIntersectingRange(calendar.semesters, startDate, endDate),
   }
 }
 
@@ -101,6 +107,8 @@ export function projectMonth(calendar: SchoolCalendar, anchorDate: ISODate): Mon
     gridStartDate,
     gridEndDate,
     weeks,
+    quarters: boundariesIntersectingRange(calendar.quarters, first, last),
+    semesters: boundariesIntersectingRange(calendar.semesters, first, last),
   }
 }
 
@@ -151,6 +159,12 @@ function projectCalendarDay(calendar: SchoolCalendar, date: ISODate): ProjectedD
     inSchoolYear: compareISODate(date, calendar.firstDay) >= 0 && compareISODate(date, calendar.lastDay) <= 0,
     isWeekend: weekday === 0 || weekday === 6,
   }
+}
+
+function boundariesIntersectingRange(boundaries: TermBoundary[], startDate: ISODate, endDate: ISODate): TermBoundary[] {
+  return boundaries.filter((boundary) =>
+    compareISODate(boundary.endDate, startDate) >= 0 && compareISODate(boundary.startDate, endDate) <= 0,
+  )
 }
 
 function startOfMondayWeek(date: ISODate): ISODate {
