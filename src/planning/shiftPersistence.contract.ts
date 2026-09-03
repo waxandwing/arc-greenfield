@@ -67,12 +67,10 @@ assert(deserializeShiftState('{broken') === null, 'Malformed JSON must fail clos
 assert(deserializeShiftState(JSON.stringify({ schemaVersion: 2, input })) === null, 'Unknown persistence schema versions must fail closed.')
 assert(deserializeShiftState(JSON.stringify({ schemaVersion: 1, input: { ...input, overrides: [{ sectionId: p5.id, lessonId: lesson17.id, plannedDate: '2026-02-30' }] } })) === null, 'Malformed calendar dates must be rejected during parse.')
 
-const malformedUndo = deserializeShiftState(JSON.stringify({
-  schemaVersion: 1,
-  input: { ...input, undo: { operationId: 42 } },
-}))
+const malformedUndoRaw = JSON.stringify({ schemaVersion: 1, input: { ...input, undo: { operationId: 42 } } })
+const malformedUndo = deserializeShiftState(malformedUndoRaw)
 assert(malformedUndo !== null, 'Malformed Undo must not destroy an otherwise parseable schedule payload.')
-assert(malformedUndo.undo === null, 'Malformed Undo must be discarded.')
+assert(malformedUndo.undo === null, 'Malformed Undo must be discarded during parse.')
 
 const staleSchedule: ShiftPersistenceInput = {
   ...input,
@@ -114,9 +112,23 @@ assert(!changedTruth.undoValid, 'Undo must be discarded if its previous snapshot
 
 const storage = new MemoryStorage()
 Object.defineProperty(globalThis, 'window', { configurable: true, value: { localStorage: storage } })
+
+storage.setItem('arc.shift.v1', serializeShiftState(input))
+const restoredWithUndo = loadShiftStateFromBrowser(calendar, planning, units, lessons)
+assert(restoredWithUndo.status === 'restored' && restoredWithUndo.undoStatus === 'restored', 'A valid persisted Undo must restore explicitly as restored.')
+
+const noUndo: ShiftPersistenceInput = { ...input, undo: null }
+storage.setItem('arc.shift.v1', serializeShiftState(noUndo))
+const restoredWithoutUndo = loadShiftStateFromBrowser(calendar, planning, units, lessons)
+assert(restoredWithoutUndo.status === 'restored' && restoredWithoutUndo.undoStatus === 'none', 'A schedule saved without Undo must reload as none, not as discarded.')
+
+storage.setItem('arc.shift.v1', malformedUndoRaw)
+const restoredMalformedUndo = loadShiftStateFromBrowser(calendar, planning, units, lessons)
+assert(restoredMalformedUndo.status === 'restored' && restoredMalformedUndo.undoStatus === 'discarded', 'Malformed Undo must be reported as discarded while preserving a valid schedule.')
+
 storage.setItem('arc.shift.v1', serializeShiftState(staleSchedule))
 const restoredStale = loadShiftStateFromBrowser(calendar, planning, units, lessons)
-assert(restoredStale.status === 'restored', 'A valid changed schedule must restore even when its Undo token is stale.')
+assert(restoredStale.status === 'restored' && restoredStale.undoStatus === 'discarded', 'A valid changed schedule must restore while stale Undo is explicitly discarded.')
 assert(restoredStale.status === 'restored' && restoredStale.input.undo === null, 'Reload must preserve the valid schedule and discard stale Undo.')
 
 storage.setItem('arc.shift.v1', serializeShiftState(badSchedule))
