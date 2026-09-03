@@ -30,6 +30,7 @@ button{appearance:none}
 .projection-section{min-width:0;padding:var(--space-4)}
 .projection-range-label{margin:0 0 var(--space-3);font-size:14px;font-weight:700;color:var(--soft-charcoal)}
 .projection-day-strip{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));min-width:840px}
+.projection-day-strip--single{grid-template-columns:minmax(220px,1fr);min-width:0}
 .month-projection{display:grid;grid-auto-rows:minmax(112px,1fr)}
 .month-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));min-width:700px}
 .projection-range{display:grid;grid-template-columns:repeat(7,minmax(100px,1fr));min-width:700px}
@@ -43,6 +44,7 @@ button{appearance:none}
 .calendar-day-cell--no-school,.calendar-day-cell--holiday,.calendar-day-cell--break,.calendar-day-cell--teacher-workday{background:rgba(124,156,173,.08)}
 .calendar-day-cell--unknown{background:repeating-linear-gradient(135deg,rgba(44,46,46,.025) 0,rgba(44,46,46,.025) 6px,transparent 6px,transparent 12px)}
 .projection-empty-state{margin:0;padding:var(--space-4);color:var(--soft-charcoal)}
+.calendar-unconfigured{padding:var(--space-4)}
 
 @media (max-width:800px){
   .arc-header{height:64px;padding-inline:var(--mobile-gutter)}
@@ -64,6 +66,7 @@ button{appearance:none}
   .calendar-canvas{border-radius:var(--radius-sm)}
   .month-week,.projection-range{min-width:644px}
   .projection-day-strip{min-width:720px}
+  .projection-day-strip--single{min-width:0}
 }
 
 @media (prefers-reduced-motion:reduce){
