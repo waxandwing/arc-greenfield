@@ -39,7 +39,7 @@ type WorkspaceStageProps = {
   onUseTerms: (input: CalendarHydrationInput) => void
   onUseClasses: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
   onUseUnits: (input: UnitWorkspaceInput, workspace: UnitWorkspace) => void
-  onUseLessons: (input: LessonWorkspaceInput, workspace: LessonWorkspace) => void
+  onUseLessons: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => void
   onApplyRecoveryShift: (operation: ShiftOperation) => string | null
   onCloseMode: () => void
 }
@@ -104,6 +104,8 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       <UnitSetup
         calendar={calendar}
         planning={planningWorkspace}
+        lessons={lessonWorkspace ?? emptyLessonProjection(calendar.id)}
+        overrides={shiftState?.overrides ?? []}
         initialValue={unitInput}
         protectedUnitIds={protectedUnitIds}
         onSave={onUseUnits}
@@ -118,6 +120,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         calendar={calendar}
         planning={planningWorkspace}
         units={unitWorkspace}
+        shiftState={shiftState}
         initialValue={lessonInput}
         onSave={onUseLessons}
         onCancel={onCloseMode}
