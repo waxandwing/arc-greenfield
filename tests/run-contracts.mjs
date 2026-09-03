@@ -19,7 +19,6 @@ const contracts = [
   'tests/generated/src/planning/shiftOperation.contract.js',
 ]
 
-run('npx', ['tsc', '-p', 'tsconfig.contracts.json'])
 for (const contract of contracts) run(process.execPath, [contract])
 
 function run(command, args) {
