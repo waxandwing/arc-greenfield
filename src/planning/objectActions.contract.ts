@@ -1,7 +1,7 @@
 import { hydrateSchoolCalendar } from '../calendar/hydration'
 import { createCourse, createSection } from './courses'
-import { createLesson, createLessonDeliveryState, updateLessonDeliveryState } from './deliveryState'
-import { createLesson as makeLesson } from './lessons'
+import { createLessonDeliveryState, updateLessonDeliveryState } from './deliveryState'
+import { createLesson } from './lessons'
 import { deleteLesson, deleteUnit, moveLesson, moveUnit, unplaceLessonFromCalendar, unplaceUnitFromCalendar } from './objectActions'
 import type { LessonWorkspace } from './lessonWorkspace'
 import type { SectionLessonDateOverride } from './sectionSchedule'
@@ -36,8 +36,8 @@ const p2 = createSection({ id: 'section-p2', courseId: course.id, calendarId: ca
 const planning: PlanningWorkspace = { calendarId: calendar.id, courses: [course], sections: [p2] }
 const unit = placeUnit(createUnit({ id: 'unit-egypt', calendarId: calendar.id, courseId: course.id, title: 'Egypt' }), calendar, { startDate: '2026-09-14', endDate: '2026-09-25' })
 const emptyUnit = placeUnit(createUnit({ id: 'unit-empty', calendarId: calendar.id, courseId: course.id, title: 'Empty Unit' }), calendar, { startDate: '2026-10-05', endDate: '2026-10-09' })
-const lesson = makeLesson({ id: 'lesson-1', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Temple lesson', sequence: 1, plannedDate: '2026-09-16', datePolicy: 'flexible' })
-const fixed = makeLesson({ id: 'lesson-fixed', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Fixed assessment', sequence: 2, plannedDate: '2026-09-18', datePolicy: 'fixed' })
+const lesson = createLesson({ id: 'lesson-1', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Temple lesson', sequence: 1, plannedDate: '2026-09-16', datePolicy: 'flexible' })
+const fixed = createLesson({ id: 'lesson-fixed', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Fixed assessment', sequence: 2, plannedDate: '2026-09-18', datePolicy: 'fixed' })
 const units: UnitWorkspace = { calendarId: calendar.id, units: [unit, emptyUnit] }
 const lessons: LessonWorkspace = { calendarId: calendar.id, lessons: [lesson, fixed], deliveryStates: [] }
 const overrides: SectionLessonDateOverride[] = []
