@@ -38,9 +38,10 @@ button{appearance:none}
 @media (max-width:520px){
   .arc-header{grid-template-columns:1fr}
   .arc-layout{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;overflow:visible}
-  .arc-calendar-stage{padding-inline:var(--space-3);padding-bottom:calc(72px + var(--space-3))}
-  .arc-view-rail{position:fixed;z-index:20;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:8px;border-top:1px solid var(--line-subtle);border-right:0;background:var(--paper)}
-  .view-nav-item{min-height:48px;padding:6px 4px;text-align:center;font-size:13px}
+  .arc-calendar-stage{padding-inline:var(--space-3);padding-bottom:calc(76px + var(--space-3))}
+  .arc-view-rail{position:fixed;z-index:20;left:0;right:0;bottom:0;display:flex;flex-direction:row;gap:2px;overflow-x:auto;overscroll-behavior-x:contain;padding:8px;border-top:1px solid var(--line-subtle);border-right:0;background:var(--paper);scrollbar-width:none}
+  .arc-view-rail::-webkit-scrollbar{display:none}
+  .view-nav-item{flex:0 0 auto;min-width:72px;min-height:48px;padding:6px 8px;text-align:center;font-size:13px;white-space:nowrap}
   .view-title{font-size:32px}
   .calendar-canvas{border-radius:var(--radius-sm)}
 }
