@@ -21,6 +21,7 @@ export type ShiftUndoToken = {
   operationId: string
   sectionId: string
   previousOverrides: SectionLessonDateOverride[]
+  appliedOverrides: SectionLessonDateOverride[]
 }
 
 export type AppliedShift = {
@@ -153,20 +154,34 @@ export function applyShiftOperation(input: {
     }
   }
 
+  const appliedOverrides = next.map((override) => ({ ...override }))
   return {
     operation: { ...input.operation, changes: input.operation.changes.map((change) => ({ ...change })) },
-    overrides: next,
+    overrides: appliedOverrides,
     undo: {
       operationId: input.operation.id,
       sectionId: input.section.id,
       previousOverrides: input.overrides.map((override) => ({ ...override })),
+      appliedOverrides: appliedOverrides.map((override) => ({ ...override })),
     },
   }
 }
 
 export function undoShiftOperation(currentOverrides: SectionLessonDateOverride[], token: ShiftUndoToken): SectionLessonDateOverride[] {
-  void currentOverrides
+  if (!sameOverrides(currentOverrides, token.appliedOverrides)) {
+    throw new Error('Cannot undo Shift because the Section schedule changed after that operation. Review the current schedule instead of overwriting newer work.')
+  }
   return token.previousOverrides.map((override) => ({ ...override }))
+}
+
+function sameOverrides(left: SectionLessonDateOverride[], right: SectionLessonDateOverride[]): boolean {
+  return JSON.stringify(normalizeOverrides(left)) === JSON.stringify(normalizeOverrides(right))
+}
+
+function normalizeOverrides(overrides: SectionLessonDateOverride[]): SectionLessonDateOverride[] {
+  return overrides
+    .map((override) => ({ ...override }))
+    .sort((a, b) => a.sectionId.localeCompare(b.sectionId) || a.lessonId.localeCompare(b.lessonId) || a.plannedDate.localeCompare(b.plannedDate))
 }
 
 function createShiftId(): string {
