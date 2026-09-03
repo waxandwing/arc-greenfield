@@ -3,7 +3,7 @@ import type { PlanningWorkspace } from './workspace'
 import type { UnitWorkspace } from './unitWorkspace'
 import { hydrateLessonWorkspace, type LessonWorkspace, type LessonWorkspaceInput } from './lessonWorkspace'
 
-const STORAGE_KEY = 'arc.lessons.v1'
+export const LESSON_STORAGE_KEY = 'arc.lessons.v1'
 
 type StoredLessons = {
   schemaVersion: 1
@@ -41,7 +41,7 @@ export function deserializeLessons(raw: string): LessonWorkspaceInput | null {
 
 export function saveLessonsToBrowser(input: LessonWorkspaceInput): boolean {
   try {
-    window.localStorage.setItem(STORAGE_KEY, serializeLessons(input))
+    window.localStorage.setItem(LESSON_STORAGE_KEY, serializeLessons(input))
     return true
   } catch {
     return false
@@ -55,7 +55,7 @@ export function loadLessonsFromBrowser(
 ): LessonLoadResult {
   let raw: string | null
   try {
-    raw = window.localStorage.getItem(STORAGE_KEY)
+    raw = window.localStorage.getItem(LESSON_STORAGE_KEY)
   } catch {
     return { status: 'unavailable' }
   }
