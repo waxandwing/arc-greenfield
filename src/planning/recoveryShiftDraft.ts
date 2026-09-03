@@ -1,5 +1,6 @@
 import type { ISODate } from '../calendar'
 import type { RecoveryPreview } from './recoveryPreview'
+import { hasDuplicateRecoveryDestinations } from './recoveryResolution'
 import { createShiftOperation, type ShiftOperation } from './shiftOperation'
 
 export type RecoveryShiftDraft = {
@@ -40,6 +41,11 @@ export function finalizeRecoveryShiftDraft(
   draft: RecoveryShiftDraft,
   chosenDates: Record<string, ISODate>,
 ): ShiftOperation {
+  const movableLessonIds = draft.changes.map((change) => change.lessonId)
+  if (hasDuplicateRecoveryDestinations(draft.interruptedLessonId, draft.resumeDate, movableLessonIds, chosenDates)) {
+    throw new Error('Recovery Shift destinations must be distinct while same-day Lesson stacking is disabled.')
+  }
+
   const changes = draft.changes.map((change) => {
     const interrupted = change.lessonId === draft.interruptedLessonId
     const toDate = interrupted ? draft.resumeDate : chosenDates[change.lessonId]
