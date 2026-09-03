@@ -1,6 +1,6 @@
 import type { ProjectedDay } from '../calendar/projections'
-import type { ISODate } from '../calendar/types'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
+import { formatPlanningLongDate, formatPlanningShortDate, formatPlanningWeekday } from './planningDateLabels'
 
 export function PlanningWeekDayView({
   days,
@@ -31,8 +31,8 @@ function PlanningDateHeader({ days, single }: { days: ProjectedDay[]; single: bo
       <span className="planning-row-label planning-row-label--header">Class</span>
       {days.map((day) => (
         <span key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}`}>
-          {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
-          <span>{formatShortDate(day.date)}</span>
+          {!single ? <span className="planning-date-weekday">{formatPlanningWeekday(day.date)}</span> : null}
+          <span>{formatPlanningShortDate(day.date)}</span>
           {day.kind !== 'instructional' ? <span className="planning-date-kind">{day.label || humanizeKind(day.kind)}</span> : null}
         </span>
       ))}
@@ -82,7 +82,7 @@ function PlanningCourse({
               <div
                 key={slot.date}
                 className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}`}
-                aria-label={`${row.section.name}, ${formatLongDate(slot.date)}`}
+                aria-label={`${row.section.name}, ${formatPlanningLongDate(slot.date)}`}
               >
                 {slot.lessons.map((lesson) => <LessonTile key={lesson.lessonId} lesson={lesson} />)}
                 {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
@@ -98,7 +98,7 @@ function PlanningCourse({
 function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
   const statusLabel = humanizeStatus(lesson.deliveryStatus)
   const taughtLabel = lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate
-    ? `Taught ${formatShortDate(lesson.taughtDate)}`
+    ? `Taught ${formatPlanningShortDate(lesson.taughtDate)}`
     : null
   const accessible = [
     lesson.title,
@@ -132,27 +132,6 @@ function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
 
 function gridTemplate(dayCount: number): { gridTemplateColumns: string } {
   return { gridTemplateColumns: `minmax(104px, .8fr) repeat(${dayCount}, minmax(112px, 1fr))` }
-}
-
-function formatWeekday(date: ISODate): string {
-  return formatter({ weekday: 'short' }).format(toUTCDate(date))
-}
-
-function formatShortDate(date: ISODate): string {
-  return formatter({ month: 'short', day: 'numeric' }).format(toUTCDate(date))
-}
-
-function formatLongDate(date: ISODate): string {
-  return formatter({ weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(toUTCDate(date))
-}
-
-function formatter(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
-  return new Intl.DateTimeFormat(undefined, { ...options, timeZone: 'UTC' })
-}
-
-function toUTCDate(date: ISODate): Date {
-  const [year, month, day] = date.split('-').map(Number)
-  return new Date(Date.UTC(year, month - 1, day))
 }
 
 function humanizeKind(kind: ProjectedDay['kind']): string {
