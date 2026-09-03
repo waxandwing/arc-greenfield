@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test:calendar": "tsc -p tsconfig.calendar-test.json && node tests/generated/tests/calendar.contract.js && node tests/generated/src/calendar/projections.contract.js && node tests/generated/src/calendar/hydration.contract.js && node tests/generated/src/calendar/persistence.contract.js && node tests/generated/src/calendar/navigation.contract.js && node tests/generated/src/calendar/manualSetup.contract.js && node tests/generated/src/calendar/terms.contract.js",
-    "build": "npm run test:calendar && tsc -b && vite build",
+    "test:contracts": "tsc -p tsconfig.contracts.json && node tests/generated/tests/calendar.contract.js && node tests/generated/src/calendar/projections.contract.js && node tests/generated/src/calendar/hydration.contract.js && node tests/generated/src/calendar/persistence.contract.js && node tests/generated/src/calendar/navigation.contract.js && node tests/generated/src/calendar/manualSetup.contract.js && node tests/generated/src/calendar/terms.contract.js && node tests/generated/src/planning/units.contract.js",
+    "build": "npm run test:contracts && tsc -b && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
