@@ -28,7 +28,10 @@ export function deserializeLessons(raw: string): LessonWorkspaceInput | null {
     if (!Array.isArray(parsed.input.lessons) || !Array.isArray(parsed.input.deliveryStates)) return null
     return {
       calendarId: parsed.input.calendarId,
-      lessons: parsed.input.lessons.map((lesson) => ({ ...lesson })),
+      lessons: parsed.input.lessons.map((lesson) => ({
+        ...lesson,
+        datePolicy: lesson.datePolicy === 'fixed' ? 'fixed' : 'flexible',
+      })),
       deliveryStates: parsed.input.deliveryStates.map((state) => ({ ...state })),
     }
   } catch {
