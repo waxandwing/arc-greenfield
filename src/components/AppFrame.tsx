@@ -3,6 +3,7 @@ import { CalendarProjectionView } from './CalendarProjectionView'
 import { CalendarSetup } from './CalendarSetup'
 import { ClassSetup } from './ClassSetup'
 import { TermBoundarySetup } from './TermBoundarySetup'
+import { UnitSetup } from './UnitSetup'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
 import {
   currentLocalISODate,
@@ -18,10 +19,15 @@ import {
   type SchoolCalendar,
 } from '../calendar'
 import {
+  courseIdsProtectedByUnits,
   loadPlanningWorkspaceFromBrowser,
+  loadUnitsFromBrowser,
   savePlanningWorkspaceToBrowser,
+  saveUnitsToBrowser,
   type PlanningWorkspace,
   type PlanningWorkspaceInput,
+  type UnitWorkspace,
+  type UnitWorkspaceInput,
 } from '../planning'
 
 export function AppFrame() {
@@ -29,6 +35,8 @@ export function AppFrame() {
   const restored = initialLoad.status === 'restored' ? initialLoad.restored : null
   const [initialPlanningLoad] = useState(() => restored ? loadPlanningWorkspaceFromBrowser(restored.calendar.id) : { status: 'empty' as const })
   const restoredPlanning = initialPlanningLoad.status === 'restored' ? initialPlanningLoad : null
+  const [initialUnitLoad] = useState(() => restored && restoredPlanning ? loadUnitsFromBrowser(restored.calendar, restoredPlanning.workspace) : { status: 'empty' as const })
+  const restoredUnits = initialUnitLoad.status === 'restored' ? initialUnitLoad : null
 
   const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
   const [calendar, setCalendar] = useState<SchoolCalendar | null>(restored?.calendar ?? null)
@@ -36,14 +44,19 @@ export function AppFrame() {
   const [anchorDate, setAnchorDate] = useState<ISODate | null>(restored?.calendar.firstDay ?? null)
   const [planningWorkspace, setPlanningWorkspace] = useState<PlanningWorkspace | null>(restoredPlanning?.workspace ?? null)
   const [planningInput, setPlanningInput] = useState<PlanningWorkspaceInput | null>(restoredPlanning?.input ?? null)
+  const [unitWorkspace, setUnitWorkspace] = useState<UnitWorkspace | null>(restoredUnits?.workspace ?? null)
+  const [unitInput, setUnitInput] = useState<UnitWorkspaceInput | null>(restoredUnits?.input ?? null)
   const [editingCalendar, setEditingCalendar] = useState(false)
   const [editingTerms, setEditingTerms] = useState(false)
   const [editingClasses, setEditingClasses] = useState(false)
+  const [editingUnits, setEditingUnits] = useState(false)
   const [storageNotice, setStorageNotice] = useState<string | null>(() => {
     if (initialLoad.status === 'invalid') return 'Arc found saved calendar data it could not verify. Nothing was restored; please confirm the calendar again.'
     if (initialLoad.status === 'unavailable') return 'Calendar storage is unavailable in this browser. Changes may last only for this session.'
     if (initialPlanningLoad.status === 'invalid') return 'Arc found saved class data it could not verify. The calendar is safe; please confirm the classes again.'
     if (initialPlanningLoad.status === 'unavailable') return 'Class storage is unavailable in this browser. Class changes may last only for this session.'
+    if (initialUnitLoad.status === 'invalid') return 'Arc found saved Unit data it could not verify. Your calendar and classes are safe; please confirm the Units again.'
+    if (initialUnitLoad.status === 'unavailable') return 'Unit storage is unavailable in this browser. Unit changes may last only for this session.'
     return null
   })
 
@@ -56,6 +69,7 @@ export function AppFrame() {
     setEditingCalendar(false)
     setEditingTerms(false)
     setEditingClasses(false)
+    setEditingUnits(false)
     setStorageNotice(persisted ? null : 'This calendar is active for this session, but Arc could not save it in this browser.')
   }
 
@@ -84,6 +98,14 @@ export function AppFrame() {
     setStorageNotice(persisted ? null : 'These classes are active for this session, but Arc could not save them in this browser.')
   }
 
+  function useUnits(input: UnitWorkspaceInput, workspace: UnitWorkspace) {
+    const persisted = saveUnitsToBrowser(input)
+    setUnitWorkspace(workspace)
+    setUnitInput(input)
+    setEditingUnits(false)
+    setStorageNotice(persisted ? null : 'These Units are active for this session, but Arc could not save them in this browser.')
+  }
+
   function movePeriod(direction: PeriodDirection) {
     if (!calendar || !anchorDate) return
     const next = moveAnchor(calendar, activeView, anchorDate, direction)
@@ -104,29 +126,22 @@ export function AppFrame() {
   }
 
   const showCalendarSetup = !calendar || !anchorDate || editingCalendar
-  const showEditor = showCalendarSetup || editingTerms || editingClasses
+  const showEditor = showCalendarSetup || editingTerms || editingClasses || editingUnits
   const previousTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'previous') : null
   const nextTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'next') : null
   const todayTarget = calendar ? todayAnchor(calendar, currentLocalISODate()) : null
   const hasTerms = Boolean(calendar && (calendar.quarters.length > 0 || calendar.semesters.length > 0))
   const hasClasses = Boolean(planningWorkspace && planningWorkspace.courses.length > 0)
-  const stageTitle = editingTerms ? 'Terms' : editingClasses ? 'Classes' : activeView
+  const hasUnits = Boolean(unitWorkspace && unitWorkspace.units.length > 0)
+  const protectedCourseIds = courseIdsProtectedByUnits(unitWorkspace)
+  const stageTitle = editingTerms ? 'Terms' : editingClasses ? 'Classes' : editingUnits ? 'Units' : activeView
 
   return (
     <div className="arc-shell">
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
 
       <header className="arc-header" aria-label="Arc application header">
-        <button
-          className="arc-wordmark"
-          type="button"
-          aria-label={`Return to ${DEFAULT_HOME_VIEW} view`}
-          onClick={() => {
-            if (!showEditor) setActiveView(DEFAULT_HOME_VIEW)
-          }}
-        >
-          arc
-        </button>
+        <button className="arc-wordmark" type="button" aria-label={`Return to ${DEFAULT_HOME_VIEW} view`} onClick={() => { if (!showEditor) setActiveView(DEFAULT_HOME_VIEW) }}>arc</button>
         <div className="arc-header-space" aria-hidden="true" />
       </header>
 
@@ -136,32 +151,13 @@ export function AppFrame() {
             const isCurrent = activeView === view
             const availability = viewAvailability(view)
             const unavailable = !availability.available
-            return (
-              <button
-                key={view}
-                type="button"
-                className="view-nav-item"
-                aria-current={isCurrent ? 'page' : undefined}
-                aria-disabled={!showEditor && unavailable ? 'true' : undefined}
-                aria-label={!showEditor && unavailable ? `${view}. ${availability.reason}` : view}
-                title={!showEditor && unavailable ? availability.reason : undefined}
-                disabled={showEditor}
-                onClick={() => {
-                  if (!unavailable) setActiveView(view)
-                }}
-              >
-                {view}
-              </button>
-            )
+            return <button key={view} type="button" className="view-nav-item" aria-current={isCurrent ? 'page' : undefined} aria-disabled={!showEditor && unavailable ? 'true' : undefined} aria-label={!showEditor && unavailable ? `${view}. ${availability.reason}` : view} title={!showEditor && unavailable ? availability.reason : undefined} disabled={showEditor} onClick={() => { if (!unavailable) setActiveView(view) }}>{view}</button>
           })}
         </nav>
 
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
           <header className="calendar-stage-header">
-            <div>
-              <p className="section-label">Calendar</p>
-              <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
-            </div>
+            <div><p className="section-label">Calendar</p><h1 className="view-title" aria-live="polite">{stageTitle}</h1></div>
 
             {calendar && !showEditor && anchorDate && (
               <div className="calendar-header-tools">
@@ -176,6 +172,7 @@ export function AppFrame() {
                     <button type="button" className="text-button" onClick={() => setEditingCalendar(true)}>Edit dates</button>
                     <button type="button" className="text-button" onClick={() => setEditingTerms(true)}>{hasTerms ? 'Edit terms' : 'Set terms'}</button>
                     <button type="button" className="text-button" onClick={() => setEditingClasses(true)}>{hasClasses ? 'Edit classes' : 'Set classes'}</button>
+                    {hasClasses && <button type="button" className="text-button" onClick={() => setEditingUnits(true)}>{hasUnits ? 'Edit Units' : 'Add Units'}</button>}
                   </div>
                 </div>
               </div>
@@ -186,24 +183,13 @@ export function AppFrame() {
 
           <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
             {showCalendarSetup ? (
-              <CalendarSetup
-                initialValue={calendarInput}
-                onSave={useCalendar}
-                onCancel={calendar ? () => setEditingCalendar(false) : undefined}
-              />
+              <CalendarSetup initialValue={calendarInput} onSave={useCalendar} onCancel={calendar ? () => setEditingCalendar(false) : undefined} />
             ) : editingTerms && calendarInput ? (
-              <TermBoundarySetup
-                input={calendarInput}
-                onSave={useTerms}
-                onCancel={() => setEditingTerms(false)}
-              />
+              <TermBoundarySetup input={calendarInput} onSave={useTerms} onCancel={() => setEditingTerms(false)} />
             ) : editingClasses && calendar ? (
-              <ClassSetup
-                calendarId={calendar.id}
-                initialValue={planningInput}
-                onSave={useClasses}
-                onCancel={() => setEditingClasses(false)}
-              />
+              <ClassSetup calendarId={calendar.id} initialValue={planningInput} protectedCourseIds={protectedCourseIds} onSave={useClasses} onCancel={() => setEditingClasses(false)} />
+            ) : editingUnits && calendar && planningWorkspace ? (
+              <UnitSetup calendar={calendar} planning={planningWorkspace} initialValue={unitInput} onSave={useUnits} onCancel={() => setEditingUnits(false)} />
             ) : (
               <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />
             )}
