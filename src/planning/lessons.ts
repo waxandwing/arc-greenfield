@@ -3,6 +3,7 @@ import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Unit } from './units'
 
 export type LessonId = string
+export type LessonDatePolicy = 'flexible' | 'fixed'
 
 export type Lesson = {
   id: LessonId
@@ -12,6 +13,7 @@ export type Lesson = {
   title: string
   sequence: number
   plannedDate: ISODate | null
+  datePolicy: LessonDatePolicy
 }
 
 export function createLessonId(): LessonId {
@@ -29,6 +31,7 @@ export function createLesson(input: {
   title: string
   sequence: number
   plannedDate?: ISODate | null
+  datePolicy?: LessonDatePolicy
 }): Lesson {
   const lesson: Lesson = {
     id: input.id ?? createLessonId(),
@@ -38,6 +41,7 @@ export function createLesson(input: {
     title: input.title.trim(),
     sequence: input.sequence,
     plannedDate: input.plannedDate ?? null,
+    datePolicy: input.datePolicy ?? 'flexible',
   }
 
   const errors = validateLesson(lesson)
@@ -53,6 +57,8 @@ export function validateLesson(lesson: Lesson): string[] {
   if (!lesson.unitId.trim()) errors.push('Lesson Unit ID is required.')
   if (!lesson.title.trim()) errors.push('Lesson title is required.')
   if (!Number.isInteger(lesson.sequence) || lesson.sequence < 1) errors.push('Lesson sequence must be a positive whole number.')
+  if (lesson.datePolicy !== 'flexible' && lesson.datePolicy !== 'fixed') errors.push('Lesson date policy must be flexible or fixed.')
+  if (lesson.datePolicy === 'fixed' && !lesson.plannedDate) errors.push('A fixed Lesson needs a planned date.')
   return errors
 }
 
