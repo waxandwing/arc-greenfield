@@ -12,7 +12,7 @@ export function PlanningMonthView({
   planning: MonthPlanningProjection
 }) {
   return (
-    <div className="planning-month" aria-label={`${formatMonthKey(month.monthKey)} planning calendar`}>
+    <div className="planning-month">
       <div className="planning-month-weekdays" aria-hidden="true">
         {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
       </div>
@@ -21,7 +21,7 @@ export function PlanningMonthView({
         return (
           <section className="planning-month-week" key={calendarWeek.startDate} aria-label={`Week of ${formatShortDate(calendarWeek.startDate)}`}>
             {planningWeek?.unitSegments.length ? (
-              <div className="planning-month-unit-stack" aria-label="Unit pacing">
+              <div className="planning-month-unit-stack">
                 {planningWeek.unitSegments.map((segment) => <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} />)}
               </div>
             ) : null}
@@ -43,11 +43,8 @@ export function PlanningMonthView({
 }
 
 function MonthUnitLane({ segment }: { segment: MonthUnitSegment }) {
-  const continuation = [segment.continuesBefore ? 'continues from prior week' : null, segment.continuesAfter ? 'continues next week' : null]
-    .filter(Boolean)
-    .join(', ')
   return (
-    <div className="planning-month-unit-lane" aria-label={`${segment.courseTitle}, ${segment.title}${continuation ? `, ${continuation}` : ''}`}>
+    <div className="planning-month-unit-lane">
       <div
         className="planning-month-unit-band"
         style={{ gridColumn: `${segment.startColumn + 1} / ${segment.endColumn + 2}` }}
@@ -79,9 +76,11 @@ function MonthDayCell({
   ].filter(Boolean).join(' ')
 
   return (
-    <div className={classes} aria-label={`${formatLongDate(day.date)}${dayStatus ? `. ${dayStatus}` : ''}`}>
+    <div className={classes}>
       <div className="planning-month-day-heading">
-        <span className="planning-month-date">{Number(day.date.slice(8))}</span>
+        <time className="planning-month-date" dateTime={day.date} aria-label={formatLongDate(day.date)}>
+          {Number(day.date.slice(8))}
+        </time>
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
       </div>
       <div className="planning-month-signals">
@@ -95,25 +94,16 @@ function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
   const statusSummary = summarizeStatuses(signal)
   const shiftedNames = signal.sections.filter((section) => section.isSectionOverride).map((section) => section.sectionName)
   const sectionNames = signal.sections.map((section) => section.sectionName)
-  const accessible = [
-    signal.courseTitle,
-    signal.title,
-    signal.datePolicy === 'fixed' ? 'fixed date' : null,
-    `Sections: ${sectionNames.join(', ')}`,
-    shiftedNames.length ? `Shifted for ${shiftedNames.join(', ')}` : null,
-    statusSummary,
-  ].filter(Boolean).join('. ')
 
   return (
-    <article className={`planning-month-signal${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}`} aria-label={accessible}>
+    <article className={`planning-month-signal${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}`}>
       <div className="planning-month-signal-heading">
         <span className="planning-month-signal-title">{signal.title}</span>
         {signal.datePolicy === 'fixed' ? <span className="planning-month-fixed">Fixed</span> : null}
       </div>
-      <span className="planning-month-signal-course">{signal.courseTitle}</span>
-      <span className="planning-month-signal-sections">{sectionNames.join(' · ')}</span>
-      {shiftedNames.length ? <span className="planning-month-shifted">Shifted: {shiftedNames.join(', ')}</span> : null}
+      <span className="planning-month-signal-context">{signal.courseTitle} · {sectionNames.join(' · ')}</span>
       {statusSummary ? <span className="planning-month-status-summary">{statusSummary}</span> : null}
+      {shiftedNames.length ? <span className="planning-month-shifted">Shifted: {shiftedNames.join(', ')}</span> : null}
     </article>
   )
 }
