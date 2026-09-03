@@ -38,7 +38,7 @@ jobs:
           npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
           npx playwright install --with-deps chromium
 
-      - name: Run Day interface browser audit
+      - name: Run interface browser audits
         run: |
           npm run preview -- --host 127.0.0.1 > /tmp/arc-preview.log 2>&1 &
           PREVIEW_PID=$!
@@ -51,3 +51,4 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/day-interface.browser.mjs
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/week-interface.browser.mjs
