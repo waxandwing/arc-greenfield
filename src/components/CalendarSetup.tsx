@@ -3,6 +3,7 @@ import {
   hydrateSchoolCalendar,
   validateHydrationInput,
   type CalendarDay,
+  type CalendarHydrationInput,
   type DayKind,
   type ISODate,
   type SchoolCalendar,
@@ -35,25 +36,32 @@ type DraftException = {
 }
 
 type Props = {
-  onSave: (calendar: SchoolCalendar) => void
+  initialValue?: CalendarHydrationInput | null
+  onSave: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
+  onCancel?: () => void
 }
 
-export function CalendarSetup({ onSave }: Props) {
-  const [schoolYearLabel, setSchoolYearLabel] = useState('')
-  const [firstDay, setFirstDay] = useState('')
-  const [lastDay, setLastDay] = useState('')
-  const [weekdays, setWeekdays] = useState<Weekday[]>([1, 2, 3, 4, 5])
-  const [exceptions, setExceptions] = useState<DraftException[]>([])
+export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) {
+  const [schoolYearLabel, setSchoolYearLabel] = useState(initialValue?.schoolYearLabel ?? '')
+  const [firstDay, setFirstDay] = useState(initialValue?.firstDay ?? '')
+  const [lastDay, setLastDay] = useState(initialValue?.lastDay ?? '')
+  const [weekdays, setWeekdays] = useState<Weekday[]>(initialValue?.instructionalWeekdays ?? [1, 2, 3, 4, 5])
+  const [exceptions, setExceptions] = useState<DraftException[]>(() => (initialValue?.exceptions ?? []).map((day, index) => ({
+    id: `${day.date}-${index}`,
+    date: day.date,
+    kind: day.kind === 'unknown' ? 'no-school' : day.kind,
+    label: day.label ?? '',
+  })))
   const [errors, setErrors] = useState<string[]>([])
 
-  const input = useMemo(() => ({
+  const input = useMemo<CalendarHydrationInput>(() => ({
     id: schoolYearLabel.trim() ? `manual-${schoolYearLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}` : 'manual-school-year',
     schoolYearLabel: schoolYearLabel.trim(),
     firstDay: firstDay as ISODate,
     lastDay: lastDay as ISODate,
     instructionalWeekdays: weekdays,
-    patternSource: 'manual' as const,
-    patternConfidence: 'confirmed' as const,
+    patternSource: 'manual',
+    patternConfidence: 'confirmed',
     exceptions: exceptions
       .filter((item) => item.date)
       .map<CalendarDay>((item) => ({
@@ -101,7 +109,7 @@ export function CalendarSetup({ onSave }: Props) {
     }
 
     setErrors([])
-    onSave(hydrateSchoolCalendar(input))
+    onSave(hydrateSchoolCalendar(input), input)
   }
 
   return (
@@ -123,12 +131,7 @@ export function CalendarSetup({ onSave }: Props) {
         <div className="setup-field-grid">
           <label>
             <span>School year</span>
-            <input
-              value={schoolYearLabel}
-              onChange={(event) => setSchoolYearLabel(event.target.value)}
-              placeholder="2026–27"
-              autoComplete="off"
-            />
+            <input value={schoolYearLabel} onChange={(event) => setSchoolYearLabel(event.target.value)} placeholder="2026–27" autoComplete="off" />
           </label>
           <label>
             <span>First day</span>
@@ -145,11 +148,7 @@ export function CalendarSetup({ onSave }: Props) {
           <div className="weekday-options">
             {WEEKDAYS.map((day) => (
               <label key={day.value} className="weekday-option">
-                <input
-                  type="checkbox"
-                  checked={weekdays.includes(day.value)}
-                  onChange={() => toggleWeekday(day.value)}
-                />
+                <input type="checkbox" checked={weekdays.includes(day.value)} onChange={() => toggleWeekday(day.value)} />
                 <span>{day.label}</span>
               </label>
             ))}
@@ -194,7 +193,10 @@ export function CalendarSetup({ onSave }: Props) {
 
         <div className="setup-actions">
           <p>Manual setup is treated as confirmed only because you are explicitly declaring the pattern and exceptions here.</p>
-          <button type="submit" className="primary-button">Use this calendar</button>
+          <div className="setup-action-buttons">
+            {onCancel && <button type="button" className="quiet-button" onClick={onCancel}>Cancel</button>}
+            <button type="submit" className="primary-button">Use this calendar</button>
+          </div>
         </div>
       </form>
     </section>
