@@ -55,14 +55,22 @@ export function LessonSetup({ calendar, planning, units, initialValue, onSave, o
 
   function changeUnit(lessonId: string, unitId: string) {
     const unit = units.units.find((candidate) => candidate.id === unitId)
-    if (!unit) return
-    setLessons((current) => current.map((lesson) => lesson.id === lessonId ? {
-      ...lesson,
+    const lesson = lessons.find((candidate) => candidate.id === lessonId)
+    if (!unit || !lesson) return
+
+    const hasTeachingHistory = deliveryStates.some((state) => state.lessonId === lessonId)
+    if (unit.courseId !== lesson.courseId && hasTeachingHistory) {
+      setErrors(['This Lesson has saved class progress. Arc will not move it to a different course and erase or detach that history. Resolve the class progress first.'])
+      return
+    }
+
+    setErrors([])
+    setLessons((current) => current.map((item) => item.id === lessonId ? {
+      ...item,
       unitId: unit.id,
       courseId: unit.courseId,
       plannedDate: null,
-    } : lesson))
-    setDeliveryStates((current) => current.filter((state) => state.lessonId !== lessonId))
+    } : item))
   }
 
   function removeLesson(lessonId: string) {
