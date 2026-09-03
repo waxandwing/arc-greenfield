@@ -2,12 +2,14 @@ import type { ISODate, SchoolCalendar } from '../calendar/types'
 import { effectiveLessonDeliveryState } from './deliveryState'
 import type { LessonWorkspace } from './lessonWorkspace'
 import { effectiveLessonDate, validateSectionLessonOverride, type SectionLessonDateOverride } from './sectionSchedule'
+import { sameDayApprovalCovers, sameDayApprovalKey, validateSameDayLessonApproval, type SameDayLessonApproval } from './sameDayApproval'
 import type { PlanningWorkspace } from './workspace'
 import type { UnitWorkspace } from './unitWorkspace'
 
 export type SectionScheduleWorkspace = {
   calendarId: string
   overrides: SectionLessonDateOverride[]
+  sameDayApprovals?: SameDayLessonApproval[]
 }
 
 export function validateSectionScheduleWorkspace(
@@ -18,6 +20,7 @@ export function validateSectionScheduleWorkspace(
   lessons: LessonWorkspace,
 ): string[] {
   const errors: string[] = []
+  const approvals = workspace.sameDayApprovals ?? []
   if (workspace.calendarId !== calendar.id) errors.push('Section schedule belongs to a different school calendar.')
   if (planning.calendarId !== calendar.id) errors.push('Class workspace belongs to a different school calendar.')
   if (units.calendarId !== calendar.id) errors.push('Unit workspace belongs to a different school calendar.')
@@ -51,8 +54,25 @@ export function validateSectionScheduleWorkspace(
     errors.push(...validateSectionLessonOverride({ override, section, lesson, unit, calendar }).map((error) => `${section.name} / ${lesson.title}: ${error}`))
   }
 
+  const approvalKeys = new Set<string>()
+  for (const approval of approvals) {
+    const key = sameDayApprovalKey(approval)
+    if (approvalKeys.has(key)) {
+      errors.push(`Duplicate same-day approval for ${approval.sectionId} on ${approval.date}.`)
+      continue
+    }
+    approvalKeys.add(key)
+
+    const section = planning.sections.find((candidate) => candidate.id === approval.sectionId)
+    if (!section) {
+      errors.push(`Same-day approval references a Section that does not exist: ${approval.sectionId}.`)
+      continue
+    }
+    errors.push(...validateSameDayLessonApproval({ approval, calendar, section, lessons: lessons.lessons }).map((error) => `${section.name}: ${error}`))
+  }
+
   for (const section of planning.sections) {
-    const byDate = new Map<ISODate, string[]>()
+    const byDate = new Map<ISODate, Array<{ id: string; title: string }>>()
     const sectionLessons = lessons.lessons.filter((candidate) => candidate.courseId === section.courseId && candidate.calendarId === section.calendarId)
     for (const lesson of sectionLessons) {
       const delivery = effectiveLessonDeliveryState(lessons.deliveryStates, lesson, section)
@@ -60,12 +80,14 @@ export function validateSectionScheduleWorkspace(
 
       const date = effectiveLessonDate(lesson, section.id, workspace.overrides)
       if (!date) continue
-      const titles = byDate.get(date) ?? []
-      titles.push(lesson.title)
-      byDate.set(date, titles)
+      const sameDate = byDate.get(date) ?? []
+      sameDate.push({ id: lesson.id, title: lesson.title })
+      byDate.set(date, sameDate)
     }
-    for (const [date, titles] of byDate) {
-      if (titles.length > 1) errors.push(`${section.name} has multiple live Lessons on ${date}: ${titles.join(', ')}.`)
+    for (const [date, sameDate] of byDate) {
+      if (sameDate.length <= 1) continue
+      const approved = approvals.some((approval) => sameDayApprovalCovers(approval, section.id, date, sameDate.map((lesson) => lesson.id)))
+      if (!approved) errors.push(`${section.name} has multiple live Lessons on ${date}: ${sameDate.map((lesson) => lesson.title).join(', ')}.`)
     }
   }
 
