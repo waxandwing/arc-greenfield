@@ -9,6 +9,7 @@ import './styles/termSetup.css'
 import './styles/classSetup.css'
 import './styles/unitSetup.css'
 import './styles/lessonSetup.css'
+import './styles/recoveryReview.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>,
