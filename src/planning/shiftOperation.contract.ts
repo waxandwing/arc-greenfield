@@ -79,6 +79,9 @@ assert(validateShiftOperation({ operation: stale, section: p5, lessons, units, c
 const weekend = createShiftOperation({ id: 'shift-weekend', sectionId: p5.id, changes: [{ lessonId: lesson17.id, fromDate: '2026-09-16', toDate: '2026-09-19' }] })
 assert(validateShiftOperation({ operation: weekend, section: p5, lessons, units, calendar, overrides }).some((error) => error.includes('confirmed instructional day')), 'Shift must reject non-instructional target dates.')
 
+const noOp = createShiftOperation({ id: 'shift-no-op', sectionId: p5.id, changes: [{ lessonId: lesson17.id, fromDate: '2026-09-16', toDate: '2026-09-16' }] })
+assert(validateShiftOperation({ operation: noOp, section: p5, lessons, units, calendar, overrides }).some((error) => error.includes('does not move')), 'Shift must reject no-op changes that would create misleading operation history.')
+
 const newerP5Overrides = [...applied.overrides, { sectionId: p5.id, lessonId: 'some-newer-lesson', plannedDate: '2026-09-22' as const }]
 let staleUndoBlocked = false
 try {
