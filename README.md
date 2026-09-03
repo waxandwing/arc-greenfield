@@ -16,7 +16,7 @@ Do not add duplicate handoff, audit, blueprint, or design-system documents here.
 ## Current system boundary
 Calendar truth → Courses/Sections → Units → Lessons → per-Section delivery state → recovery consequence preview → explicit recovery resolution → Section-specific atomic Shift → persisted Section schedule + reload-safe whole-operation Undo.
 
-Current gate: Apply Shift / Undo has passed a hostile source + contract audit. Successful Apply returns to the calendar so Undo is immediately visible. Recovery destination preflight excludes dates that are already occupied by live/fixed work under the current collision-blocking policy. Browser-driven interaction remains a separate release gate.
+Current gate: the hostile Apply Shift / Undo audit is integrated in `develop`. Successful Apply returns to the calendar so Undo is immediately visible. Recovery destination preflight excludes dates that are already occupied by live/fixed work under the current collision-blocking policy. Browser-driven interaction remains a separate release gate.
 
 Core rules:
 - one shared Course/Unit/Lesson plan; Sections carry actual teaching state.
