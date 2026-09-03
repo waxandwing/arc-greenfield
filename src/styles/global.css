@@ -72,9 +72,10 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .projection-range{display:grid;grid-template-columns:repeat(7,minmax(100px,1fr));min-width:700px}
 .projection-range--compact{grid-template-columns:repeat(14,minmax(42px,1fr));min-width:840px}
 .calendar-day-cell{position:relative;min-height:104px;padding:10px;border-right:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle);background:var(--paper-raised)}
-.calendar-day-cell--compact{min-height:42px;padding:6px}
-.calendar-day-date{display:block;font-size:13px;font-weight:700}
-.calendar-day-label,.calendar-day-status{display:block;margin-top:6px;font-size:12px;line-height:1.25;color:var(--soft-charcoal)}
+.calendar-day-cell--compact{min-height:44px;padding:6px}
+.calendar-day-date{display:block;font-size:16px;font-weight:700}
+.calendar-day-cell--compact .calendar-day-date{font-size:14px}
+.calendar-day-status{display:block;margin-top:6px;font-size:14px;line-height:1.3;color:var(--soft-charcoal)}
 .calendar-day-cell--weekend{background:rgba(74,73,69,.05)}
 .calendar-day-cell--outside-year{opacity:.42}
 .calendar-day-cell--no-school,.calendar-day-cell--holiday,.calendar-day-cell--break,.calendar-day-cell--teacher-workday{background:rgba(124,156,173,.08)}
