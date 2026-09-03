@@ -3,9 +3,14 @@ import type { ISODate, SchoolCalendar } from '../calendar'
 import {
   createUnit,
   createUnitId,
+  deleteUnit,
   hydrateUnitWorkspace,
+  moveUnit,
   placeUnit,
+  unplaceUnitFromCalendar,
+  type LessonWorkspace,
   type PlanningWorkspace,
+  type SectionLessonDateOverride,
   type Unit,
   type UnitWorkspace,
   type UnitWorkspaceInput,
@@ -14,15 +19,26 @@ import {
 type Props = {
   calendar: SchoolCalendar
   planning: PlanningWorkspace
+  lessons: LessonWorkspace
+  overrides: SectionLessonDateOverride[]
   initialValue: UnitWorkspaceInput | null
   protectedUnitIds?: Set<string>
   onSave: (input: UnitWorkspaceInput, workspace: UnitWorkspace) => void
   onCancel: () => void
 }
 
-export function UnitSetup({ calendar, planning, initialValue, protectedUnitIds = new Set(), onSave, onCancel }: Props) {
+export function UnitSetup({ calendar, planning, lessons, overrides, initialValue, protectedUnitIds = new Set(), onSave, onCancel }: Props) {
   const [units, setUnits] = useState<Unit[]>(() => initialValue?.units.map((unit) => ({ ...unit, placement: unit.placement ? { ...unit.placement } : null })) ?? [])
   const [errors, setErrors] = useState<string[]>([])
+
+  function currentWorkspace(): UnitWorkspace {
+    return { calendarId: calendar.id, units }
+  }
+
+  function reportActionError(error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
+    setErrors(message.split(/(?<=\.)\s+/).filter(Boolean))
+  }
 
   function addUnit() {
     const firstCourse = planning.courses[0]
@@ -36,22 +52,47 @@ export function UnitSetup({ calendar, planning, initialValue, protectedUnitIds =
     }])
   }
 
-  function removeUnit(unitId: string) {
-    if (protectedUnitIds.has(unitId)) {
-      setErrors(['This Unit still has Lessons. Move or remove those Lessons before removing the Unit.'])
-      return
+  function deleteDraftUnit(unitId: string) {
+    try {
+      const next = deleteUnit({ calendar, units: currentWorkspace(), lessons, overrides, unitId })
+      setUnits(next.units)
+      setErrors([])
+    } catch (error) {
+      reportActionError(error)
     }
-    setUnits((current) => current.filter((item) => item.id !== unitId))
+  }
+
+  function unplaceDraftUnit(unitId: string) {
+    try {
+      const next = unplaceUnitFromCalendar({ calendar, units: currentWorkspace(), lessons, overrides, unitId })
+      setUnits(next.units)
+      setErrors([])
+    } catch (error) {
+      reportActionError(error)
+    }
   }
 
   function updatePlacement(unitId: string, edge: 'start' | 'end', rawDate: string) {
-    setUnits((current) => current.map((item) => {
-      if (item.id !== unitId) return item
-      if (!rawDate) return { ...item, placement: null }
-      const date = rawDate as ISODate
-      if (edge === 'start') return { ...item, placement: { startDate: date, endDate: item.placement?.endDate ?? date } }
-      return { ...item, placement: { startDate: item.placement?.startDate ?? date, endDate: date } }
-    }))
+    const unit = units.find((candidate) => candidate.id === unitId)
+    if (!unit) return
+
+    if (!rawDate) {
+      unplaceDraftUnit(unitId)
+      return
+    }
+
+    const date = rawDate as ISODate
+    const placement = edge === 'start'
+      ? { startDate: date, endDate: unit.placement?.endDate ?? date }
+      : { startDate: unit.placement?.startDate ?? date, endDate: date }
+
+    try {
+      const next = moveUnit({ calendar, units: currentWorkspace(), lessons, overrides, unitId, placement })
+      setUnits(next.units)
+      setErrors([])
+    } catch (error) {
+      reportActionError(error)
+    }
   }
 
   function submit() {
@@ -84,13 +125,14 @@ export function UnitSetup({ calendar, planning, initialValue, protectedUnitIds =
             <label><span>Course</span><select value={unit.courseId} onChange={(event) => setUnits((current) => current.map((item) => item.id === unit.id ? { ...item, courseId: event.target.value } : item))}>{planning.courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}</select></label>
             <label><span>Start</span><input type="date" min={calendar.firstDay} max={calendar.lastDay} value={unit.placement?.startDate ?? ''} onChange={(event) => updatePlacement(unit.id, 'start', event.target.value)} /></label>
             <label><span>End</span><input type="date" min={calendar.firstDay} max={calendar.lastDay} value={unit.placement?.endDate ?? ''} onChange={(event) => updatePlacement(unit.id, 'end', event.target.value)} /></label>
-            <button type="button" className="text-button" aria-describedby={protectedByLesson ? `${unit.id}-protected` : undefined} onClick={() => removeUnit(unit.id)}>Remove</button>
-            {protectedByLesson && <p className="unit-protected-note" id={`${unit.id}-protected`}>This Unit contains Lessons, so Arc will not remove it until those Lessons are moved or removed.</p>}
+            {unit.placement && <button type="button" className="text-button" onClick={() => unplaceDraftUnit(unit.id)}>Unplace</button>}
+            <button type="button" className="text-button" aria-describedby={protectedByLesson ? `${unit.id}-protected` : undefined} onClick={() => deleteDraftUnit(unit.id)}>Delete</button>
+            {protectedByLesson && <p className="unit-protected-note" id={`${unit.id}-protected`}>This Unit contains Lessons. Arc will not delete it until those Lessons are moved or deleted, and it will not unplace the Unit while Lesson dates still depend on its calendar span.</p>}
           </section>
         })}
       </div>
       <button type="button" className="quiet-button" onClick={addUnit}>Add Unit</button>
-      <div className="setup-actions"><p>Unscheduled Units are allowed. Placed Units must contain at least one confirmed instructional day.</p><div className="setup-action-buttons"><button type="button" className="text-button" onClick={onCancel}>Cancel</button><button type="button" className="primary-button" onClick={submit}>Save Units</button></div></div>
+      <div className="setup-actions"><p>Unscheduled Units are allowed. Moving, unplacing, and deleting use the same protected actions as the calendar.</p><div className="setup-action-buttons"><button type="button" className="text-button" onClick={onCancel}>Cancel</button><button type="button" className="primary-button" onClick={submit}>Save Units</button></div></div>
     </div>
   )
 }
