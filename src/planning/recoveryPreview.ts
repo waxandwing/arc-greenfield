@@ -1,22 +1,21 @@
 import { nextInstructionalDay } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Section } from './courses'
-import type { LessonDeliveryState } from './deliveryState'
+import { effectiveLessonDeliveryState, type LessonDeliveryState } from './deliveryState'
 import type { Lesson } from './lessons'
 import { effectiveLessonDate, type SectionLessonDateOverride } from './sectionSchedule'
 
 export type RecoveryAffectedLesson = {
   lessonId: string
   title: string
-  plannedDate: ISODate
-  datePolicy: 'flexible' | 'fixed'
+  effectiveDate: ISODate
   reason: 'resume-date-collision' | 'before-fixed-anchor'
 }
 
 export type RecoveryFixedAnchor = {
   lessonId: string
   title: string
-  plannedDate: ISODate
+  effectiveDate: ISODate
 }
 
 export type RecoveryPreview = {
@@ -36,9 +35,10 @@ export function createRecoveryPreview(input: {
   lesson: Lesson
   state: LessonDeliveryState
   lessons: Lesson[]
+  deliveryStates?: LessonDeliveryState[]
   overrides?: SectionLessonDateOverride[]
 }): RecoveryPreview {
-  const { calendar, section, lesson, state, lessons, overrides = [] } = input
+  const { calendar, section, lesson, state, lessons, deliveryStates = [], overrides = [] } = input
   const ownershipErrors = validateRecoverySource(section, lesson, state)
   if (ownershipErrors.length > 0) throw new Error(`Cannot preview recovery. ${ownershipErrors.join(' ')}`)
 
@@ -58,6 +58,10 @@ export function createRecoveryPreview(input: {
 
   const futureCoursePlan = lessons
     .filter((candidate) => candidate.id !== lesson.id && candidate.courseId === section.courseId && candidate.calendarId === section.calendarId)
+    .filter((candidate) => {
+      const delivery = effectiveLessonDeliveryState(deliveryStates, candidate, section)
+      return delivery.status !== 'completed' && delivery.status !== 'skipped'
+    })
     .map((candidate) => ({ lesson: candidate, date: effectiveLessonDate(candidate, section.id, overrides) }))
     .filter((entry): entry is { lesson: Lesson; date: ISODate } => Boolean(entry.date && entry.date >= resumeDate))
     .sort((a, b) => a.date.localeCompare(b.date) || a.lesson.sequence - b.lesson.sequence || a.lesson.title.localeCompare(b.lesson.title))
@@ -66,17 +70,16 @@ export function createRecoveryPreview(input: {
   const fixedAnchor: RecoveryFixedAnchor | null = fixedEntry ? {
     lessonId: fixedEntry.lesson.id,
     title: fixedEntry.lesson.title,
-    plannedDate: fixedEntry.date,
+    effectiveDate: fixedEntry.date,
   } : null
 
   const affectedFlexibleLessons = futureCoursePlan
     .filter((entry) => entry.lesson.datePolicy === 'flexible')
-    .filter((entry) => !fixedAnchor || entry.date <= fixedAnchor.plannedDate)
+    .filter((entry) => !fixedAnchor || entry.date <= fixedAnchor.effectiveDate)
     .map((entry): RecoveryAffectedLesson => ({
       lessonId: entry.lesson.id,
       title: entry.lesson.title,
-      plannedDate: entry.date,
-      datePolicy: 'flexible',
+      effectiveDate: entry.date,
       reason: entry.date === resumeDate ? 'resume-date-collision' : 'before-fixed-anchor',
     }))
 
