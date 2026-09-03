@@ -14,33 +14,42 @@ type Props = {
   calendarId: string
   initialValue: PlanningWorkspaceInput | null
   protectedCourseIds?: Set<string>
+  protectedSectionIds?: Set<string>
   onSave: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
   onCancel: () => void
 }
 
-export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new Set(), onSave, onCancel }: Props) {
+export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new Set(), protectedSectionIds = new Set(), onSave, onCancel }: Props) {
   const [courses, setCourses] = useState<Course[]>(() => initialValue?.courses.map((course) => ({ ...course })) ?? [])
   const [sections, setSections] = useState<Section[]>(() => initialValue?.sections.map((section) => ({ ...section })) ?? [])
   const [errors, setErrors] = useState<string[]>([])
 
-  function addCourse() {
-    setCourses((current) => [...current, { id: createCourseId(), title: '' }])
-  }
+  function addCourse() { setCourses((current) => [...current, { id: createCourseId(), title: '' }]) }
 
   function removeCourse(courseId: string) {
     if (protectedCourseIds.has(courseId)) {
       setErrors(['This course still has Units. Remove or move those Units before removing the course.'])
       return
     }
+    const protectedSection = sections.find((section) => section.courseId === courseId && protectedSectionIds.has(section.id))
+    if (protectedSection) {
+      setErrors([`${protectedSection.name || 'A section'} has Lesson progress. Clear or preserve that teaching history before removing the course.`])
+      return
+    }
     setCourses((current) => current.filter((course) => course.id !== courseId))
     setSections((current) => current.filter((section) => section.courseId !== courseId))
   }
 
+  function removeSection(section: Section) {
+    if (protectedSectionIds.has(section.id)) {
+      setErrors([`${section.name || 'This section'} has Lesson progress. Arc will not erase that teaching history silently.`])
+      return
+    }
+    setSections((current) => current.filter((item) => item.id !== section.id))
+  }
+
   function addSection(courseId: string) {
-    setSections((current) => [
-      ...current,
-      { id: createSectionId(), courseId, calendarId, name: '' },
-    ])
+    setSections((current) => [...current, { id: createSectionId(), courseId, calendarId, name: '' }])
   }
 
   function submit() {
@@ -61,86 +70,37 @@ export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new 
 
   return (
     <div className="class-setup">
-      <div className="calendar-setup-intro">
-        <p className="section-label">Classes</p>
-        <h2>Tell Arc what you actually teach.</h2>
-        <p>Add each course once, then add the periods or sections that use that same plan. Arc keeps the curriculum shared without pretending every class moves at the same speed.</p>
-      </div>
-
-      {errors.length > 0 && (
-        <div className="setup-errors" role="alert">
-          <strong>Check the class setup.</strong>
-          <ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul>
-        </div>
-      )}
-
+      <div className="calendar-setup-intro"><p className="section-label">Classes</p><h2>Tell Arc what you actually teach.</h2><p>Add each course once, then add the periods or sections that use that same plan. Arc keeps the curriculum shared without pretending every class moves at the same speed.</p></div>
+      {errors.length > 0 && <div className="setup-errors" role="alert"><strong>Check the class setup.</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div>}
       <div className="class-course-list">
-        {courses.length === 0 && (
-          <div className="class-empty-state">
-            <p>No classes yet.</p>
-            <button type="button" className="primary-button" onClick={addCourse}>Add a course</button>
-          </div>
-        )}
-
+        {courses.length === 0 && <div className="class-empty-state"><p>No classes yet.</p><button type="button" className="primary-button" onClick={addCourse}>Add a course</button></div>}
         {courses.map((course) => {
           const courseSections = sectionsForWorkspaceCourse({ calendarId, courses, sections }, course.id)
           const protectedByUnit = protectedCourseIds.has(course.id)
           return (
             <section className="class-course" key={course.id} aria-labelledby={`${course.id}-label`}>
               <div className="class-course-heading">
-                <label className="class-course-title" id={`${course.id}-label`}>
-                  <span>Course</span>
-                  <input
-                    value={course.title}
-                    placeholder="AP Art History"
-                    onChange={(event) => setCourses((current) => current.map((item) => item.id === course.id ? { ...item, title: event.target.value } : item))}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="text-button"
-                  aria-describedby={protectedByUnit ? `${course.id}-protected-note` : undefined}
-                  onClick={() => removeCourse(course.id)}
-                >
-                  Remove course
-                </button>
+                <label className="class-course-title" id={`${course.id}-label`}><span>Course</span><input value={course.title} placeholder="AP Art History" onChange={(event) => setCourses((current) => current.map((item) => item.id === course.id ? { ...item, title: event.target.value } : item))} /></label>
+                <button type="button" className="text-button" aria-describedby={protectedByUnit ? `${course.id}-protected-note` : undefined} onClick={() => removeCourse(course.id)}>Remove course</button>
               </div>
-
               {protectedByUnit && <p className="class-protected-note" id={`${course.id}-protected-note`}>This course has Units, so Arc will not remove it until those Units are moved or removed.</p>}
-
               <div className="class-section-list">
-                {courseSections.map((section) => (
-                  <div className="class-section-row" key={section.id}>
-                    <label>
-                      <span>Period or section</span>
-                      <input
-                        value={section.name}
-                        placeholder="Period 2"
-                        onChange={(event) => setSections((current) => current.map((item) => item.id === section.id ? { ...item, name: event.target.value } : item))}
-                      />
-                    </label>
-                    <button type="button" className="text-button" onClick={() => setSections((current) => current.filter((item) => item.id !== section.id))}>Remove</button>
+                {courseSections.map((section) => {
+                  const protectedByProgress = protectedSectionIds.has(section.id)
+                  return <div className="class-section-row" key={section.id}>
+                    <label><span>Period or section</span><input value={section.name} placeholder="Period 2" onChange={(event) => setSections((current) => current.map((item) => item.id === section.id ? { ...item, name: event.target.value } : item))} /></label>
+                    <button type="button" className="text-button" aria-describedby={protectedByProgress ? `${section.id}-protected` : undefined} onClick={() => removeSection(section)}>Remove</button>
+                    {protectedByProgress && <p className="class-protected-note" id={`${section.id}-protected`}>This section has saved Lesson progress.</p>}
                   </div>
-                ))}
-
+                })}
                 <button type="button" className="quiet-button class-add-section" onClick={() => addSection(course.id)}>Add a period or section</button>
               </div>
             </section>
           )
         })}
       </div>
-
-      {courses.length > 0 && (
-        <button type="button" className="quiet-button class-add-course" onClick={addCourse}>Add another course</button>
-      )}
-
-      <div className="setup-actions">
-        <p>Course names are shared curriculum. Periods and sections are the actual groups you teach. Their individual progress comes later, after Lessons exist.</p>
-        <div className="setup-action-buttons">
-          <button type="button" className="text-button" onClick={onCancel}>Cancel</button>
-          <button type="button" className="primary-button" onClick={submit}>Save classes</button>
-        </div>
-      </div>
+      {courses.length > 0 && <button type="button" className="quiet-button class-add-course" onClick={addCourse}>Add another course</button>}
+      <div className="setup-actions"><p>Course names are shared curriculum. Periods and sections are the actual groups you teach. Arc protects teaching history once a section begins diverging.</p><div className="setup-action-buttons"><button type="button" className="text-button" onClick={onCancel}>Cancel</button><button type="button" className="primary-button" onClick={submit}>Save classes</button></div></div>
     </div>
   )
 }
