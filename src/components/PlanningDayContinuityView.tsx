@@ -36,13 +36,13 @@ export function PlanningDayContinuityView({
                 <span>Unit</span>
                 <span className="day-continuity-unit-options">
                   {course.activeUnits.map((unit, index) => (
-                    <span key={unit.id}>
+                    <span key={unit.unitId}>
                       {index > 0 ? <span aria-hidden="true"> · </span> : null}
                       <button
                         type="button"
                         className="calendar-object-select day-continuity-unit-select"
-                        aria-pressed={isCalendarObjectSelected(selection, 'unit', unit.id)}
-                        onClick={() => onSelect({ kind: 'unit', id: unit.id })}
+                        aria-pressed={isCalendarObjectSelected(selection, 'unit', unit.unitId)}
+                        onClick={() => onSelect({ kind: 'unit', id: unit.unitId })}
                       >
                         {unit.title}
                       </button>
