@@ -139,8 +139,13 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     )
   }
 
-  const planningContext = planningWorkspace && unitWorkspace && lessonWorkspace
-    ? { planning: planningWorkspace, units: unitWorkspace, lessons: lessonWorkspace, shiftState }
+  const planningContext = planningWorkspace
+    ? {
+        planning: planningWorkspace,
+        units: unitWorkspace ?? emptyUnitProjection(calendar.id),
+        lessons: lessonWorkspace ?? emptyLessonProjection(calendar.id),
+        shiftState: lessonWorkspace ? shiftState : null,
+      }
     : null
 
   return (
@@ -151,4 +156,12 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       planningContext={planningContext}
     />
   )
+}
+
+function emptyUnitProjection(calendarId: string): UnitWorkspace {
+  return { calendarId, units: [] }
+}
+
+function emptyLessonProjection(calendarId: string): LessonWorkspace {
+  return { calendarId, lessons: [], deliveryStates: [] }
 }
