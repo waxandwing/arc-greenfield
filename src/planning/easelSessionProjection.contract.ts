@@ -67,6 +67,12 @@ const loose = createLesson({
   plannedDate: null,
 })
 
+let p2Interrupted = createLessonDeliveryState({ lesson: lesson17, section: p2 })
+p2Interrupted = updateLessonDeliveryState(p2Interrupted, lesson17, p2, {
+  status: 'in-progress',
+  taughtDate: '2026-09-16',
+  resumeNote: 'Period 2 stopped at the comparison.',
+})
 let p5Interrupted = createLessonDeliveryState({ lesson: lesson17, section: p5 })
 p5Interrupted = updateLessonDeliveryState(p5Interrupted, lesson17, p5, {
   status: 'in-progress',
@@ -83,7 +89,7 @@ p5Loose = updateLessonDeliveryState(p5Loose, loose, p5, {
 const lessons: LessonWorkspace = {
   calendarId: calendar.id,
   lessons: [lesson17, lesson18, loose],
-  deliveryStates: [p5Interrupted, p5Loose],
+  deliveryStates: [p2Interrupted, p5Interrupted, p5Loose],
 }
 
 const unresolvedDay = projectDayContinuity({
@@ -95,7 +101,7 @@ const unresolvedDay = projectDayContinuity({
 })
 const unresolvedOptions = easelLaunchOptions(unresolvedDay, p5.id)
 assert(unresolvedOptions.length === 3, 'Easel must expose every valid P5 teaching candidate without silently choosing between carryover and today’s plan.')
-assert(unresolvedOptions[0].lessonId === loose.id && unresolvedOptions[0].source === 'carryover', 'Older unfinished teaching should remain a carryover launch candidate.')
+assert(unresolvedOptions.some((option) => option.lessonId === loose.id && option.source === 'carryover'), 'Unscheduled unfinished teaching should remain a carryover launch candidate without relying on presentation order.')
 assert(unresolvedOptions.some((option) => option.lessonId === lesson17.id && option.source === 'carryover'), 'Interrupted Lesson 17 must remain an explicit carryover candidate before Shift.')
 assert(unresolvedOptions.some((option) => option.lessonId === lesson18.id && option.source === 'scheduled'), 'Today’s planned Lesson 18 must remain a separate scheduled candidate.')
 
@@ -103,8 +109,14 @@ const interruptedSession = projectEaselSession({ day: unresolvedDay, sectionId: 
 assert(interruptedSession.courseId === course.id && interruptedSession.sectionId === p5.id, 'Easel must preserve exact Course and Section identity from Arc Day.')
 assert(interruptedSession.lessonId === lesson17.id && interruptedSession.unitId === unit.id, 'Easel must preserve exact shared Lesson and Unit identity.')
 assert(interruptedSession.source === 'carryover', 'Unresolved interrupted work must enter Easel as carryover, not be rewritten as today’s schedule.')
-assert(interruptedSession.resumeNote === 'Stopped after demo.' && interruptedSession.deliveryStatus === 'in-progress', 'Easel must receive the exact saved stopping point.')
+assert(interruptedSession.resumeNote === 'Stopped after demo.' && interruptedSession.deliveryStatus === 'in-progress', 'Easel must receive the exact P5 stopping point.')
 assert(interruptedSession.effectiveDate === '2026-09-16', 'Easel must preserve the current effective schedule date before recovery Shift.')
+
+const p2SameLesson = projectEaselSession({ day: unresolvedDay, sectionId: p2.id, lessonId: lesson17.id })
+assert(p2SameLesson.lessonId === interruptedSession.lessonId, 'Two Sections may launch the same shared Lesson identity.')
+assert(p2SameLesson.sectionId === p2.id && interruptedSession.sectionId === p5.id, 'Easel must keep the selected Section identity even when both Sections share the same Lesson.')
+assert(p2SameLesson.resumeNote === 'Period 2 stopped at the comparison.', 'Easel must read the selected Section’s delivery state rather than another Section’s state.')
+assert(p2SameLesson.resumeNote !== interruptedSession.resumeNote, 'Shared Lesson identity must not collapse distinct Section stopping points.')
 
 const looseSession = projectEaselSession({ day: unresolvedDay, sectionId: p5.id, lessonId: loose.id })
 assert(looseSession.effectiveDate === null && looseSession.source === 'carryover', 'Easel must preserve genuinely unscheduled in-progress teaching without inventing a date.')
@@ -139,7 +151,7 @@ try {
 }
 assert(missingSectionRejected, 'Easel must fail closed for a Section outside the selected Day.')
 
-assert(lessons.deliveryStates[0].resumeNote === 'Stopped after demo.', 'Projecting an Easel session must not mutate Arc delivery state.')
+assert(lessons.deliveryStates.find((state) => state.sectionId === p5.id && state.lessonId === lesson17.id)?.resumeNote === 'Stopped after demo.', 'Projecting an Easel session must not mutate Arc delivery state.')
 assert(lesson17.plannedDate === '2026-09-16', 'Projecting an Easel session must not mutate shared Lesson planning truth.')
 
 console.log('Arc to Easel session projection contract passed')
