@@ -16,7 +16,7 @@ Do not add duplicate handoff, audit, blueprint, or design-system documents here.
 ## Current system boundary
 Calendar truth → Courses/Sections → Units → Lessons → per-Section delivery state → recovery consequence preview → explicit recovery resolution → Section-specific atomic Shift → persisted Section schedule + reload-safe whole-operation Undo → explicit same-day approval domain.
 
-Current gate: same-day Lesson approval exists only as a verified domain permission model. Ordinary live collisions remain errors by default. An approval is exact to one Section, one confirmed instructional date, and one exact Lesson set. Persistence ownership and teacher-facing approval controls are deliberately not implemented yet.
+Current gate: the same-day Lesson approval domain is integrated in `develop`. Ordinary live collisions remain errors by default. An approval is exact to one Section, one confirmed instructional date, and one exact Lesson set. Persistence ownership and teacher-facing approval controls remain blocked until approval state can survive Apply, Undo, reload, and upstream reconciliation without loss.
 
 Core rules:
 - one shared Course/Unit/Lesson plan; Sections carry actual teaching state.
