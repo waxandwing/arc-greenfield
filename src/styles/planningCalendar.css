@@ -1,0 +1,232 @@
+.planning-grid{
+  display:grid;
+  gap:var(--space-4);
+  min-width:920px;
+  overflow:visible;
+}
+
+.planning-date-header,
+.planning-unit-grid,
+.planning-section-row{
+  display:grid;
+  align-items:stretch;
+}
+
+.planning-date-header{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:var(--paper);
+  border-bottom:1px solid var(--line-subtle);
+}
+
+.planning-row-label,
+.planning-date-heading,
+.planning-day-slot{
+  min-width:0;
+  padding:var(--space-3);
+}
+
+.planning-row-label{
+  display:flex;
+  align-items:flex-start;
+  border-right:1px solid var(--line-subtle);
+  color:var(--ink);
+}
+
+.planning-row-label--header,
+.planning-row-label--unit{
+  align-items:center;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--soft-charcoal);
+}
+
+.planning-date-heading{
+  display:grid;
+  gap:2px;
+  border-right:1px solid var(--line-subtle);
+  font-size:13px;
+  font-weight:700;
+  color:var(--ink);
+}
+
+.planning-date-weekday,
+.planning-date-kind{
+  font-size:11px;
+  color:var(--soft-charcoal);
+}
+
+.planning-date-kind{
+  font-weight:600;
+}
+
+.planning-course{
+  display:grid;
+  gap:var(--space-2);
+  border-top:1px solid var(--line-subtle);
+  padding-top:var(--space-3);
+}
+
+.planning-course-heading{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:var(--space-3);
+}
+
+.planning-course-heading h2{
+  margin:0;
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:18px;
+  font-weight:600;
+  color:var(--ink);
+}
+
+.planning-unit-grid{
+  min-height:34px;
+}
+
+.planning-unit-span{
+  align-self:center;
+  min-width:0;
+  margin:4px 6px;
+  padding:6px 10px;
+  overflow:hidden;
+  border-left:4px solid var(--terracotta);
+  background:rgba(201,104,69,.12);
+  font-size:12px;
+  font-weight:700;
+  color:var(--ink);
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.planning-section-list{
+  display:grid;
+  border-top:1px solid var(--line-subtle);
+}
+
+.planning-section-row{
+  min-height:92px;
+  border-bottom:1px solid var(--line-subtle);
+}
+
+.planning-section-row>.planning-row-label{
+  font-size:13px;
+}
+
+.planning-day-slot{
+  display:grid;
+  align-content:start;
+  gap:6px;
+  border-right:1px solid var(--line-subtle);
+  background:rgba(255,255,255,.16);
+}
+
+.planning-day-slot--no-school,
+.planning-day-slot--holiday,
+.planning-day-slot--break,
+.planning-day-slot--teacher-workday{
+  background:rgba(74,73,69,.045);
+}
+
+.planning-day-slot--unknown{
+  background:repeating-linear-gradient(135deg,rgba(74,73,69,.04),rgba(74,73,69,.04) 6px,transparent 6px,transparent 12px);
+}
+
+.planning-lesson{
+  display:grid;
+  gap:5px;
+  padding:9px 10px;
+  border:1px solid var(--line-subtle);
+  border-left:4px solid var(--dusty-blue);
+  border-radius:4px;
+  background:rgba(243,235,221,.82);
+  color:var(--ink);
+}
+
+.planning-lesson--in-progress{
+  border-left-color:var(--mustard);
+}
+
+.planning-lesson--completed{
+  opacity:.68;
+}
+
+.planning-lesson--skipped{
+  opacity:.58;
+  text-decoration:line-through;
+}
+
+.planning-lesson--fixed{
+  border-top-color:var(--terracotta);
+}
+
+.planning-lesson-title-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+
+.planning-lesson-title{
+  font-size:13px;
+  font-weight:700;
+  line-height:1.25;
+}
+
+.planning-lesson-anchor{
+  flex:0 0 auto;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  color:var(--terracotta-text);
+}
+
+.planning-lesson-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 8px;
+  font-size:11px;
+  color:var(--soft-charcoal);
+}
+
+.planning-resume-note{
+  margin:0;
+  padding-top:5px;
+  border-top:1px solid var(--line-subtle);
+  font-size:12px;
+  line-height:1.35;
+}
+
+.planning-empty-state,
+.planning-course-empty,
+.planning-day-empty{
+  color:var(--soft-charcoal);
+}
+
+.planning-course-empty{
+  margin:0;
+  padding:var(--space-3);
+  font-size:13px;
+}
+
+.planning-day-empty{
+  font-size:12px;
+}
+
+.planning-grid--day{
+  min-width:0;
+}
+
+.planning-grid--day .planning-section-row{
+  min-height:112px;
+}
+
+@media (max-width:900px){
+  .planning-grid:not(.planning-grid--day){min-width:820px}
+}
