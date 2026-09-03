@@ -54,8 +54,8 @@ export function PlanningDayContinuityView({
                       </div>
                     ) : null}
 
-                    <div className="day-continuity-planned" aria-label={`${section.sectionName} planned today`}>
-                      <p className="day-continuity-kicker">Planned today</p>
+                    <div className="day-continuity-planned" aria-label={`${section.sectionName} plan for today`}>
+                      <p className="day-continuity-kicker">Today’s plan</p>
                       {section.scheduledLessons.length > 0 ? (
                         section.scheduledLessons.map((lesson) => (
                           <ContinuityLesson key={lesson.lessonId} lesson={lesson} />
@@ -77,14 +77,15 @@ export function PlanningDayContinuityView({
 
 function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuityLesson; carryover?: boolean }) {
   const status = humanizeStatus(lesson.deliveryStatus)
+  const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
   const accessible = [
     lesson.title,
     lesson.unitTitle,
-    carryover ? 'unfinished teaching Arc is holding' : 'planned today',
+    carryover ? 'unfinished teaching Arc is holding' : 'plan for today',
     lesson.datePolicy === 'fixed' ? 'fixed date' : null,
     lesson.isSectionOverride ? 'shifted for this class' : null,
     status,
-    lesson.taughtDate ? `last taught ${formatShortDate(lesson.taughtDate)}` : null,
+    lesson.taughtDate ? `taught ${formatShortDate(lesson.taughtDate)}` : null,
     lesson.resumeNote ? `resume note: ${lesson.resumeNote}` : null,
   ].filter(Boolean).join('. ')
 
@@ -102,6 +103,8 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
       </p>
       {carryover && lesson.taughtDate ? (
         <p className="day-continuity-last-taught">Last taught {formatShortDate(lesson.taughtDate)}</p>
+      ) : !carryover && actualDateDiffers && lesson.taughtDate ? (
+        <p className="day-continuity-last-taught">Taught {formatShortDate(lesson.taughtDate)}</p>
       ) : null}
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</p>
