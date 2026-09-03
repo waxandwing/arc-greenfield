@@ -125,6 +125,8 @@ export function projectYearMap(calendar: SchoolCalendar): YearMapProjection {
   }
 }
 
+function projectBoundary(calendar: SchoolCalendar, boundary: TermBoundary, kind: 'quarter'): QuarterProjection
+function projectBoundary(calendar: SchoolCalendar, boundary: TermBoundary, kind: 'semester'): SemesterProjection
 function projectBoundary(
   calendar: SchoolCalendar,
   boundary: TermBoundary,
