@@ -18,9 +18,9 @@ Implemented:
 - overlay layer for future secondary tools
 - accessibility baseline
 - one canonical calendar-view state owner
-- Year / Quarter / Month / Week / Day navigation
+- Year Map / Semester / Quarter / Month / Week / Day navigation
 - functional Arc home action returning to Month
-- desktop rail and mobile bottom navigation
+- desktop rail and horizontally scrollable mobile bottom navigation
 
 Intentionally excluded:
 - calendar data or date logic
