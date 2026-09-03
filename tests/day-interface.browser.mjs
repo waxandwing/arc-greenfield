@@ -129,6 +129,39 @@ async function auditViewport(browser, width, height) {
   assert(await page.getByText(lesson17Title, { exact: true }).isVisible(), `${width}px: long carryover Lesson title is not visible.`)
   assert(await page.getByText(lesson18Title, { exact: true }).first().isVisible(), `${width}px: long planned Lesson title is not visible.`)
 
+  const visual = await page.evaluate(() => {
+    const firstSection = document.querySelector('.day-continuity-section')
+    const held = document.querySelector('.day-continuity-held')
+    const heldTitle = held?.querySelector('.day-continuity-lesson-heading strong')
+    const plannedAfterHeld = document.querySelector('.day-continuity-held + .day-continuity-planned .day-continuity-lesson-heading strong')
+    const normalTitle = document.querySelector('.day-continuity-section:first-child .day-continuity-lesson-heading strong')
+    const metadata = document.querySelector('.day-continuity-lesson-meta')
+    const resume = document.querySelector('.day-continuity-resume')
+    if (!firstSection || !held || !heldTitle || !plannedAfterHeld || !normalTitle || !metadata || !resume) return null
+    const sectionStyle = getComputedStyle(firstSection)
+    const heldStyle = getComputedStyle(held)
+    return {
+      sectionPaddingTop: parseFloat(sectionStyle.paddingTop),
+      sectionBackground: sectionStyle.backgroundColor,
+      sectionRadius: parseFloat(sectionStyle.borderTopLeftRadius),
+      heldBorderWidth: parseFloat(heldStyle.borderLeftWidth),
+      heldBorderColor: heldStyle.borderLeftColor,
+      heldPaddingLeft: parseFloat(heldStyle.paddingLeft),
+      heldTitleSize: parseFloat(getComputedStyle(heldTitle).fontSize),
+      plannedAfterHeldSize: parseFloat(getComputedStyle(plannedAfterHeld).fontSize),
+      normalTitleSize: parseFloat(getComputedStyle(normalTitle).fontSize),
+      metadataSize: parseFloat(getComputedStyle(metadata).fontSize),
+      resumeSize: parseFloat(getComputedStyle(resume).fontSize),
+    }
+  })
+  assert(visual, `${width}px: Day perceptual-contract elements were not all rendered.`)
+  assert(visual.sectionPaddingTop === (width <= 900 ? 16 : 24), `${width}px: Section vertical spacing drifted (${visual.sectionPaddingTop}px).`)
+  assert(visual.sectionBackground === 'rgba(0, 0, 0, 0)' && visual.sectionRadius === 0, `${width}px: Section drifted into card styling.`)
+  assert(visual.heldBorderWidth === 4 && visual.heldBorderColor === 'rgb(201, 104, 69)', `${width}px: carryover orientation rule drifted from canonical terracotta/4px.`)
+  assert(visual.heldPaddingLeft === (width <= 680 ? 12 : 16), `${width}px: carryover inset drifted (${visual.heldPaddingLeft}px).`)
+  assert(visual.heldTitleSize === 18 && visual.normalTitleSize === 18 && visual.plannedAfterHeldSize === 16, `${width}px: Day teaching-position title hierarchy drifted.`)
+  assert(visual.metadataSize === 14 && visual.resumeSize === 16, `${width}px: Day metadata/body type floor drifted.`)
+
   const geometry = await page.evaluate(() => ({
     viewportWidth: document.documentElement.clientWidth,
     documentWidth: document.documentElement.scrollWidth,
@@ -168,10 +201,11 @@ async function auditViewport(browser, width, height) {
 
 const browser = await chromium.launch({ headless: true })
 try {
+  await auditViewport(browser, 1024, 900)
   await auditViewport(browser, 800, 900)
   await auditViewport(browser, 390, 844)
   await auditViewport(browser, 320, 800)
-  console.log('Day interface Chromium audit passed at compact 800px, 390px mobile, and 320px minimum reflow.')
+  console.log('Day interface Chromium audit passed at 1024px desktop, 800px compact, 390px mobile, and 320px minimum reflow.')
 } finally {
   await browser.close()
 }
