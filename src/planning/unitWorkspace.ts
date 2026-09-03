@@ -1,5 +1,5 @@
 import type { SchoolCalendar } from '../calendar'
-import { createUnit, placeUnit, validateUnit, validateUnitCourse, type Unit } from './units'
+import { createUnit, placeUnit, validateUnit, validateUnitCourse, validateUnitPlacement, type Unit } from './units'
 import type { PlanningWorkspace } from './workspace'
 
 export type UnitWorkspace = {
@@ -44,6 +44,7 @@ export function validateUnitWorkspace(
   const ids = new Set<string>()
   for (const unit of workspace.units) {
     errors.push(...validateUnit(unit))
+    if (unit.placement) errors.push(...validateUnitPlacement(unit, calendar, unit.placement))
     if (ids.has(unit.id)) errors.push(`Duplicate Unit ID: ${unit.id}.`)
     ids.add(unit.id)
 
