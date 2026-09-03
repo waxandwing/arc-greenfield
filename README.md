@@ -5,7 +5,7 @@ Greenfield rebuild. Calendar-first. Trust-first.
 ## Authority
 - `main` — protected, release-only. Never use it as the active development source.
 - `develop` — the only integrated pre-release source of truth.
-- `feature/foundation-realignment-audit` — the only active branch for this checkpoint.
+- `feature/day-teaching-continuity` — the only active implementation branch for this checkpoint.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point.
 - every other branch is historical, abandoned, experimental, accidental, or reference-only unless this file explicitly says otherwise.
 
@@ -30,11 +30,15 @@ The primary product loop outranks convenient implementation order. Do not keep e
 - AppFrame decomposition into discoverable ownership boundaries;
 - real Week/Day planning projection plus hostile Week/Day clearance;
 - real Month planning projection;
-- Week↔Day↔Month exact Section-effective cross-view clearance.
+- Week↔Day↔Month exact Section-effective cross-view clearance;
+- foundation realignment and primary-loop sequencing checkpoint at `5fe3d0febfd13db07cfde5c58243397289853493`.
+
+### Active checkpoint
+Day teaching continuity is being proven as a read-only projection over canonical planning + Section delivery state. It must answer, per Section, what is scheduled today and what unfinished teaching Arc is still holding. Day does not mutate recovery state, invent dates, or become a second recovery engine.
 
 ### Not complete
-- Day as the full "where am I today?" teaching-continuity surface;
-- Easel continuity from that exact Day/Section/Lesson state;
+- teacher-facing Day continuity presentation and interaction audit;
+- Easel continuity from exact Day/Section/Lesson state;
 - Quarter/Semester/Year Map planning presentation at final density;
 - auth and account isolation;
 - account-backed/Drive persistence and reconciliation;
@@ -70,7 +74,8 @@ Keep one obvious owner per concern.
 - `src/planning/planningProjection.ts` — canonical range projection from shared Course/Unit/Lesson state + Section-effective dates/delivery state.
 - `src/planning/planningLessonSignals.ts` — exact shared-Lesson aggregation from canonical per-Section range placements. Section ID/name/Shift/status remain one object; duplicate Section/Lesson/date placement fails closed.
 - `src/planning/monthPlanningProjection.ts` — Month geometry aggregation only; it reuses canonical range and Lesson-signal projection.
-- `src/components/PlanningWeekDayView.tsx` — Week/Day planning presentation only.
+- `src/planning/dayContinuityProjection.ts` — read-only Day-specific continuity projection. It may combine today’s effective schedule with unfinished prior teaching state, but it may not mutate, reschedule, or duplicate Recovery/Shift rules.
+- `src/components/PlanningWeekDayView.tsx` — Week/Day planning presentation only until Day continuity receives its dedicated presentation boundary.
 - `src/components/PlanningMonthView.tsx` — Month planning presentation only.
 - `src/calendar/**` — school-calendar truth and calendar-only projections.
 - `src/planning/**` — Course/Section/Unit/Lesson/delivery/recovery/Shift domain and persistence boundaries.
@@ -83,6 +88,7 @@ A UI component is not a state store. A view is not a second domain model. A cont
 - a Section override moves only that Section's effective placement and leaves no ghost on the shared date.
 - distinct Sections may share a display name and still remain distinct by stable ID.
 - Month grouping must reconstruct exact Section identity, name, delivery state, fixed/flexible policy, and Shift ownership from Week/Day placements.
+- Day continuity may additionally surface genuine in-progress carryover from an earlier teaching day, including unscheduled work or work whose Unit plan span has ended. That carryover is teaching-state truth, not a new schedule placement.
 - outside-month padding retains real planning continuity.
 - Unit bands may cross weekend/no-school dates without converting them to instructional days.
 - malformed date geometry and duplicate placements fail closed.
@@ -120,14 +126,14 @@ A UI component is not a state store. A view is not a second domain model. A cont
 2. TypeScript compile;
 3. Vite production bundle.
 
-Permanent gates include calendar truth, terms, Course/Section, Units, Lessons/delivery, recovery/Shift/Undo/persistence, Week/Day hostile projection, Month projection, shared Lesson-signal identity, and Week↔Day↔Month cross-view truth.
+Permanent gates include calendar truth, terms, Course/Section, Units, Lessons/delivery, recovery/Shift/Undo/persistence, Week/Day hostile projection, Month projection, shared Lesson-signal identity, Week↔Day↔Month cross-view truth, and Day teaching-continuity projection.
 
 No feature advances to `develop` without an exact-head green gate. `develop` must pass again after integration.
 
 ## Next authorized work
-1. finish and integrate this foundation realignment only if the exact branch and `develop` gates stay green;
-2. build **Day teaching continuity** from the already-cleared canonical Section/Lesson state;
-3. build **Easel** from that exact Day state and prove Arc → Easel → Arc continuity;
+1. finish the Day continuity projection/presentation and hostile-audit it on the exact feature head;
+2. integrate only after the exact feature head is green, then require `develop` to pass independently;
+3. build Easel from the exact Day/Section/Lesson state and prove Arc → Easel → Arc continuity;
 4. return to Quarter/Semester/Year Map as natural zoom-outs of the proven calendar language, not separate dashboards;
 5. close auth/account isolation and account/Drive persistence before external beta;
 6. resume secondary systems only when the primary workflow requires them;
