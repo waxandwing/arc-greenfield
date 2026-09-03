@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "test:calendar": "tsc -p tsconfig.calendar-test.json && node tests/generated/tests/calendar.contract.js && node tests/generated/src/calendar/projections.contract.js"
+    "test:calendar": "tsc -p tsconfig.calendar-test.json && node tests/generated/tests/calendar.contract.js && node tests/generated/src/calendar/projections.contract.js",
+    "build": "npm run test:calendar && tsc -b && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "latest",
