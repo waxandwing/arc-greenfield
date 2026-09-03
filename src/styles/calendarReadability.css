@@ -35,7 +35,7 @@ input,select,.quiet-button,.primary-button,.weekday-option span{
 
 .projection-subtitle{
   margin:4px 0 0;
-  font-size:13px;
+  font-size:14px;
   color:var(--soft-charcoal);
 }
 
@@ -50,11 +50,12 @@ input,select,.quiet-button,.primary-button,.weekday-option span{
 .term-context-item{
   display:inline-flex;
   align-items:center;
-  min-height:28px;
-  padding:4px 8px;
+  min-height:32px;
+  padding:5px 8px;
   border-left:3px solid var(--mustard);
   background:rgba(228,179,61,.08);
-  font-size:12px;
+  font-size:14px;
+  line-height:1.25;
   font-weight:700;
   color:var(--soft-charcoal);
 }
@@ -88,7 +89,7 @@ input,select,.quiet-button,.primary-button,.weekday-option span{
 
 .month-weekday-row span{
   padding:8px 10px;
-  font-size:12px;
+  font-size:14px;
   font-weight:700;
   letter-spacing:.04em;
   text-transform:uppercase;
@@ -98,7 +99,7 @@ input,select,.quiet-button,.primary-button,.weekday-option span{
 .calendar-day-weekday{
   display:block;
   margin-bottom:2px;
-  font-size:12px;
+  font-size:14px;
   font-weight:700;
   color:var(--soft-charcoal);
 }
