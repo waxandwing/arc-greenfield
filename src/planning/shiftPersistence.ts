@@ -4,7 +4,7 @@ import type { UnitWorkspace } from './unitWorkspace'
 import type { LessonWorkspace } from './lessonWorkspace'
 import type { SectionLessonDateOverride } from './sectionSchedule'
 import { validateSectionScheduleWorkspace, type SectionScheduleWorkspace } from './sectionScheduleWorkspace'
-import type { SameDayLessonApproval } from './sameDayApproval'
+import { sameDayApprovalKey, type SameDayLessonApproval } from './sameDayApproval'
 import type { ShiftUndoToken } from './shiftOperation'
 
 const STORAGE_KEY = 'arc.shift.v1'
@@ -21,7 +21,7 @@ type StoredShiftStateV1 = {
   input: {
     calendarId: string
     overrides: SectionLessonDateOverride[]
-    undo: ShiftUndoToken | null
+    undo: unknown
   }
 }
 
@@ -133,11 +133,11 @@ function parseStoredShiftState(raw: string): ParsedShiftState | null {
     }
 
     const undoValue = parsed.input.undo
-    if (undoValue === null) {
+    if (undoValue === null || undoValue === undefined) {
       return { input: { calendarId: parsed.input.calendarId, overrides, sameDayApprovals, undo: null }, undoStatus: 'none' }
     }
 
-    const undo = parseUndoToken(undoValue)
+    const undo = parseUndoToken(undoValue, parsed.schemaVersion === 1)
     if (!undo) {
       return { input: { calendarId: parsed.input.calendarId, overrides, sameDayApprovals, undo: null }, undoStatus: 'malformed' }
     }
@@ -160,11 +160,18 @@ function validateUndoAgainstSchedule(
   if (!planning.sections.some((section) => section.id === token.sectionId)) return false
   if (!allOverridesBelongToSection(token.previousSectionOverrides, token.sectionId)) return false
   if (!allOverridesBelongToSection(token.appliedSectionOverrides, token.sectionId)) return false
+  if (!allApprovalsBelongToSection(token.previousSectionApprovals, token.sectionId)) return false
+  if (!allApprovalsBelongToSection(token.appliedSectionApprovals, token.sectionId)) return false
   if (hasDuplicateOverrideKeys(token.previousSectionOverrides) || hasDuplicateOverrideKeys(token.appliedSectionOverrides)) return false
+  if (hasDuplicateApprovalKeys(token.previousSectionApprovals) || hasDuplicateApprovalKeys(token.appliedSectionApprovals)) return false
 
   const currentSectionOverrides = normalizeOverrides(current.overrides.filter((override) => override.sectionId === token.sectionId))
   const appliedSectionOverrides = normalizeOverrides(token.appliedSectionOverrides)
   if (JSON.stringify(currentSectionOverrides) !== JSON.stringify(appliedSectionOverrides)) return false
+
+  const currentSectionApprovals = normalizeApprovals(current.sameDayApprovals.filter((approval) => approval.sectionId === token.sectionId))
+  const appliedSectionApprovals = normalizeApprovals(token.appliedSectionApprovals)
+  if (JSON.stringify(currentSectionApprovals) !== JSON.stringify(appliedSectionApprovals)) return false
 
   const previousFullSchedule: SectionScheduleWorkspace = {
     calendarId: calendar.id,
@@ -172,7 +179,10 @@ function validateUndoAgainstSchedule(
       ...current.overrides.filter((override) => override.sectionId !== token.sectionId),
       ...token.previousSectionOverrides,
     ],
-    sameDayApprovals: current.sameDayApprovals,
+    sameDayApprovals: [
+      ...current.sameDayApprovals.filter((approval) => approval.sectionId !== token.sectionId),
+      ...token.previousSectionApprovals,
+    ],
   }
   return validateSectionScheduleWorkspace(previousFullSchedule, calendar, planning, units, lessons).length === 0
 }
@@ -210,7 +220,7 @@ function parseSameDayApprovals(value: unknown[]): SameDayLessonApproval[] | null
   return result
 }
 
-function parseUndoToken(value: unknown): ShiftUndoToken | null {
+function parseUndoToken(value: unknown, legacy: boolean): ShiftUndoToken | null {
   if (!value || typeof value !== 'object') return null
   const token = value as Partial<ShiftUndoToken>
   if (typeof token.operationId !== 'string' || typeof token.sectionId !== 'string') return null
@@ -218,11 +228,34 @@ function parseUndoToken(value: unknown): ShiftUndoToken | null {
   const previousSectionOverrides = parseOverrides(token.previousSectionOverrides)
   const appliedSectionOverrides = parseOverrides(token.appliedSectionOverrides)
   if (!previousSectionOverrides || !appliedSectionOverrides) return null
-  return { operationId: token.operationId, sectionId: token.sectionId, previousSectionOverrides, appliedSectionOverrides }
+
+  let previousSectionApprovals: SameDayLessonApproval[] = []
+  let appliedSectionApprovals: SameDayLessonApproval[] = []
+  if (!legacy) {
+    if (!Array.isArray(token.previousSectionApprovals) || !Array.isArray(token.appliedSectionApprovals)) return null
+    const previous = parseSameDayApprovals(token.previousSectionApprovals)
+    const applied = parseSameDayApprovals(token.appliedSectionApprovals)
+    if (!previous || !applied) return null
+    previousSectionApprovals = previous
+    appliedSectionApprovals = applied
+  }
+
+  return {
+    operationId: token.operationId,
+    sectionId: token.sectionId,
+    previousSectionOverrides,
+    appliedSectionOverrides,
+    previousSectionApprovals,
+    appliedSectionApprovals,
+  }
 }
 
 function allOverridesBelongToSection(overrides: SectionLessonDateOverride[], sectionId: string): boolean {
   return overrides.every((override) => override.sectionId === sectionId)
+}
+
+function allApprovalsBelongToSection(approvals: SameDayLessonApproval[], sectionId: string): boolean {
+  return approvals.every((approval) => approval.sectionId === sectionId)
 }
 
 function hasDuplicateOverrideKeys(overrides: SectionLessonDateOverride[]): boolean {
@@ -235,8 +268,24 @@ function hasDuplicateOverrideKeys(overrides: SectionLessonDateOverride[]): boole
   return false
 }
 
+function hasDuplicateApprovalKeys(approvals: SameDayLessonApproval[]): boolean {
+  const keys = new Set<string>()
+  for (const approval of approvals) {
+    const key = sameDayApprovalKey(approval)
+    if (keys.has(key)) return true
+    keys.add(key)
+  }
+  return false
+}
+
 function normalizeOverrides(overrides: SectionLessonDateOverride[]): SectionLessonDateOverride[] {
   return overrides
     .map((override) => ({ ...override }))
     .sort((a, b) => a.sectionId.localeCompare(b.sectionId) || a.lessonId.localeCompare(b.lessonId) || a.plannedDate.localeCompare(b.plannedDate))
+}
+
+function normalizeApprovals(approvals: SameDayLessonApproval[]): SameDayLessonApproval[] {
+  return approvals
+    .map((approval) => ({ sectionId: approval.sectionId, date: approval.date, lessonIds: [...approval.lessonIds] }))
+    .sort((a, b) => sameDayApprovalKey(a).localeCompare(sameDayApprovalKey(b)))
 }
