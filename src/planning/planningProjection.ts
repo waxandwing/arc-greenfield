@@ -64,6 +64,7 @@ export function projectPlanningRange(input: {
   const { dates, planning, units, lessons, overrides } = input
   if (dates.length === 0) return { dates: [], courses: [] }
 
+  validateProjectionDates(dates)
   validateProjectionOwnership(planning, units, lessons)
 
   const dateIndexes = new Map(dates.map((date, index) => [date, index]))
@@ -150,6 +151,17 @@ function projectSectionRow(
       date,
       lessons: (dayMap.get(date) ?? []).sort((a, b) => a.sequence - b.sequence || a.title.localeCompare(b.title)),
     })),
+  }
+}
+
+function validateProjectionDates(dates: ISODate[]): void {
+  const seen = new Set<ISODate>()
+  let previous: ISODate | null = null
+  for (const date of dates) {
+    if (seen.has(date)) throw new Error(`Cannot project duplicate visible date: ${date}.`)
+    if (previous && date <= previous) throw new Error('Planning projection dates must be strictly ascending.')
+    seen.add(date)
+    previous = date
   }
 }
 
