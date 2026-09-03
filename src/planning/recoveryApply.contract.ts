@@ -49,26 +49,11 @@ const p5Interrupted = updateLessonDeliveryState(
 )
 const lessons = { calendarId: calendar.id, lessons: [lesson17, lesson18, test], deliveryStates: [p5Interrupted] }
 
-const preview = createRecoveryPreview({
-  calendar,
-  section: p5,
-  lesson: lesson17,
-  state: p5Interrupted,
-  lessons: lessons.lessons,
-  deliveryStates: lessons.deliveryStates,
-})
+const preview = createRecoveryPreview({ calendar, section: p5, lesson: lesson17, state: p5Interrupted, lessons: lessons.lessons, deliveryStates: lessons.deliveryStates })
 const draft = createRecoveryShiftDraft(preview)
 assert(draft !== null, 'Canonical interruption must produce an explicit recovery draft.')
 const operation = finalizeRecoveryShiftDraft(draft, { [lesson18.id]: '2026-09-21' })
-const applied = applyShiftOperation({
-  operation,
-  section: p5,
-  lessons: lessons.lessons,
-  deliveryStates: lessons.deliveryStates,
-  units: units.units,
-  calendar,
-  overrides: [],
-})
+const applied = applyShiftOperation({ operation, section: p5, lessons: lessons.lessons, deliveryStates: lessons.deliveryStates, units: units.units, calendar, overrides: [], sameDayApprovals: [] })
 
 assert(effectiveLessonDate(lesson17, p5.id, applied.overrides) === '2026-09-17', 'P5 interrupted Lesson must move to Thursday.')
 assert(effectiveLessonDate(lesson18, p5.id, applied.overrides) === '2026-09-21', 'P5 displaced flexible Lesson must move only to the teacher-selected Monday.')
@@ -76,7 +61,7 @@ assert(effectiveLessonDate(test, p5.id, applied.overrides) === '2026-09-18', 'P5
 assert(effectiveLessonDate(lesson17, p2.id, applied.overrides) === '2026-09-16', 'P2 must remain on the shared Lesson plan.')
 assert(effectiveLessonDate(lesson18, p7.id, applied.overrides) === '2026-09-17', 'P7 must remain on the shared Lesson plan.')
 
-const persisted: ShiftPersistenceInput = { calendarId: calendar.id, overrides: applied.overrides, sameDayApprovals: [], undo: applied.undo }
+const persisted: ShiftPersistenceInput = { calendarId: calendar.id, overrides: applied.overrides, sameDayApprovals: applied.sameDayApprovals, undo: applied.undo }
 const storage = new MemoryStorage()
 Object.defineProperty(globalThis, 'window', { configurable: true, value: { localStorage: storage } })
 assert(saveShiftStateToBrowser(persisted), 'Canonical Shift must persist to browser storage.')
@@ -85,41 +70,24 @@ assert(restored.status === 'restored' && restored.undoStatus === 'restored', 'Re
 if (restored.status !== 'restored') throw new Error('Expected restored Shift state.')
 assert(restored.input.sameDayApprovals.length === 0, 'Ordinary recovery must preserve the explicit empty approval set.')
 
-const afterReloadPreview = createRecoveryPreview({
-  calendar,
-  section: p5,
-  lesson: lesson17,
-  state: p5Interrupted,
-  lessons: lessons.lessons,
-  deliveryStates: lessons.deliveryStates,
-  overrides: restored.input.overrides,
-})
+const afterReloadPreview = createRecoveryPreview({ calendar, section: p5, lesson: lesson17, state: p5Interrupted, lessons: lessons.lessons, deliveryStates: lessons.deliveryStates, overrides: restored.input.overrides })
 assert(createRecoveryShiftDraft(afterReloadPreview) === null, 'Reloaded adjusted schedule must not reoffer the same recovery Shift.')
 
 assert(restored.input.undo !== null, 'Canonical restored Shift must retain Undo.')
-const undoneOverrides = undoShiftOperation(restored.input.overrides, restored.input.undo)
-assert(effectiveLessonDate(lesson17, p5.id, undoneOverrides) === '2026-09-16', 'Undo must restore P5 interrupted Lesson to the exact prior date.')
-assert(effectiveLessonDate(lesson18, p5.id, undoneOverrides) === '2026-09-17', 'Undo must restore P5 displaced Lesson to the exact prior date.')
-assert(effectiveLessonDate(lesson17, p2.id, undoneOverrides) === '2026-09-16', 'Undo must not alter P2.')
-assert(effectiveLessonDate(lesson18, p7.id, undoneOverrides) === '2026-09-17', 'Undo must not alter P7.')
+const undone = undoShiftOperation(restored.input.overrides, restored.input.sameDayApprovals, restored.input.undo)
+assert(effectiveLessonDate(lesson17, p5.id, undone.overrides) === '2026-09-16', 'Undo must restore P5 interrupted Lesson to the exact prior date.')
+assert(effectiveLessonDate(lesson18, p5.id, undone.overrides) === '2026-09-17', 'Undo must restore P5 displaced Lesson to the exact prior date.')
+assert(effectiveLessonDate(lesson17, p2.id, undone.overrides) === '2026-09-16', 'Undo must not alter P2.')
+assert(effectiveLessonDate(lesson18, p7.id, undone.overrides) === '2026-09-17', 'Undo must not alter P7.')
+assert(undone.sameDayApprovals.length === 0, 'Ordinary recovery Undo must preserve the empty approval state.')
 
-const fixedInterrupted = updateLessonDeliveryState(
-  createLessonDeliveryState({ lesson: test, section: p5 }),
-  test,
-  p5,
-  { status: 'in-progress', taughtDate: '2026-09-18', resumeNote: 'Assessment interrupted.' },
-)
+const fixedInterrupted = updateLessonDeliveryState(createLessonDeliveryState({ lesson: test, section: p5 }), test, p5, { status: 'in-progress', taughtDate: '2026-09-18', resumeNote: 'Assessment interrupted.' })
 const fixedPreview = createRecoveryPreview({ calendar, section: p5, lesson: test, state: fixedInterrupted, lessons: [test], deliveryStates: [fixedInterrupted] })
 assert(Boolean(fixedPreview.blockedReason), 'Interrupted fixed Lesson must be blocked before Apply rather than failing only at mutation time.')
 assert(createRecoveryShiftDraft(fixedPreview) === null, 'Interrupted fixed Lesson must not produce an Apply draft.')
 
 const unscheduled = createLesson({ id: 'lesson-unscheduled', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Unscheduled studio day', sequence: 20 })
-const unscheduledInterrupted = updateLessonDeliveryState(
-  createLessonDeliveryState({ lesson: unscheduled, section: p5 }),
-  unscheduled,
-  p5,
-  { status: 'in-progress', taughtDate: '2026-09-22', resumeNote: 'Stopped during cleanup.' },
-)
+const unscheduledInterrupted = updateLessonDeliveryState(createLessonDeliveryState({ lesson: unscheduled, section: p5 }), unscheduled, p5, { status: 'in-progress', taughtDate: '2026-09-22', resumeNote: 'Stopped during cleanup.' })
 const unscheduledPreview = createRecoveryPreview({ calendar, section: p5, lesson: unscheduled, state: unscheduledInterrupted, lessons: [unscheduled], deliveryStates: [unscheduledInterrupted] })
 assert(unscheduledPreview.interruptedEffectiveDate === null, 'Unscheduled shared Lesson must remain explicitly unscheduled before recovery.')
 const unscheduledDraft = createRecoveryShiftDraft(unscheduledPreview)
