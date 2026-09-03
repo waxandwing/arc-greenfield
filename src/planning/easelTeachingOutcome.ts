@@ -19,10 +19,11 @@ export function applyEaselTeachingOutcome(input: {
   outcome: EaselTeachingOutcome
 }): LessonDeliveryState {
   const { session, calendar, lesson, section, deliveryStates, outcome } = input
-  validateSessionIdentity(session, lesson, section)
+  validateSessionIdentity(session, calendar, lesson, section)
 
   const current = effectiveLessonDeliveryState(deliveryStates, lesson, section)
   validateSessionFreshness(session, current)
+  validateOutcomeTransition(current, outcome)
 
   if ((outcome.kind === 'completed' || outcome.kind === 'stopped') && !isConfirmedInstructionalDay(calendar, session.date)) {
     throw new Error('Easel cannot record teaching progress on a date that is not a confirmed instructional day.')
@@ -49,13 +50,18 @@ export function applyEaselTeachingOutcome(input: {
   })
 }
 
-function validateSessionIdentity(session: EaselSessionProjection, lesson: Lesson, section: Section): void {
+function validateSessionIdentity(
+  session: EaselSessionProjection,
+  calendar: SchoolCalendar,
+  lesson: Lesson,
+  section: Section,
+): void {
   const errors: string[] = []
   if (session.lessonId !== lesson.id) errors.push('Easel session belongs to a different Lesson.')
   if (session.sectionId !== section.id) errors.push('Easel session belongs to a different Section.')
   if (session.courseId !== lesson.courseId || session.courseId !== section.courseId) errors.push('Easel session Course ownership no longer matches Arc.')
   if (session.unitId !== lesson.unitId) errors.push('Easel session Unit ownership no longer matches Arc.')
-  if (lesson.calendarId !== section.calendarId || lesson.calendarId !== calendarIdFromSessionContext(section)) errors.push('Easel session calendar ownership no longer matches Arc.')
+  if (lesson.calendarId !== section.calendarId || lesson.calendarId !== calendar.id) errors.push('Easel session calendar ownership no longer matches Arc.')
   if (errors.length > 0) throw new Error(`Easel refused the teaching outcome. ${errors.join(' ')}`)
 }
 
@@ -69,6 +75,11 @@ function validateSessionFreshness(session: EaselSessionProjection, current: Less
   }
 }
 
-function calendarIdFromSessionContext(section: Section): string {
-  return section.calendarId
+function validateOutcomeTransition(current: LessonDeliveryState, outcome: EaselTeachingOutcome): void {
+  if (current.status === 'completed' || current.status === 'skipped') {
+    throw new Error('Easel cannot rewrite completed or skipped teaching history. Return to Arc to review the record.')
+  }
+  if (current.status === 'in-progress' && outcome.kind === 'skipped') {
+    throw new Error('Easel cannot mark already-started teaching as skipped. Save where the class stopped or complete the Lesson.')
+  }
 }
