@@ -16,7 +16,7 @@ Do not add duplicate handoff, audit, blueprint, or design-system documents here.
 ## Current system boundary
 Calendar truth → Courses/Sections → Units → Lessons → per-Section delivery state → recovery consequence preview → explicit recovery resolution → Section-specific atomic Shift → persisted Section schedule + reload-safe whole-operation Undo.
 
-Current gate: explicit teacher-facing Apply Shift and Undo are source-, contract-, and build-verified. Browser-driven interaction remains a separate release gate.
+Current gate: explicit teacher-facing Apply Shift and Undo are integrated in `develop` and source-, contract-, and build-verified. Browser-driven interaction remains a separate release gate.
 
 Core rules:
 - one shared Course/Unit/Lesson plan; Sections carry actual teaching state.
