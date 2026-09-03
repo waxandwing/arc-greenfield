@@ -5,7 +5,7 @@ Greenfield rebuild. Calendar-first. Trust-first.
 ## Authority
 - `main` — release-only. It is not the source for active development.
 - `develop` — the only integrated pre-release source of truth.
-- `feature/redevelopment-audit-cleanup` — the only active implementation branch for this audit checkpoint.
+- `feature/appframe-decomposition` — the only active implementation branch for this foundation pass.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point.
 - every other branch is historical, abandoned, accidental, or reference-only and must not be used as source for new work, previews, audits, or recovery.
 
@@ -39,13 +39,28 @@ Not yet complete:
 
 The old `feature/same-day-approval-persistence` branch is abandoned/reference-only. Its unintegrated persistence work was intentionally stopped after audit showed it was over-engineering an exception before the primary calendar planning loop is rendered. Same-day stacking remains collision-safe by default; its already-integrated exact approval domain may be completed later when ordinary calendar planning can expose the real teacher action that needs it.
 
+## Code ownership map
+Keep responsibilities discoverable. New subsystems must enter through the correct boundary rather than accumulating in the shell.
+
+- `src/components/AppFrame.tsx` — composition only. It assembles the shell and connects callbacks. Do not put persistence, domain validation, recovery math, or feature-specific business rules here.
+- `src/app/useArcWorkspace.ts` — canonical workspace state transitions and the coordination of validated saves. If this begins owning a new product subsystem such as Ideas, Easel, auth, or Notes, create a dedicated app/domain boundary instead of extending it indefinitely.
+- `src/app/workspaceBootstrap.ts` — restore order and initial persistence notices only.
+- `src/app/shiftReconciliation.ts` — cross-layer policy for preserving or dropping Shift/Undo state when upstream planning changes.
+- `src/app/useWorkspaceMode.ts` — one temporary workspace mode. Do not reintroduce independent editor booleans that can disagree.
+- `src/components/WorkspaceStage.tsx` — selects which calendar/editor/recovery surface is rendered. It does not own their data rules.
+- `src/components/CalendarStageHeader.tsx` — calendar-stage controls and action entry points only.
+- `src/components/CalendarViewRail.tsx` — calendar horizon navigation only.
+- `src/calendar/**` — school-calendar truth and projections.
+- `src/planning/**` — Course/Section/Unit/Lesson/delivery/recovery/Shift domain rules and persistence boundaries.
+
+Guardrail: a UI composition file should not become a second state store. A controller should not absorb unrelated domains just because it already has access to their state. Prefer a clear new boundary over another conditional inside an existing large file.
+
 ## Operational findings
-- Every preview/build must expose the exact Git commit fingerprint. The audit branch adds a visible build fingerprint sourced from Vercel/GitHub build SHA.
+- Every preview/build must expose the exact Git commit fingerprint.
 - GitHub Actions is the canonical source/build gate and runs read-only from the committed lockfile.
 - Vercel remains the intended preview platform.
 - A legacy Cloudflare Workers GitHub integration is still attempting builds on this repository. It is not Arc authority and must be disconnected outside this repository; its status must not be mistaken for the Arc verification gate.
 - `main` and `develop` are policy-governed but are not currently technically protected by the accessible GitHub configuration. Branch protection/rulesets remain an external repository-admin cleanup item.
-- `AppFrame.tsx` has accumulated too many orchestration responsibilities. No new major subsystem should be added directly to it; the next structural pass should extract workspace restore/persistence/mutation orchestration before Day/Easel or secondary systems expand the shell.
 
 ## Core rules
 - calendar remains the center of the product;
@@ -72,12 +87,11 @@ The old `feature/same-day-approval-persistence` branch is abandoned/reference-on
 - browser interaction is a separate release gate and is never inferred from source/build success.
 
 ## Next authorized work
-1. finish this redevelopment audit and integrate only the verified cleanup;
-2. extract AppFrame workspace orchestration before it becomes a god component;
-3. render real Units/Lessons across calendar horizons, beginning with the Week/Day planning truth;
-4. build Day/Easel teaching continuity from that same state;
-5. restore the missing platform obligations: auth/account isolation and account/Drive persistence before external beta;
-6. only then resume secondary exception systems such as teacher-facing same-day stacking, Tack/Extend, Ideas, priorities, and filters as their primary workflows require them.
+1. integrate this verified AppFrame foundation refactor;
+2. render real Units/Lessons across calendar horizons, beginning with Week/Day planning truth;
+3. build Day/Easel teaching continuity from that same state;
+4. restore missing platform obligations: auth/account isolation and account/Drive persistence before external beta;
+5. only then resume secondary exception systems such as teacher-facing same-day stacking, Tack/Extend, Ideas, priorities, and filters as their primary workflows require them.
 
 ## Release wall
 Nothing moves to `main` until product, functional, visual, accessibility, persistence, account-isolation, regression, exact-build, browser-interaction, and dependency-lock gates are explicitly cleared.
