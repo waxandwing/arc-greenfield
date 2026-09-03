@@ -172,6 +172,7 @@
 .planning-month-signal-sections,
 .planning-month-shifted,
 .planning-month-status-summary{
+  overflow-wrap:anywhere;
   font-size:14px;
   line-height:1.3;
 }
