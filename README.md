@@ -14,20 +14,21 @@ Google Drive canonical Product Spec owns product/architecture decisions. Google 
 Do not add duplicate handoff, audit, blueprint, or design-system documents here.
 
 ## Current system boundary
-Calendar truth → Courses/Sections → Units → Lessons → per-Section delivery state → recovery consequence preview → Section-specific schedule overrides → atomic Shift/Undo domain.
+Calendar truth → Courses/Sections → Units → Lessons → per-Section delivery state → recovery consequence preview → Section-specific schedule overrides → atomic Shift/Undo domain → persisted Section schedule + reload-safe optional Undo.
 
-Current gate: Shift/recovery hardening is integrated; persistence is the next required boundary before any teacher-facing Apply control.
+Current gate: Shift persistence is verified. Teacher-facing Apply/Undo remains blocked until its own interaction and regression pass.
 
 Core rules:
 - one shared Course/Unit/Lesson plan; Sections carry actual teaching state.
 - missing delivery state means `not-started`; divergence stays sparse.
 - calendar truth is explicit; missing dates are never silently instructional.
-- recovery reads the Section's effective live schedule, including Section overrides.
+- recovery reads the Section's effective live schedule, including persisted Section overrides.
 - completed/skipped work is not future recovery pressure and cannot be moved by recovery Shift.
 - fixed Lessons are anchors and cannot be moved by Shift.
 - Shift is explicit and atomic: every collision must be resolved in the operation or nothing applies.
 - Shift may change only the target Section schedule; shared Lessons and unrelated Sections remain untouched.
 - Undo is scoped to the affected Section and refuses to overwrite newer work in that Section.
+- durable Section schedule state outranks Undo capability; stale/invalid Undo is discarded without losing a valid schedule.
 - destructive upstream edits must fail rather than orphan or silently repair downstream teaching state.
 
 ## Verification
@@ -39,7 +40,6 @@ Core rules:
 - `develop` must pass again after integration.
 
 ## Open gates
-- persistence/reload for Section schedule overrides and Shift Undo state.
 - teacher-facing Apply Shift / Undo controls.
 - explicit teacher-approved same-day multi-Lesson behavior; current integrity treats collisions as blocking.
 - Unit/Lesson rendering across calendar horizons.
