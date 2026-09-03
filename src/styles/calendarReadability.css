@@ -21,6 +21,59 @@ input,select,.quiet-button,.primary-button,.weekday-option span{
   text-decoration-thickness:1px;
 }
 
+.projection-heading-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:var(--space-4);
+  margin-bottom:var(--space-3);
+}
+
+.projection-heading-row .projection-range-label{
+  margin:0;
+}
+
+.projection-subtitle{
+  margin:4px 0 0;
+  font-size:13px;
+  color:var(--soft-charcoal);
+}
+
+.term-context{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:6px;
+  max-width:60%;
+}
+
+.term-context-item{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:4px 8px;
+  border-left:3px solid var(--mustard);
+  background:rgba(228,179,61,.08);
+  font-size:12px;
+  font-weight:700;
+  color:var(--soft-charcoal);
+}
+
+.term-context-item--semester{
+  border-left-color:var(--dusty-blue);
+  background:rgba(124,156,173,.08);
+}
+
+.term-context--detailed{
+  display:grid;
+  justify-items:end;
+  max-width:68%;
+}
+
+.term-context--detailed .term-context-item{
+  background:transparent;
+}
+
 .month-section{
   display:grid;
   gap:0;
@@ -48,6 +101,18 @@ input,select,.quiet-button,.primary-button,.weekday-option span{
   font-size:12px;
   font-weight:700;
   color:var(--soft-charcoal);
+}
+
+@media (max-width:800px){
+  .projection-heading-row{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .term-context,.term-context--detailed{
+    max-width:none;
+    justify-content:flex-start;
+    justify-items:start;
+  }
 }
 
 @media (max-width:520px){
