@@ -32,11 +32,11 @@ const apah = createCourse({ id: 'course-apah', title: 'AP Art History' })
 const art2d = createCourse({ id: 'course-2d', title: '2D Art 1' })
 const p2 = createSection({ id: 'section-p2', courseId: apah.id, calendarId: calendar.id, name: 'Period 2' })
 const p5 = createSection({ id: 'section-p5', courseId: apah.id, calendarId: calendar.id, name: 'Period 5' })
-const p7 = createSection({ id: 'section-p7', courseId: apah.id, calendarId: calendar.id, name: 'Period 7' })
+const p7 = createSection({ id: 'section-p7', courseId: apah.id, calendarId: calendar.id, name: 'Period 2' })
 const p3 = createSection({ id: 'section-p3', courseId: art2d.id, calendarId: calendar.id, name: 'Period 3' })
 const planning: PlanningWorkspace = { calendarId: calendar.id, courses: [apah, art2d], sections: [p2, p5, p7, p3] }
 
-const prehistory = placeUnit(createUnit({ id: 'unit-prehistory', calendarId: calendar.id, courseId: apah.id, title: 'Prehistory' }), calendar, { startDate: '2026-08-24', endDate: '2026-09-04' })
+const prehistory = placeUnit(createUnit({ id: 'unit-prehistory', calendarId: calendar.id, courseId: apah.id, title: 'Prehistory' }), calendar, { startDate: '2026-08-24', endDate: '2026-09-09' })
 const egypt = placeUnit(createUnit({ id: 'unit-egypt', calendarId: calendar.id, courseId: apah.id, title: 'Egypt' }), calendar, { startDate: '2026-09-14', endDate: '2026-09-25' })
 const aegean = placeUnit(createUnit({ id: 'unit-aegean', calendarId: calendar.id, courseId: apah.id, title: 'Aegean' }), calendar, { startDate: '2026-09-21', endDate: '2026-10-02' })
 const line = placeUnit(createUnit({ id: 'unit-line', calendarId: calendar.id, courseId: art2d.id, title: 'Line' }), calendar, { startDate: '2026-09-14', endDate: '2026-09-25' })
@@ -56,6 +56,7 @@ p5Progress = updateLessonDeliveryState(p5Progress, l17, p5, { status: 'in-progre
 const deliveryStates: LessonDeliveryState[] = [p2Done, p5Progress]
 const lessons: LessonWorkspace = { calendarId: calendar.id, lessons: [cave, l17, l18, test, contour], deliveryStates }
 const overrides: SectionLessonDateOverride[] = [
+  { sectionId: p5.id, lessonId: cave.id, plannedDate: '2026-09-01' },
   { sectionId: p5.id, lessonId: l17.id, plannedDate: '2026-09-17' },
   { sectionId: p5.id, lessonId: l18.id, plannedDate: '2026-09-21' },
 ]
@@ -73,10 +74,8 @@ for (const date of visibleDates) {
   for (const expectedSignal of expected) {
     const actualSignal = actual.find((signal) => signal.courseId === expectedSignal.courseId && signal.lessonId === expectedSignal.lessonId)
     assert(actualSignal, `Month must include ${expectedSignal.lessonId} on ${date} when Week/Day does.`)
-    assert(equalSet(actualSignal.sectionIds, expectedSignal.sectionIds), `Month Section scope must match Week/Day for ${expectedSignal.lessonId} on ${date}.`)
-    assert(equalSet(actualSignal.shiftedSectionIds, expectedSignal.shiftedSectionIds), `Month shifted Section scope must match Week/Day for ${expectedSignal.lessonId} on ${date}.`)
     assert(actualSignal.datePolicy === expectedSignal.datePolicy, `Month fixed/flexible identity must match Week/Day for ${expectedSignal.lessonId}.`)
-    assert(equalCounts(actualSignal.statusCounts, expectedSignal.statusCounts), `Month status counts must reconstruct Week/Day Section states for ${expectedSignal.lessonId} on ${date}.`)
+    assert(equalSectionScopes(actualSignal, expectedSignal), `Month Section scope must exactly reconstruct Week/Day for ${expectedSignal.lessonId} on ${date}.`)
   }
 }
 
@@ -92,11 +91,14 @@ for (const date of weekDates) {
   assert(weekSignals.length === monthSignals.length, `Week and Month must agree on signal count for ${date}.`)
   for (const signal of weekSignals) {
     const monthSignal = monthSignals.find((candidate) => candidate.lessonId === signal.lessonId && candidate.courseId === signal.courseId)
-    assert(monthSignal && equalSet(monthSignal.sectionIds, signal.sectionIds), `Week and Month must agree on Section scope for ${signal.lessonId} on ${date}.`)
+    assert(monthSignal && equalSectionScopes(monthSignal, signal), `Week and Month must agree on exact Section scope for ${signal.lessonId} on ${date}.`)
   }
 }
 
-assert((monthSignalsByDate.get('2026-08-31') ?? []).some((signal) => signal.lessonId === cave.id), 'Month padding must preserve real adjacent-month planning continuity rather than hiding it.')
+const caveAug31 = (monthSignalsByDate.get('2026-08-31') ?? []).find((signal) => signal.lessonId === cave.id)!
+const caveSep1 = (monthSignalsByDate.get('2026-09-01') ?? []).find((signal) => signal.lessonId === cave.id)!
+assert(caveAug31.sections.length === 2 && !caveAug31.sections.some((scope) => scope.sectionId === p5.id), 'Adjacent-month shared date must exclude the Section shifted into September.')
+assert(caveSep1.sections.length === 1 && caveSep1.sections[0].sectionId === p5.id && caveSep1.sections[0].isSectionOverride, 'Adjacent-month Shift must appear only on the Section effective date.')
 assert(!(monthSignalsByDate.get('2026-09-07') ?? []).length, 'Holiday must remain free of planned Lesson signals.')
 
 for (const unit of unitList) assertUnitSegmentsReconstructVisibleCoverage(unit)
@@ -127,15 +129,15 @@ function expectedSignals(rangeProjection: PlanningRangeProjection, date: string)
           courseTitle: courseGroup.course.title,
           title: lesson.title,
           datePolicy: lesson.datePolicy,
-          sectionIds: [],
-          sectionNames: [],
-          shiftedSectionIds: [],
-          statusCounts: { 'not-started': 0, 'in-progress': 0, completed: 0, skipped: 0 },
+          sections: [],
         }
-        signal.sectionIds.push(row.section.id)
-        signal.sectionNames.push(row.section.name)
-        if (lesson.isSectionOverride) signal.shiftedSectionIds.push(row.section.id)
-        signal.statusCounts[lesson.deliveryStatus] += 1
+        assert(!signal.sections.some((scope) => scope.sectionId === row.section.id), `Week/Day projection must not duplicate ${row.section.id} for ${lesson.lessonId} on ${date}.`)
+        signal.sections.push({
+          sectionId: row.section.id,
+          sectionName: row.section.name,
+          isSectionOverride: lesson.isSectionOverride,
+          deliveryStatus: lesson.deliveryStatus,
+        })
         byLesson.set(key, signal)
       }
     }
@@ -143,12 +145,17 @@ function expectedSignals(rangeProjection: PlanningRangeProjection, date: string)
   return [...byLesson.values()]
 }
 
-function equalSet(left: string[], right: string[]): boolean {
-  return left.length === right.length && [...left].sort().every((value, index) => value === [...right].sort()[index])
+function equalSectionScopes(left: MonthLessonSignal, right: MonthLessonSignal): boolean {
+  const normalize = (signal: MonthLessonSignal) => signal.sections
+    .map((scope) => `${scope.sectionId}|${scope.sectionName}|${scope.isSectionOverride ? 'shifted' : 'shared'}|${scope.deliveryStatus}`)
+    .sort()
+  const leftScopes = normalize(left)
+  const rightScopes = normalize(right)
+  return leftScopes.length === rightScopes.length && leftScopes.every((value, index) => value === rightScopes[index])
 }
 
-function equalCounts(left: MonthLessonSignal['statusCounts'], right: MonthLessonSignal['statusCounts']): boolean {
-  return left['not-started'] === right['not-started'] && left['in-progress'] === right['in-progress'] && left.completed === right.completed && left.skipped === right.skipped
+function equalSet(left: string[], right: string[]): boolean {
+  return left.length === right.length && [...left].sort().every((value, index) => value === [...right].sort()[index])
 }
 
 console.log('planning cross-view contract passed')
