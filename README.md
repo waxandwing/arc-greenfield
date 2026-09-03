@@ -5,7 +5,7 @@ Greenfield rebuild. Calendar-first. Trust-first.
 ## Authority
 - `main` — protected, release-only. It is not the source for active development.
 - `develop` — the only integrated pre-release source of truth.
-- `feature/week-day-hostile-audit` — the only active implementation branch for this milestone.
+- `feature/month-planning-projection` — the only active implementation branch for this milestone.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point.
 - every other branch is historical, abandoned, accidental, or reference-only and must not be used as source for new work, previews, audits, or recovery.
 
@@ -18,7 +18,7 @@ The constrained rebuild order is authoritative when it conflicts with the older 
 
 frame/shell → navigation → calendar truth → movement/recovery → real planning projection → Day/Easel continuity → integrations → visual polish/secondary systems.
 
-Integrated through `develop` before this audit:
+Integrated through `develop` before this feature:
 - trustworthy shell and six calendar horizons;
 - explicit school-calendar truth, terms, navigation, and local declaration persistence;
 - real Course/Section setup;
@@ -27,14 +27,15 @@ Integrated through `develop` before this audit:
 - explicit Section-scoped Shift Apply, local persistence, reload-safe Undo, and hostile recovery preflight;
 - exact same-day collision approval domain only;
 - AppFrame decomposition into discoverable app/component boundaries;
-- real Week/Day planning projection with shared Unit bands, Section rows, effective Lesson dates, delivery state, and progressive setup.
+- real Week/Day planning projection;
+- hostile Week/Day projection clearance covering overlap, date geometry, long content, multiple Courses/Sections, holidays, blank weeks, and teaching-history truthfulness.
 
-This feature hostile-audits Week/Day before planning truth expands to Month/Quarter/Semester/Year Map.
+This feature adds Month planning projection at Month-appropriate density. It is not cross-view-cleared until a separate Week↔Day↔Month hostile audit passes.
 
 Not yet complete:
 - auth and account isolation;
 - landing-view preference persistence;
-- Unit/Lesson projection across Month/Quarter/Semester/Year Map;
+- Quarter/Semester/Year Map planning projection;
 - Day as a full teaching-continuity surface;
 - Easel continuity;
 - Notes, Ideas, Unit Focus, Must/Should/Could, Tack, Extend, filters, Year markers;
@@ -56,8 +57,11 @@ Keep responsibilities discoverable. New subsystems must enter through the correc
 - `src/components/CalendarViewRail.tsx` — calendar horizon navigation only.
 - `src/components/CalendarProjectionView.tsx` — calendar/date/term rendering and delegation to planning renderers; it does not calculate Section-effective planning state itself.
 - `src/components/PlanningWeekDayView.tsx` — Week/Day planning presentation only.
+- `src/components/PlanningMonthView.tsx` — Month planning presentation only.
+- `src/components/planningDateLabels.ts` — shared planning-view date labels; do not duplicate local Intl date helpers across planning renderers.
 - `src/calendar/**` — school-calendar truth and calendar-only projections.
-- `src/planning/planningProjection.ts` — canonical projection of shared Course/Unit/Lesson state plus Section-effective dates and delivery state into renderable planning rows/spans.
+- `src/planning/planningProjection.ts` — canonical range projection of shared Course/Unit/Lesson state plus Section-effective dates and delivery state.
+- `src/planning/monthPlanningProjection.ts` — Month-specific aggregation over canonical calendar Month geometry and `planningProjection`; it groups Section placements into compact shared-Lesson signals and splits Unit spans only for visual week geometry.
 - `src/planning/**` — Course/Section/Unit/Lesson/delivery/recovery/Shift domain rules and persistence boundaries.
 
 Guardrail: a UI composition file should not become a second state store. A controller should not absorb unrelated domains just because it already has access to their state. A calendar view must not reimplement effective Lesson dates, delivery-state defaults, or Unit ownership rules that already exist in the planning domain.
@@ -75,6 +79,18 @@ Guardrail: a UI composition file should not become a second state store. A contr
 - setup degrades progressively: Classes alone show class rows; placed Units add shared Unit bands; Lessons add dated work. Empty projection layers are render-only and are never persisted as fake user data.
 - Day and Week are lenses over the same `projectPlanningRange` rules.
 - projection date arrays must be unique and strictly ascending; malformed date geometry fails closed.
+
+## Month planning rules
+- Month is for multi-week pacing and continuity, not a miniature Week grid.
+- canonical `projectMonth` owns visible calendar week geometry; Month planning never recomputes month boundaries.
+- a Unit crossing a Sunday splits into visual week segments while retaining one stable Unit identity.
+- Unit pacing is shown above each calendar week; each Unit segment remains a separate lane so overlapping Units cannot paint over one another.
+- a shared Lesson becomes one compact signal per date/Course/Lesson identity, with the exact Section names scheduled on that date rather than duplicate cards for each Section.
+- Section-specific Shift remains visible by naming the shifted Section; unrelated Sections remain on the shared date.
+- fixed identity and meaningful delivery-state counts remain visible at Month density.
+- Month titles stay at the 16px core-UI floor; 14px is metadata only.
+- outside-month padding dates remain visible as calendar continuity and are visually subordinate without deleting their truth.
+- Month uses semantic groups and labels rather than claiming ARIA grid behavior that has not been implemented.
 
 ## Operations
 - every preview/build exposes the exact Git commit fingerprint.
@@ -102,19 +118,19 @@ Guardrail: a UI composition file should not become a second state store. A contr
 - CI installs only with `npm ci`;
 - `npm run build` requires the full domain contract suite, TypeScript compile, and Vite production bundle;
 - contract manifest lives in `tests/run-contracts.mjs`;
-- planning projection contracts cover shared Unit identity, overlapping Units, multiple Courses/Sections, holidays, Section-specific effective dates, sparse delivery state, actual taught dates, fixed-date identity, cross-week Shift, blank weeks, Week↔Day consistency, progressive setup, date geometry, and calendar ownership failure;
+- Week/Day hostile projection is permanently gated;
+- Month projection contract covers canonical calendar-week geometry, cross-week Unit segmentation with stable identity, shared-Lesson grouping, exact Section scope, Section-specific Shift, fixed anchors, delivery-state aggregation, cross-week destination visibility, and progressive setup without fake planning data;
 - no feature branch advances to `develop` without an exact-head green gate;
 - `develop` must pass again after integration;
 - browser interaction is a separate release gate and is never inferred from source/build success.
 
 ## Next authorized work
-1. integrate the verified Week/Day hostile audit;
-2. project the same planning truth into Month at Month-appropriate density;
-3. audit Week↔Day↔Month consistency before Quarter/Semester/Year Map;
-4. extend the same truth into Quarter/Semester/Year Map at appropriate density;
-5. build Day/Easel teaching continuity from that same state;
-6. restore missing platform obligations: auth/account isolation and account/Drive persistence before external beta;
-7. only then resume secondary exception systems as their primary workflows require them.
+1. integrate the verified Month planning projection;
+2. run a hostile Week↔Day↔Month consistency audit;
+3. only after cross-view clearance, extend planning truth into Quarter/Semester/Year Map at appropriate density;
+4. build Day/Easel teaching continuity from that same state;
+5. restore missing platform obligations: auth/account isolation and account/Drive persistence before external beta;
+6. only then resume secondary exception systems as their primary workflows require them.
 
 ## Release wall
 Nothing moves to `main` until product, functional, visual, accessibility, persistence, account-isolation, regression, exact-build, browser-interaction, and dependency-lock gates are explicitly cleared.
