@@ -46,7 +46,7 @@ export function PlanningDayContinuityView({
 
                   <div className="day-continuity-work">
                     {section.carryovers.length > 0 ? (
-                      <div className="day-continuity-held" aria-label={`${section.sectionName} unfinished teaching`}>
+                      <div className="day-continuity-held">
                         <p className="day-continuity-kicker">Arc is holding your place</p>
                         {section.carryovers.map((lesson) => (
                           <ContinuityLesson key={lesson.lessonId} lesson={lesson} carryover />
@@ -54,7 +54,7 @@ export function PlanningDayContinuityView({
                       </div>
                     ) : null}
 
-                    <div className="day-continuity-planned" aria-label={`${section.sectionName} plan for today`}>
+                    <div className="day-continuity-planned">
                       <p className="day-continuity-kicker">{section.carryovers.length > 0 ? 'Planned today' : 'Today’s plan'}</p>
                       {section.scheduledLessons.length > 0 ? (
                         section.scheduledLessons.map((lesson) => (
@@ -84,19 +84,9 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
     lesson.isSectionOverride ? 'Shifted for this class' : null,
     carryover && lesson.effectiveDate === null ? 'No planned date' : null,
   ].filter(Boolean).join(' · ')
-  const accessible = [
-    lesson.title,
-    lesson.unitTitle,
-    carryover ? 'unfinished teaching Arc is holding' : 'plan for today',
-    lesson.datePolicy === 'fixed' ? 'fixed date' : null,
-    lesson.isSectionOverride ? 'shifted for this class' : null,
-    status,
-    lesson.taughtDate ? `taught ${formatShortDate(lesson.taughtDate)}` : null,
-    lesson.resumeNote ? `resume note: ${lesson.resumeNote}` : null,
-  ].filter(Boolean).join('. ')
 
   return (
-    <div className={`day-continuity-lesson${carryover ? ' day-continuity-lesson--held' : ''}`} aria-label={accessible}>
+    <div className="day-continuity-lesson">
       <div className="day-continuity-lesson-heading">
         <strong>{lesson.title}</strong>
         {lesson.datePolicy === 'fixed' ? <span className="day-continuity-fixed">Fixed</span> : null}
