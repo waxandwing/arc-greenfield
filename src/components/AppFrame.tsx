@@ -3,10 +3,14 @@ import { CalendarProjectionView } from './CalendarProjectionView'
 import { CalendarSetup } from './CalendarSetup'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
 import {
+  currentLocalISODate,
   loadCalendarFromBrowser,
+  moveAnchor,
   saveCalendarToBrowser,
+  todayAnchor,
   type CalendarHydrationInput,
   type ISODate,
+  type PeriodDirection,
   type SchoolCalendar,
 } from '../calendar'
 
@@ -35,7 +39,22 @@ export function AppFrame() {
     setStorageNotice(persisted ? null : 'This calendar is active for this session, but Arc could not save it in this browser.')
   }
 
+  function movePeriod(direction: PeriodDirection) {
+    if (!calendar || !anchorDate) return
+    const next = moveAnchor(calendar, activeView, anchorDate, direction)
+    if (next) setAnchorDate(next)
+  }
+
+  function goToday() {
+    if (!calendar) return
+    const today = todayAnchor(calendar, currentLocalISODate())
+    if (today) setAnchorDate(today)
+  }
+
   const showSetup = !calendar || !anchorDate || editingCalendar
+  const previousTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'previous') : null
+  const nextTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'next') : null
+  const todayTarget = calendar ? todayAnchor(calendar, currentLocalISODate()) : null
 
   return (
     <div className="arc-shell">
@@ -78,10 +97,18 @@ export function AppFrame() {
               <p className="section-label">Calendar</p>
               <h1 className="view-title" aria-live="polite">{activeView}</h1>
             </div>
-            {calendar && !editingCalendar && (
-              <div className="calendar-context-group">
-                <p className="calendar-context" aria-label="Current school calendar">{calendar.schoolYearLabel}</p>
-                <button type="button" className="text-button" onClick={() => setEditingCalendar(true)}>Edit dates</button>
+
+            {calendar && !editingCalendar && anchorDate && (
+              <div className="calendar-header-tools">
+                <div className="period-controls" aria-label={`${activeView} date navigation`}>
+                  <button type="button" className="quiet-button period-button" disabled={!previousTarget} onClick={() => movePeriod('previous')} aria-label={`Previous ${activeView}`}>←</button>
+                  <button type="button" className="quiet-button today-button" disabled={!todayTarget} onClick={goToday}>Today</button>
+                  <button type="button" className="quiet-button period-button" disabled={!nextTarget} onClick={() => movePeriod('next')} aria-label={`Next ${activeView}`}>→</button>
+                </div>
+                <div className="calendar-context-group">
+                  <p className="calendar-context" aria-label="Current school calendar">{calendar.schoolYearLabel}</p>
+                  <button type="button" className="text-button" onClick={() => setEditingCalendar(true)}>Edit dates</button>
+                </div>
               </div>
             )}
           </header>
