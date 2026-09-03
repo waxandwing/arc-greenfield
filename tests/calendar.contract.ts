@@ -56,5 +56,23 @@ deepEqual(
 const readiness = assessCalendarReadiness(calendar)
 equal(readiness.ready, false, 'unknown day blocks structural readiness')
 deepEqual(readiness.unknownDates, ['2026-09-07'], 'unknown date is surfaced')
+assertIncludes(readiness.unconfirmedDates, '2026-09-07', 'unknown date is also unconfirmed')
+
+const mixedCalendar: SchoolCalendar = {
+  ...calendar,
+  lastDay: '2026-09-06',
+  days: {
+    ...calendar.days,
+    '2026-09-02': { date: '2026-09-02', kind: 'instructional', confidence: 'mixed' },
+  },
+}
+const mixedReadiness = assessCalendarReadiness(mixedCalendar)
+equal(mixedReadiness.ready, false, 'mixed confidence blocks structural readiness')
+deepEqual(mixedReadiness.unknownDates, [], 'mixed confidence need not be unknown')
+assertIncludes(mixedReadiness.unconfirmedDates, '2026-09-02', 'mixed-confidence date is surfaced')
 
 console.log('calendar truth contract passed')
+
+function assertIncludes(values: string[], expected: string, label: string) {
+  if (!values.includes(expected)) throw new Error(`${label}: expected ${expected} in ${JSON.stringify(values)}`)
+}
