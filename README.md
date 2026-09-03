@@ -76,8 +76,9 @@ Implemented:
 - Recovery preview previously looked only inside the interrupted Unit and ignored Section overrides, which could produce an incomplete consequence preview.
 
 ## Verification status
-- Course/Section setup, Units, Lesson continuity, and recovery preview are integrated in `develop`
-- atomic Section Shift has passed feature verification; mutation-safety hardening is under final feature verification before integration
+- Course/Section setup, Units, Lesson continuity, recovery preview, atomic Section Shift, and Shift mutation-safety hardening are integrated in `develop`
+- the exact Shift audit feature head passed the lockfile-backed domain/build gate before integration
+- `develop` must pass the same independent gate after this integration checkpoint commit
 - domain contract suite includes calendar truth, projections, hydration, persistence, navigation, terms, Course/Section scope, Units, Lesson divergence/persistence, recovery preview/fixed-date behavior, Section schedule workspace integrity, and atomic Shift/Undo behavior
 - dependency installation is reproducible from committed `package-lock.json` using `npm ci`
 - TypeScript compile and Vite bundle are required on every verification run
