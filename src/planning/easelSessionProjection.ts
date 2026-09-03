@@ -52,6 +52,7 @@ export function easelLaunchOptions(input: {
     ['scheduled', located.section.scheduledLessons],
   ] as const) {
     for (const lesson of lessons) {
+      if (!isLiveTeachingStatus(lesson.deliveryStatus)) continue
       if (seen.has(lesson.lessonId)) {
         throw new Error(`Easel launch context contains duplicate Lesson ${lesson.lessonId} for Section ${sectionId}.`)
       }
@@ -95,6 +96,9 @@ export function projectEaselSession(input: {
   }
 
   const { source, lesson } = candidates[0]
+  if (!isLiveTeachingStatus(lesson.deliveryStatus)) {
+    throw new Error(`Easel cannot reopen ${lesson.deliveryStatus} teaching history for Lesson ${lessonId}.`)
+  }
   return {
     date: day.date,
     courseId: located.course.courseId,
@@ -123,6 +127,10 @@ function validateLiveTeachingDay(day: DayContinuityProjection, calendar: SchoolC
   if (!isConfirmedInstructionalDay(calendar, liveDate)) {
     throw new Error('Easel live teaching requires a confirmed instructional day.')
   }
+}
+
+function isLiveTeachingStatus(status: DayContinuityLesson['deliveryStatus']): boolean {
+  return status === 'not-started' || status === 'in-progress'
 }
 
 function locateSection(day: DayContinuityProjection, sectionId: string) {
