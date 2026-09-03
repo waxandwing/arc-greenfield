@@ -1,6 +1,6 @@
 import type { ProjectedDay } from '../calendar/projections'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
-import { formatPlanningLongDate, formatPlanningShortDate, formatPlanningWeekday } from './planningDateLabels'
+import { formatLongDate, formatShortDate, formatWeekday } from './dateLabels'
 
 export function PlanningWeekDayView({
   days,
@@ -31,8 +31,8 @@ function PlanningDateHeader({ days, single }: { days: ProjectedDay[]; single: bo
       <span className="planning-row-label planning-row-label--header">Class</span>
       {days.map((day) => (
         <span key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}`}>
-          {!single ? <span className="planning-date-weekday">{formatPlanningWeekday(day.date)}</span> : null}
-          <span>{formatPlanningShortDate(day.date)}</span>
+          {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
+          <span>{formatShortDate(day.date)}</span>
           {day.kind !== 'instructional' ? <span className="planning-date-kind">{day.label || humanizeKind(day.kind)}</span> : null}
         </span>
       ))}
@@ -82,7 +82,7 @@ function PlanningCourse({
               <div
                 key={slot.date}
                 className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}`}
-                aria-label={`${row.section.name}, ${formatPlanningLongDate(slot.date)}`}
+                aria-label={`${row.section.name}, ${formatLongDate(slot.date)}`}
               >
                 {slot.lessons.map((lesson) => <LessonTile key={lesson.lessonId} lesson={lesson} />)}
                 {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
@@ -98,7 +98,7 @@ function PlanningCourse({
 function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
   const statusLabel = humanizeStatus(lesson.deliveryStatus)
   const taughtLabel = lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate
-    ? `Taught ${formatPlanningShortDate(lesson.taughtDate)}`
+    ? `Taught ${formatShortDate(lesson.taughtDate)}`
     : null
   const accessible = [
     lesson.title,
