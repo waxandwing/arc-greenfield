@@ -51,6 +51,13 @@ export function AppFrame() {
     if (today) setAnchorDate(today)
   }
 
+  function viewAvailability(view: CalendarView): { available: boolean; reason?: string } {
+    if (!calendar) return { available: false, reason: 'Set up the school calendar first.' }
+    if (view === 'Quarter' && calendar.quarters.length === 0) return { available: false, reason: 'Quarter dates are not configured yet.' }
+    if (view === 'Semester' && calendar.semesters.length === 0) return { available: false, reason: 'Semester dates are not configured yet.' }
+    return { available: true }
+  }
+
   const showSetup = !calendar || !anchorDate || editingCalendar
   const previousTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'previous') : null
   const nextTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'next') : null
@@ -76,14 +83,21 @@ export function AppFrame() {
         <nav className="arc-view-rail" aria-label="Calendar views">
           {CALENDAR_VIEWS.map((view) => {
             const isCurrent = activeView === view
+            const availability = viewAvailability(view)
+            const unavailable = !availability.available
             return (
               <button
                 key={view}
                 type="button"
                 className="view-nav-item"
                 aria-current={isCurrent ? 'page' : undefined}
+                aria-disabled={!showSetup && unavailable ? 'true' : undefined}
+                aria-label={!showSetup && unavailable ? `${view}. ${availability.reason}` : view}
+                title={!showSetup && unavailable ? availability.reason : undefined}
                 disabled={showSetup}
-                onClick={() => setActiveView(view)}
+                onClick={() => {
+                  if (!unavailable) setActiveView(view)
+                }}
               >
                 {view}
               </button>
