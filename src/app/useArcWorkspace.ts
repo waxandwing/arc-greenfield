@@ -15,6 +15,10 @@ import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarView
 import {
   applyShiftOperation,
   courseIdsProtectedByUnits,
+  deleteLesson,
+  deleteUnit,
+  moveLesson,
+  moveUnit,
   saveLessonsToBrowser,
   savePlanningWorkspaceToBrowser,
   saveShiftStateToBrowser,
@@ -22,6 +26,8 @@ import {
   sectionIdsProtectedByDelivery,
   undoShiftOperation,
   unitIdsProtectedByLessons,
+  unplaceLessonFromCalendar,
+  unplaceUnitFromCalendar,
   validateLessonWorkspace,
   validateShiftPersistenceInput,
   validateUnitWorkspace,
@@ -31,6 +37,7 @@ import {
   type PlanningWorkspaceInput,
   type ShiftOperation,
   type ShiftPersistenceInput,
+  type UnitPlacement,
   type UnitWorkspace,
   type UnitWorkspaceInput,
 } from '../planning'
@@ -211,6 +218,105 @@ export function useArcWorkspace(onCloseMode: () => void) {
     setStorageNotice(persisted ? null : 'These Lessons are active for this session, but Arc could not save them in this browser.')
   }
 
+  function persistUnitObjectAction(next: UnitWorkspace): string | null {
+    if (!calendar || !planningWorkspace || !lessonWorkspace) return 'Arc cannot change this Unit because the planning state is incomplete. Nothing changed.'
+    const lessonErrors = validateLessonWorkspace(lessonWorkspace, calendar, planningWorkspace, next)
+    if (lessonErrors.length > 0) return 'Arc refused this Unit change because it would invalidate existing Lessons. Nothing changed.'
+    const shift = reconcileShiftState(shiftState, calendar, planningWorkspace, next, lessonWorkspace)
+    if (!shift.allowed) return 'Arc refused this Unit change because it would invalidate a Section schedule. Nothing changed.'
+
+    const input: UnitWorkspaceInput = { calendarId: next.calendarId, units: next.units }
+    const unitsPersisted = saveUnitsToBrowser(input)
+    const shiftPersisted = persistReconciledShift(shift.next)
+    setUnitWorkspace(next)
+    setUnitInput(input)
+    if (!unitsPersisted || !shiftPersisted) setStorageNotice('This Unit change is active for this session, but Arc could not save all related planning state in this browser.')
+    else if (shift.undoDropped) setStorageNotice('Unit updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
+    else setStorageNotice(null)
+    return null
+  }
+
+  function persistLessonObjectAction(next: LessonWorkspace, overrides: ShiftPersistenceInput['overrides']): string | null {
+    if (!calendar || !planningWorkspace || !unitWorkspace) return 'Arc cannot change this Lesson because the planning state is incomplete. Nothing changed.'
+    const candidateShift: ShiftPersistenceInput = {
+      calendarId: calendar.id,
+      overrides,
+      undo: shiftState?.undo ?? null,
+    }
+    const shift = reconcileShiftState(candidateShift, calendar, planningWorkspace, unitWorkspace, next)
+    if (!shift.allowed) return 'Arc refused this Lesson change because it would invalidate a Section schedule. Nothing changed.'
+
+    const input: LessonWorkspaceInput = { calendarId: next.calendarId, lessons: next.lessons, deliveryStates: next.deliveryStates }
+    const lessonsPersisted = saveLessonsToBrowser(input)
+    const shiftPersisted = persistReconciledShift(shift.next)
+    setLessonWorkspace(next)
+    setLessonInput(input)
+    if (!lessonsPersisted || !shiftPersisted) setStorageNotice('This Lesson change is active for this session, but Arc could not save all related planning state in this browser.')
+    else if (shift.undoDropped) setStorageNotice('Lesson updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
+    else setStorageNotice(null)
+    return null
+  }
+
+  function moveUnitObject(unitId: string, placement: UnitPlacement): string | null {
+    if (!calendar || !unitWorkspace || !lessonWorkspace) return 'Arc cannot move this Unit because the planning state is incomplete. Nothing changed.'
+    try {
+      const next = moveUnit({ calendar, units: unitWorkspace, lessons: lessonWorkspace, overrides: shiftState?.overrides ?? [], unitId, placement })
+      return persistUnitObjectAction(next)
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function unplaceUnitObject(unitId: string): string | null {
+    if (!calendar || !unitWorkspace || !lessonWorkspace) return 'Arc cannot unplace this Unit because the planning state is incomplete. Nothing changed.'
+    try {
+      const next = unplaceUnitFromCalendar({ calendar, units: unitWorkspace, lessons: lessonWorkspace, overrides: shiftState?.overrides ?? [], unitId })
+      return persistUnitObjectAction(next)
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function deleteUnitObject(unitId: string): string | null {
+    if (!calendar || !unitWorkspace || !lessonWorkspace) return 'Arc cannot delete this Unit because the planning state is incomplete. Nothing changed.'
+    try {
+      const next = deleteUnit({ calendar, units: unitWorkspace, lessons: lessonWorkspace, overrides: shiftState?.overrides ?? [], unitId })
+      return persistUnitObjectAction(next)
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function moveLessonObject(lessonId: string, plannedDate: ISODate): string | null {
+    if (!calendar || !unitWorkspace || !lessonWorkspace) return 'Arc cannot move this Lesson because the planning state is incomplete. Nothing changed.'
+    try {
+      const next = moveLesson({ calendar, units: unitWorkspace, lessons: lessonWorkspace, overrides: shiftState?.overrides ?? [], lessonId, plannedDate })
+      return persistLessonObjectAction(next, shiftState?.overrides ?? [])
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function unplaceLessonObject(lessonId: string): string | null {
+    if (!calendar || !unitWorkspace || !lessonWorkspace) return 'Arc cannot unplace this Lesson because the planning state is incomplete. Nothing changed.'
+    try {
+      const result = unplaceLessonFromCalendar({ calendar, units: unitWorkspace, lessons: lessonWorkspace, overrides: shiftState?.overrides ?? [], lessonId })
+      return persistLessonObjectAction(result.lessons, result.overrides)
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function deleteLessonObject(lessonId: string): string | null {
+    if (!calendar || !unitWorkspace || !lessonWorkspace) return 'Arc cannot delete this Lesson because the planning state is incomplete. Nothing changed.'
+    try {
+      const next = deleteLesson({ calendar, units: unitWorkspace, lessons: lessonWorkspace, overrides: shiftState?.overrides ?? [], lessonId })
+      return persistLessonObjectAction(next, shiftState?.overrides ?? [])
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
   function applyRecoveryShift(operation: ShiftOperation): string | null {
     if (!calendar || !planningWorkspace || !unitWorkspace || !lessonWorkspace || !shiftState) {
       return 'Arc cannot apply this Shift because the planning state is incomplete. Nothing changed.'
@@ -325,6 +431,12 @@ export function useArcWorkspace(onCloseMode: () => void) {
     useClasses,
     useUnits,
     useLessons,
+    moveUnitObject,
+    unplaceUnitObject,
+    deleteUnitObject,
+    moveLessonObject,
+    unplaceLessonObject,
+    deleteLessonObject,
     applyRecoveryShift,
     undoLastShift,
     movePeriod,
