@@ -57,6 +57,14 @@ try {
 }
 assert(incompleteRejected, 'A recovery Shift may not finalize while an affected Lesson lacks a teacher-chosen destination.')
 
+let backwardRejected = false
+try {
+  finalizeRecoveryShiftDraft(draft, { [lesson18.id]: '2026-09-15' })
+} catch {
+  backwardRejected = true
+}
+assert(backwardRejected, 'Recovery Shift must reject a displaced Lesson destination on or before the class resume date.')
+
 const operation = finalizeRecoveryShiftDraft(draft, { [lesson18.id]: '2026-09-21' })
 assert(operation.sectionId === section.id, 'Finalized Shift must stay scoped to the reviewed Section.')
 assert(operation.changes.length === 2, 'Finalized Shift must contain every explicit consequence and no hidden movement.')
