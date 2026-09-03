@@ -132,7 +132,6 @@
 
 .planning-month-signals{
   display:grid;
-  gap:6px;
   margin-top:6px;
 }
 
@@ -140,12 +139,13 @@
   display:grid;
   gap:3px;
   min-width:0;
-  padding:7px 8px;
-  border:1px solid var(--line-subtle);
+  padding:7px 4px 8px 8px;
   border-left:3px solid var(--dusty-blue);
-  border-radius:4px;
-  background:rgba(243,235,221,.84);
   color:var(--ink);
+}
+
+.planning-month-signal + .planning-month-signal{
+  border-top:1px solid var(--line-subtle);
 }
 
 .planning-month-signal--fixed{
@@ -168,8 +168,7 @@
 }
 
 .planning-month-fixed,
-.planning-month-signal-course,
-.planning-month-signal-sections,
+.planning-month-signal-context,
 .planning-month-shifted,
 .planning-month-status-summary{
   overflow-wrap:anywhere;
@@ -183,8 +182,7 @@
   color:var(--terracotta-text);
 }
 
-.planning-month-signal-course,
-.planning-month-signal-sections,
+.planning-month-signal-context,
 .planning-month-status-summary{
   color:var(--soft-charcoal);
 }
