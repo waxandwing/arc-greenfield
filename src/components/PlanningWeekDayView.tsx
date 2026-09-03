@@ -12,7 +12,7 @@ export function PlanningWeekDayView({
   single?: boolean
 }) {
   if (planning.courses.length === 0) {
-    return <p className="planning-empty-state">Set up Classes, Units, and Lessons to place teaching work on the calendar.</p>
+    return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
   }
 
   return (
@@ -55,16 +55,17 @@ function PlanningCourse({
         <h2>{course.course.title}</h2>
       </div>
       {course.unitSpans.length > 0 ? (
-        <div className="planning-unit-grid" style={gridTemplate(days.length)} aria-label={`${course.course.title} Unit spans`}>
-          <span className="planning-row-label planning-row-label--unit">Unit</span>
-          {course.unitSpans.map((unit) => (
-            <div
-              key={unit.unitId}
-              className="planning-unit-span"
-              style={{ gridColumn: `${unit.startIndex + 2} / ${unit.endIndex + 3}` }}
-              title={`${unit.title}: ${unit.startDate} through ${unit.endDate}`}
-            >
-              {unit.title}
+        <div className="planning-unit-stack" aria-label={`${course.course.title} Unit spans`}>
+          {course.unitSpans.map((unit, index) => (
+            <div className="planning-unit-grid" style={gridTemplate(days.length)} key={unit.unitId}>
+              <span className="planning-row-label planning-row-label--unit">{index === 0 ? 'Unit' : ''}</span>
+              <div
+                className="planning-unit-span"
+                style={{ gridColumn: `${unit.startIndex + 2} / ${unit.endIndex + 3}` }}
+                title={`${unit.title}: ${unit.startDate} through ${unit.endDate}`}
+              >
+                {unit.title}
+              </div>
             </div>
           ))}
         </div>
