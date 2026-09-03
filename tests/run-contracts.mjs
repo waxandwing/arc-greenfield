@@ -14,6 +14,7 @@ const contracts = [
   'tests/generated/src/planning/unitWorkspace.contract.js',
   'tests/generated/src/planning/deliveryState.contract.js',
   'tests/generated/src/planning/lessonWorkspace.contract.js',
+  'tests/generated/src/planning/planningProjection.contract.js',
   'tests/generated/src/planning/recoveryPreview.contract.js',
   'tests/generated/src/planning/recoveryShiftDraft.contract.js',
   'tests/generated/src/planning/recoveryResolution.contract.js',
