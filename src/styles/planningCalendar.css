@@ -162,6 +162,10 @@
   color:var(--ink);
 }
 
+.planning-lesson--carryover{
+  border-left-color:var(--terracotta);
+}
+
 .planning-lesson--in-progress{
   border-left-color:var(--mustard);
 }
@@ -177,6 +181,15 @@
 
 .planning-lesson--fixed{
   border-top-color:var(--terracotta);
+}
+
+.planning-continuity-label{
+  margin:0;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--terracotta-text);
 }
 
 .planning-lesson-title-row{
