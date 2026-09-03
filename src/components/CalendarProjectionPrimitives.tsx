@@ -56,15 +56,14 @@ export function CalendarDayCell({ day, compact = false, showWeekday = false }: {
     compact ? 'calendar-day-cell--compact' : '',
   ].filter(Boolean).join(' ')
 
-  const status = day.kind === 'instructional' ? 'Instructional day' : day.kind === 'unknown' ? 'Unknown calendar status' : day.label || humanizeKind(day.kind)
-  const accessibleLabel = `${formatLongDate(day.date)}. ${status}.`
+  const visibleStatus = day.kind === 'instructional' ? null : day.label || humanizeKind(day.kind)
 
   return (
-    <div className={classes} data-date={day.date} data-kind={day.kind} aria-label={accessibleLabel}>
+    <div className={classes} data-date={day.date} data-kind={day.kind}>
       {showWeekday && !compact ? <span className="calendar-day-weekday">{formatWeekday(day.date)}</span> : null}
-      <span className="calendar-day-date">{day.date.slice(8)}</span>
-      {!compact && day.label ? <span className="calendar-day-label">{day.label}</span> : null}
-      {!compact && day.kind === 'unknown' ? <span className="calendar-day-status">Unknown</span> : null}
+      <time className="calendar-day-date" dateTime={day.date} aria-label={formatLongDate(day.date)}>{Number(day.date.slice(8))}</time>
+      {!compact && visibleStatus ? <span className="calendar-day-status">{visibleStatus}</span> : null}
+      {compact && visibleStatus ? <span className="sr-only">{visibleStatus}</span> : null}
     </div>
   )
 }
