@@ -24,6 +24,7 @@ import {
   loadUnitsFromBrowser,
   savePlanningWorkspaceToBrowser,
   saveUnitsToBrowser,
+  validateUnitWorkspace,
   type PlanningWorkspace,
   type PlanningWorkspaceInput,
   type UnitWorkspace,
@@ -61,6 +62,14 @@ export function AppFrame() {
   })
 
   function useCalendar(nextCalendar: SchoolCalendar, input: CalendarHydrationInput) {
+    if (unitWorkspace && planningWorkspace) {
+      const unitErrors = validateUnitWorkspace(unitWorkspace, nextCalendar, planningWorkspace)
+      if (unitErrors.length > 0) {
+        setStorageNotice('That calendar change would make one or more existing Units invalid. Adjust or remove those Unit placements first; Arc has not changed the calendar.')
+        return
+      }
+    }
+
     const persisted = saveCalendarToBrowser(input)
     setCalendar(nextCalendar)
     setCalendarInput(input)
