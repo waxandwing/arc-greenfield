@@ -91,52 +91,47 @@ const lessons: LessonWorkspace = {
   lessons: [lesson17, lesson18, loose],
   deliveryStates: [p2Interrupted, p5Interrupted, p5Loose],
 }
+const liveDate = '2026-09-17' as const
 
-const unresolvedDay = projectDayContinuity({
-  date: '2026-09-17',
-  planning,
-  units,
-  lessons,
-  overrides: [],
-})
-const unresolvedOptions = easelLaunchOptions(unresolvedDay, p5.id)
+const unresolvedDay = projectDayContinuity({ date: liveDate, planning, units, lessons, overrides: [] })
+const unresolvedOptions = easelLaunchOptions({ day: unresolvedDay, sectionId: p5.id, calendar, liveDate })
 assert(unresolvedOptions.length === 3, 'Easel must expose every valid P5 teaching candidate without silently choosing between carryover and today’s plan.')
 assert(unresolvedOptions.some((option) => option.lessonId === loose.id && option.source === 'carryover'), 'Unscheduled unfinished teaching should remain a carryover launch candidate without relying on presentation order.')
 assert(unresolvedOptions.some((option) => option.lessonId === lesson17.id && option.source === 'carryover'), 'Interrupted Lesson 17 must remain an explicit carryover candidate before Shift.')
 assert(unresolvedOptions.some((option) => option.lessonId === lesson18.id && option.source === 'scheduled'), 'Today’s planned Lesson 18 must remain a separate scheduled candidate.')
 
-const interruptedSession = projectEaselSession({ day: unresolvedDay, sectionId: p5.id, lessonId: lesson17.id })
+const interruptedSession = projectEaselSession({ day: unresolvedDay, sectionId: p5.id, lessonId: lesson17.id, calendar, liveDate })
 assert(interruptedSession.courseId === course.id && interruptedSession.sectionId === p5.id, 'Easel must preserve exact Course and Section identity from Arc Day.')
 assert(interruptedSession.lessonId === lesson17.id && interruptedSession.unitId === unit.id, 'Easel must preserve exact shared Lesson and Unit identity.')
 assert(interruptedSession.source === 'carryover', 'Unresolved interrupted work must enter Easel as carryover, not be rewritten as today’s schedule.')
 assert(interruptedSession.resumeNote === 'Stopped after demo.' && interruptedSession.deliveryStatus === 'in-progress', 'Easel must receive the exact P5 stopping point.')
 assert(interruptedSession.effectiveDate === '2026-09-16', 'Easel must preserve the current effective schedule date before recovery Shift.')
 
-const p2SameLesson = projectEaselSession({ day: unresolvedDay, sectionId: p2.id, lessonId: lesson17.id })
+const p2SameLesson = projectEaselSession({ day: unresolvedDay, sectionId: p2.id, lessonId: lesson17.id, calendar, liveDate })
 assert(p2SameLesson.lessonId === interruptedSession.lessonId, 'Two Sections may launch the same shared Lesson identity.')
 assert(p2SameLesson.sectionId === p2.id && interruptedSession.sectionId === p5.id, 'Easel must keep the selected Section identity even when both Sections share the same Lesson.')
 assert(p2SameLesson.resumeNote === 'Period 2 stopped at the comparison.', 'Easel must read the selected Section’s delivery state rather than another Section’s state.')
 
-const looseSession = projectEaselSession({ day: unresolvedDay, sectionId: p5.id, lessonId: loose.id })
+const looseSession = projectEaselSession({ day: unresolvedDay, sectionId: p5.id, lessonId: loose.id, calendar, liveDate })
 assert(looseSession.effectiveDate === null && looseSession.source === 'carryover', 'Easel must preserve genuinely unscheduled in-progress teaching without inventing a date.')
 
 const overrides: SectionLessonDateOverride[] = [
-  { sectionId: p5.id, lessonId: lesson17.id, plannedDate: '2026-09-17' },
+  { sectionId: p5.id, lessonId: lesson17.id, plannedDate: liveDate },
   { sectionId: p5.id, lessonId: lesson18.id, plannedDate: '2026-09-21' },
 ]
-const resolvedDay = projectDayContinuity({ date: '2026-09-17', planning, units, lessons, overrides })
-const resolvedOptions = easelLaunchOptions(resolvedDay, p5.id)
+const resolvedDay = projectDayContinuity({ date: liveDate, planning, units, lessons, overrides })
+const resolvedOptions = easelLaunchOptions({ day: resolvedDay, sectionId: p5.id, calendar, liveDate })
 assert(resolvedOptions.filter((option) => option.lessonId === lesson17.id).length === 1, 'After Shift, Easel must expose Lesson 17 exactly once.')
 assert(resolvedOptions.find((option) => option.lessonId === lesson17.id)?.source === 'scheduled', 'After Shift, the continuing Lesson must enter Easel from today’s effective schedule.')
 assert(!resolvedOptions.some((option) => option.lessonId === lesson18.id), 'A displaced P5 Lesson must not remain a launch candidate for the old date.')
 
-const resolvedSession = projectEaselSession({ day: resolvedDay, sectionId: p5.id, lessonId: lesson17.id })
-assert(resolvedSession.isSectionOverride && resolvedSession.effectiveDate === '2026-09-17', 'Easel must preserve the exact Section-specific Shift result.')
+const resolvedSession = projectEaselSession({ day: resolvedDay, sectionId: p5.id, lessonId: lesson17.id, calendar, liveDate })
+assert(resolvedSession.isSectionOverride && resolvedSession.effectiveDate === liveDate, 'Easel must preserve the exact Section-specific Shift result.')
 assert(resolvedSession.resumeNote === 'Stopped after demo.', 'Shift must not erase the teaching stopping point passed into Easel.')
 
 let missingLessonRejected = false
 try {
-  projectEaselSession({ day: unresolvedDay, sectionId: p5.id, lessonId: 'not-a-real-lesson' })
+  projectEaselSession({ day: unresolvedDay, sectionId: p5.id, lessonId: 'not-a-real-lesson', calendar, liveDate })
 } catch {
   missingLessonRejected = true
 }
@@ -144,11 +139,29 @@ assert(missingLessonRejected, 'Easel must fail closed rather than opening a Less
 
 let missingSectionRejected = false
 try {
-  easelLaunchOptions(unresolvedDay, 'not-a-real-section')
+  easelLaunchOptions({ day: unresolvedDay, sectionId: 'not-a-real-section', calendar, liveDate })
 } catch {
   missingSectionRejected = true
 }
 assert(missingSectionRejected, 'Easel must fail closed for a Section outside the selected Day.')
+
+const futureDay = projectDayContinuity({ date: '2026-09-18', planning, units, lessons, overrides: [] })
+let futureLaunchRejected = false
+try {
+  easelLaunchOptions({ day: futureDay, sectionId: p5.id, calendar, liveDate })
+} catch {
+  futureLaunchRejected = true
+}
+assert(futureLaunchRejected, 'Navigating Arc to a future Day must not turn future planning into a live Easel teaching session.')
+
+const weekendDay = projectDayContinuity({ date: '2026-09-19', planning, units, lessons, overrides: [] })
+let noSchoolLaunchRejected = false
+try {
+  projectEaselSession({ day: weekendDay, sectionId: p5.id, lessonId: lesson17.id, calendar, liveDate: '2026-09-19' })
+} catch {
+  noSchoolLaunchRejected = true
+}
+assert(noSchoolLaunchRejected, 'Visible no-school Day continuity must not become permission to launch live teaching.')
 
 assert(lessons.deliveryStates.find((state) => state.sectionId === p5.id && state.lessonId === lesson17.id)?.resumeNote === 'Stopped after demo.', 'Projecting an Easel session must not mutate Arc delivery state.')
 assert(lesson17.plannedDate === '2026-09-16', 'Projecting an Easel session must not mutate shared Lesson planning truth.')
