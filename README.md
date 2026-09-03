@@ -70,7 +70,7 @@ Implemented:
 
 ## Verification status
 - Unit domain foundation is integrated in `develop`
-- Course/Section teacher setup is under active feature verification
+- teacher-facing Course/Section setup and browser persistence are integrated in `develop`
 - domain contract suite includes calendar truth, projections, hydration, persistence, navigation, manual setup, term configuration, Course/Section scope, Unit behavior, and planning-workspace persistence
 - dependency installation is reproducible from committed `package-lock.json` using `npm ci`
 - TypeScript compile and Vite bundle are required on every verification run
