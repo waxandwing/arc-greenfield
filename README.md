@@ -16,6 +16,8 @@ Do not add duplicate handoff, audit, blueprint, or design-system documents here.
 ## Current system boundary
 Calendar truth → Courses/Sections → Units → Lessons → per-Section delivery state → recovery consequence preview → Section-specific schedule overrides → atomic Shift/Undo domain.
 
+Current gate: Shift/recovery hardening is integrated; persistence is the next required boundary before any teacher-facing Apply control.
+
 Core rules:
 - one shared Course/Unit/Lesson plan; Sections carry actual teaching state.
 - missing delivery state means `not-started`; divergence stays sparse.
