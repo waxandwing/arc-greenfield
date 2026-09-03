@@ -1,0 +1,49 @@
+name: Arc verify
+
+on:
+  push:
+    branches:
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Resolve exact dependency tree
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Install from lockfile
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run Arc build gate
+        run: npm run build
+
+      - name: Persist lockfile when resolution changes
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet -- package-lock.json; then
+            echo "package-lock.json already matches the verified dependency tree."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "Lock Arc build dependencies"
+          git push
