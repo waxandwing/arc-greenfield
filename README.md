@@ -5,9 +5,9 @@ Greenfield rebuild. Calendar-first. Trust-first.
 ## Authority
 - `main` — protected, release-only. Never use it as the active development source.
 - `develop` — the only integrated pre-release source of truth.
-- `feature/easel-continuity` — the only active implementation branch for this checkpoint.
+- `feature/easel-continuity` — the only active domain implementation branch for this checkpoint.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point.
-- every other branch is historical, abandoned, experimental, accidental, or reference-only unless this file explicitly says otherwise.
+- every other branch is historical, abandoned, experimental, accidental, reference-only, or parallel UI work unless this file explicitly says otherwise.
 
 Google Drive canonical Product Spec owns product/architecture decisions. Google Drive canonical Brand System owns visual/construction rules. Git owns implementation history. Do not create duplicate handoff, blueprint, audit, or design-system documents in this repository.
 
@@ -35,7 +35,7 @@ The primary product loop outranks convenient implementation order.
 - exact integrated Day head `07f6f32da53feaf4a3824cad98e69030f84ec1d1`.
 
 ### Active checkpoint
-Arc→Easel→Arc continuity is being built inside Arc, not as a separate product or data store. The current domain seam binds an Easel session to one exact Arc Day + Course + Section + Unit + Lesson context, then permits only validated Section delivery-state outcomes back into Arc. Easel does not create a parallel class profile, duplicate Lesson, or independent schedule.
+Arc→Easel→Arc domain continuity is undergoing elevated hostile clearance before integration. Easel is inside Arc, not a separate product or data store. A live session is bound to one exact current Day + Course + Section + Unit + Lesson context. Before any writeback, Arc revalidates current canonical Planning/Unit/Lesson workspaces and reconstructs the live Day/Easel context from current Section overrides. Easel may return only validated Section delivery state; it may never mutate the calendar or perform Shift.
 
 ### Not complete
 - Easel teacher-facing live teaching surface and Day→Easel→Day interaction flow;
@@ -78,8 +78,8 @@ Keep one obvious owner per concern.
 - `src/planning/planningLessonSignals.ts` — exact shared-Lesson aggregation from canonical per-Section placements.
 - `src/planning/monthPlanningProjection.ts` — Month geometry aggregation only.
 - `src/planning/dayContinuityProjection.ts` — read-only Day continuity projection. It may surface unfinished teaching but may not mutate/reschedule.
-- `src/planning/easelSessionProjection.ts` — read-only Arc→Easel handoff. It binds one explicit Section + Lesson candidate from Day and preserves exact Arc identity/state. It never guesses between carryover and today’s plan.
-- `src/planning/easelTeachingOutcome.ts` — thin Easel→Arc adapter over the existing delivery-state rules. It may return validated Section delivery state; it may not Shift the calendar or create another recovery model.
+- `src/planning/easelSessionProjection.ts` — read-only Arc→Easel live-session boundary. It binds one explicit Section + Lesson candidate from the **current confirmed instructional Day** and preserves exact Arc identity/state. It never guesses between carryover and today’s plan, never opens past/future/no-school live sessions, and never reopens completed/skipped history.
+- `src/planning/easelTeachingOutcome.ts` — Easel→Arc adapter over existing delivery-state rules. Before writeback it validates canonical workspaces and reconstructs the current Day/Easel session from current Section schedule state. It may return validated Section delivery state; it may not Shift the calendar or create another recovery model.
 - `src/components/PlanningDayContinuityView.tsx` — Day continuity presentation only.
 - `src/components/PlanningWeekDayView.tsx` — Week planning presentation only.
 - `src/components/PlanningMonthView.tsx` — Month planning presentation only.
@@ -90,17 +90,23 @@ A UI component is not a state store. A view is not a second domain model. A cont
 
 ## Arc ↔ Easel continuity rules
 - Easel is Arc’s live teaching surface, not a separate product or planning database.
-- Arc Day provides the launch truth. Easel must bind to an explicit Section + Lesson candidate; it cannot silently choose between unfinished carryover and a different Lesson planned today.
-- the same shared Lesson may be open for different Sections while preserving distinct per-Section delivery state and resume notes.
-- unscheduled in-progress teaching may enter Easel without inventing a date.
-- a Section-specific Shift changes which Day candidate is scheduled; it must not create a duplicate carryover candidate.
+- Arc Day provides the launch truth. Easel binds to an explicit Section + Lesson candidate; it cannot silently choose between unfinished carryover and a different Lesson planned today.
+- live Easel launch is allowed only when the selected Day equals the supplied current live date and that date is a confirmed instructional day. Past/future/no-school Day views remain useful Arc context but are not live-teaching permission.
+- the same shared Lesson may be open for different Sections while preserving distinct stable Section IDs, even when two Sections have the same display name.
+- unscheduled in-progress teaching may enter Easel as current-Day carryover without inventing an effective schedule date.
+- a Section-specific Shift changes which candidate is scheduled. If Shift or other structural schedule context changes after Easel opens, the old session is stale and must refuse writeback.
+- carryover→scheduled or scheduled→moved is a meaningful context change and requires reopening the live session.
+- title-only/copy changes do not invalidate an otherwise identical live session; stale protection must not become general interface stickiness.
 - opening/projecting an Easel session is read-only.
+- completed/skipped Lessons remain visible in Arc history but are not valid live Easel launch candidates.
 - Easel outcomes reuse Arc’s existing delivery-state rules.
 - Easel may record `completed`, `stopped` with a concrete resume note, or `skipped` for not-started work.
-- completed/skipped history is terminal inside Easel and cannot be rewritten there.
+- completed/skipped history is terminal and cannot be rewritten through Easel.
 - already-started work cannot be relabeled skipped.
-- stale Easel sessions refuse to overwrite newer Arc delivery state.
-- teaching progress may be recorded only on a confirmed instructional day under the current Arc calendar model.
+- before writeback Arc validates Planning, Unit, and Lesson workspace integrity against the current loaded school calendar.
+- before writeback Arc reconstructs the exact current Easel session from canonical Day + Section schedule state. A session opened against older delivery or schedule truth cannot overwrite newer Arc state.
+- replaying an already-consumed session fails closed rather than applying a second outcome.
+- unrelated changes in another Section do not invalidate the selected Section’s unchanged live session.
 - Easel never performs Shift. A stopped Lesson becomes ordinary in-progress Section state; the existing Arc Recovery pipeline owns consequence preview and schedule repair.
 
 ## Cross-view truth
@@ -147,15 +153,17 @@ A UI component is not a state store. A view is not a second domain model. A cont
 2. TypeScript compile;
 3. Vite production bundle.
 
-Permanent gates include calendar truth, terms, Course/Section, Units, Lessons/delivery, recovery/Shift/Undo/persistence, Week/Day hostile projection, Month projection, shared Lesson-signal identity, Week↔Day↔Month truth, Day continuity, Arc→Easel session projection, and Easel→Arc teaching outcomes.
+Permanent gates include calendar truth, terms, Course/Section, Units, Lessons/delivery, recovery/Shift/Undo/persistence, Week/Day hostile projection, Month projection, shared Lesson-signal identity, Week↔Day↔Month truth, Day continuity, Arc→Easel session projection, Easel→Arc teaching outcomes, and the high-stakes Easel core-loop hostile contract.
+
+The high-stakes Easel gate must cover at minimum stale Shift after launch, unrelated Section changes, same-name Section identity, title-only non-stickiness, structural Lesson changes, carryover→scheduled transition, duplicate/replayed outcome, invalid workspace ownership, terminal-history launch blocking, current-Day enforcement, no-school blocking, and no schedule/shared-Lesson mutation.
 
 No feature advances to `develop` without an exact-head green gate. `develop` must pass again after integration.
 
 ## Next authorized work
-1. integrate the exact green Arc↔Easel domain-continuity head and require `develop` to pass independently;
-2. build the minimal Easel live teaching surface from that exact verified state, including explicit Day launch and return without creating a second planning store;
+1. integrate the exact elevated-audit Arc↔Easel domain head only after the documented head remains green, then require `develop` to pass independently;
+2. the parallel live-surface branch must rebase/adapt to this audited API rather than preserving older permissive Easel call signatures;
 3. prove browser-level Arc Day → Easel → Arc continuity before expanding secondary Easel tools;
-4. add only the classroom tools that support the proven teaching loop (timer/clock/cleanup/media/etc.) without turning Easel into a widget pile;
+4. add only classroom tools that support the proven teaching loop without turning Easel into a widget pile;
 5. return to Quarter/Semester/Year Map as natural zoom-outs of the proven calendar language;
 6. close auth/account isolation and account/Drive persistence before external beta;
 7. complete physical browser accessibility/responsive verification before release.
