@@ -25,10 +25,13 @@ const calendar = hydrateSchoolCalendar({
 const course = createCourse({ id: 'course-apah', title: 'AP Art History' })
 const p5 = createSection({ id: 'section-p5', courseId: course.id, calendarId: calendar.id, name: 'Period 5' })
 const unit = placeUnit(createUnit({ id: 'unit-egypt', calendarId: calendar.id, courseId: course.id, title: 'Egypt' }), calendar, { startDate: '2026-09-14', endDate: '2026-09-25' })
+const nextUnit = placeUnit(createUnit({ id: 'unit-greece', calendarId: calendar.id, courseId: course.id, title: 'Greece' }), calendar, { startDate: '2026-09-28', endDate: '2026-10-09' })
 
 const lesson17 = createLesson({ id: 'lesson-17', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Lesson 17', sequence: 17, plannedDate: '2026-09-16' })
-const lesson18 = createLesson({ id: 'lesson-18', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Lesson 18', sequence: 18, plannedDate: '2026-09-17', datePolicy: 'flexible' })
+const lesson18 = createLesson({ id: 'lesson-18', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Lesson 18', sequence: 18, plannedDate: '2026-09-17' })
 const fridayTest = createLesson({ id: 'lesson-test', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Egypt test', sequence: 19, plannedDate: '2026-09-18', datePolicy: 'fixed' })
+const laterFixed = createLesson({ id: 'lesson-next-fixed', calendarId: calendar.id, courseId: course.id, unitId: nextUnit.id, title: 'Greece checkpoint', sequence: 1, plannedDate: '2026-09-29', datePolicy: 'fixed' })
+const completedFuture = createLesson({ id: 'lesson-done', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Already taught', sequence: 20, plannedDate: '2026-09-17' })
 
 const interrupted = updateLessonDeliveryState(
   createLessonDeliveryState({ lesson: lesson17, section: p5 }),
@@ -36,39 +39,48 @@ const interrupted = updateLessonDeliveryState(
   p5,
   { status: 'in-progress', taughtDate: '2026-09-16', resumeNote: 'Stopped after the demo. Start with guided comparison.' },
 )
+const completedState = updateLessonDeliveryState(
+  createLessonDeliveryState({ lesson: completedFuture, section: p5 }),
+  completedFuture,
+  p5,
+  { status: 'completed', taughtDate: '2026-09-15' },
+)
 
-const before = JSON.stringify([lesson17, lesson18, fridayTest, interrupted])
-const preview = createRecoveryPreview({ calendar, section: p5, lesson: lesson17, state: interrupted, lessons: [lesson17, lesson18, fridayTest] })
-
-assert(preview.resumeDate === '2026-09-17', 'Interrupted Period 5 should resume on Thursday, the next confirmed instructional day.')
-assert(preview.resumeNote === 'Stopped after the demo. Start with guided comparison.', 'Recovery preview must preserve the exact stop note.')
-assert(preview.affectedFlexibleLessons.length === 1 && preview.affectedFlexibleLessons[0]?.lessonId === lesson18.id, 'Thursday flexible Lesson 18 must be surfaced as affected.')
-assert(preview.affectedFlexibleLessons[0]?.reason === 'resume-date-collision', 'Lesson 18 must be identified as colliding with the recovery day.')
-assert(preview.fixedAnchor?.lessonId === fridayTest.id, 'Friday test must be surfaced as the next fixed anchor.')
-assert(preview.fixedAnchor?.plannedDate === '2026-09-18', 'Fixed Friday test date must remain visible and unchanged.')
-assert(preview.mutationApplied === false, 'Creating a recovery preview must never mutate the schedule.')
-assert(JSON.stringify([lesson17, lesson18, fridayTest, interrupted]) === before, 'Recovery preview must be a pure read of planning state.')
-
-const alreadyShiftedPreview = createRecoveryPreview({
+const lessons = [lesson17, lesson18, fridayTest, laterFixed, completedFuture]
+const before = JSON.stringify([lessons, interrupted, completedState])
+const preview = createRecoveryPreview({
   calendar,
   section: p5,
   lesson: lesson17,
   state: interrupted,
-  lessons: [lesson17, lesson18, fridayTest],
+  lessons,
+  deliveryStates: [interrupted, completedState],
+})
+
+assert(preview.resumeDate === '2026-09-17', 'Interrupted Period 5 should resume on Thursday, the next confirmed instructional day.')
+assert(preview.resumeNote === 'Stopped after the demo. Start with guided comparison.', 'Recovery preview must preserve the exact stop note.')
+assert(preview.affectedFlexibleLessons.length === 1 && preview.affectedFlexibleLessons[0]?.lessonId === lesson18.id, 'Only still-live flexible work should be surfaced as affected.')
+assert(preview.affectedFlexibleLessons[0]?.effectiveDate === '2026-09-17', 'Recovery consequences must expose the Section effective date, not stale shared-plan wording.')
+assert(preview.affectedFlexibleLessons.every((entry) => entry.lessonId !== completedFuture.id), 'Completed Section work must never be proposed for recovery movement.')
+assert(preview.fixedAnchor?.lessonId === fridayTest.id && preview.fixedAnchor.effectiveDate === '2026-09-18', 'The earliest fixed anchor must remain the Friday test.')
+assert(preview.mutationApplied === false, 'Creating a recovery preview must never mutate the schedule.')
+assert(JSON.stringify([lessons, interrupted, completedState]) === before, 'Recovery preview must remain a pure read of planning state.')
+
+const shiftedPreview = createRecoveryPreview({
+  calendar,
+  section: p5,
+  lesson: lesson17,
+  state: interrupted,
+  lessons: [lesson17, lesson18, laterFixed],
+  deliveryStates: [interrupted],
   overrides: [{ sectionId: p5.id, lessonId: lesson18.id, plannedDate: '2026-09-21' }],
 })
-assert(alreadyShiftedPreview.affectedFlexibleLessons.length === 0, 'Recovery preview must use the Section effective schedule instead of re-reporting a shared-date collision already moved for that Section.')
-assert(alreadyShiftedPreview.fixedAnchor?.lessonId === fridayTest.id, 'Existing Section overrides must not hide the next fixed anchor.')
-
-const nextUnit = placeUnit(createUnit({ id: 'unit-next', calendarId: calendar.id, courseId: course.id, title: 'Next Unit' }), calendar, { startDate: '2026-09-21', endDate: '2026-09-30' })
-const laterSameUnitFixed = createLesson({ id: 'later-fixed', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Later same-unit anchor', sequence: 20, plannedDate: '2026-09-23', datePolicy: 'fixed' })
-const earlierCrossUnitFixed = createLesson({ id: 'cross-unit-fixed', calendarId: calendar.id, courseId: course.id, unitId: nextUnit.id, title: 'Next-unit fixed anchor', sequence: 1, plannedDate: '2026-09-22', datePolicy: 'fixed' })
-const crossUnitPreview = createRecoveryPreview({ calendar, section: p5, lesson: lesson17, state: interrupted, lessons: [lesson17, lesson18, laterSameUnitFixed, earlierCrossUnitFixed] })
-assert(crossUnitPreview.fixedAnchor?.lessonId === earlierCrossUnitFixed.id, 'Recovery must choose the earliest fixed anchor across the Course, even when it belongs to another Unit.')
+assert(shiftedPreview.affectedFlexibleLessons[0]?.effectiveDate === '2026-09-21', 'Recovery must read an existing Section-specific date override instead of the shared Lesson date.')
+assert(shiftedPreview.fixedAnchor?.lessonId === laterFixed.id, 'Recovery must see a fixed anchor in a later Unit across the same Course.')
 
 let fixedWithoutDateRejected = false
 try {
-  createLesson({ id: 'bad-fixed', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Fixed without a day', sequence: 20, datePolicy: 'fixed' })
+  createLesson({ id: 'bad-fixed', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Fixed without a day', sequence: 21, datePolicy: 'fixed' })
 } catch {
   fixedWithoutDateRejected = true
 }
@@ -78,20 +90,11 @@ const legacyPayload = JSON.stringify({
   schemaVersion: 1,
   input: {
     calendarId: calendar.id,
-    lessons: [{
-      id: 'legacy-lesson',
-      calendarId: calendar.id,
-      courseId: course.id,
-      unitId: unit.id,
-      title: 'Legacy Lesson',
-      sequence: 1,
-      plannedDate: '2026-09-16',
-    }],
+    lessons: [{ id: 'legacy-lesson', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Legacy Lesson', sequence: 1, plannedDate: '2026-09-16' }],
     deliveryStates: [],
   },
 })
-const legacyRestored = deserializeLessons(legacyPayload)
-assert(legacyRestored?.lessons[0]?.datePolicy === 'flexible', 'Saved Lessons created before date-policy support must migrate to flexible, never fixed.')
+assert(deserializeLessons(legacyPayload)?.lessons[0]?.datePolicy === 'flexible', 'Legacy saved Lessons must migrate to flexible, never fixed.')
 
 const noResumeCalendar = hydrateSchoolCalendar({
   id: 'short-calendar',
@@ -109,7 +112,7 @@ const shortSection = createSection({ id: 'short-section', courseId: course.id, c
 const shortUnit = placeUnit(createUnit({ id: 'short-unit', calendarId: noResumeCalendar.id, courseId: course.id, title: 'One day' }), noResumeCalendar, { startDate: '2026-09-16', endDate: '2026-09-16' })
 const shortLesson = createLesson({ id: 'short-lesson', calendarId: noResumeCalendar.id, courseId: course.id, unitId: shortUnit.id, title: 'Last day lesson', sequence: 1, plannedDate: '2026-09-16' })
 const shortState = updateLessonDeliveryState(createLessonDeliveryState({ lesson: shortLesson, section: shortSection }), shortLesson, shortSection, { status: 'in-progress', taughtDate: '2026-09-16', resumeNote: 'Stopped halfway.' })
-const blocked = createRecoveryPreview({ calendar: noResumeCalendar, section: shortSection, lesson: shortLesson, state: shortState, lessons: [shortLesson] })
+const blocked = createRecoveryPreview({ calendar: noResumeCalendar, section: shortSection, lesson: shortLesson, state: shortState, lessons: [shortLesson], deliveryStates: [shortState] })
 assert(blocked.resumeDate === null && Boolean(blocked.blockedReason), 'Recovery must block clearly when no future instructional day exists.')
 
 console.log('recovery preview contract passed')
