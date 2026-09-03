@@ -14,7 +14,7 @@ export type RecoveryShiftDraft = {
 }
 
 export function createRecoveryShiftDraft(preview: RecoveryPreview): RecoveryShiftDraft | null {
-  if (preview.blockedReason || !preview.resumeDate || !preview.interruptedEffectiveDate) return null
+  if (preview.blockedReason || !preview.resumeDate) return null
   if (preview.interruptedEffectiveDate === preview.resumeDate && preview.affectedFlexibleLessons.length === 0) return null
 
   return {
