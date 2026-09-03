@@ -5,6 +5,7 @@ import { TermBoundarySetup } from './TermBoundarySetup'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
 import {
   currentLocalISODate,
+  findContainingBoundary,
   hydrateSchoolCalendar,
   loadCalendarFromBrowser,
   moveAnchor,
@@ -50,8 +51,12 @@ export function AppFrame() {
     setCalendarInput(input)
     setEditingTerms(false)
 
-    if (activeView === 'Quarter' && nextCalendar.quarters.length === 0) setActiveView(DEFAULT_HOME_VIEW)
-    if (activeView === 'Semester' && nextCalendar.semesters.length === 0) setActiveView(DEFAULT_HOME_VIEW)
+    if (anchorDate) {
+      const quarterStillContainsAnchor = findContainingBoundary(nextCalendar.quarters, anchorDate)
+      const semesterStillContainsAnchor = findContainingBoundary(nextCalendar.semesters, anchorDate)
+      if (activeView === 'Quarter' && !quarterStillContainsAnchor) setActiveView(DEFAULT_HOME_VIEW)
+      if (activeView === 'Semester' && !semesterStillContainsAnchor) setActiveView(DEFAULT_HOME_VIEW)
+    }
 
     setStorageNotice(persisted ? null : 'These term dates are active for this session, but Arc could not save them in this browser.')
   }
