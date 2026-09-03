@@ -89,25 +89,37 @@ async function auditViewport(browser, width, height) {
   assert(await page.getByRole('heading', { name: 'Month' }).isVisible(), `${width}px: Arc did not restore into Month.`)
 
   const dayButton = page.getByRole('button', { name: 'Day', exact: true })
-  await dayButton.click()
+  await page.evaluate(() => {
+    const day = [...document.querySelectorAll('button')].find((button) => button.textContent?.trim() === 'Day')
+    if (!(day instanceof HTMLButtonElement)) throw new Error('Day navigation button not found.')
+    day.click()
+  })
   await page.getByRole('heading', { name: 'Day' }).waitFor()
   assert(await dayButton.getAttribute('aria-current') === 'page', `${width}px: Day did not become the active calendar view.`)
 
   const dayBox = await dayButton.boundingBox()
   assert(dayBox, `${width}px: active Day button has no rendered bounds.`)
-  assert(dayBox.x >= -0.5 && dayBox.x + dayBox.width <= width + 0.5, `${width}px: active Day button is not fully visible in the mobile horizon rail.`)
+  assert(dayBox.x >= -0.5 && dayBox.x + dayBox.width <= width + 0.5, `${width}px: Arc did not keep active Day fully visible without Playwright pre-scrolling it.`)
 
-  await page.keyboard.press('Shift+Tab')
+  const weekButton = page.getByRole('button', { name: 'Week', exact: true })
+  await weekButton.focus()
   await page.keyboard.press('Tab')
-  assert(await dayButton.evaluate((node) => document.activeElement === node), `${width}px: keyboard navigation did not return focus to active Day.`)
+  assert(await dayButton.evaluate((node) => document.activeElement === node), `${width}px: keyboard navigation did not move from Week to Day.`)
   const focus = await dayButton.evaluate((node) => {
     const style = getComputedStyle(node)
     return { outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth || '0') }
   })
   assert(focus.outlineStyle !== 'none' && focus.outlineWidth >= 3, `${width}px: keyboard focus is not visibly strong enough.`)
 
-  const mobileNavFontSize = await dayButton.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))
-  assert(mobileNavFontSize >= 16, `${width}px: primary calendar navigation fell below 16px (${mobileNavFontSize}px).`)
+  const navFontSize = await dayButton.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))
+  assert(navFontSize >= 16, `${width}px: primary calendar navigation fell below 16px (${navFontSize}px).`)
+
+  const sectionColumns = await page.locator('.day-continuity-section').first().evaluate((node) => getComputedStyle(node).gridTemplateColumns)
+  const expectedStacked = width <= 900
+  assert(
+    expectedStacked ? !sectionColumns.includes(' ') : sectionColumns.includes(' '),
+    `${width}px: Day Section layout did not match the approved ${expectedStacked ? 'stacked' : 'two-column'} responsive mode (${sectionColumns}).`,
+  )
 
   await page.getByRole('button', { name: 'Next Day' }).click()
 
@@ -126,27 +138,29 @@ async function auditViewport(browser, width, height) {
   assert(geometry.documentWidth <= geometry.viewportWidth + 1, `${width}px: page creates horizontal document overflow (${geometry.documentWidth}px > ${geometry.viewportWidth}px).`)
   assert(geometry.stageWidth <= geometry.stageClientWidth + 1, `${width}px: Day stage creates horizontal overflow (${geometry.stageWidth}px > ${geometry.stageClientWidth}px).`)
 
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
-  const overlapGeometry = await page.evaluate(() => {
-    const rail = document.querySelector('.arc-view-rail')?.getBoundingClientRect()
-    const sections = document.querySelectorAll('.day-continuity-section')
-    const last = sections.length ? sections[sections.length - 1].getBoundingClientRect() : null
-    const root = document.documentElement
-    return {
-      railY: rail?.y ?? null,
-      railHeight: rail?.height ?? null,
-      lastBottom: last?.bottom ?? null,
-      viewportHeight: window.innerHeight,
-      documentHeight: root.scrollHeight,
-      scrollY: window.scrollY,
-      maxScrollY: Math.max(0, root.scrollHeight - window.innerHeight),
-    }
-  })
-  assert(overlapGeometry.railY !== null && overlapGeometry.lastBottom !== null, `${width}px: could not measure final content against the mobile rail.`)
-  assert(
-    overlapGeometry.lastBottom <= overlapGeometry.railY + 1,
-    `${width}px: fixed mobile navigation covers the final Day Section. railY=${overlapGeometry.railY}, railHeight=${overlapGeometry.railHeight}, lastBottom=${overlapGeometry.lastBottom}, viewportHeight=${overlapGeometry.viewportHeight}, documentHeight=${overlapGeometry.documentHeight}, scrollY=${overlapGeometry.scrollY}, maxScrollY=${overlapGeometry.maxScrollY}.`,
-  )
+  if (width <= 520) {
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    const overlapGeometry = await page.evaluate(() => {
+      const rail = document.querySelector('.arc-view-rail')?.getBoundingClientRect()
+      const sections = document.querySelectorAll('.day-continuity-section')
+      const last = sections.length ? sections[sections.length - 1].getBoundingClientRect() : null
+      const root = document.documentElement
+      return {
+        railY: rail?.y ?? null,
+        railHeight: rail?.height ?? null,
+        lastBottom: last?.bottom ?? null,
+        viewportHeight: window.innerHeight,
+        documentHeight: root.scrollHeight,
+        scrollY: window.scrollY,
+        maxScrollY: Math.max(0, root.scrollHeight - window.innerHeight),
+      }
+    })
+    assert(overlapGeometry.railY !== null && overlapGeometry.lastBottom !== null, `${width}px: could not measure final content against the mobile rail.`)
+    assert(
+      overlapGeometry.lastBottom <= overlapGeometry.railY + 1,
+      `${width}px: fixed mobile navigation covers the final Day Section. railY=${overlapGeometry.railY}, railHeight=${overlapGeometry.railHeight}, lastBottom=${overlapGeometry.lastBottom}, viewportHeight=${overlapGeometry.viewportHeight}, documentHeight=${overlapGeometry.documentHeight}, scrollY=${overlapGeometry.scrollY}, maxScrollY=${overlapGeometry.maxScrollY}.`,
+    )
+  }
 
   assert(runtimeErrors.length === 0, `${width}px: runtime errors detected: ${runtimeErrors.join(' | ')}`)
   await context.close()
@@ -154,9 +168,10 @@ async function auditViewport(browser, width, height) {
 
 const browser = await chromium.launch({ headless: true })
 try {
+  await auditViewport(browser, 800, 900)
   await auditViewport(browser, 390, 844)
   await auditViewport(browser, 320, 800)
-  console.log('Day interface Chromium audit passed at 390px and 320px-equivalent reflow.')
+  console.log('Day interface Chromium audit passed at compact 800px, 390px mobile, and 320px minimum reflow.')
 } finally {
   await browser.close()
 }
