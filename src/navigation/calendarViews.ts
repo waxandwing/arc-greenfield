@@ -1,4 +1,4 @@
-export const CALENDAR_VIEWS = ['Year', 'Quarter', 'Month', 'Week', 'Day'] as const
+export const CALENDAR_VIEWS = ['Year Map', 'Semester', 'Quarter', 'Month', 'Week', 'Day'] as const
 
 export type CalendarView = (typeof CALENDAR_VIEWS)[number]
 
