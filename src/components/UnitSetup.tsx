@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { SchoolCalendar } from '../calendar'
+import type { ISODate, SchoolCalendar } from '../calendar'
 import {
   createUnit,
   createUnitId,
@@ -33,6 +33,18 @@ export function UnitSetup({ calendar, planning, initialValue, onSave, onCancel }
       title: '',
       placement: null,
     }])
+  }
+
+  function updatePlacement(unitId: string, edge: 'start' | 'end', rawDate: string) {
+    setUnits((current) => current.map((item) => {
+      if (item.id !== unitId) return item
+      if (!rawDate) return { ...item, placement: null }
+      const date = rawDate as ISODate
+      if (edge === 'start') {
+        return { ...item, placement: { startDate: date, endDate: item.placement?.endDate ?? date } }
+      }
+      return { ...item, placement: { startDate: item.placement?.startDate ?? date, endDate: date } }
+    }))
   }
 
   function submit() {
@@ -70,8 +82,8 @@ export function UnitSetup({ calendar, planning, initialValue, onSave, onCancel }
           <section className="unit-editor-row" key={unit.id}>
             <label><span>Unit</span><input value={unit.title} placeholder="Ancient Egypt" onChange={(event) => setUnits((current) => current.map((item) => item.id === unit.id ? { ...item, title: event.target.value } : item))} /></label>
             <label><span>Course</span><select value={unit.courseId} onChange={(event) => setUnits((current) => current.map((item) => item.id === unit.id ? { ...item, courseId: event.target.value } : item))}>{planning.courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}</select></label>
-            <label><span>Start</span><input type="date" min={calendar.firstDay} max={calendar.lastDay} value={unit.placement?.startDate ?? ''} onChange={(event) => setUnits((current) => current.map((item) => item.id === unit.id ? { ...item, placement: event.target.value ? { startDate: event.target.value as Unit['placement'] extends infer P ? any : never, endDate: item.placement?.endDate ?? event.target.value } : null } : item))} /></label>
-            <label><span>End</span><input type="date" min={calendar.firstDay} max={calendar.lastDay} value={unit.placement?.endDate ?? ''} onChange={(event) => setUnits((current) => current.map((item) => item.id === unit.id ? { ...item, placement: event.target.value ? { startDate: item.placement?.startDate ?? event.target.value, endDate: event.target.value as any } : null } : item))} /></label>
+            <label><span>Start</span><input type="date" min={calendar.firstDay} max={calendar.lastDay} value={unit.placement?.startDate ?? ''} onChange={(event) => updatePlacement(unit.id, 'start', event.target.value)} /></label>
+            <label><span>End</span><input type="date" min={calendar.firstDay} max={calendar.lastDay} value={unit.placement?.endDate ?? ''} onChange={(event) => updatePlacement(unit.id, 'end', event.target.value)} /></label>
             <button type="button" className="text-button" onClick={() => setUnits((current) => current.filter((item) => item.id !== unit.id))}>Remove</button>
           </section>
         ))}
