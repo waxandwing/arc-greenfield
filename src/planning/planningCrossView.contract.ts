@@ -3,8 +3,9 @@ import { projectMonth } from '../calendar/projections'
 import { createCourse, createSection } from './courses'
 import { createLessonDeliveryState, updateLessonDeliveryState, type LessonDeliveryState } from './deliveryState'
 import { createLesson } from './lessons'
-import { projectMonthPlanning, type MonthLessonSignal } from './monthPlanningProjection'
-import { projectPlanningRange, type PlanningRangeProjection } from './planningProjection'
+import { projectMonthPlanning } from './monthPlanningProjection'
+import { projectPlanningLessonSignals, type PlanningLessonSignal } from './planningLessonSignals'
+import { projectPlanningRange } from './planningProjection'
 import type { SectionLessonDateOverride } from './sectionSchedule'
 import { createUnit, placeUnit, type Unit } from './units'
 import type { LessonWorkspace } from './lessonWorkspace'
@@ -68,31 +69,18 @@ const monthPlanning = projectMonthPlanning({ month, planning, units, lessons, ov
 
 const monthSignalsByDate = new Map(monthPlanning.weeks.flatMap((week) => week.days.map((day) => [day.date, day.lessonSignals] as const)))
 for (const date of visibleDates) {
-  const expected = expectedSignals(range, date)
+  const expected = projectPlanningLessonSignals(range, date)
   const actual = monthSignalsByDate.get(date) ?? []
-  assert(actual.length === expected.length, `Month signal count must match Week/Day Section placements on ${date}.`)
-  for (const expectedSignal of expected) {
-    const actualSignal = actual.find((signal) => signal.courseId === expectedSignal.courseId && signal.lessonId === expectedSignal.lessonId)
-    assert(actualSignal, `Month must include ${expectedSignal.lessonId} on ${date} when Week/Day does.`)
-    assert(actualSignal.datePolicy === expectedSignal.datePolicy, `Month fixed/flexible identity must match Week/Day for ${expectedSignal.lessonId}.`)
-    assert(equalSectionScopes(actualSignal, expectedSignal), `Month Section scope must exactly reconstruct Week/Day for ${expectedSignal.lessonId} on ${date}.`)
-  }
+  assert(equalSignals(actual, expected), `Month signals must exactly reconstruct canonical Section-effective signals on ${date}.`)
 }
 
 const daySep17 = projectPlanningRange({ dates: ['2026-09-17'], planning, units, lessons, overrides })
-const monthSep17 = monthSignalsByDate.get('2026-09-17') ?? []
-assert(expectedSignals(daySep17, '2026-09-17').length === monthSep17.length, 'Direct Day projection and Month aggregation must agree on September 17 signal count.')
+assert(equalSignals(projectPlanningLessonSignals(daySep17, '2026-09-17'), monthSignalsByDate.get('2026-09-17') ?? []), 'Direct Day projection and Month aggregation must agree on September 17.')
 
 const weekDates = ['2026-09-14', '2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18'] as const
 const weekRange = projectPlanningRange({ dates: [...weekDates], planning, units, lessons, overrides })
 for (const date of weekDates) {
-  const weekSignals = expectedSignals(weekRange, date)
-  const monthSignals = monthSignalsByDate.get(date) ?? []
-  assert(weekSignals.length === monthSignals.length, `Week and Month must agree on signal count for ${date}.`)
-  for (const signal of weekSignals) {
-    const monthSignal = monthSignals.find((candidate) => candidate.lessonId === signal.lessonId && candidate.courseId === signal.courseId)
-    assert(monthSignal && equalSectionScopes(monthSignal, signal), `Week and Month must agree on exact Section scope for ${signal.lessonId} on ${date}.`)
-  }
+  assert(equalSignals(projectPlanningLessonSignals(weekRange, date), monthSignalsByDate.get(date) ?? []), `Week and Month must agree exactly on ${date}.`)
 }
 
 const caveAug31 = (monthSignalsByDate.get('2026-08-31') ?? []).find((signal) => signal.lessonId === cave.id)!
@@ -115,43 +103,16 @@ function assertUnitSegmentsReconstructVisibleCoverage(unit: Unit) {
   assert(equalSet(actualDates, expectedDates), `Month Unit segments must reconstruct exact visible coverage for ${unit.title}.`)
 }
 
-function expectedSignals(rangeProjection: PlanningRangeProjection, date: string): MonthLessonSignal[] {
-  const byLesson = new Map<string, MonthLessonSignal>()
-  for (const courseGroup of rangeProjection.courses) {
-    for (const row of courseGroup.sections) {
-      const day = row.days.find((candidate) => candidate.date === date)
-      if (!day) continue
-      for (const lesson of day.lessons) {
-        const key = `${lesson.courseId}:${lesson.lessonId}`
-        const signal = byLesson.get(key) ?? {
-          lessonId: lesson.lessonId,
-          courseId: lesson.courseId,
-          courseTitle: courseGroup.course.title,
-          title: lesson.title,
-          datePolicy: lesson.datePolicy,
-          sections: [],
-        }
-        assert(!signal.sections.some((scope) => scope.sectionId === row.section.id), `Week/Day projection must not duplicate ${row.section.id} for ${lesson.lessonId} on ${date}.`)
-        signal.sections.push({
-          sectionId: row.section.id,
-          sectionName: row.section.name,
-          isSectionOverride: lesson.isSectionOverride,
-          deliveryStatus: lesson.deliveryStatus,
-        })
-        byLesson.set(key, signal)
-      }
-    }
-  }
-  return [...byLesson.values()]
-}
-
-function equalSectionScopes(left: MonthLessonSignal, right: MonthLessonSignal): boolean {
-  const normalize = (signal: MonthLessonSignal) => signal.sections
-    .map((scope) => `${scope.sectionId}|${scope.sectionName}|${scope.isSectionOverride ? 'shifted' : 'shared'}|${scope.deliveryStatus}`)
-    .sort()
-  const leftScopes = normalize(left)
-  const rightScopes = normalize(right)
-  return leftScopes.length === rightScopes.length && leftScopes.every((value, index) => value === rightScopes[index])
+function equalSignals(left: PlanningLessonSignal[], right: PlanningLessonSignal[]): boolean {
+  const normalize = (signals: PlanningLessonSignal[]) => signals.map((signal) => [
+    signal.courseId,
+    signal.lessonId,
+    signal.datePolicy,
+    ...signal.sections.map((scope) => `${scope.sectionId}|${scope.sectionName}|${scope.isSectionOverride ? 'shifted' : 'shared'}|${scope.deliveryStatus}`).sort(),
+  ].join('::')).sort()
+  const leftSignals = normalize(left)
+  const rightSignals = normalize(right)
+  return leftSignals.length === rightSignals.length && leftSignals.every((value, index) => value === rightSignals[index])
 }
 
 function equalSet(left: string[], right: string[]): boolean {
