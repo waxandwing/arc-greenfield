@@ -3,6 +3,7 @@ import { CalendarProjectionView } from './CalendarProjectionView'
 import { CalendarSetup } from './CalendarSetup'
 import { ClassSetup } from './ClassSetup'
 import { LessonSetup } from './LessonSetup'
+import { RecoveryReview } from './RecoveryReview'
 import { TermBoundarySetup } from './TermBoundarySetup'
 import { UnitSetup } from './UnitSetup'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
@@ -64,6 +65,7 @@ export function AppFrame() {
   const [editingClasses, setEditingClasses] = useState(false)
   const [editingUnits, setEditingUnits] = useState(false)
   const [editingLessons, setEditingLessons] = useState(false)
+  const [reviewingRecovery, setReviewingRecovery] = useState(false)
   const [storageNotice, setStorageNotice] = useState<string | null>(() => {
     if (initialLoad.status === 'invalid') return 'Arc found saved calendar data it could not verify. Nothing was restored; please confirm the calendar again.'
     if (initialLoad.status === 'unavailable') return 'Calendar storage is unavailable in this browser. Changes may last only for this session.'
@@ -75,6 +77,15 @@ export function AppFrame() {
     if (initialLessonLoad.status === 'unavailable') return 'Lesson storage is unavailable in this browser. Lesson progress may last only for this session.'
     return null
   })
+
+  function closeSecondaryStates() {
+    setEditingCalendar(false)
+    setEditingTerms(false)
+    setEditingClasses(false)
+    setEditingUnits(false)
+    setEditingLessons(false)
+    setReviewingRecovery(false)
+  }
 
   function useCalendar(nextCalendar: SchoolCalendar, input: CalendarHydrationInput) {
     if (unitWorkspace && planningWorkspace) {
@@ -97,11 +108,7 @@ export function AppFrame() {
     setCalendarInput(input)
     setAnchorDate(nextCalendar.firstDay)
     setActiveView(DEFAULT_HOME_VIEW)
-    setEditingCalendar(false)
-    setEditingTerms(false)
-    setEditingClasses(false)
-    setEditingUnits(false)
-    setEditingLessons(false)
+    closeSecondaryStates()
     setStorageNotice(persisted ? null : 'This calendar is active for this session, but Arc could not save it in this browser.')
   }
 
@@ -178,7 +185,7 @@ export function AppFrame() {
   }
 
   const showCalendarSetup = !calendar || !anchorDate || editingCalendar
-  const showEditor = showCalendarSetup || editingTerms || editingClasses || editingUnits || editingLessons
+  const showEditor = showCalendarSetup || editingTerms || editingClasses || editingUnits || editingLessons || reviewingRecovery
   const previousTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'previous') : null
   const nextTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'next') : null
   const todayTarget = calendar ? todayAnchor(calendar, currentLocalISODate()) : null
@@ -186,10 +193,11 @@ export function AppFrame() {
   const hasClasses = Boolean(planningWorkspace && planningWorkspace.courses.length > 0)
   const hasUnits = Boolean(unitWorkspace && unitWorkspace.units.length > 0)
   const hasLessons = Boolean(lessonWorkspace && lessonWorkspace.lessons.length > 0)
+  const recoveryCount = lessonWorkspace?.deliveryStates.filter((state) => state.status === 'in-progress').length ?? 0
   const protectedCourseIds = courseIdsProtectedByUnits(unitWorkspace)
   const protectedUnitIds = unitIdsProtectedByLessons(lessonWorkspace)
   const protectedSectionIds = sectionIdsProtectedByDelivery(lessonWorkspace)
-  const stageTitle = editingTerms ? 'Terms' : editingClasses ? 'Classes' : editingUnits ? 'Units' : editingLessons ? 'Lessons' : activeView
+  const stageTitle = reviewingRecovery ? 'Recovery review' : editingTerms ? 'Terms' : editingClasses ? 'Classes' : editingUnits ? 'Units' : editingLessons ? 'Lessons' : activeView
 
   return (
     <div className="arc-shell">
@@ -215,6 +223,7 @@ export function AppFrame() {
                 <button type="button" className="text-button" onClick={() => setEditingClasses(true)}>{hasClasses ? 'Edit classes' : 'Set classes'}</button>
                 {hasClasses && <button type="button" className="text-button" onClick={() => setEditingUnits(true)}>{hasUnits ? 'Edit Units' : 'Add Units'}</button>}
                 {hasUnits && <button type="button" className="text-button" onClick={() => setEditingLessons(true)}>{hasLessons ? 'Edit Lessons' : 'Add Lessons'}</button>}
+                {recoveryCount > 0 && <button type="button" className="text-button recovery-review-trigger" onClick={() => setReviewingRecovery(true)}>Review recovery ({recoveryCount})</button>}
               </div></div>
             </div>}
           </header>
@@ -225,6 +234,7 @@ export function AppFrame() {
               : editingClasses && calendar ? <ClassSetup calendarId={calendar.id} initialValue={planningInput} protectedCourseIds={protectedCourseIds} protectedSectionIds={protectedSectionIds} onSave={useClasses} onCancel={() => setEditingClasses(false)} />
               : editingUnits && calendar && planningWorkspace ? <UnitSetup calendar={calendar} planning={planningWorkspace} initialValue={unitInput} protectedUnitIds={protectedUnitIds} onSave={useUnits} onCancel={() => setEditingUnits(false)} />
               : editingLessons && calendar && planningWorkspace && unitWorkspace ? <LessonSetup calendar={calendar} planning={planningWorkspace} units={unitWorkspace} initialValue={lessonInput} onSave={useLessons} onCancel={() => setEditingLessons(false)} />
+              : reviewingRecovery && calendar && planningWorkspace && lessonWorkspace ? <RecoveryReview calendar={calendar} planning={planningWorkspace} lessons={lessonWorkspace} onClose={() => setReviewingRecovery(false)} />
               : <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />}
           </section>
         </main>
