@@ -56,6 +56,10 @@ export function validateSection(section: Section): string[] {
   return errors
 }
 
+export function validateSectionCourse(section: Section, course: Course): string[] {
+  return section.courseId === course.id ? [] : ['Section belongs to a different course.']
+}
+
 export function sectionsForCourse(sections: Section[], courseId: CourseId): Section[] {
   return sections.filter((section) => section.courseId === courseId)
 }
