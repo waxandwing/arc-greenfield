@@ -1,0 +1,198 @@
+.planning-month{
+  display:grid;
+  min-width:840px;
+  border-top:1px solid var(--line-subtle);
+  border-left:1px solid var(--line-subtle);
+}
+
+.planning-month-weekdays,
+.planning-month-days,
+.planning-month-unit-lane{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+}
+
+.planning-month-weekdays{
+  position:sticky;
+  top:0;
+  z-index:3;
+  background:var(--paper);
+}
+
+.planning-month-weekdays span{
+  padding:8px 10px;
+  border-right:1px solid var(--line-subtle);
+  border-bottom:1px solid var(--line-subtle);
+  font-size:14px;
+  font-weight:700;
+  color:var(--soft-charcoal);
+}
+
+.planning-month-week{
+  display:grid;
+}
+
+.planning-month-unit-stack{
+  display:grid;
+  gap:3px;
+  padding:4px 0;
+  border-right:1px solid var(--line-subtle);
+  border-bottom:1px solid var(--line-subtle);
+  background:rgba(198,167,125,.055);
+}
+
+.planning-month-unit-lane{
+  min-height:34px;
+}
+
+.planning-month-unit-band{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  min-width:0;
+  margin:2px 4px;
+  padding:6px 8px;
+  overflow:hidden;
+  border-left:4px solid var(--terracotta);
+  background:rgba(201,104,69,.12);
+  color:var(--ink);
+  white-space:nowrap;
+}
+
+.planning-month-unit-course{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:14px;
+  font-weight:600;
+  color:var(--soft-charcoal);
+}
+
+.planning-month-unit-title{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:14px;
+  font-weight:700;
+}
+
+.planning-month-day{
+  min-width:0;
+  min-height:126px;
+  padding:8px;
+  border-right:1px solid var(--line-subtle);
+  border-bottom:1px solid var(--line-subtle);
+  background:rgba(255,255,255,.12);
+}
+
+.planning-month-day--weekend,
+.planning-month-day--no-school,
+.planning-month-day--holiday,
+.planning-month-day--break,
+.planning-month-day--teacher-workday{
+  background:rgba(74,73,69,.045);
+}
+
+.planning-month-day--unknown{
+  background:repeating-linear-gradient(135deg,rgba(74,73,69,.04),rgba(74,73,69,.04) 6px,transparent 6px,transparent 12px);
+}
+
+.planning-month-day--outside-month{
+  background:rgba(74,73,69,.025);
+}
+
+.planning-month-day--outside-month .planning-month-date{
+  color:var(--soft-charcoal);
+}
+
+.planning-month-day--outside-year{
+  background:rgba(74,73,69,.035);
+}
+
+.planning-month-day-heading{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:6px;
+  min-height:24px;
+}
+
+.planning-month-date{
+  font-size:16px;
+  font-weight:700;
+  color:var(--ink);
+}
+
+.planning-month-day-status{
+  max-width:72%;
+  overflow-wrap:anywhere;
+  text-align:right;
+  font-size:14px;
+  font-weight:600;
+  color:var(--soft-charcoal);
+}
+
+.planning-month-signals{
+  display:grid;
+  gap:6px;
+  margin-top:6px;
+}
+
+.planning-month-signal{
+  display:grid;
+  gap:3px;
+  min-width:0;
+  padding:7px 8px;
+  border:1px solid var(--line-subtle);
+  border-left:3px solid var(--dusty-blue);
+  border-radius:4px;
+  background:rgba(243,235,221,.84);
+  color:var(--ink);
+}
+
+.planning-month-signal--fixed{
+  border-left-color:var(--terracotta);
+}
+
+.planning-month-signal-heading{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:6px;
+}
+
+.planning-month-signal-title{
+  min-width:0;
+  overflow-wrap:anywhere;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.25;
+}
+
+.planning-month-fixed,
+.planning-month-signal-course,
+.planning-month-signal-sections,
+.planning-month-shifted,
+.planning-month-status-summary{
+  font-size:14px;
+  line-height:1.3;
+}
+
+.planning-month-fixed{
+  flex:0 0 auto;
+  font-weight:700;
+  color:var(--terracotta-text);
+}
+
+.planning-month-signal-course,
+.planning-month-signal-sections,
+.planning-month-status-summary{
+  color:var(--soft-charcoal);
+}
+
+.planning-month-shifted{
+  font-weight:700;
+  color:var(--terracotta-text);
+}
+
+@media (max-width:900px){
+  .planning-month{min-width:780px}
+}
