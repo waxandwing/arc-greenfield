@@ -97,11 +97,15 @@ function PlanningCourse({
 
 function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
   const statusLabel = humanizeStatus(lesson.deliveryStatus)
+  const taughtLabel = lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate
+    ? `Taught ${formatShortDate(lesson.taughtDate)}`
+    : null
   const accessible = [
     lesson.title,
     lesson.datePolicy === 'fixed' ? 'fixed date' : 'flexible date',
     lesson.isSectionOverride ? 'Section-specific date' : 'shared Course plan',
     statusLabel,
+    taughtLabel,
     lesson.resumeNote ? `Resume note: ${lesson.resumeNote}` : null,
   ].filter(Boolean).join('. ')
 
@@ -116,6 +120,7 @@ function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
       </div>
       <div className="planning-lesson-meta">
         <span>{statusLabel}</span>
+        {taughtLabel ? <span>{taughtLabel}</span> : null}
         {lesson.isSectionOverride ? <span>Shifted for this class</span> : null}
       </div>
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
