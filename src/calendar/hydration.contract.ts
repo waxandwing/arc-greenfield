@@ -56,4 +56,28 @@ const unknownCalendar = hydrateSchoolCalendar({
 })
 assert(!assessCalendarReadiness(unknownCalendar).ready, 'Explicit unknown exception must keep structural operations blocked.')
 
+const overlappingQuarterErrors = validateHydrationInput({
+  ...input,
+  quarters: [
+    { id: 'q1', label: 'Quarter 1', startDate: '2026-09-01', endDate: '2026-09-04' },
+    { id: 'q2', label: 'Quarter 2', startDate: '2026-09-04', endDate: '2026-09-07' },
+  ],
+})
+assert(overlappingQuarterErrors.some((error) => error.includes('overlaps')), 'Overlapping quarter boundaries must be rejected.')
+
+const duplicateBoundaryIdErrors = validateHydrationInput({
+  ...input,
+  semesters: [
+    { id: 'semester', label: 'Semester 1', startDate: '2026-09-01', endDate: '2026-09-03' },
+    { id: 'semester', label: 'Semester 2', startDate: '2026-09-04', endDate: '2026-09-07' },
+  ],
+})
+assert(duplicateBoundaryIdErrors.some((error) => error.includes('id semester is duplicated')), 'Duplicate term-boundary ids must be rejected.')
+
+const malformedBoundaryErrors = validateHydrationInput({
+  ...input,
+  quarters: [{ id: 'q-bad', label: 'Bad quarter', startDate: '2026-09-08', endDate: '2026-09-07' }],
+})
+assert(malformedBoundaryErrors.some((error) => error.includes('begins after it ends')), 'Reversed term boundaries must be rejected.')
+
 console.log('calendar hydration contract passed')
