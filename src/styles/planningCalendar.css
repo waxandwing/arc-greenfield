@@ -1,3 +1,9 @@
+.planning-scroll-frame{
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+}
+
 .planning-grid{
   display:grid;
   gap:var(--space-4);
