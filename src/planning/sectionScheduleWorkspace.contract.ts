@@ -73,4 +73,21 @@ const p2Independent: SectionScheduleWorkspace = {
 }
 assert(validateSectionScheduleWorkspace(p2Independent, calendar, planning, units, lessons).length === 0, 'A valid change in another Section must coexist with P5 recovery overrides.')
 
+const calendarAfterClosure = hydrateSchoolCalendar({
+  id: calendar.id,
+  schoolYearLabel: '2026–27',
+  firstDay: '2026-08-10',
+  lastDay: '2027-05-28',
+  instructionalWeekdays: [1, 2, 3, 4, 5],
+  patternSource: 'manual',
+  patternConfidence: 'confirmed',
+  exceptions: [{ date: '2026-09-21', kind: 'no-school', label: 'Closure', source: 'manual', confidence: 'confirmed' }],
+  quarters: [],
+  semesters: [],
+})
+assert(validateSectionScheduleWorkspace(valid, calendarAfterClosure, planning, units, lessons).some((error) => error.includes('confirmed instructional day')), 'A later calendar closure must invalidate a Section override that depended on that day.')
+
+const shortenedUnit = { ...unit, placement: { startDate: '2026-09-14' as const, endDate: '2026-09-18' as const } }
+assert(validateSectionScheduleWorkspace(valid, calendar, planning, { calendarId: calendar.id, units: [shortenedUnit] }, lessons).some((error) => error.includes('inside its Unit placement')), 'A later Unit shrink must invalidate overrides now outside the Unit.')
+
 console.log('section schedule workspace contract passed')
