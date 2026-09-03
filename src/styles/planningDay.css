@@ -34,6 +34,10 @@
   gap: var(--space-4);
 }
 
+.day-continuity-course-heading > * {
+  min-width: 0;
+}
+
 .day-continuity-course-heading h2,
 .day-continuity-section-heading h3,
 .day-continuity-units,
@@ -48,6 +52,7 @@
 .day-continuity-course-heading h2 {
   font: 600 22px/1.2 var(--font-editorial);
   color: var(--ink);
+  overflow-wrap: anywhere;
 }
 
 .day-continuity-units {
@@ -62,6 +67,7 @@
 .day-continuity-units strong {
   color: var(--ink);
   font-size: 16px;
+  overflow-wrap: anywhere;
 }
 
 .day-continuity-sections {
@@ -137,6 +143,7 @@
 }
 
 .day-continuity-lesson-heading strong {
+  min-width: 0;
   color: var(--ink);
   font-size: 18px;
   line-height: 1.35;
@@ -188,6 +195,7 @@
   .day-continuity-section {
     grid-template-columns: 1fr;
     gap: var(--space-3);
+    padding: var(--space-4) 0;
   }
 }
 
@@ -195,10 +203,6 @@
   .day-continuity-course-heading {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .day-continuity-section {
-    padding: var(--space-4) 0;
   }
 
   .day-continuity-held {
