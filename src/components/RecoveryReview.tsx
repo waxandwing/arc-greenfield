@@ -117,15 +117,15 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
                             {preview.affectedFlexibleLessons.map((affected) => {
                               const lesson = lessons.lessons.find((candidate) => candidate.id === affected.lessonId)
                               const unit = lesson ? units.units.find((candidate) => candidate.id === lesson.unitId) : null
-                              const options = unit?.placement
+                              const options = unit?.placement && preview.resumeDate
                                 ? confirmedInstructionalDates(calendar, unit.placement.startDate, unit.placement.endDate)
-                                    .filter((date) => date !== affected.effectiveDate && date !== preview.resumeDate && date !== preview.fixedAnchor?.effectiveDate)
+                                    .filter((date) => date > preview.resumeDate! && date !== affected.effectiveDate && date !== preview.fixedAnchor?.effectiveDate)
                                 : []
                               const key = choiceKey(preview.sectionId, affected.lessonId)
                               return (
                                 <div className="recovery-resolution" key={affected.lessonId}>
                                   <div><strong>{affected.title}</strong><span>{formatDate(affected.effectiveDate)} · {affected.reason === 'resume-date-collision' ? 'same day as the continuation' : 'before the next fixed anchor'}</span></div>
-                                  {draft && (
+                                  {draft && (options.length > 0 ? (
                                     <label>
                                       <span>Move to</span>
                                       <select value={chosenDates[key] ?? ''} onChange={(event) => setChosenDates((current) => ({ ...current, [key]: event.target.value as ISODate }))}>
@@ -133,7 +133,7 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
                                         {options.map((date) => <option key={date} value={date}>{formatDate(date)}</option>)}
                                       </select>
                                     </label>
-                                  )}
+                                  ) : <p className="recovery-option-empty" role="status">No later instructional day is available inside this Unit.</p>)}
                                 </div>
                               )
                             })}
