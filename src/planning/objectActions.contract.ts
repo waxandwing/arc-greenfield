@@ -20,16 +20,8 @@ function expectThrow(run: () => unknown, fragment: string) {
 }
 
 const calendar = hydrateSchoolCalendar({
-  id: 'calendar-actions',
-  schoolYearLabel: '2026–27',
-  firstDay: '2026-08-10',
-  lastDay: '2027-05-28',
-  instructionalWeekdays: [1, 2, 3, 4, 5],
-  patternSource: 'manual',
-  patternConfidence: 'confirmed',
-  exceptions: [],
-  quarters: [],
-  semesters: [],
+  id: 'calendar-actions', schoolYearLabel: '2026–27', firstDay: '2026-08-10', lastDay: '2027-05-28',
+  instructionalWeekdays: [1, 2, 3, 4, 5], patternSource: 'manual', patternConfidence: 'confirmed', exceptions: [], quarters: [], semesters: [],
 })
 const course = createCourse({ id: 'course-apah', title: 'AP Art History' })
 const p2 = createSection({ id: 'section-p2', courseId: course.id, calendarId: calendar.id, name: 'Period 2' })
@@ -49,29 +41,34 @@ assert(lessons.lessons.find((item) => item.id === lesson.id)?.plannedDate === '2
 expectThrow(() => moveLesson({ calendar, units, lessons, overrides, lessonId: lesson.id, plannedDate: '2026-09-27' }), 'Cannot move Lesson')
 expectThrow(() => moveLesson({ calendar, units, lessons, overrides, lessonId: lesson.id, plannedDate: '2026-09-19' }), 'confirmed instructional day')
 
+let taught = createLessonDeliveryState({ lesson, section: p2 })
+taught = updateLessonDeliveryState(taught, lesson, p2, { status: 'completed', taughtDate: '2026-09-16', resumeNote: null })
+const withHistory: LessonWorkspace = { ...lessons, deliveryStates: [taught] }
+const movedWithHistory = moveLesson({ calendar, units, lessons: withHistory, overrides, lessonId: lesson.id, plannedDate: '2026-09-17' })
+assert(movedWithHistory.deliveryStates[0] === taught, 'Moving a Lesson must not rewrite or drop teaching history.')
+
 const unplacedFixed = unplaceLessonFromCalendar({ calendar, units, lessons, overrides, lessonId: fixed.id })
 const unplacedFixedLesson = unplacedFixed.lessons.lessons.find((item) => item.id === fixed.id)
 assert(unplacedFixedLesson?.plannedDate === null, 'Unplace Lesson must clear its shared calendar date.')
 assert(unplacedFixedLesson?.datePolicy === 'flexible', 'Unplacing a fixed Lesson must remove contradictory fixed-with-no-date state.')
-assert(unplacedFixed.lessons.deliveryStates.length === 0, 'Unplace Lesson must preserve teaching-history collection untouched.')
 
 const sectionOverride: SectionLessonDateOverride = { sectionId: p2.id, lessonId: lesson.id, plannedDate: '2026-09-17' }
-const unplacedWithOverride = unplaceLessonFromCalendar({ calendar, units, lessons, overrides: [sectionOverride], lessonId: lesson.id })
+const unplacedWithOverride = unplaceLessonFromCalendar({ calendar, units, lessons: withHistory, overrides: [sectionOverride], lessonId: lesson.id })
 assert(unplacedWithOverride.overrides.length === 0, 'Unplace Lesson must clear its Section-specific placements so it is truly off-calendar.')
+assert(unplacedWithOverride.removedOverrides.length === 1 && unplacedWithOverride.removedOverrides[0].sectionId === p2.id, 'Unplace Lesson must explicitly report every removed Section placement for consequence preview.')
+assert(unplacedWithOverride.lessons.deliveryStates[0] === taught, 'Unplace Lesson must preserve teaching history exactly.')
 assert(unplacedWithOverride.lessons.lessons.find((item) => item.id === lesson.id)?.id === lesson.id, 'Unplace Lesson must preserve Lesson identity.')
 
 expectThrow(() => deleteLesson({ calendar, units, lessons, overrides: [sectionOverride], lessonId: lesson.id }), 'Section-specific schedule placements')
-let taught = createLessonDeliveryState({ lesson, section: p2 })
-taught = updateLessonDeliveryState(taught, lesson, p2, { status: 'completed', taughtDate: '2026-09-16', resumeNote: null })
-const withHistory: LessonWorkspace = { ...lessons, deliveryStates: [taught] }
 expectThrow(() => deleteLesson({ calendar, units, lessons: withHistory, overrides, lessonId: lesson.id }), 'teaching history')
 const deletedLessonWorkspace = deleteLesson({ calendar, units, lessons, overrides, lessonId: fixed.id })
 assert(!deletedLessonWorkspace.lessons.some((item) => item.id === fixed.id), 'Delete Lesson must remove the requested Lesson when no history/override blocks it.')
 assert(deletedLessonWorkspace.lessons.some((item) => item.id === lesson.id), 'Delete Lesson must not remove neighboring Lessons.')
 
-const movedUnitWorkspace = moveUnit({ calendar, units, lessons, overrides, unitId: unit.id, placement: { startDate: '2026-09-14', endDate: '2026-09-30' } })
+const movedUnitWorkspace = moveUnit({ calendar, units, lessons: withHistory, overrides, unitId: unit.id, placement: { startDate: '2026-09-14', endDate: '2026-09-30' } })
 assert(movedUnitWorkspace.units.find((item) => item.id === unit.id)?.placement?.endDate === '2026-09-30', 'Move Unit must update its span.')
 assert(movedUnitWorkspace.units.find((item) => item.id === unit.id)?.id === unit.id, 'Move Unit must preserve Unit identity.')
+assert(withHistory.deliveryStates[0] === taught, 'Move Unit must not touch teaching history.')
 expectThrow(() => moveUnit({ calendar, units, lessons, overrides, unitId: unit.id, placement: { startDate: '2026-09-21', endDate: '2026-09-25' } }), 'would become invalid')
 expectThrow(() => moveUnit({ calendar, units, lessons, overrides: [{ sectionId: p2.id, lessonId: lesson.id, plannedDate: '2026-09-25' }], unitId: unit.id, placement: { startDate: '2026-09-14', endDate: '2026-09-19' } }), 'Section-specific Lesson placement')
 
