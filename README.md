@@ -9,7 +9,7 @@ Clean frame-first rebuild.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point
 
 ## Current build scope
-Frame + navigation + calendar truth foundation.
+Frame + navigation + calendar truth + calendar projections.
 
 Implemented:
 - global shell geometry and canonical brand tokens
@@ -27,13 +27,18 @@ Implemented:
 - quarter/semester boundary lookup
 - structural calendar validation
 - readiness preflight that blocks structural planning when calendar days are unknown
-- dependency-free calendar contract test via `npm run test:calendar`
+- one pure projection layer for Day / Week / Month / Quarter / Semester / Year Map
+- Monday-aligned week and month-grid calculations
+- projection flags for weekend and school-year membership without changing calendar truth
+- dependency-free calendar + projection contract tests via `npm run test:calendar`
 
 Calendar truth rule: a missing day is `unknown`, never silently assumed to be instructional.
 
+Projection rule: every calendar horizon is derived from the same `SchoolCalendar`; views may change presentation, never date truth.
+
 Intentionally excluded:
 - school/district data ingestion UI
-- calendar rendering logic
+- rendered calendar components
 - previous/next/today period controls
 - Units, Lessons, Notes, Ideas, Shift UI, Search, Help, Profile
 - landing-preference persistence
