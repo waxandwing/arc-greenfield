@@ -5,7 +5,7 @@ Greenfield rebuild. Calendar-first. Trust-first.
 ## Authority
 - `main` — protected, release-only. It is not the source for active development.
 - `develop` — the only integrated pre-release source of truth.
-- `feature/week-day-planning-projection` — the only active implementation branch for this milestone.
+- `feature/week-day-hostile-audit` — the only active implementation branch for this milestone.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point.
 - every other branch is historical, abandoned, accidental, or reference-only and must not be used as source for new work, previews, audits, or recovery.
 
@@ -18,7 +18,7 @@ The constrained rebuild order is authoritative when it conflicts with the older 
 
 frame/shell → navigation → calendar truth → movement/recovery → real planning projection → Day/Easel continuity → integrations → visual polish/secondary systems.
 
-Integrated through `develop` before this feature:
+Integrated through `develop` before this audit:
 - trustworthy shell and six calendar horizons;
 - explicit school-calendar truth, terms, navigation, and local declaration persistence;
 - real Course/Section setup;
@@ -26,9 +26,10 @@ Integrated through `develop` before this feature:
 - recovery consequence preview;
 - explicit Section-scoped Shift Apply, local persistence, reload-safe Undo, and hostile recovery preflight;
 - exact same-day collision approval domain only;
-- AppFrame decomposition into discoverable app/component boundaries.
+- AppFrame decomposition into discoverable app/component boundaries;
+- real Week/Day planning projection with shared Unit bands, Section rows, effective Lesson dates, delivery state, and progressive setup.
 
-This feature adds the first real teacher planning projection to Week and Day. It does not extend Month/Quarter/Semester/Year Map yet.
+This feature hostile-audits Week/Day before planning truth expands to Month/Quarter/Semester/Year Map.
 
 Not yet complete:
 - auth and account isolation;
@@ -64,13 +65,16 @@ Guardrail: a UI composition file should not become a second state store. A contr
 ## Week / Day planning rules
 - Week defaults to Monday–Friday. Weekend dates remain part of calendar truth and are still reachable through Day; a weekend-display preference can be added later.
 - shared Unit spans render once per Course, not once per Section.
+- overlapping Units remain distinct and render in separate Unit lanes rather than painting over each other.
 - Sections render as separate class rows beneath the shared Course/Unit context.
 - Lesson placement uses each Section's effective date, including persisted Shift overrides.
 - missing delivery state projects as `not-started`; projection never writes redundant delivery rows.
 - fixed/flexible identity and Section-specific Shift identity remain visible.
 - in-progress Lessons carry the saved resume note into the planning view.
+- if actual taught date differs from the displayed plan/effective date, the tile exposes the actual taught date instead of implying they are the same.
 - setup degrades progressively: Classes alone show class rows; placed Units add shared Unit bands; Lessons add dated work. Empty projection layers are render-only and are never persisted as fake user data.
-- Day and Week are lenses over the same `projectPlanningRange` result rules.
+- Day and Week are lenses over the same `projectPlanningRange` rules.
+- projection date arrays must be unique and strictly ascending; malformed date geometry fails closed.
 
 ## Operations
 - every preview/build exposes the exact Git commit fingerprint.
@@ -98,18 +102,19 @@ Guardrail: a UI composition file should not become a second state store. A contr
 - CI installs only with `npm ci`;
 - `npm run build` requires the full domain contract suite, TypeScript compile, and Vite production bundle;
 - contract manifest lives in `tests/run-contracts.mjs`;
-- planning projection has a contract covering shared Unit identity, Section-specific effective dates, sparse delivery state, fixed-date identity, Week↔Day consistency, progressive setup, and calendar ownership failure;
+- planning projection contracts cover shared Unit identity, overlapping Units, multiple Courses/Sections, holidays, Section-specific effective dates, sparse delivery state, actual taught dates, fixed-date identity, cross-week Shift, blank weeks, Week↔Day consistency, progressive setup, date geometry, and calendar ownership failure;
 - no feature branch advances to `develop` without an exact-head green gate;
 - `develop` must pass again after integration;
 - browser interaction is a separate release gate and is never inferred from source/build success.
 
 ## Next authorized work
-1. integrate this verified Week/Day planning projection;
-2. hostile-audit the integrated Week↔Day planning truth before expanding horizons;
-3. project the same planning truth into Month/Quarter/Semester/Year Map at appropriate density;
-4. build Day/Easel teaching continuity from that same state;
-5. restore missing platform obligations: auth/account isolation and account/Drive persistence before external beta;
-6. only then resume secondary exception systems as their primary workflows require them.
+1. integrate the verified Week/Day hostile audit;
+2. project the same planning truth into Month at Month-appropriate density;
+3. audit Week↔Day↔Month consistency before Quarter/Semester/Year Map;
+4. extend the same truth into Quarter/Semester/Year Map at appropriate density;
+5. build Day/Easel teaching continuity from that same state;
+6. restore missing platform obligations: auth/account isolation and account/Drive persistence before external beta;
+7. only then resume secondary exception systems as their primary workflows require them.
 
 ## Release wall
 Nothing moves to `main` until product, functional, visual, accessibility, persistence, account-isolation, regression, exact-build, browser-interaction, and dependency-lock gates are explicitly cleared.
