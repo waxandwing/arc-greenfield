@@ -101,4 +101,20 @@ const day = projectPlanningRange({ dates: ['2026-10-15'], planning, units, lesso
 assert(day.courses[0].sections.find((row) => row.section.id === 'apah-p5')!.days[0].lessons.some((lesson) => lesson.lessonId === l1.id), 'Day and Week must agree on P5 effective Lesson placement.')
 assert(day.courses[0].sections.find((row) => row.section.id === 'apah-p1')!.days[0].lessons.some((lesson) => lesson.lessonId === l2.id), 'Day and Week must agree on shared Lesson placement.')
 
+let duplicateDateRejected = false
+try {
+  projectPlanningRange({ dates: ['2026-10-15', '2026-10-15'], planning, units, lessons: lessonWorkspace, overrides })
+} catch {
+  duplicateDateRejected = true
+}
+assert(duplicateDateRejected, 'Projection must reject duplicate visible dates before calculating Unit geometry.')
+
+let unsortedDateRejected = false
+try {
+  projectPlanningRange({ dates: ['2026-10-16', '2026-10-15'], planning, units, lessons: lessonWorkspace, overrides })
+} catch {
+  unsortedDateRejected = true
+}
+assert(unsortedDateRejected, 'Projection must reject unsorted visible dates before calculating Unit geometry.')
+
 console.log('planning projection hostile contract passed')
