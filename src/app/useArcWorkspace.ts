@@ -15,7 +15,7 @@ import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarView
 import {
   applyShiftOperation,
   courseIdsProtectedByUnits,
-  saveLessonsToBrowser,
+  saveLessonAndShiftStateToBrowser,
   savePlanningWorkspaceToBrowser,
   saveShiftStateToBrowser,
   saveUnitsToBrowser,
@@ -187,28 +187,49 @@ export function useArcWorkspace(onCloseMode: () => void) {
     setStorageNotice(persisted ? null : 'These Units are active for this session, but Arc could not save them in this browser.')
   }
 
-  function useLessons(input: LessonWorkspaceInput, workspace: LessonWorkspace) {
-    if (calendar && planningWorkspace && unitWorkspace) {
-      const shift = reconcileShiftState(shiftState, calendar, planningWorkspace, unitWorkspace, workspace)
-      if (!shift.allowed) {
-        setStorageNotice('That Lesson change would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the Lessons.')
-        return
-      }
-      const lessonsPersisted = saveLessonsToBrowser(input)
-      const shiftPersisted = persistReconciledShift(shift.next)
-      setLessonWorkspace(workspace)
-      setLessonInput(input)
-      onCloseMode()
-      if (!lessonsPersisted || !shiftPersisted) setStorageNotice('These Lessons are active for this session, but Arc could not save all related planning state in this browser.')
-      else if (shift.undoDropped) setStorageNotice('Lessons updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
-      else setStorageNotice(null)
+  function useLessons(input: LessonWorkspaceInput, workspace: LessonWorkspace, requestedShiftState: ShiftPersistenceInput) {
+    if (!calendar || !planningWorkspace || !unitWorkspace) {
+      setStorageNotice('Arc cannot save these Lessons because the planning context is incomplete. Nothing changed.')
       return
     }
-    const persisted = saveLessonsToBrowser(input)
+
+    let candidateShift: ShiftPersistenceInput = {
+      calendarId: calendar.id,
+      overrides: requestedShiftState.overrides.map((override) => ({ ...override })),
+      undo: requestedShiftState.undo,
+    }
+    let validation = validateShiftPersistenceInput(candidateShift, calendar, planningWorkspace, unitWorkspace, workspace)
+    if (validation.scheduleErrors.length > 0) {
+      setStorageNotice('That Lesson change would invalidate an existing Section schedule. Resolve the affected Section dates first; Arc has not changed the Lessons.')
+      return
+    }
+
+    let undoDropped = false
+    if (!validation.undoValid) {
+      candidateShift = { ...candidateShift, undo: null }
+      undoDropped = true
+      validation = validateShiftPersistenceInput(candidateShift, calendar, planningWorkspace, unitWorkspace, workspace)
+      if (validation.scheduleErrors.length > 0) {
+        setStorageNotice('Arc refused this Lesson change because the resulting Section schedule did not pass its integrity check. Nothing changed.')
+        return
+      }
+    }
+
+    const persisted = saveLessonAndShiftStateToBrowser(input, candidateShift)
+    if (!persisted.saved) {
+      setStorageNotice(persisted.rollbackSucceeded
+        ? 'Arc could not save the Lesson and Section schedule together, so it restored the previous browser state. Nothing changed.'
+        : 'Arc could not save the Lesson and Section schedule together, and browser storage also refused a complete rollback. Do not continue editing in this tab until the stored workspace is checked.')
+      return
+    }
+
     setLessonWorkspace(workspace)
     setLessonInput(input)
+    setShiftState(candidateShift)
     onCloseMode()
-    setStorageNotice(persisted ? null : 'These Lessons are active for this session, but Arc could not save them in this browser.')
+    setStorageNotice(undoDropped
+      ? 'Lessons updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.'
+      : null)
   }
 
   function applyRecoveryShift(operation: ShiftOperation): string | null {
