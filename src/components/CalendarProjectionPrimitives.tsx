@@ -47,7 +47,7 @@ export function TermContext({ quarters, semesters, detailed = false }: { quarter
   )
 }
 
-export function CalendarDayCell({ day, compact = false, showWeekday = false, role }: { day: ProjectedDay; compact?: boolean; showWeekday?: boolean; role?: 'gridcell' }) {
+export function CalendarDayCell({ day, compact = false, showWeekday = false }: { day: ProjectedDay; compact?: boolean; showWeekday?: boolean }) {
   const classes = [
     'calendar-day-cell',
     `calendar-day-cell--${day.kind}`,
@@ -60,7 +60,7 @@ export function CalendarDayCell({ day, compact = false, showWeekday = false, rol
   const accessibleLabel = `${formatLongDate(day.date)}. ${status}.`
 
   return (
-    <div className={classes} data-date={day.date} data-kind={day.kind} role={role} aria-label={accessibleLabel}>
+    <div className={classes} data-date={day.date} data-kind={day.kind} aria-label={accessibleLabel}>
       {showWeekday && !compact ? <span className="calendar-day-weekday">{formatWeekday(day.date)}</span> : null}
       <span className="calendar-day-date">{day.date.slice(8)}</span>
       {!compact && day.label ? <span className="calendar-day-label">{day.label}</span> : null}
