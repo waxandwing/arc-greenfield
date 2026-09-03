@@ -74,7 +74,7 @@ export function validateLessonAgainstUnit(
     }
 
     const day = getCalendarDay(calendar, lesson.plannedDate)
-    if (!day || day.status !== 'instructional' || day.confidence !== 'confirmed') {
+    if (!day || day.kind !== 'instructional' || day.confidence !== 'confirmed') {
       errors.push('Lesson planned date must be a confirmed instructional day.')
     }
   }
