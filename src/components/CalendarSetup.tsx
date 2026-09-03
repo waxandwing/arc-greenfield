@@ -71,7 +71,9 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
         source: 'manual',
         confidence: 'confirmed',
       })),
-  }), [schoolYearLabel, firstDay, lastDay, weekdays, exceptions])
+    quarters: initialValue?.quarters ? [...initialValue.quarters] : [],
+    semesters: initialValue?.semesters ? [...initialValue.semesters] : [],
+  }), [schoolYearLabel, firstDay, lastDay, weekdays, exceptions, initialValue])
 
   function toggleWeekday(day: Weekday) {
     setWeekdays((current) => current.includes(day)
