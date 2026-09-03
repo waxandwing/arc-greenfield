@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CalendarProjectionView } from './CalendarProjectionView'
 import { CalendarSetup } from './CalendarSetup'
 import { ClassSetup } from './ClassSetup'
+import { LessonSetup } from './LessonSetup'
 import { TermBoundarySetup } from './TermBoundarySetup'
 import { UnitSetup } from './UnitSetup'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
@@ -20,11 +21,18 @@ import {
 } from '../calendar'
 import {
   courseIdsProtectedByUnits,
+  loadLessonsFromBrowser,
   loadPlanningWorkspaceFromBrowser,
   loadUnitsFromBrowser,
+  saveLessonsToBrowser,
   savePlanningWorkspaceToBrowser,
   saveUnitsToBrowser,
+  sectionIdsProtectedByDelivery,
+  unitIdsProtectedByLessons,
+  validateLessonWorkspace,
   validateUnitWorkspace,
+  type LessonWorkspace,
+  type LessonWorkspaceInput,
   type PlanningWorkspace,
   type PlanningWorkspaceInput,
   type UnitWorkspace,
@@ -38,6 +46,8 @@ export function AppFrame() {
   const restoredPlanning = initialPlanningLoad.status === 'restored' ? initialPlanningLoad : null
   const [initialUnitLoad] = useState(() => restored && restoredPlanning ? loadUnitsFromBrowser(restored.calendar, restoredPlanning.workspace) : { status: 'empty' as const })
   const restoredUnits = initialUnitLoad.status === 'restored' ? initialUnitLoad : null
+  const [initialLessonLoad] = useState(() => restored && restoredPlanning && restoredUnits ? loadLessonsFromBrowser(restored.calendar, restoredPlanning.workspace, restoredUnits.workspace) : { status: 'empty' as const })
+  const restoredLessons = initialLessonLoad.status === 'restored' ? initialLessonLoad : null
 
   const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
   const [calendar, setCalendar] = useState<SchoolCalendar | null>(restored?.calendar ?? null)
@@ -47,10 +57,13 @@ export function AppFrame() {
   const [planningInput, setPlanningInput] = useState<PlanningWorkspaceInput | null>(restoredPlanning?.input ?? null)
   const [unitWorkspace, setUnitWorkspace] = useState<UnitWorkspace | null>(restoredUnits?.workspace ?? null)
   const [unitInput, setUnitInput] = useState<UnitWorkspaceInput | null>(restoredUnits?.input ?? null)
+  const [lessonWorkspace, setLessonWorkspace] = useState<LessonWorkspace | null>(restoredLessons?.workspace ?? null)
+  const [lessonInput, setLessonInput] = useState<LessonWorkspaceInput | null>(restoredLessons?.input ?? null)
   const [editingCalendar, setEditingCalendar] = useState(false)
   const [editingTerms, setEditingTerms] = useState(false)
   const [editingClasses, setEditingClasses] = useState(false)
   const [editingUnits, setEditingUnits] = useState(false)
+  const [editingLessons, setEditingLessons] = useState(false)
   const [storageNotice, setStorageNotice] = useState<string | null>(() => {
     if (initialLoad.status === 'invalid') return 'Arc found saved calendar data it could not verify. Nothing was restored; please confirm the calendar again.'
     if (initialLoad.status === 'unavailable') return 'Calendar storage is unavailable in this browser. Changes may last only for this session.'
@@ -58,6 +71,8 @@ export function AppFrame() {
     if (initialPlanningLoad.status === 'unavailable') return 'Class storage is unavailable in this browser. Class changes may last only for this session.'
     if (initialUnitLoad.status === 'invalid') return 'Arc found saved Unit data it could not verify. Your calendar and classes are safe; please confirm the Units again.'
     if (initialUnitLoad.status === 'unavailable') return 'Unit storage is unavailable in this browser. Unit changes may last only for this session.'
+    if (initialLessonLoad.status === 'invalid') return 'Arc found saved Lesson progress it could not verify. Calendar, Classes, and Units are safe; please confirm the Lessons again.'
+    if (initialLessonLoad.status === 'unavailable') return 'Lesson storage is unavailable in this browser. Lesson progress may last only for this session.'
     return null
   })
 
@@ -67,6 +82,13 @@ export function AppFrame() {
       if (unitErrors.length > 0) {
         setStorageNotice('That calendar change would make one or more existing Units invalid. Adjust or remove those Unit placements first; Arc has not changed the calendar.')
         return
+      }
+      if (lessonWorkspace) {
+        const lessonErrors = validateLessonWorkspace(lessonWorkspace, nextCalendar, planningWorkspace, unitWorkspace)
+        if (lessonErrors.length > 0) {
+          setStorageNotice('That calendar change would invalidate an existing Lesson plan or recorded class progress. Resolve those Lesson dates first; Arc has not changed the calendar.')
+          return
+        }
       }
     }
 
@@ -79,6 +101,7 @@ export function AppFrame() {
     setEditingTerms(false)
     setEditingClasses(false)
     setEditingUnits(false)
+    setEditingLessons(false)
     setStorageNotice(persisted ? null : 'This calendar is active for this session, but Arc could not save it in this browser.')
   }
 
@@ -88,18 +111,23 @@ export function AppFrame() {
     setCalendar(nextCalendar)
     setCalendarInput(input)
     setEditingTerms(false)
-
     if (anchorDate) {
       const quarterStillContainsAnchor = findContainingBoundary(nextCalendar.quarters, anchorDate)
       const semesterStillContainsAnchor = findContainingBoundary(nextCalendar.semesters, anchorDate)
       if (activeView === 'Quarter' && !quarterStillContainsAnchor) setActiveView(DEFAULT_HOME_VIEW)
       if (activeView === 'Semester' && !semesterStillContainsAnchor) setActiveView(DEFAULT_HOME_VIEW)
     }
-
     setStorageNotice(persisted ? null : 'These term dates are active for this session, but Arc could not save them in this browser.')
   }
 
   function useClasses(input: PlanningWorkspaceInput, workspace: PlanningWorkspace) {
+    if (calendar && unitWorkspace && lessonWorkspace) {
+      const lessonErrors = validateLessonWorkspace(lessonWorkspace, calendar, workspace, unitWorkspace)
+      if (lessonErrors.length > 0) {
+        setStorageNotice('That class change would orphan existing Lesson progress. Resolve the affected Lesson history first; Arc has not changed the classes.')
+        return
+      }
+    }
     const persisted = savePlanningWorkspaceToBrowser(input)
     setPlanningWorkspace(workspace)
     setPlanningInput(input)
@@ -108,11 +136,26 @@ export function AppFrame() {
   }
 
   function useUnits(input: UnitWorkspaceInput, workspace: UnitWorkspace) {
+    if (calendar && planningWorkspace && lessonWorkspace) {
+      const lessonErrors = validateLessonWorkspace(lessonWorkspace, calendar, planningWorkspace, workspace)
+      if (lessonErrors.length > 0) {
+        setStorageNotice('That Unit change would invalidate one or more Lessons. Move or update those Lessons first; Arc has not changed the Units.')
+        return
+      }
+    }
     const persisted = saveUnitsToBrowser(input)
     setUnitWorkspace(workspace)
     setUnitInput(input)
     setEditingUnits(false)
     setStorageNotice(persisted ? null : 'These Units are active for this session, but Arc could not save them in this browser.')
+  }
+
+  function useLessons(input: LessonWorkspaceInput, workspace: LessonWorkspace) {
+    const persisted = saveLessonsToBrowser(input)
+    setLessonWorkspace(workspace)
+    setLessonInput(input)
+    setEditingLessons(false)
+    setStorageNotice(persisted ? null : 'These Lessons are active for this session, but Arc could not save them in this browser.')
   }
 
   function movePeriod(direction: PeriodDirection) {
@@ -135,25 +178,23 @@ export function AppFrame() {
   }
 
   const showCalendarSetup = !calendar || !anchorDate || editingCalendar
-  const showEditor = showCalendarSetup || editingTerms || editingClasses || editingUnits
+  const showEditor = showCalendarSetup || editingTerms || editingClasses || editingUnits || editingLessons
   const previousTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'previous') : null
   const nextTarget = calendar && anchorDate ? moveAnchor(calendar, activeView, anchorDate, 'next') : null
   const todayTarget = calendar ? todayAnchor(calendar, currentLocalISODate()) : null
   const hasTerms = Boolean(calendar && (calendar.quarters.length > 0 || calendar.semesters.length > 0))
   const hasClasses = Boolean(planningWorkspace && planningWorkspace.courses.length > 0)
   const hasUnits = Boolean(unitWorkspace && unitWorkspace.units.length > 0)
+  const hasLessons = Boolean(lessonWorkspace && lessonWorkspace.lessons.length > 0)
   const protectedCourseIds = courseIdsProtectedByUnits(unitWorkspace)
-  const stageTitle = editingTerms ? 'Terms' : editingClasses ? 'Classes' : editingUnits ? 'Units' : activeView
+  const protectedUnitIds = unitIdsProtectedByLessons(lessonWorkspace)
+  const protectedSectionIds = sectionIdsProtectedByDelivery(lessonWorkspace)
+  const stageTitle = editingTerms ? 'Terms' : editingClasses ? 'Classes' : editingUnits ? 'Units' : editingLessons ? 'Lessons' : activeView
 
   return (
     <div className="arc-shell">
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
-
-      <header className="arc-header" aria-label="Arc application header">
-        <button className="arc-wordmark" type="button" aria-label={`Return to ${DEFAULT_HOME_VIEW} view`} onClick={() => { if (!showEditor) setActiveView(DEFAULT_HOME_VIEW) }}>arc</button>
-        <div className="arc-header-space" aria-hidden="true" />
-      </header>
-
+      <header className="arc-header" aria-label="Arc application header"><button className="arc-wordmark" type="button" aria-label={`Return to ${DEFAULT_HOME_VIEW} view`} onClick={() => { if (!showEditor) setActiveView(DEFAULT_HOME_VIEW) }}>arc</button><div className="arc-header-space" aria-hidden="true" /></header>
       <div className="arc-layout">
         <nav className="arc-view-rail" aria-label="Calendar views">
           {CALENDAR_VIEWS.map((view) => {
@@ -163,48 +204,30 @@ export function AppFrame() {
             return <button key={view} type="button" className="view-nav-item" aria-current={isCurrent ? 'page' : undefined} aria-disabled={!showEditor && unavailable ? 'true' : undefined} aria-label={!showEditor && unavailable ? `${view}. ${availability.reason}` : view} title={!showEditor && unavailable ? availability.reason : undefined} disabled={showEditor} onClick={() => { if (!unavailable) setActiveView(view) }}>{view}</button>
           })}
         </nav>
-
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
           <header className="calendar-stage-header">
             <div><p className="section-label">Calendar</p><h1 className="view-title" aria-live="polite">{stageTitle}</h1></div>
-
-            {calendar && !showEditor && anchorDate && (
-              <div className="calendar-header-tools">
-                <div className="period-controls" aria-label={`${activeView} date navigation`}>
-                  <button type="button" className="quiet-button period-button" disabled={!previousTarget} onClick={() => movePeriod('previous')} aria-label={`Previous ${activeView}`}>←</button>
-                  <button type="button" className="quiet-button today-button" disabled={!todayTarget} onClick={goToday}>Today</button>
-                  <button type="button" className="quiet-button period-button" disabled={!nextTarget} onClick={() => movePeriod('next')} aria-label={`Next ${activeView}`}>→</button>
-                </div>
-                <div className="calendar-context-group">
-                  <p className="calendar-context" aria-label="Current school calendar">{calendar.schoolYearLabel}</p>
-                  <div className="calendar-context-actions">
-                    <button type="button" className="text-button" onClick={() => setEditingCalendar(true)}>Edit dates</button>
-                    <button type="button" className="text-button" onClick={() => setEditingTerms(true)}>{hasTerms ? 'Edit terms' : 'Set terms'}</button>
-                    <button type="button" className="text-button" onClick={() => setEditingClasses(true)}>{hasClasses ? 'Edit classes' : 'Set classes'}</button>
-                    {hasClasses && <button type="button" className="text-button" onClick={() => setEditingUnits(true)}>{hasUnits ? 'Edit Units' : 'Add Units'}</button>}
-                  </div>
-                </div>
-              </div>
-            )}
+            {calendar && !showEditor && anchorDate && <div className="calendar-header-tools">
+              <div className="period-controls" aria-label={`${activeView} date navigation`}><button type="button" className="quiet-button period-button" disabled={!previousTarget} onClick={() => movePeriod('previous')} aria-label={`Previous ${activeView}`}>←</button><button type="button" className="quiet-button today-button" disabled={!todayTarget} onClick={goToday}>Today</button><button type="button" className="quiet-button period-button" disabled={!nextTarget} onClick={() => movePeriod('next')} aria-label={`Next ${activeView}`}>→</button></div>
+              <div className="calendar-context-group"><p className="calendar-context" aria-label="Current school calendar">{calendar.schoolYearLabel}</p><div className="calendar-context-actions">
+                <button type="button" className="text-button" onClick={() => setEditingCalendar(true)}>Edit dates</button>
+                <button type="button" className="text-button" onClick={() => setEditingTerms(true)}>{hasTerms ? 'Edit terms' : 'Set terms'}</button>
+                <button type="button" className="text-button" onClick={() => setEditingClasses(true)}>{hasClasses ? 'Edit classes' : 'Set classes'}</button>
+                {hasClasses && <button type="button" className="text-button" onClick={() => setEditingUnits(true)}>{hasUnits ? 'Edit Units' : 'Add Units'}</button>}
+                {hasUnits && <button type="button" className="text-button" onClick={() => setEditingLessons(true)}>{hasLessons ? 'Edit Lessons' : 'Add Lessons'}</button>}
+              </div></div>
+            </div>}
           </header>
-
           {storageNotice && <p className="storage-notice" role="status">{storageNotice}</p>}
-
           <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
-            {showCalendarSetup ? (
-              <CalendarSetup initialValue={calendarInput} onSave={useCalendar} onCancel={calendar ? () => setEditingCalendar(false) : undefined} />
-            ) : editingTerms && calendarInput ? (
-              <TermBoundarySetup input={calendarInput} onSave={useTerms} onCancel={() => setEditingTerms(false)} />
-            ) : editingClasses && calendar ? (
-              <ClassSetup calendarId={calendar.id} initialValue={planningInput} protectedCourseIds={protectedCourseIds} onSave={useClasses} onCancel={() => setEditingClasses(false)} />
-            ) : editingUnits && calendar && planningWorkspace ? (
-              <UnitSetup calendar={calendar} planning={planningWorkspace} initialValue={unitInput} onSave={useUnits} onCancel={() => setEditingUnits(false)} />
-            ) : (
-              <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />
-            )}
+            {showCalendarSetup ? <CalendarSetup initialValue={calendarInput} onSave={useCalendar} onCancel={calendar ? () => setEditingCalendar(false) : undefined} />
+              : editingTerms && calendarInput ? <TermBoundarySetup input={calendarInput} onSave={useTerms} onCancel={() => setEditingTerms(false)} />
+              : editingClasses && calendar ? <ClassSetup calendarId={calendar.id} initialValue={planningInput} protectedCourseIds={protectedCourseIds} protectedSectionIds={protectedSectionIds} onSave={useClasses} onCancel={() => setEditingClasses(false)} />
+              : editingUnits && calendar && planningWorkspace ? <UnitSetup calendar={calendar} planning={planningWorkspace} initialValue={unitInput} protectedUnitIds={protectedUnitIds} onSave={useUnits} onCancel={() => setEditingUnits(false)} />
+              : editingLessons && calendar && planningWorkspace && unitWorkspace ? <LessonSetup calendar={calendar} planning={planningWorkspace} units={unitWorkspace} initialValue={lessonInput} onSave={useLessons} onCancel={() => setEditingLessons(false)} />
+              : <CalendarProjectionView view={activeView} calendar={calendar} anchorDate={anchorDate} />}
           </section>
         </main>
-
         <div className="arc-overlay-layer" aria-hidden="true" />
       </div>
     </div>
