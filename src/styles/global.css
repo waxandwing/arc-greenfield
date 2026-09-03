@@ -24,8 +24,25 @@ button{appearance:none}
 .calendar-stage-header>div{display:flex;flex-direction:column;gap:2px}
 .section-label{margin:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft-charcoal)}
 .view-title{margin:0;font:400 36px/1.1 var(--font-editorial);letter-spacing:-.02em}
-.calendar-canvas{min-height:calc(100dvh - 176px);border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--paper-raised);box-shadow:var(--shadow-hairline)}
+.calendar-canvas{min-height:calc(100dvh - 176px);overflow:auto;border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--paper-raised);box-shadow:var(--shadow-hairline)}
 .arc-overlay-layer{position:absolute;inset:0;pointer-events:none}
+
+.projection-section{min-width:0;padding:var(--space-4)}
+.projection-range-label{margin:0 0 var(--space-3);font-size:14px;font-weight:700;color:var(--soft-charcoal)}
+.projection-day-strip{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));min-width:840px}
+.month-projection{display:grid;grid-auto-rows:minmax(112px,1fr)}
+.month-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));min-width:700px}
+.projection-range{display:grid;grid-template-columns:repeat(7,minmax(100px,1fr));min-width:700px}
+.projection-range--compact{grid-template-columns:repeat(14,minmax(42px,1fr));min-width:840px}
+.calendar-day-cell{position:relative;min-height:104px;padding:10px;border-right:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle);background:var(--paper-raised)}
+.calendar-day-cell--compact{min-height:42px;padding:6px}
+.calendar-day-date{display:block;font-size:13px;font-weight:700}
+.calendar-day-label,.calendar-day-status{display:block;margin-top:6px;font-size:12px;line-height:1.25;color:var(--soft-charcoal)}
+.calendar-day-cell--weekend{background:rgba(74,73,69,.05)}
+.calendar-day-cell--outside-year{opacity:.42}
+.calendar-day-cell--no-school,.calendar-day-cell--holiday,.calendar-day-cell--break,.calendar-day-cell--teacher-workday{background:rgba(124,156,173,.08)}
+.calendar-day-cell--unknown{background:repeating-linear-gradient(135deg,rgba(44,46,46,.025) 0,rgba(44,46,46,.025) 6px,transparent 6px,transparent 12px)}
+.projection-empty-state{margin:0;padding:var(--space-4);color:var(--soft-charcoal)}
 
 @media (max-width:800px){
   .arc-header{height:64px;padding-inline:var(--mobile-gutter)}
@@ -33,6 +50,7 @@ button{appearance:none}
   .arc-view-rail{padding:var(--space-4) var(--space-2)}
   .arc-calendar-stage{padding:var(--space-4) var(--mobile-gutter) var(--mobile-gutter)}
   .calendar-canvas{min-height:calc(100dvh - 152px)}
+  .projection-section{padding:var(--space-3)}
 }
 
 @media (max-width:520px){
@@ -44,6 +62,8 @@ button{appearance:none}
   .view-nav-item{flex:0 0 auto;min-width:72px;min-height:48px;padding:6px 8px;text-align:center;font-size:13px;white-space:nowrap}
   .view-title{font-size:32px}
   .calendar-canvas{border-radius:var(--radius-sm)}
+  .month-week,.projection-range{min-width:644px}
+  .projection-day-strip{min-width:720px}
 }
 
 @media (prefers-reduced-motion:reduce){
