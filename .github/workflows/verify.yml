@@ -52,3 +52,4 @@ jobs:
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/day-interface.browser.mjs
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/week-interface.browser.mjs
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/month-interface.browser.mjs
