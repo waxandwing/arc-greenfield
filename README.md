@@ -72,7 +72,9 @@ Implemented:
 - If quarters and semesters are both configured, every quarter must fit wholly inside one semester.
 
 ## Verification status
-- Course/Section setup, Unit setup, and Lesson continuity are integrated through feature-branch verification
+- Course/Section setup, Unit setup, and Lesson continuity are integrated in `develop`
+- the exact Lesson feature head passed the lockfile-backed domain/build gate before integration
+- `develop` must pass the same independent gate after every integration checkpoint commit
 - domain contract suite includes calendar truth, projections, hydration, persistence, navigation, manual setup, terms, Course/Section scope, Units, planning workspace, Unit workspace, Lesson delivery divergence, Lesson workspace persistence, and cross-layer dependency integrity
 - dependency installation is reproducible from committed `package-lock.json` using `npm ci`
 - TypeScript compile and Vite bundle are required on every verification run
