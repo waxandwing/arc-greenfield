@@ -15,17 +15,18 @@ export type RecoveryShiftDraft = {
 
 export function createRecoveryShiftDraft(preview: RecoveryPreview): RecoveryShiftDraft | null {
   if (preview.blockedReason || !preview.resumeDate || !preview.interruptedEffectiveDate) return null
+  if (preview.interruptedEffectiveDate === preview.resumeDate && preview.affectedFlexibleLessons.length === 0) return null
 
   return {
     sectionId: preview.sectionId,
     interruptedLessonId: preview.interruptedLessonId,
     resumeDate: preview.resumeDate,
     changes: [
-      {
+      ...(preview.interruptedEffectiveDate === preview.resumeDate ? [] : [{
         lessonId: preview.interruptedLessonId,
         fromDate: preview.interruptedEffectiveDate,
         toDate: preview.resumeDate,
-      },
+      }]),
       ...preview.affectedFlexibleLessons.map((lesson) => ({
         lessonId: lesson.lessonId,
         fromDate: lesson.effectiveDate,
