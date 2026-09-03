@@ -72,7 +72,7 @@ Implemented:
 
 ## Verification status
 - teacher-facing Course/Section setup and browser persistence are integrated in `develop`
-- Unit persistence/editor is under active feature verification
+- Unit persistence/editor and cross-layer calendar protection are integrated in `develop`
 - domain contract suite includes calendar truth, projections, hydration, persistence, navigation, manual setup, term configuration, Course/Section scope, Unit behavior, planning workspace, Unit workspace, and cross-layer calendar/Unit integrity
 - dependency installation is reproducible from committed `package-lock.json` using `npm ci`
 - TypeScript compile and Vite bundle are required on every verification run
