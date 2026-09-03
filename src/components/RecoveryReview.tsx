@@ -35,6 +35,7 @@ export function RecoveryReview({ calendar, planning, lessons, onClose }: Props) 
           lesson,
           state,
           lessons: lessons.lessons,
+          deliveryStates: lessons.deliveryStates,
         }),
       }
     })
@@ -86,7 +87,7 @@ export function RecoveryReview({ calendar, planning, lessons, onClose }: Props) 
                           {preview.affectedFlexibleLessons.map((lesson) => (
                             <li key={lesson.lessonId}>
                               <strong>{lesson.title}</strong>
-                              <span>{formatDate(lesson.plannedDate)} · {lesson.reason === 'resume-date-collision' ? 'same day as the proposed continuation' : 'before the next fixed anchor'}</span>
+                              <span>{formatDate(lesson.effectiveDate)} · {lesson.reason === 'resume-date-collision' ? 'same day as the proposed continuation' : 'before the next fixed anchor'}</span>
                             </li>
                           ))}
                         </ul>
@@ -96,7 +97,7 @@ export function RecoveryReview({ calendar, planning, lessons, onClose }: Props) 
                     <section className="recovery-fixed-anchor">
                       <h4>Fixed anchor</h4>
                       {preview.fixedAnchor ? (
-                        <p><strong>{preview.fixedAnchor.title}</strong><span>{formatDate(preview.fixedAnchor.plannedDate)} · stays fixed</span></p>
+                        <p><strong>{preview.fixedAnchor.title}</strong><span>{formatDate(preview.fixedAnchor.effectiveDate)} · stays fixed</span></p>
                       ) : (
                         <p>No fixed Lesson appears later in the current course plan.</p>
                       )}
