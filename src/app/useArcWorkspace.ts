@@ -3,7 +3,6 @@ import {
   currentLocalISODate,
   findContainingBoundary,
   hydrateSchoolCalendar,
-  loadCalendarFromBrowser,
   moveAnchor,
   saveCalendarToBrowser,
   todayAnchor,
@@ -16,10 +15,6 @@ import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarView
 import {
   applyShiftOperation,
   courseIdsProtectedByUnits,
-  loadLessonsFromBrowser,
-  loadPlanningWorkspaceFromBrowser,
-  loadShiftStateFromBrowser,
-  loadUnitsFromBrowser,
   saveLessonsToBrowser,
   savePlanningWorkspaceToBrowser,
   saveShiftStateToBrowser,
@@ -39,67 +34,36 @@ import {
   type UnitWorkspace,
   type UnitWorkspaceInput,
 } from '../planning'
-
-type ReconciledShift = {
-  allowed: boolean
-  next: ShiftPersistenceInput | null
-  undoDropped: boolean
-}
+import { reconcileShiftState } from './shiftReconciliation'
+import { loadWorkspaceSnapshot } from './workspaceBootstrap'
 
 type ViewAvailability = { available: boolean; reason?: string }
 
 export function useArcWorkspace(onCloseMode: () => void) {
-  const [initialLoad] = useState(() => loadCalendarFromBrowser())
-  const restored = initialLoad.status === 'restored' ? initialLoad.restored : null
-  const [initialPlanningLoad] = useState(() => restored ? loadPlanningWorkspaceFromBrowser(restored.calendar.id) : { status: 'empty' as const })
-  const restoredPlanning = initialPlanningLoad.status === 'restored' ? initialPlanningLoad : null
-  const [initialUnitLoad] = useState(() => restored && restoredPlanning ? loadUnitsFromBrowser(restored.calendar, restoredPlanning.workspace) : { status: 'empty' as const })
-  const restoredUnits = initialUnitLoad.status === 'restored' ? initialUnitLoad : null
-  const [initialLessonLoad] = useState(() => restored && restoredPlanning && restoredUnits ? loadLessonsFromBrowser(restored.calendar, restoredPlanning.workspace, restoredUnits.workspace) : { status: 'empty' as const })
-  const restoredLessons = initialLessonLoad.status === 'restored' ? initialLessonLoad : null
-  const [initialShiftLoad] = useState(() => restored && restoredPlanning && restoredUnits && restoredLessons
-    ? loadShiftStateFromBrowser(restored.calendar, restoredPlanning.workspace, restoredUnits.workspace, restoredLessons.workspace)
-    : { status: 'empty' as const })
-  const restoredShift = initialShiftLoad.status === 'restored' ? initialShiftLoad : null
+  const [snapshot] = useState(loadWorkspaceSnapshot)
+  const {
+    restoredCalendar,
+    restoredPlanning,
+    restoredUnits,
+    restoredLessons,
+    restoredShift,
+  } = snapshot
 
   const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
-  const [calendar, setCalendar] = useState<SchoolCalendar | null>(restored?.calendar ?? null)
-  const [calendarInput, setCalendarInput] = useState<CalendarHydrationInput | null>(restored?.input ?? null)
-  const [anchorDate, setAnchorDate] = useState<ISODate | null>(restored?.calendar.firstDay ?? null)
+  const [calendar, setCalendar] = useState<SchoolCalendar | null>(restoredCalendar?.calendar ?? null)
+  const [calendarInput, setCalendarInput] = useState<CalendarHydrationInput | null>(restoredCalendar?.input ?? null)
+  const [anchorDate, setAnchorDate] = useState<ISODate | null>(restoredCalendar?.calendar.firstDay ?? null)
   const [planningWorkspace, setPlanningWorkspace] = useState<PlanningWorkspace | null>(restoredPlanning?.workspace ?? null)
   const [planningInput, setPlanningInput] = useState<PlanningWorkspaceInput | null>(restoredPlanning?.input ?? null)
   const [unitWorkspace, setUnitWorkspace] = useState<UnitWorkspace | null>(restoredUnits?.workspace ?? null)
   const [unitInput, setUnitInput] = useState<UnitWorkspaceInput | null>(restoredUnits?.input ?? null)
   const [lessonWorkspace, setLessonWorkspace] = useState<LessonWorkspace | null>(restoredLessons?.workspace ?? null)
   const [lessonInput, setLessonInput] = useState<LessonWorkspaceInput | null>(restoredLessons?.input ?? null)
-  const [shiftState, setShiftState] = useState<ShiftPersistenceInput | null>(restoredShift?.input ?? (restored ? { calendarId: restored.calendar.id, overrides: [], undo: null } : null))
-  const [storageNotice, setStorageNotice] = useState<string | null>(() => initialStorageNotice(
-    initialLoad,
-    initialPlanningLoad,
-    initialUnitLoad,
-    initialLessonLoad,
-    initialShiftLoad,
-    restoredShift?.undoStatus,
-  ))
-
-  function reconcileShiftState(
-    nextCalendar: SchoolCalendar,
-    nextPlanning: PlanningWorkspace | null,
-    nextUnits: UnitWorkspace | null,
-    nextLessons: LessonWorkspace | null,
-  ): ReconciledShift {
-    if (!shiftState) return { allowed: true, next: { calendarId: nextCalendar.id, overrides: [], undo: null }, undoDropped: false }
-    if (!nextPlanning || !nextUnits || !nextLessons) {
-      if (shiftState.overrides.length > 0) return { allowed: false, next: shiftState, undoDropped: false }
-      return { allowed: true, next: { calendarId: nextCalendar.id, overrides: [], undo: null }, undoDropped: Boolean(shiftState.undo) }
-    }
-
-    const candidate: ShiftPersistenceInput = { ...shiftState, calendarId: nextCalendar.id }
-    const validation = validateShiftPersistenceInput(candidate, nextCalendar, nextPlanning, nextUnits, nextLessons)
-    if (validation.scheduleErrors.length > 0) return { allowed: false, next: shiftState, undoDropped: false }
-    if (!validation.undoValid && candidate.undo) return { allowed: true, next: { ...candidate, undo: null }, undoDropped: true }
-    return { allowed: true, next: candidate, undoDropped: false }
-  }
+  const [shiftState, setShiftState] = useState<ShiftPersistenceInput | null>(
+    restoredShift?.input
+      ?? (restoredCalendar ? { calendarId: restoredCalendar.calendar.id, overrides: [], undo: null } : null),
+  )
+  const [storageNotice, setStorageNotice] = useState<string | null>(snapshot.storageNotice)
 
   function persistReconciledShift(next: ShiftPersistenceInput | null): boolean {
     if (!next) return true
@@ -123,7 +87,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
       }
     }
 
-    const shift = reconcileShiftState(nextCalendar, planningWorkspace, unitWorkspace, lessonWorkspace)
+    const shift = reconcileShiftState(shiftState, nextCalendar, planningWorkspace, unitWorkspace, lessonWorkspace)
     if (!shift.allowed) {
       setStorageNotice('That calendar change would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the calendar.')
       return
@@ -143,7 +107,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
 
   function useTerms(input: CalendarHydrationInput) {
     const nextCalendar = hydrateSchoolCalendar(input)
-    const shift = reconcileShiftState(nextCalendar, planningWorkspace, unitWorkspace, lessonWorkspace)
+    const shift = reconcileShiftState(shiftState, nextCalendar, planningWorkspace, unitWorkspace, lessonWorkspace)
     if (!shift.allowed) {
       setStorageNotice('Those term changes would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the terms.')
       return
@@ -172,7 +136,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
         setStorageNotice('That class change would orphan existing Lesson progress. Resolve the affected Lesson history first; Arc has not changed the classes.')
         return
       }
-      const shift = reconcileShiftState(calendar, workspace, unitWorkspace, lessonWorkspace)
+      const shift = reconcileShiftState(shiftState, calendar, workspace, unitWorkspace, lessonWorkspace)
       if (!shift.allowed) {
         setStorageNotice('That class change would orphan an existing Section schedule. Resolve the affected Shift history first; Arc has not changed the classes.')
         return
@@ -201,7 +165,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
         setStorageNotice('That Unit change would invalidate one or more Lessons. Move or update those Lessons first; Arc has not changed the Units.')
         return
       }
-      const shift = reconcileShiftState(calendar, planningWorkspace, workspace, lessonWorkspace)
+      const shift = reconcileShiftState(shiftState, calendar, planningWorkspace, workspace, lessonWorkspace)
       if (!shift.allowed) {
         setStorageNotice('That Unit change would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the Units.')
         return
@@ -225,7 +189,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
 
   function useLessons(input: LessonWorkspaceInput, workspace: LessonWorkspace) {
     if (calendar && planningWorkspace && unitWorkspace) {
-      const shift = reconcileShiftState(calendar, planningWorkspace, unitWorkspace, workspace)
+      const shift = reconcileShiftState(shiftState, calendar, planningWorkspace, unitWorkspace, workspace)
       if (!shift.allowed) {
         setStorageNotice('That Lesson change would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the Lessons.')
         return
@@ -366,26 +330,4 @@ export function useArcWorkspace(onCloseMode: () => void) {
     movePeriod,
     goToday,
   }
-}
-
-function initialStorageNotice(
-  initialLoad: ReturnType<typeof loadCalendarFromBrowser>,
-  initialPlanningLoad: ReturnType<typeof loadPlanningWorkspaceFromBrowser> | { status: 'empty' },
-  initialUnitLoad: ReturnType<typeof loadUnitsFromBrowser> | { status: 'empty' },
-  initialLessonLoad: ReturnType<typeof loadLessonsFromBrowser> | { status: 'empty' },
-  initialShiftLoad: ReturnType<typeof loadShiftStateFromBrowser> | { status: 'empty' },
-  undoStatus?: 'none' | 'restored' | 'discarded',
-): string | null {
-  if (initialLoad.status === 'invalid') return 'Arc found saved calendar data it could not verify. Nothing was restored; please confirm the calendar again.'
-  if (initialLoad.status === 'unavailable') return 'Calendar storage is unavailable in this browser. Changes may last only for this session.'
-  if (initialPlanningLoad.status === 'invalid') return 'Arc found saved class data it could not verify. The calendar is safe; please confirm the classes again.'
-  if (initialPlanningLoad.status === 'unavailable') return 'Class storage is unavailable in this browser. Class changes may last only for this session.'
-  if (initialUnitLoad.status === 'invalid') return 'Arc found saved Unit data it could not verify. Your calendar and classes are safe; please confirm the Units again.'
-  if (initialUnitLoad.status === 'unavailable') return 'Unit storage is unavailable in this browser. Unit changes may last only for this session.'
-  if (initialLessonLoad.status === 'invalid') return 'Arc found saved Lesson progress it could not verify. Calendar, Classes, and Units are safe; please confirm the Lessons again.'
-  if (initialLessonLoad.status === 'unavailable') return 'Lesson storage is unavailable in this browser. Lesson progress may last only for this session.'
-  if (initialShiftLoad.status === 'invalid') return 'Arc found saved Section schedule changes it could not verify. Earlier planning data is safe; the Section schedule was not restored.'
-  if (initialShiftLoad.status === 'unavailable') return 'Section schedule storage is unavailable in this browser. Shift changes may last only for this session.'
-  if (undoStatus === 'discarded') return 'Arc restored the Section schedule, but its previous Undo was no longer safe and was discarded.'
-  return null
 }
