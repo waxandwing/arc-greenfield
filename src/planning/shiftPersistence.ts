@@ -6,7 +6,7 @@ import type { SectionLessonDateOverride } from './sectionSchedule'
 import { validateSectionScheduleWorkspace, type SectionScheduleWorkspace } from './sectionScheduleWorkspace'
 import type { ShiftUndoToken } from './shiftOperation'
 
-const STORAGE_KEY = 'arc.shift.v1'
+export const SHIFT_STORAGE_KEY = 'arc.shift.v1'
 
 export type ShiftPersistenceInput = {
   calendarId: string
@@ -55,7 +55,7 @@ export function validateShiftPersistenceInput(
 
 export function saveShiftStateToBrowser(input: ShiftPersistenceInput): boolean {
   try {
-    window.localStorage.setItem(STORAGE_KEY, serializeShiftState(input))
+    window.localStorage.setItem(SHIFT_STORAGE_KEY, serializeShiftState(input))
     return true
   } catch {
     return false
@@ -70,7 +70,7 @@ export function loadShiftStateFromBrowser(
 ): ShiftLoadResult {
   let raw: string | null
   try {
-    raw = window.localStorage.getItem(STORAGE_KEY)
+    raw = window.localStorage.getItem(SHIFT_STORAGE_KEY)
   } catch {
     return { status: 'unavailable' }
   }
