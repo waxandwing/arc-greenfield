@@ -9,7 +9,7 @@ Clean frame-first rebuild.
 - `archive/pre-frame-reset-2026-09-02` — preserved rollback point
 
 ## Current build scope
-Frame + navigation + calendar truth + calendar projections.
+Frame + navigation + calendar truth + calendar projections + rendered calendar skeleton.
 
 Implemented:
 - global shell geometry and canonical brand tokens
@@ -30,15 +30,19 @@ Implemented:
 - one pure projection layer for Day / Week / Month / Quarter / Semester / Year Map
 - Monday-aligned week and month-grid calculations
 - projection flags for weekend and school-year membership without changing calendar truth
+- rendered calendar components for all six horizons, ready to consume real canonical calendar state
+- honest unconfigured state when no real calendar has been supplied
 - dependency-free calendar + projection contract tests via `npm run test:calendar`
 
 Calendar truth rule: a missing day is `unknown`, never silently assumed to be instructional.
 
 Projection rule: every calendar horizon is derived from the same `SchoolCalendar`; views may change presentation, never date truth.
 
+Live-workspace rule: fabricated render fixtures never appear in the actual Arc shell. Until real calendar state exists, the shell says that calendar setup is required.
+
 Intentionally excluded:
 - school/district data ingestion UI
-- rendered calendar components
+- real calendar state hydration
 - previous/next/today period controls
 - Units, Lessons, Notes, Ideas, Shift UI, Search, Help, Profile
 - landing-preference persistence
