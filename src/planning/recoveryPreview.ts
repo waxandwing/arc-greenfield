@@ -2,7 +2,8 @@ import { nextInstructionalDay } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Section } from './courses'
 import type { LessonDeliveryState } from './deliveryState'
-import { lessonsForUnit, type Lesson } from './lessons'
+import type { Lesson } from './lessons'
+import { effectiveLessonDate, type SectionLessonDateOverride } from './sectionSchedule'
 
 export type RecoveryAffectedLesson = {
   lessonId: string
@@ -35,8 +36,9 @@ export function createRecoveryPreview(input: {
   lesson: Lesson
   state: LessonDeliveryState
   lessons: Lesson[]
+  overrides?: SectionLessonDateOverride[]
 }): RecoveryPreview {
-  const { calendar, section, lesson, state, lessons } = input
+  const { calendar, section, lesson, state, lessons, overrides = [] } = input
   const ownershipErrors = validateRecoverySource(section, lesson, state)
   if (ownershipErrors.length > 0) throw new Error(`Cannot preview recovery. ${ownershipErrors.join(' ')}`)
 
@@ -54,25 +56,28 @@ export function createRecoveryPreview(input: {
     }
   }
 
-  const laterLessons = lessonsForUnit(lessons, lesson.unitId)
-    .filter((candidate) => candidate.sequence > lesson.sequence && candidate.plannedDate)
+  const futureCoursePlan = lessons
+    .filter((candidate) => candidate.id !== lesson.id && candidate.courseId === section.courseId && candidate.calendarId === section.calendarId)
+    .map((candidate) => ({ lesson: candidate, date: effectiveLessonDate(candidate, section.id, overrides) }))
+    .filter((entry): entry is { lesson: Lesson; date: ISODate } => Boolean(entry.date && entry.date >= resumeDate))
+    .sort((a, b) => a.date.localeCompare(b.date) || a.lesson.sequence - b.lesson.sequence || a.lesson.title.localeCompare(b.lesson.title))
 
-  const fixedAnchorLesson = laterLessons.find((candidate) => candidate.datePolicy === 'fixed' && candidate.plannedDate! >= resumeDate) ?? null
-  const fixedAnchor: RecoveryFixedAnchor | null = fixedAnchorLesson && fixedAnchorLesson.plannedDate ? {
-    lessonId: fixedAnchorLesson.id,
-    title: fixedAnchorLesson.title,
-    plannedDate: fixedAnchorLesson.plannedDate,
+  const fixedEntry = futureCoursePlan.find((entry) => entry.lesson.datePolicy === 'fixed') ?? null
+  const fixedAnchor: RecoveryFixedAnchor | null = fixedEntry ? {
+    lessonId: fixedEntry.lesson.id,
+    title: fixedEntry.lesson.title,
+    plannedDate: fixedEntry.date,
   } : null
 
-  const affectedFlexibleLessons = laterLessons
-    .filter((candidate) => candidate.datePolicy === 'flexible' && candidate.plannedDate)
-    .filter((candidate) => !fixedAnchor || candidate.plannedDate! <= fixedAnchor.plannedDate)
-    .map((candidate): RecoveryAffectedLesson => ({
-      lessonId: candidate.id,
-      title: candidate.title,
-      plannedDate: candidate.plannedDate!,
+  const affectedFlexibleLessons = futureCoursePlan
+    .filter((entry) => entry.lesson.datePolicy === 'flexible')
+    .filter((entry) => !fixedAnchor || entry.date <= fixedAnchor.plannedDate)
+    .map((entry): RecoveryAffectedLesson => ({
+      lessonId: entry.lesson.id,
+      title: entry.lesson.title,
+      plannedDate: entry.date,
       datePolicy: 'flexible',
-      reason: candidate.plannedDate === resumeDate ? 'resume-date-collision' : 'before-fixed-anchor',
+      reason: entry.date === resumeDate ? 'resume-date-collision' : 'before-fixed-anchor',
     }))
 
   return {
