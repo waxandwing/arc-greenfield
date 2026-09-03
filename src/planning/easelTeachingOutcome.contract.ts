@@ -123,14 +123,21 @@ assert(startedSkipRejected, 'Teaching that already began cannot be relabeled ski
 
 const completedWorkspace: LessonWorkspace = { calendarId: calendar.id, lessons: [lesson], deliveryStates: [completed] }
 const completedDay = projectDayContinuity({ date: liveDate, planning, units, lessons: completedWorkspace, overrides: [] })
-const completedSession = projectEaselSession({ day: completedDay, sectionId: p1.id, lessonId: lesson.id, calendar, liveDate })
-let terminalRewriteRejected = false
+let terminalLaunchRejected = false
 try {
-  applyEaselTeachingOutcome({ session: completedSession, liveDate, calendar, planning, units, lessons: completedWorkspace, overrides: [], outcome: { kind: 'completed' } })
+  projectEaselSession({ day: completedDay, sectionId: p1.id, lessonId: lesson.id, calendar, liveDate })
 } catch {
-  terminalRewriteRejected = true
+  terminalLaunchRejected = true
 }
-assert(terminalRewriteRejected, 'Easel must not rewrite completed teaching history.')
+assert(terminalLaunchRejected, 'Completed teaching history must remain visible in Arc without becoming a reopenable Easel live session.')
+
+let terminalReplayRejected = false
+try {
+  applyEaselTeachingOutcome({ session: continuation, liveDate: nextDate, calendar, planning, units, lessons: completedWorkspace, overrides: [], outcome: { kind: 'completed' } })
+} catch {
+  terminalReplayRejected = true
+}
+assert(terminalReplayRejected, 'An older Easel session must not replay over completed teaching history.')
 
 assert(freshLessons.deliveryStates.length === 0, 'Easel outcome projection must not mutate the source workspace in place.')
 assert(stoppedWorkspace.deliveryStates[0].resumeNote === 'Add Sharpie details after the collage dries.', 'Applying a later outcome must not mutate an earlier Arc delivery-state object.')
