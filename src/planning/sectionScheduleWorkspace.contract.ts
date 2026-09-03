@@ -1,5 +1,6 @@
 import { hydrateSchoolCalendar } from '../calendar/hydration'
 import { createCourse, createSection } from './courses'
+import { createLessonDeliveryState, updateLessonDeliveryState } from './deliveryState'
 import { createLesson } from './lessons'
 import { validateSectionScheduleWorkspace, type SectionScheduleWorkspace } from './sectionScheduleWorkspace'
 import { createUnit, placeUnit } from './units'
@@ -40,36 +41,25 @@ const valid: SectionScheduleWorkspace = {
 }
 assert(validateSectionScheduleWorkspace(valid, calendar, planning, units, lessons).length === 0, 'Canonical P5 Shift overrides should form a valid Section schedule workspace.')
 
-const duplicate: SectionScheduleWorkspace = {
-  calendarId: calendar.id,
-  overrides: [valid.overrides[0]!, { ...valid.overrides[0]! }],
-}
+const duplicate: SectionScheduleWorkspace = { calendarId: calendar.id, overrides: [valid.overrides[0]!, { ...valid.overrides[0]! }] }
 assert(validateSectionScheduleWorkspace(duplicate, calendar, planning, units, lessons).some((error) => error.includes('Duplicate Section schedule override')), 'Duplicate Section/Lesson overrides must be rejected.')
 
-const orphanSection: SectionScheduleWorkspace = {
-  calendarId: calendar.id,
-  overrides: [{ sectionId: 'missing-section', lessonId: lesson17.id, plannedDate: '2026-09-17' }],
-}
+const orphanSection: SectionScheduleWorkspace = { calendarId: calendar.id, overrides: [{ sectionId: 'missing-section', lessonId: lesson17.id, plannedDate: '2026-09-17' }] }
 assert(validateSectionScheduleWorkspace(orphanSection, calendar, planning, units, lessons).some((error) => error.includes('Section that does not exist')), 'Orphaned Section overrides must be rejected.')
 
-const fixedMove: SectionScheduleWorkspace = {
-  calendarId: calendar.id,
-  overrides: [{ sectionId: p5.id, lessonId: test.id, plannedDate: '2026-09-21' }],
-}
+const fixedMove: SectionScheduleWorkspace = { calendarId: calendar.id, overrides: [{ sectionId: p5.id, lessonId: test.id, plannedDate: '2026-09-21' }] }
 assert(validateSectionScheduleWorkspace(fixedMove, calendar, planning, units, lessons).some((error) => error.includes('Fixed Lesson dates cannot be overridden')), 'Saved Section schedules must reject moved fixed Lessons.')
 
-const collision: SectionScheduleWorkspace = {
-  calendarId: calendar.id,
-  overrides: [{ sectionId: p5.id, lessonId: lesson17.id, plannedDate: '2026-09-17' }],
-}
-assert(validateSectionScheduleWorkspace(collision, calendar, planning, units, lessons).some((error) => error.includes('multiple Lessons')), 'Saved Section schedules must reject unresolved same-day collisions.')
+const collision: SectionScheduleWorkspace = { calendarId: calendar.id, overrides: [{ sectionId: p5.id, lessonId: lesson17.id, plannedDate: '2026-09-17' }] }
+assert(validateSectionScheduleWorkspace(collision, calendar, planning, units, lessons).some((error) => error.includes('multiple live Lessons')), 'Saved Section schedules must reject unresolved same-day collisions among live work.')
+
+const completed18 = updateLessonDeliveryState(createLessonDeliveryState({ lesson: lesson18, section: p5 }), lesson18, p5, { status: 'completed', taughtDate: '2026-09-16' })
+const completedCollisionLessons = { ...lessons, deliveryStates: [completed18] }
+assert(validateSectionScheduleWorkspace(collision, calendar, planning, units, completedCollisionLessons).length === 0, 'Finished work must not create false future collision pressure in a Section schedule.')
 
 const p2Independent: SectionScheduleWorkspace = {
   calendarId: calendar.id,
-  overrides: [
-    ...valid.overrides,
-    { sectionId: p2.id, lessonId: lesson17.id, plannedDate: '2026-09-15' },
-  ],
+  overrides: [...valid.overrides, { sectionId: p2.id, lessonId: lesson17.id, plannedDate: '2026-09-15' }],
 }
 assert(validateSectionScheduleWorkspace(p2Independent, calendar, planning, units, lessons).length === 0, 'A valid change in another Section must coexist with P5 recovery overrides.')
 
@@ -89,5 +79,8 @@ assert(validateSectionScheduleWorkspace(valid, calendarAfterClosure, planning, u
 
 const shortenedUnit = { ...unit, placement: { startDate: '2026-09-14' as const, endDate: '2026-09-18' as const } }
 assert(validateSectionScheduleWorkspace(valid, calendar, planning, { calendarId: calendar.id, units: [shortenedUnit] }, lessons).some((error) => error.includes('inside its Unit placement')), 'A later Unit shrink must invalidate overrides now outside the Unit.')
+
+const wrongPlanning = { ...planning, calendarId: 'other-calendar' }
+assert(validateSectionScheduleWorkspace(valid, calendar, wrongPlanning, units, lessons).some((error) => error.includes('Class workspace belongs')), 'Section schedule validation must reject a mismatched Class workspace even before persistence exists.')
 
 console.log('section schedule workspace contract passed')
