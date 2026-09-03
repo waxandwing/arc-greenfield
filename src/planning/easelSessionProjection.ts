@@ -1,4 +1,5 @@
-import type { ISODate } from '../calendar/types'
+import { isConfirmedInstructionalDay } from '../calendar/schoolCalendar'
+import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { DayContinuityLesson, DayContinuityProjection } from './dayContinuityProjection'
 
 export type EaselLaunchSource = 'scheduled' | 'carryover'
@@ -33,10 +34,14 @@ export type EaselSessionProjection = {
   resumeNote: string | null
 }
 
-export function easelLaunchOptions(
-  day: DayContinuityProjection,
-  sectionId: string,
-): EaselLaunchOption[] {
+export function easelLaunchOptions(input: {
+  day: DayContinuityProjection
+  sectionId: string
+  calendar: SchoolCalendar
+  liveDate: ISODate
+}): EaselLaunchOption[] {
+  const { day, sectionId, calendar, liveDate } = input
+  validateLiveTeachingDay(day, calendar, liveDate)
   const located = locateSection(day, sectionId)
   if (!located) throw new Error(`Easel cannot find Section ${sectionId} in the selected Day.`)
 
@@ -69,8 +74,11 @@ export function projectEaselSession(input: {
   day: DayContinuityProjection
   sectionId: string
   lessonId: string
+  calendar: SchoolCalendar
+  liveDate: ISODate
 }): EaselSessionProjection {
-  const { day, sectionId, lessonId } = input
+  const { day, sectionId, lessonId, calendar, liveDate } = input
+  validateLiveTeachingDay(day, calendar, liveDate)
   const located = locateSection(day, sectionId)
   if (!located) throw new Error(`Easel cannot find Section ${sectionId} in the selected Day.`)
 
@@ -105,6 +113,15 @@ export function projectEaselSession(input: {
     deliveryStatus: lesson.deliveryStatus,
     taughtDate: lesson.taughtDate,
     resumeNote: lesson.resumeNote,
+  }
+}
+
+function validateLiveTeachingDay(day: DayContinuityProjection, calendar: SchoolCalendar, liveDate: ISODate): void {
+  if (day.date !== liveDate) {
+    throw new Error('Easel live teaching can open only from the current Day. Use Arc to review past or future planning dates.')
+  }
+  if (!isConfirmedInstructionalDay(calendar, liveDate)) {
+    throw new Error('Easel live teaching requires a confirmed instructional day.')
   }
 }
 
