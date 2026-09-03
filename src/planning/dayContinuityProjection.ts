@@ -11,7 +11,8 @@ export type DayContinuityUnit = {
   title: string
 }
 
-export type DayContinuityLesson = PlanningLessonPlacement & {
+export type DayContinuityLesson = Omit<PlanningLessonPlacement, 'effectiveDate'> & {
+  effectiveDate: ISODate | null
   unitTitle: string
 }
 
@@ -44,7 +45,6 @@ export function projectDayContinuity(input: {
   const { date, planning, units, lessons, overrides } = input
   const range = projectPlanningRange({ dates: [date], planning, units, lessons, overrides })
   const unitById = new Map(units.units.map((unit) => [unit.id, unit]))
-  const lessonById = new Map(lessons.lessons.map((lesson) => [lesson.id, lesson]))
 
   return {
     date,
@@ -67,7 +67,6 @@ export function projectDayContinuity(input: {
             const unit = unitById.get(lesson.unitId)
             if (!unit) throw new Error(`Day continuity cannot find Unit ${lesson.unitId} for Lesson ${lesson.id}.`)
             const effectiveDate = effectiveLessonDate(lesson, sectionRow.section.id, overrides)
-            if (!effectiveDate) throw new Error(`Day continuity cannot carry an in-progress unscheduled Lesson: ${lesson.id}.`)
             return {
               lessonId: lesson.id,
               unitId: lesson.unitId,
@@ -77,7 +76,7 @@ export function projectDayContinuity(input: {
               datePolicy: lesson.datePolicy,
               sharedPlannedDate: lesson.plannedDate,
               effectiveDate,
-              isSectionOverride: effectiveDate !== lesson.plannedDate,
+              isSectionOverride: effectiveDate !== null && effectiveDate !== lesson.plannedDate,
               deliveryStatus: delivery.status,
               taughtDate: delivery.taughtDate,
               resumeNote: delivery.resumeNote,
