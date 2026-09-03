@@ -1,5 +1,10 @@
 import { useState } from 'react'
+import { CalendarProjectionView } from './CalendarProjectionView'
+import { sampleCalendar } from '../calendar/sampleCalendar'
+import type { ISODate } from '../calendar/types'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
+
+const RENDER_ANCHOR_DATE: ISODate = '2026-08-12'
 
 export function AppFrame() {
   const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
@@ -46,7 +51,13 @@ export function AppFrame() {
             </div>
           </header>
 
-          <section className="calendar-canvas" aria-label={`${activeView} calendar workspace`} />
+          <section className="calendar-canvas" aria-label={`${activeView} calendar workspace`}>
+            <CalendarProjectionView
+              view={activeView}
+              calendar={sampleCalendar}
+              anchorDate={RENDER_ANCHOR_DATE}
+            />
+          </section>
         </main>
 
         <div className="arc-overlay-layer" aria-hidden="true" />
