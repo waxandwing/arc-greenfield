@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { CalendarView } from '../navigation/calendarViews'
 import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
 import type { ISODate, SchoolCalendar, TermBoundary } from '../calendar/types'
@@ -91,7 +92,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate }: Props) {
   }
 }
 
-function DayStrip({ title, days, single = false, termContext }: { title: string; days: ProjectedDay[]; single?: boolean; termContext?: React.ReactNode }) {
+function DayStrip({ title, days, single = false, termContext }: { title: string; days: ProjectedDay[]; single?: boolean; termContext?: ReactNode }) {
   return (
     <section className="projection-section" aria-label={title}>
       <div className="projection-heading-row">
