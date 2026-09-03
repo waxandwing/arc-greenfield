@@ -1,17 +1,18 @@
 .build-fingerprint {
   position: fixed;
-  right: 8px;
-  bottom: 8px;
+  right: var(--space-2);
+  bottom: var(--space-2);
   z-index: 1000;
   display: flex;
-  gap: 6px;
+  gap: var(--space-1);
   align-items: center;
-  max-width: calc(100vw - 16px);
-  padding: 4px 6px;
-  border: 1px solid var(--arc-control-border);
-  border-radius: var(--arc-radius-small);
-  background: color-mix(in srgb, var(--arc-paper) 92%, transparent);
-  color: var(--arc-ink);
+  max-width: calc(100vw - var(--space-4));
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  color: var(--ink);
+  font-family: var(--font-ui);
   font-size: 11px;
   line-height: 1.2;
   opacity: 0.72;
