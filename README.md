@@ -2,9 +2,13 @@
 
 Clean frame-first rebuild.
 
-- `main`: production-ready only
-- `develop`: integration
-- `feature/*`: active build work
-- `archive/pre-frame-reset-2026-09-02`: rollback point before reset
+## Branch contract
+- `main` — release-ready only
+- `develop` — integrated pre-release work
+- `feature/*` — active implementation
+- `archive/pre-frame-reset-2026-09-02` — preserved rollback point
 
-Current scope: application frame and calendar shell only. No production deployment without review and explicit approval.
+## Current build scope
+Frame only: global shell geometry, canonical brand tokens, responsive calendar stage, overlay layer, and accessibility baseline.
+
+No calendar behavior, secondary tools, integrations, or production deployment belong in this pass.
