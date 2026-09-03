@@ -1,4 +1,4 @@
-import type { SchoolCalendar } from '../calendar'
+import { assertISODate, type SchoolCalendar } from '../calendar'
 import type { PlanningWorkspace } from './workspace'
 import type { UnitWorkspace } from './unitWorkspace'
 import type { LessonWorkspace } from './lessonWorkspace'
@@ -39,9 +39,7 @@ export function deserializeShiftState(raw: string): ShiftPersistenceInput | null
     const overrides = parseOverrides(parsed.input.overrides)
     if (!overrides) return null
 
-    const undo = parsed.input.undo === null
-      ? null
-      : parseUndoToken(parsed.input.undo)
+    const undo = parsed.input.undo === null ? null : parseUndoToken(parsed.input.undo)
     if (parsed.input.undo !== null && !undo) {
       return { calendarId: parsed.input.calendarId, overrides, undo: null }
     }
@@ -59,15 +57,12 @@ export function validateShiftPersistenceInput(
   units: UnitWorkspace,
   lessons: LessonWorkspace,
 ): { scheduleErrors: string[]; undoValid: boolean } {
-  const schedule: SectionScheduleWorkspace = {
-    calendarId: input.calendarId,
-    overrides: input.overrides,
-  }
+  const schedule: SectionScheduleWorkspace = { calendarId: input.calendarId, overrides: input.overrides }
   const scheduleErrors = validateSectionScheduleWorkspace(schedule, calendar, planning, units, lessons)
-  return {
-    scheduleErrors,
-    undoValid: scheduleErrors.length === 0 && (!input.undo || validateUndoAgainstSchedule(input.undo, input.overrides, planning)),
-  }
+  const undoValid = scheduleErrors.length === 0 && (
+    !input.undo || validateUndoAgainstSchedule(input.undo, input.overrides, calendar, planning, units, lessons)
+  )
+  return { scheduleErrors, undoValid }
 }
 
 export function saveShiftStateToBrowser(input: ShiftPersistenceInput): boolean {
@@ -99,7 +94,6 @@ export function loadShiftStateFromBrowser(
 
   const validation = validateShiftPersistenceInput(input, calendar, planning, units, lessons)
   if (validation.scheduleErrors.length > 0) return { status: 'invalid' }
-
   if (!validation.undoValid) {
     return {
       status: 'restored',
@@ -114,7 +108,10 @@ export function loadShiftStateFromBrowser(
 function validateUndoAgainstSchedule(
   token: ShiftUndoToken,
   currentOverrides: SectionLessonDateOverride[],
+  calendar: SchoolCalendar,
   planning: PlanningWorkspace,
+  units: UnitWorkspace,
+  lessons: LessonWorkspace,
 ): boolean {
   if (!token.operationId.trim() || !token.sectionId.trim()) return false
   if (!planning.sections.some((section) => section.id === token.sectionId)) return false
@@ -124,7 +121,16 @@ function validateUndoAgainstSchedule(
 
   const currentSectionOverrides = normalizeOverrides(currentOverrides.filter((override) => override.sectionId === token.sectionId))
   const appliedSectionOverrides = normalizeOverrides(token.appliedSectionOverrides)
-  return JSON.stringify(currentSectionOverrides) === JSON.stringify(appliedSectionOverrides)
+  if (JSON.stringify(currentSectionOverrides) !== JSON.stringify(appliedSectionOverrides)) return false
+
+  const previousFullSchedule: SectionScheduleWorkspace = {
+    calendarId: calendar.id,
+    overrides: [
+      ...currentOverrides.filter((override) => override.sectionId !== token.sectionId),
+      ...token.previousSectionOverrides,
+    ],
+  }
+  return validateSectionScheduleWorkspace(previousFullSchedule, calendar, planning, units, lessons).length === 0
 }
 
 function parseOverrides(value: unknown[]): SectionLessonDateOverride[] | null {
@@ -133,7 +139,12 @@ function parseOverrides(value: unknown[]): SectionLessonDateOverride[] | null {
     if (!candidate || typeof candidate !== 'object') return null
     const override = candidate as Partial<SectionLessonDateOverride>
     if (typeof override.sectionId !== 'string' || typeof override.lessonId !== 'string' || typeof override.plannedDate !== 'string') return null
-    result.push({ sectionId: override.sectionId, lessonId: override.lessonId, plannedDate: override.plannedDate as SectionLessonDateOverride['plannedDate'] })
+    try {
+      assertISODate(override.plannedDate)
+    } catch {
+      return null
+    }
+    result.push({ sectionId: override.sectionId, lessonId: override.lessonId, plannedDate: override.plannedDate })
   }
   return result
 }
