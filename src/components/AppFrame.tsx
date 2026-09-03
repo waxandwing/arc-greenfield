@@ -2,21 +2,37 @@ import { useState } from 'react'
 import { CalendarProjectionView } from './CalendarProjectionView'
 import { CalendarSetup } from './CalendarSetup'
 import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
-import type { CalendarHydrationInput, ISODate, SchoolCalendar } from '../calendar'
+import {
+  loadCalendarFromBrowser,
+  saveCalendarToBrowser,
+  type CalendarHydrationInput,
+  type ISODate,
+  type SchoolCalendar,
+} from '../calendar'
 
 export function AppFrame() {
+  const [initialLoad] = useState(() => loadCalendarFromBrowser())
+  const restored = initialLoad.status === 'restored' ? initialLoad.restored : null
+
   const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
-  const [calendar, setCalendar] = useState<SchoolCalendar | null>(null)
-  const [calendarInput, setCalendarInput] = useState<CalendarHydrationInput | null>(null)
-  const [anchorDate, setAnchorDate] = useState<ISODate | null>(null)
+  const [calendar, setCalendar] = useState<SchoolCalendar | null>(restored?.calendar ?? null)
+  const [calendarInput, setCalendarInput] = useState<CalendarHydrationInput | null>(restored?.input ?? null)
+  const [anchorDate, setAnchorDate] = useState<ISODate | null>(restored?.calendar.firstDay ?? null)
   const [editingCalendar, setEditingCalendar] = useState(false)
+  const [storageNotice, setStorageNotice] = useState<string | null>(() => {
+    if (initialLoad.status === 'invalid') return 'Arc found saved calendar data it could not verify. Nothing was restored; please confirm the calendar again.'
+    if (initialLoad.status === 'unavailable') return 'Calendar storage is unavailable in this browser. Changes may last only for this session.'
+    return null
+  })
 
   function useCalendar(nextCalendar: SchoolCalendar, input: CalendarHydrationInput) {
+    const persisted = saveCalendarToBrowser(input)
     setCalendar(nextCalendar)
     setCalendarInput(input)
     setAnchorDate(nextCalendar.firstDay)
     setActiveView(DEFAULT_HOME_VIEW)
     setEditingCalendar(false)
+    setStorageNotice(persisted ? null : 'This calendar is active for this session, but Arc could not save it in this browser.')
   }
 
   const showSetup = !calendar || !anchorDate || editingCalendar
@@ -69,6 +85,8 @@ export function AppFrame() {
               </div>
             )}
           </header>
+
+          {storageNotice && <p className="storage-notice" role="status">{storageNotice}</p>}
 
           <section className="calendar-canvas" aria-label={`${activeView} calendar workspace`}>
             {showSetup ? (
