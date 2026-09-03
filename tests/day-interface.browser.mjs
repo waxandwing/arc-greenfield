@@ -127,12 +127,11 @@ async function auditViewport(browser, width, height) {
   assert(geometry.documentWidth <= geometry.viewportWidth + 1, `${width}px: page creates horizontal document overflow (${geometry.documentWidth}px > ${geometry.viewportWidth}px).`)
   assert(geometry.stageWidth <= geometry.stageClientWidth + 1, `${width}px: Day stage creates horizontal overflow (${geometry.stageWidth}px > ${geometry.stageClientWidth}px).`)
 
-  const canvas = page.locator('.calendar-canvas')
-  await canvas.evaluate((node) => { node.scrollTop = node.scrollHeight })
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
   const railBox = await page.locator('.arc-view-rail').boundingBox()
   const lastBox = await page.locator('.day-continuity-section').last().boundingBox()
   assert(railBox && lastBox, `${width}px: could not measure final content against the mobile rail.`)
-  assert(lastBox.bottom <= railBox.y + 1, `${width}px: fixed mobile navigation covers the final Day Section when scrolled to the bottom.`)
+  assert(lastBox.bottom <= railBox.y + 1, `${width}px: fixed mobile navigation covers the final Day Section when the document is scrolled to the bottom.`)
 
   assert(runtimeErrors.length === 0, `${width}px: runtime errors detected: ${runtimeErrors.join(' | ')}`)
   await context.close()
