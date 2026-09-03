@@ -10,9 +10,11 @@
 .lesson-shared-plan,.lesson-section-progress{border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--paper);padding:var(--space-5)}
 .lesson-detail-heading,.lesson-progress-heading{display:flex;align-items:start;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-4)}
 .lesson-detail-heading h3,.lesson-progress-heading h3{margin:3px 0 0;font:600 23px/1.2 var(--font-editorial)}
-.lesson-field-grid{display:grid;grid-template-columns:minmax(220px,1.6fr) minmax(180px,1fr) 96px minmax(150px,.9fr);gap:var(--space-3)}
+.lesson-field-grid{display:grid;grid-template-columns:minmax(220px,1.5fr) minmax(170px,1fr) 88px minmax(150px,.9fr);gap:var(--space-3)}
+.lesson-field-grid--schedule{grid-template-columns:minmax(210px,1.45fr) minmax(160px,1fr) 82px minmax(145px,.9fr) minmax(130px,.8fr)}
 .lesson-field-grid label,.delivery-row label{display:grid;gap:6px;font-weight:600}
 .lesson-field-grid label>span,.delivery-row label>span{font-size:13px;color:var(--soft-charcoal)}
+.lesson-date-policy-note{margin:var(--space-3) 0 0;max-width:780px;font-size:13px;line-height:1.45;color:var(--soft-charcoal)}
 .lesson-section-progress{display:grid;gap:var(--space-3);background:rgba(243,235,221,.42)}
 .delivery-row{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(140px,.85fr) minmax(150px,.9fr) minmax(240px,1.6fr);gap:var(--space-3);align-items:end;padding:var(--space-3) 0;border-top:1px solid var(--line-subtle)}
 .delivery-row:first-of-type{border-top:0}
@@ -21,19 +23,25 @@
 .delivery-resume-note textarea{width:100%;resize:vertical;min-height:68px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--paper-raised);padding:9px 10px;line-height:1.35}
 .unit-protected-note{grid-column:1/-1;margin:0;font-size:13px;color:var(--soft-charcoal)}
 
+@media (max-width:1040px){
+  .lesson-field-grid--schedule{grid-template-columns:1fr 1fr 96px 1fr}
+  .lesson-field-grid--schedule label:last-child{grid-column:4}
+}
+
 @media (max-width:900px){
   .lesson-setup{padding:var(--space-6)}
   .lesson-workspace-grid{grid-template-columns:1fr}
   .lesson-list{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}
   .lesson-add-button{margin-top:0}
-  .lesson-field-grid{grid-template-columns:1fr 1fr}
+  .lesson-field-grid,.lesson-field-grid--schedule{grid-template-columns:1fr 1fr}
+  .lesson-field-grid--schedule label:last-child{grid-column:auto}
   .delivery-row{grid-template-columns:1fr 1fr}
   .delivery-resume-note{grid-column:1/-1}
 }
 
 @media (max-width:560px){
   .lesson-setup{padding:var(--space-4)}
-  .lesson-list,.lesson-field-grid,.delivery-row{grid-template-columns:1fr}
+  .lesson-list,.lesson-field-grid,.lesson-field-grid--schedule,.delivery-row{grid-template-columns:1fr}
   .lesson-shared-plan,.lesson-section-progress{padding:var(--space-4);border-radius:var(--radius-sm)}
   .lesson-detail-heading,.lesson-progress-heading{display:grid}
   .delivery-resume-note{grid-column:auto}
