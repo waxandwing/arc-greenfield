@@ -21,6 +21,7 @@ export type RecoveryFixedAnchor = {
 export type RecoveryPreview = {
   sectionId: string
   interruptedLessonId: string
+  interruptedEffectiveDate: ISODate | null
   resumeDate: ISODate | null
   resumeNote: string
   affectedFlexibleLessons: RecoveryAffectedLesson[]
@@ -42,11 +43,13 @@ export function createRecoveryPreview(input: {
   const ownershipErrors = validateRecoverySource(section, lesson, state)
   if (ownershipErrors.length > 0) throw new Error(`Cannot preview recovery. ${ownershipErrors.join(' ')}`)
 
+  const interruptedEffectiveDate = effectiveLessonDate(lesson, section.id, overrides)
   const resumeDate = state.taughtDate ? nextInstructionalDay(calendar, state.taughtDate) : null
   if (!resumeDate) {
     return {
       sectionId: section.id,
       interruptedLessonId: lesson.id,
+      interruptedEffectiveDate,
       resumeDate: null,
       resumeNote: state.resumeNote!,
       affectedFlexibleLessons: [],
@@ -86,6 +89,7 @@ export function createRecoveryPreview(input: {
   return {
     sectionId: section.id,
     interruptedLessonId: lesson.id,
+    interruptedEffectiveDate,
     resumeDate,
     resumeNote: state.resumeNote!,
     affectedFlexibleLessons,
