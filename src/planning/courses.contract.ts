@@ -1,4 +1,4 @@
-import { createCourse, createSection, sectionsForCourse } from './courses'
+import { createCourse, createSection, sectionsForCourse, validateSectionCourse } from './courses'
 import { createUnit, sectionsUsingUnit, validateUnitCourse } from './units'
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -14,6 +14,8 @@ const period5 = createSection({ id: 'section-p5', courseId: course.id, calendarI
 const otherCourse = createCourse({ id: 'course-2d', title: '2D Art 1' })
 const period3 = createSection({ id: 'section-p3', courseId: otherCourse.id, calendarId: 'calendar-2026-27', name: 'Period 3' })
 
+assert(validateSectionCourse(period2, course).length === 0, 'A Section must validate against its Course identity.')
+assert(validateSectionCourse(period2, otherCourse).some((error) => error.includes('different course')), 'A Section cannot silently attach to a different Course.')
 assert(sectionsForCourse([period2, period5, period3], course.id).length === 2, 'A Course must be able to serve multiple teaching Sections without duplicating curriculum identity.')
 
 const unit = createUnit({ id: 'unit-mesopotamia', calendarId: 'calendar-2026-27', courseId: course.id, title: 'Mesopotamia' })
