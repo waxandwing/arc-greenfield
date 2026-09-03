@@ -71,8 +71,8 @@
 
 .day-continuity-section {
   display: grid;
-  grid-template-columns: minmax(132px, .45fr) minmax(0, 2.2fr);
-  gap: var(--space-6);
+  grid-template-columns: minmax(140px, .4fr) minmax(0, 2.6fr);
+  gap: var(--space-8);
   padding: var(--space-6) 0;
   border-bottom: 1px solid var(--line-subtle);
 }
@@ -85,8 +85,9 @@
 
 .day-continuity-work {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-6);
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  min-width: 0;
 }
 
 .day-continuity-held,
@@ -99,8 +100,13 @@
   border-left: 4px solid var(--terracotta);
 }
 
+.day-continuity-held + .day-continuity-planned {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line-subtle);
+}
+
 .day-continuity-kicker {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
   color: var(--soft-charcoal);
   font-size: 14px;
   font-weight: 700;
@@ -109,12 +115,13 @@
 
 .day-continuity-held .day-continuity-kicker {
   color: var(--terracotta-text);
+  text-transform: uppercase;
 }
 
 .day-continuity-lesson {
   display: grid;
   gap: var(--space-2);
-  padding-block: var(--space-2) var(--space-3);
+  padding-block: var(--space-1) var(--space-2);
 }
 
 .day-continuity-lesson + .day-continuity-lesson {
@@ -131,9 +138,13 @@
 
 .day-continuity-lesson-heading strong {
   color: var(--ink);
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+}
+
+.day-continuity-held + .day-continuity-planned .day-continuity-lesson-heading strong {
+  font-size: 16px;
 }
 
 .day-continuity-fixed {
@@ -161,6 +172,10 @@
   overflow-wrap: anywhere;
 }
 
+.day-continuity-lesson--held .day-continuity-resume {
+  color: var(--ink);
+}
+
 .day-continuity-resume {
   color: var(--ink);
 }
@@ -182,8 +197,8 @@
     flex-direction: column;
   }
 
-  .day-continuity-work {
-    grid-template-columns: 1fr;
+  .day-continuity-section {
+    padding: var(--space-4) 0;
   }
 
   .day-continuity-held {
