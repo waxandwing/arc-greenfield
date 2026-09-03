@@ -68,7 +68,9 @@ Implemented:
 - Quarter/Semester dates must be teacher/source-declared; Arc does not infer them.
 
 ## Verification status
-- Course/Section setup, Units, Lesson continuity, and recovery preview are verified on feature branches before integration
+- Course/Section setup, Units, Lesson continuity, and recovery preview are integrated in `develop`
+- the exact recovery-preview feature head passed the lockfile-backed domain/build gate before integration
+- `develop` must pass the same independent gate after every integration checkpoint commit
 - domain contract suite includes calendar truth, projections, hydration, persistence, navigation, manual setup, terms, Course/Section scope, Units, planning workspace, Unit workspace, Lesson divergence/persistence, cross-layer dependency integrity, and recovery-preview/fixed-date behavior
 - dependency installation is reproducible from committed `package-lock.json` using `npm ci`
 - TypeScript compile and Vite bundle are required on every verification run
