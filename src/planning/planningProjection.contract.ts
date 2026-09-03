@@ -55,11 +55,11 @@ const overrides: SectionLessonDateOverride[] = [
   { sectionId: p5.id, lessonId: lesson18.id, plannedDate: '2026-09-21' },
 ]
 
-const weekDates = ['2026-09-14', '2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18', '2026-09-19', '2026-09-20'] as const
+const weekDates = ['2026-09-14', '2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18'] as const
 const week = projectPlanningRange({ dates: [...weekDates], planning, units, lessons, overrides })
 assert(week.courses.length === 1, 'Projection should group the shared Course once.')
 assert(week.courses[0].unitSpans.length === 1, 'A shared Unit should render once per Course, not once per Section.')
-assert(week.courses[0].unitSpans[0].startIndex === 0 && week.courses[0].unitSpans[0].endIndex === 6, 'Unit span should clip to the visible week range.')
+assert(week.courses[0].unitSpans[0].startIndex === 0 && week.courses[0].unitSpans[0].endIndex === 4, 'Unit span should clip to the visible Monday–Friday Week range.')
 assert(week.courses[0].sections.length === 3, 'All three Sections should receive their own effective schedule row.')
 
 const p2Row = week.courses[0].sections.find((row) => row.section.id === p2.id)!
@@ -79,6 +79,15 @@ const day = projectPlanningRange({ dates: ['2026-09-17'], planning, units, lesso
 assert(day.courses[0].unitSpans.length === 1, 'Day projection should preserve the active shared Unit context.')
 assert(day.courses[0].sections.find((row) => row.section.id === p5.id)!.days[0].lessons.some((lesson) => lesson.lessonId === lesson17.id), 'Day and Week projections must expose the same effective P5 Lesson truth.')
 assert(day.courses[0].sections.find((row) => row.section.id === p2.id)!.days[0].lessons.some((lesson) => lesson.lessonId === lesson18.id), 'Day projection should show P2 Lesson 18 on its shared Thursday plan.')
+
+const classesOnly = projectPlanningRange({ dates: ['2026-09-17'], planning, units: null, lessons: null, overrides: [] })
+assert(classesOnly.courses[0].sections.length === 3, 'Class rows should remain visible before Units or Lessons exist.')
+assert(classesOnly.courses[0].unitSpans.length === 0, 'Classes-only projection must not invent Unit state.')
+assert(classesOnly.courses[0].sections.every((row) => row.days[0].lessons.length === 0), 'Classes-only projection must not invent Lesson state.')
+
+const unitsOnly = projectPlanningRange({ dates: ['2026-09-17'], planning, units, lessons: null, overrides: [] })
+assert(unitsOnly.courses[0].unitSpans.length === 1, 'Placed Units should remain visible before Lessons exist.')
+assert(unitsOnly.courses[0].sections.every((row) => row.days[0].lessons.length === 0), 'Units-only projection must not invent Lesson state.')
 
 let mismatchRejected = false
 try {
