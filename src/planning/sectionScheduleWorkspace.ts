@@ -1,4 +1,5 @@
 import type { ISODate, SchoolCalendar } from '../calendar/types'
+import { effectiveLessonDeliveryState } from './deliveryState'
 import type { LessonWorkspace } from './lessonWorkspace'
 import { effectiveLessonDate, validateSectionLessonOverride, type SectionLessonDateOverride } from './sectionSchedule'
 import type { PlanningWorkspace } from './workspace'
@@ -18,6 +19,9 @@ export function validateSectionScheduleWorkspace(
 ): string[] {
   const errors: string[] = []
   if (workspace.calendarId !== calendar.id) errors.push('Section schedule belongs to a different school calendar.')
+  if (planning.calendarId !== calendar.id) errors.push('Class workspace belongs to a different school calendar.')
+  if (units.calendarId !== calendar.id) errors.push('Unit workspace belongs to a different school calendar.')
+  if (lessons.calendarId !== calendar.id) errors.push('Lesson workspace belongs to a different school calendar.')
 
   const keys = new Set<string>()
   for (const override of workspace.overrides) {
@@ -49,7 +53,11 @@ export function validateSectionScheduleWorkspace(
 
   for (const section of planning.sections) {
     const byDate = new Map<ISODate, string[]>()
-    for (const lesson of lessons.lessons.filter((candidate) => candidate.courseId === section.courseId && candidate.calendarId === section.calendarId)) {
+    const sectionLessons = lessons.lessons.filter((candidate) => candidate.courseId === section.courseId && candidate.calendarId === section.calendarId)
+    for (const lesson of sectionLessons) {
+      const delivery = effectiveLessonDeliveryState(lessons.deliveryStates, lesson, section)
+      if (delivery.status === 'completed' || delivery.status === 'skipped') continue
+
       const date = effectiveLessonDate(lesson, section.id, workspace.overrides)
       if (!date) continue
       const titles = byDate.get(date) ?? []
@@ -57,7 +65,7 @@ export function validateSectionScheduleWorkspace(
       byDate.set(date, titles)
     }
     for (const [date, titles] of byDate) {
-      if (titles.length > 1) errors.push(`${section.name} has multiple Lessons on ${date}: ${titles.join(', ')}.`)
+      if (titles.length > 1) errors.push(`${section.name} has multiple live Lessons on ${date}: ${titles.join(', ')}.`)
     }
   }
 
