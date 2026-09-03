@@ -4,8 +4,12 @@ import {
   createRecoveryPreview,
   createRecoveryShiftDraft,
   finalizeRecoveryShiftDraft,
+  hasDuplicateRecoveryDestinations,
+  recoveryDestinationDates,
+  type Lesson,
   type LessonWorkspace,
   type PlanningWorkspace,
+  type Section,
   type SectionLessonDateOverride,
   type ShiftOperation,
   type UnitWorkspace,
@@ -22,8 +26,8 @@ type Props = {
 }
 
 type ReviewItem = {
-  sectionName: string
-  lessonTitle: string
+  section: Section
+  lesson: Lesson
   preview: ReturnType<typeof createRecoveryPreview>
   draft: ReturnType<typeof createRecoveryShiftDraft>
 }
@@ -47,18 +51,24 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
         deliveryStates: lessons.deliveryStates,
         overrides,
       })
-      return { sectionName: section.name, lessonTitle: lesson.title, preview, draft: createRecoveryShiftDraft(preview) }
+      return { section, lesson, preview, draft: createRecoveryShiftDraft(preview) }
     })
     .filter((item): item is ReviewItem => item !== null)
 
-  function apply(item: ReviewItem) {
-    if (!item.draft) return
+  function selectedDatesFor(item: ReviewItem): Record<string, ISODate> {
     const selected: Record<string, ISODate> = {}
+    if (!item.draft) return selected
     for (const change of item.draft.changes) {
       if (change.lessonId === item.draft.interruptedLessonId) continue
       const value = chosenDates[choiceKey(item.draft.sectionId, change.lessonId)]
       if (value) selected[change.lessonId] = value
     }
+    return selected
+  }
+
+  function apply(item: ReviewItem) {
+    if (!item.draft) return
+    const selected = selectedDatesFor(item)
 
     try {
       const operation = finalizeRecoveryShiftDraft(item.draft, selected)
@@ -67,11 +77,7 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
         setApplyErrors((current) => ({ ...current, [item.draft!.sectionId]: error }))
         return
       }
-      setApplyErrors((current) => {
-        const next = { ...current }
-        delete next[item.draft!.sectionId]
-        return next
-      })
+      onClose()
     } catch (error) {
       setApplyErrors((current) => ({ ...current, [item.draft!.sectionId]: error instanceof Error ? error.message : String(error) }))
     }
@@ -90,15 +96,20 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
       ) : (
         <div className="recovery-review-list">
           {items.map((item) => {
-            const { sectionName, lessonTitle, preview, draft } = item
+            const { section, lesson, preview, draft } = item
             const error = applyErrors[preview.sectionId]
             const unresolved = draft?.changes.filter((change) => change.lessonId !== draft.interruptedLessonId) ?? []
-            const allResolved = unresolved.every((change) => Boolean(chosenDates[choiceKey(preview.sectionId, change.lessonId)]))
+            const selected = selectedDatesFor(item)
+            const allResolved = unresolved.every((change) => Boolean(selected[change.lessonId]))
+            const duplicateDestinations = draft
+              ? hasDuplicateRecoveryDestinations(draft.interruptedLessonId, draft.resumeDate, draft.changes.map((change) => change.lessonId), selected)
+              : false
+            const movingLessonIds = draft?.changes.map((change) => change.lessonId) ?? []
 
             return (
               <article className="recovery-card" key={`${preview.interruptedLessonId}:${preview.sectionId}`}>
                 <header className="recovery-card-heading">
-                  <div><p className="section-label">{sectionName}</p><h3>{lessonTitle}</h3></div>
+                  <div><p className="section-label">{section.name}</p><h3>{lesson.title}</h3></div>
                   <span className="recovery-preview-badge">Review first</span>
                 </header>
 
@@ -115,11 +126,20 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
                         {preview.affectedFlexibleLessons.length === 0 ? <p>Nothing flexible is currently in the way.</p> : (
                           <div className="recovery-resolution-list">
                             {preview.affectedFlexibleLessons.map((affected) => {
-                              const lesson = lessons.lessons.find((candidate) => candidate.id === affected.lessonId)
-                              const unit = lesson ? units.units.find((candidate) => candidate.id === lesson.unitId) : null
-                              const options = unit?.placement && preview.resumeDate
-                                ? confirmedInstructionalDates(calendar, unit.placement.startDate, unit.placement.endDate)
-                                    .filter((date) => date > preview.resumeDate! && date !== affected.effectiveDate && date !== preview.fixedAnchor?.effectiveDate)
+                              const affectedLesson = lessons.lessons.find((candidate) => candidate.id === affected.lessonId)
+                              const unit = affectedLesson ? units.units.find((candidate) => candidate.id === affectedLesson.unitId) : null
+                              const options = affectedLesson && unit && preview.resumeDate
+                                ? recoveryDestinationDates({
+                                    calendar,
+                                    section,
+                                    lesson: affectedLesson,
+                                    unit,
+                                    resumeDate: preview.resumeDate,
+                                    movingLessonIds,
+                                    lessons: lessons.lessons,
+                                    deliveryStates: lessons.deliveryStates,
+                                    overrides,
+                                  })
                                 : []
                               const key = choiceKey(preview.sectionId, affected.lessonId)
                               return (
@@ -129,11 +149,11 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
                                     <label>
                                       <span>Move to</span>
                                       <select value={chosenDates[key] ?? ''} onChange={(event) => setChosenDates((current) => ({ ...current, [key]: event.target.value as ISODate }))}>
-                                        <option value="">Choose an instructional day</option>
+                                        <option value="">Choose an open instructional day</option>
                                         {options.map((date) => <option key={date} value={date}>{formatDate(date)}</option>)}
                                       </select>
                                     </label>
-                                  ) : <p className="recovery-option-empty" role="status">No later instructional day is available inside this Unit.</p>)}
+                                  ) : <p className="recovery-option-empty" role="status">No open later instructional day is available inside this Unit.</p>)}
                                 </div>
                               )
                             })}
@@ -149,9 +169,10 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
 
                     {draft ? (
                       <div className="recovery-apply-block">
-                        <p>This changes only {sectionName}. Shared Lesson dates and other classes stay where they are.</p>
+                        <p>This changes only {section.name}. Shared Lesson dates and other classes stay where they are.</p>
+                        {duplicateDestinations && <p className="recovery-blocked" role="alert">Choose a different day for each Lesson. Same-day stacking is not enabled yet.</p>}
                         {error && <p className="recovery-blocked" role="alert">{error}</p>}
-                        <button type="button" className="primary-button" disabled={!allResolved} onClick={() => apply(item)}>Apply Shift</button>
+                        <button type="button" className="primary-button" disabled={!allResolved || duplicateDestinations} onClick={() => apply(item)}>Apply Shift</button>
                       </div>
                     ) : <p className="recovery-adjusted" role="status">This class schedule already makes room for the continuation. There is nothing new to apply.</p>}
                   </>
@@ -171,13 +192,6 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
 }
 
 function choiceKey(sectionId: string, lessonId: string): string { return `${sectionId}:${lessonId}` }
-
-function confirmedInstructionalDates(calendar: SchoolCalendar, startDate: ISODate, endDate: ISODate): ISODate[] {
-  return Object.values(calendar.days)
-    .filter((day) => day.date >= startDate && day.date <= endDate && day.kind === 'instructional' && day.confidence === 'confirmed')
-    .map((day) => day.date)
-    .sort()
-}
 
 function formatDate(value: string): string {
   const [year, month, day] = value.split('-').map(Number)
