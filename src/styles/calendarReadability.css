@@ -1,0 +1,39 @@
+.view-nav-item[aria-disabled='true']{
+  opacity:.48;
+  cursor:not-allowed;
+  text-decoration:line-through;
+  text-decoration-thickness:1px;
+}
+
+.month-section{
+  display:grid;
+  gap:0;
+}
+
+.month-weekday-row{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  min-width:700px;
+  border-bottom:1px solid var(--line-subtle);
+}
+
+.month-weekday-row span{
+  padding:8px 10px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--soft-charcoal);
+}
+
+.calendar-day-weekday{
+  display:block;
+  margin-bottom:2px;
+  font-size:12px;
+  font-weight:700;
+  color:var(--soft-charcoal);
+}
+
+@media (max-width:520px){
+  .month-weekday-row{min-width:644px}
+}
