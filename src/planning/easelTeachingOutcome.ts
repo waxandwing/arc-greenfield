@@ -3,10 +3,10 @@ import type { ISODate, SchoolCalendar } from '../calendar/types'
 import { projectDayContinuity } from './dayContinuityProjection'
 import { effectiveLessonDeliveryState, updateLessonDeliveryState, type LessonDeliveryState } from './deliveryState'
 import { projectEaselSession, type EaselSessionProjection } from './easelSessionProjection'
-import type { LessonWorkspace } from './lessonWorkspace'
+import { validateLessonWorkspace, type LessonWorkspace } from './lessonWorkspace'
 import type { SectionLessonDateOverride } from './sectionSchedule'
-import type { UnitWorkspace } from './unitWorkspace'
-import type { PlanningWorkspace } from './workspace'
+import { validateUnitWorkspace, type UnitWorkspace } from './unitWorkspace'
+import { validatePlanningWorkspace, type PlanningWorkspace } from './workspace'
 
 export type EaselTeachingOutcome =
   | { kind: 'completed' }
@@ -31,7 +31,7 @@ export function applyEaselTeachingOutcome(input: {
   if (!isConfirmedInstructionalDay(calendar, liveDate)) {
     throw new Error('Easel cannot record a live teaching outcome on a date that is not a confirmed instructional day.')
   }
-  validateWorkspaceOwnership(calendar, planning, units, lessons)
+  validateCanonicalWorkspaces(calendar, planning, units, lessons)
 
   const lesson = lessons.lessons.find((candidate) => candidate.id === session.lessonId)
   const section = planning.sections.find((candidate) => candidate.id === session.sectionId)
@@ -84,14 +84,19 @@ export function applyEaselTeachingOutcome(input: {
   })
 }
 
-function validateWorkspaceOwnership(
+function validateCanonicalWorkspaces(
   calendar: SchoolCalendar,
   planning: PlanningWorkspace,
   units: UnitWorkspace,
   lessons: LessonWorkspace,
 ): void {
-  if (planning.calendarId !== calendar.id || units.calendarId !== calendar.id || lessons.calendarId !== calendar.id) {
-    throw new Error('Easel refused the teaching outcome because Arc workspace ownership no longer matches the loaded school calendar.')
+  const errors = [
+    ...validatePlanningWorkspace(planning),
+    ...validateUnitWorkspace(units, calendar, planning),
+    ...validateLessonWorkspace(lessons, calendar, planning, units),
+  ]
+  if (errors.length > 0) {
+    throw new Error(`Easel refused the teaching outcome because current Arc state failed integrity checks. ${[...new Set(errors)].join(' ')}`)
   }
 }
 
