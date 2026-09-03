@@ -16,7 +16,7 @@ Do not add duplicate handoff, audit, blueprint, or design-system documents here.
 ## Current system boundary
 Calendar truth → Courses/Sections → Units → Lessons → per-Section delivery state → recovery consequence preview → Section-specific schedule overrides → atomic Shift/Undo domain → persisted Section schedule + reload-safe optional Undo.
 
-Current gate: Shift persistence is verified. Teacher-facing Apply/Undo remains blocked until its own interaction and regression pass.
+Current gate: Shift persistence is integrated. Teacher-facing Apply/Undo remains blocked until its own interaction and regression pass.
 
 Core rules:
 - one shared Course/Unit/Lesson plan; Sections carry actual teaching state.
