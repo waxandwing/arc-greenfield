@@ -1,5 +1,6 @@
 import type { MonthProjection, ProjectedDay } from '../calendar/projections'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
+import { formatPlanningLongDate, formatPlanningMonthKey, formatPlanningShortDate } from './planningDateLabels'
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
@@ -11,20 +12,20 @@ export function PlanningMonthView({
   planning: MonthPlanningProjection
 }) {
   return (
-    <div className="planning-month" role="grid" aria-label={`${formatMonthKey(month.monthKey)} planning calendar`}>
-      <div className="planning-month-weekdays" role="row" aria-hidden="true">
+    <div className="planning-month" aria-label={`${formatPlanningMonthKey(month.monthKey)} planning calendar`}>
+      <div className="planning-month-weekdays" aria-hidden="true">
         {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
       </div>
       {month.weeks.map((calendarWeek, weekIndex) => {
         const planningWeek = planning.weeks[weekIndex]
         return (
-          <section className="planning-month-week" key={calendarWeek.startDate} aria-label={`Week of ${formatDate(calendarWeek.startDate)}`}>
+          <section className="planning-month-week" key={calendarWeek.startDate} aria-label={`Week of ${formatPlanningShortDate(calendarWeek.startDate)}`}>
             {planningWeek?.unitSegments.length ? (
               <div className="planning-month-unit-stack" aria-label="Unit pacing">
                 {planningWeek.unitSegments.map((segment) => <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} />)}
               </div>
             ) : null}
-            <div className="planning-month-days" role="row">
+            <div className="planning-month-days">
               {calendarWeek.days.map((day, dayIndex) => (
                 <MonthDayCell
                   key={day.date}
@@ -78,7 +79,7 @@ function MonthDayCell({
   ].filter(Boolean).join(' ')
 
   return (
-    <div className={classes} role="gridcell" aria-label={`${formatLongDate(day.date)}${dayStatus ? `. ${dayStatus}` : ''}`}>
+    <div className={classes} aria-label={`${formatPlanningLongDate(day.date)}${dayStatus ? `. ${dayStatus}` : ''}`}>
       <div className="planning-month-day-heading">
         <span className="planning-month-date">{Number(day.date.slice(8))}</span>
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
@@ -122,18 +123,6 @@ function summarizeStatuses(signal: MonthLessonSignal): string | null {
   if (signal.statusCounts.completed) pieces.push(`${signal.statusCounts.completed} completed`)
   if (signal.statusCounts.skipped) pieces.push(`${signal.statusCounts.skipped} skipped`)
   return pieces.length ? pieces.join(' · ') : null
-}
-
-function formatMonthKey(monthKey: string): string {
-  return new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${monthKey}-01T00:00:00Z`))
-}
-
-function formatDate(date: string): string {
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`))
-}
-
-function formatLongDate(date: string): string {
-  return new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`))
 }
 
 function humanizeKind(kind: ProjectedDay['kind']): string {
