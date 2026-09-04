@@ -51,12 +51,20 @@ const operation = createShiftOperation({
     { lessonId: lesson18.id, fromDate: '2026-09-17', toDate: '2026-09-21' },
   ],
 })
-const applied = applyShiftOperation({ operation, section: p5, lessons: lessons.lessons, deliveryStates: lessons.deliveryStates, units: units.units, calendar, overrides: [] })
-const input: ShiftPersistenceInput = { calendarId: calendar.id, overrides: applied.overrides, undo: applied.undo }
+const applied = applyShiftOperation({ operation, section: p5, lessons: lessons.lessons, deliveryStates: lessons.deliveryStates, units: units.units, calendar, overrides: [], sameDayApprovals: [] })
+const input: ShiftPersistenceInput = {
+  calendarId: calendar.id,
+  overrides: applied.overrides,
+  sameDayApprovals: applied.sameDayApprovals,
+  undo: applied.undo,
+}
 
-const roundTrip = deserializeShiftState(serializeShiftState(input))
+const serialized = serializeShiftState(input)
+assert(JSON.parse(serialized).schemaVersion === 2, 'Current Shift persistence must write schema version 2.')
+const roundTrip = deserializeShiftState(serialized)
 assert(roundTrip !== null, 'A valid Shift payload must deserialize.')
 assert(JSON.stringify(roundTrip.overrides) === JSON.stringify(input.overrides), 'Shift overrides must survive serialization exactly.')
+assert(JSON.stringify(roundTrip.sameDayApprovals) === JSON.stringify(input.sameDayApprovals), 'Same-day approvals must survive serialization exactly.')
 assert(roundTrip.undo?.operationId === applied.undo.operationId, 'Undo identity must survive serialization.')
 
 const valid = validateShiftPersistenceInput(roundTrip, calendar, planning, units, lessons)
@@ -64,10 +72,14 @@ assert(valid.scheduleErrors.length === 0, 'Restored canonical Shift schedule mus
 assert(valid.undoValid, 'Undo should restore while the affected Section still matches the applied snapshot.')
 
 assert(deserializeShiftState('{broken') === null, 'Malformed JSON must fail closed.')
-assert(deserializeShiftState(JSON.stringify({ schemaVersion: 2, input })) === null, 'Unknown persistence schema versions must fail closed.')
-assert(deserializeShiftState(JSON.stringify({ schemaVersion: 1, input: { ...input, overrides: [{ sectionId: p5.id, lessonId: lesson17.id, plannedDate: '2026-02-30' }] } })) === null, 'Malformed calendar dates must be rejected during parse.')
+assert(deserializeShiftState(JSON.stringify({ schemaVersion: 3, input })) === null, 'Unknown persistence schema versions must fail closed.')
+assert(deserializeShiftState(JSON.stringify({ schemaVersion: 2, input: { ...input, overrides: [{ sectionId: p5.id, lessonId: lesson17.id, plannedDate: '2026-02-30' }] } })) === null, 'Malformed calendar dates must be rejected during parse.')
 
-const malformedUndoRaw = JSON.stringify({ schemaVersion: 1, input: { ...input, undo: { operationId: 42 } } })
+const legacyRaw = JSON.stringify({ schemaVersion: 1, input: { calendarId: calendar.id, overrides: applied.overrides, undo: null } })
+const legacy = deserializeShiftState(legacyRaw)
+assert(legacy !== null && legacy.sameDayApprovals.length === 0, 'Schema v1 Shift state must migrate with an empty same-day approval set.')
+
+const malformedUndoRaw = JSON.stringify({ schemaVersion: 2, input: { ...input, undo: { operationId: 42 } } })
 const malformedUndo = deserializeShiftState(malformedUndoRaw)
 assert(malformedUndo !== null, 'Malformed Undo must not destroy an otherwise parseable schedule payload.')
 assert(malformedUndo.undo === null, 'Malformed Undo must be discarded during parse.')
@@ -83,6 +95,7 @@ assert(!staleValidation.undoValid, 'A later change in the affected Section must 
 const badSchedule: ShiftPersistenceInput = {
   calendarId: calendar.id,
   overrides: [{ sectionId: p5.id, lessonId: lesson17.id, plannedDate: '2026-09-18' }],
+  sameDayApprovals: [],
   undo: null,
 }
 assert(validateShiftPersistenceInput(badSchedule, calendar, planning, units, lessons).scheduleErrors.length > 0, 'A saved schedule that collides with a fixed Lesson must be rejected.')
@@ -110,6 +123,24 @@ const changedTruth = validateShiftPersistenceInput(priorSnapshotBecomesIllegal, 
 assert(changedTruth.scheduleErrors.length === 0, 'Current applied schedule should remain valid when an unrelated prior Undo date becomes unavailable.')
 assert(!changedTruth.undoValid, 'Undo must be discarded if its previous snapshot is no longer legal under current calendar truth.')
 
+const collisionLessons = {
+  calendarId: calendar.id,
+  lessons: [
+    createLesson({ id: 'same-a', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Same A', sequence: 30, plannedDate: '2026-09-23' }),
+    createLesson({ id: 'same-b', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Same B', sequence: 31, plannedDate: '2026-09-23' }),
+  ],
+  deliveryStates: [],
+}
+const collisionInput: ShiftPersistenceInput = {
+  calendarId: calendar.id,
+  overrides: [],
+  sameDayApprovals: [{ sectionId: p5.id, date: '2026-09-23', lessonIds: ['same-a', 'same-b'] }],
+  undo: null,
+}
+assert(validateShiftPersistenceInput(collisionInput, calendar, planning, units, collisionLessons).scheduleErrors.length === 0, 'Exact explicit same-day approval must make the intended live collision durable.')
+const collisionRoundTrip = deserializeShiftState(serializeShiftState(collisionInput))
+assert(collisionRoundTrip?.sameDayApprovals[0]?.lessonIds.join(',') === 'same-a,same-b', 'Approved Lesson identity must survive persistence.')
+
 const storage = new MemoryStorage()
 Object.defineProperty(globalThis, 'window', { configurable: true, value: { localStorage: storage } })
 
@@ -133,5 +164,9 @@ assert(restoredStale.status === 'restored' && restoredStale.input.undo === null,
 
 storage.setItem('arc.shift.v1', serializeShiftState(badSchedule))
 assert(loadShiftStateFromBrowser(calendar, planning, units, lessons).status === 'invalid', 'Invalid durable schedule state must fail closed on reload.')
+
+storage.setItem('arc.shift.v1', serializeShiftState(collisionInput))
+const restoredCollision = loadShiftStateFromBrowser(calendar, planning, units, collisionLessons)
+assert(restoredCollision.status === 'restored' && restoredCollision.input.sameDayApprovals.length === 1, 'Approved same-day schedule must restore without losing approval state.')
 
 console.log('shift persistence contract passed')
