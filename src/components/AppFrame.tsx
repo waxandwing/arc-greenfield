@@ -95,7 +95,6 @@ export function AppFrame() {
             hasTerms={workspace.hasTerms}
             hasClasses={workspace.hasClasses}
             hasUnits={workspace.hasUnits}
-            hasLessons={workspace.hasLessons}
             recoveryCount={workspace.recoveryCount}
             undoAvailable={Boolean(workspace.shiftState?.undo)}
             stageTitle={stageTitle}
@@ -137,7 +136,6 @@ export function AppFrame() {
               lessonInput={workspace.lessonInput}
               shiftState={workspace.shiftState}
               protectedCourseIds={workspace.protectedCourseIds}
-              protectedUnitIds={workspace.protectedUnitIds}
               protectedSectionIds={workspace.protectedSectionIds}
               onUseCalendar={workspace.useCalendar}
               onUseTerms={workspace.useTerms}
