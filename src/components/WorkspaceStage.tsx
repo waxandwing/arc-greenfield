@@ -32,6 +32,7 @@ type WorkspaceStageProps = {
   lessonWorkspace: LessonWorkspace | null
   lessonInput: LessonWorkspaceInput | null
   shiftState: ShiftPersistenceInput | null
+  dragLessonId?: string
   protectedCourseIds: Set<string>
   protectedSectionIds: Set<string>
   onUseCalendar: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
@@ -59,6 +60,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     lessonWorkspace,
     lessonInput,
     shiftState,
+    dragLessonId,
     protectedCourseIds,
     protectedSectionIds,
     onUseCalendar,
@@ -155,6 +157,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       calendar={calendar}
       anchorDate={anchorDate}
       planningContext={planningContext}
+      dragLessonId={dragLessonId}
       onOpenUnit={onOpenUnit}
       onOpenLesson={onOpenLesson}
     />
