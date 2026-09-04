@@ -13,14 +13,12 @@ import {
 } from '../calendar'
 import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
 import {
-  applyShiftOperation,
   courseIdsProtectedByUnits,
   saveLessonAndShiftStateToBrowser,
   savePlanningWorkspaceToBrowser,
   saveShiftStateToBrowser,
   saveUnitsToBrowser,
   sectionIdsProtectedByDelivery,
-  undoShiftOperation,
   unitIdsProtectedByLessons,
   validateLessonWorkspace,
   validateShiftPersistenceInput,
@@ -34,6 +32,7 @@ import {
   type UnitWorkspace,
   type UnitWorkspaceInput,
 } from '../planning'
+import { prepareRecoveryShift, prepareUndoShift } from './shiftCommands'
 import { reconcileShiftState } from './shiftReconciliation'
 import { loadWorkspaceSnapshot } from './workspaceBootstrap'
 
@@ -236,55 +235,44 @@ export function useArcWorkspace(onCloseMode: () => void) {
     if (!calendar || !planningWorkspace || !unitWorkspace || !lessonWorkspace || !shiftState) {
       return 'Arc cannot apply this Shift because the planning state is incomplete. Nothing changed.'
     }
-    const section = planningWorkspace.sections.find((candidate) => candidate.id === operation.sectionId)
-    if (!section) return 'Arc cannot apply this Shift because the class no longer exists. Nothing changed.'
 
-    try {
-      const applied = applyShiftOperation({
-        operation,
-        section,
-        lessons: lessonWorkspace.lessons,
-        deliveryStates: lessonWorkspace.deliveryStates,
-        units: unitWorkspace.units,
-        calendar,
-        overrides: shiftState.overrides,
-      })
-      const candidate: ShiftPersistenceInput = { calendarId: calendar.id, overrides: applied.overrides, undo: applied.undo }
-      const validation = validateShiftPersistenceInput(candidate, calendar, planningWorkspace, unitWorkspace, lessonWorkspace)
-      if (validation.scheduleErrors.length > 0 || !validation.undoValid) {
-        return 'Arc refused this Shift because the resulting Section schedule did not pass its integrity check. Nothing changed.'
-      }
+    const prepared = prepareRecoveryShift({
+      calendar,
+      planning: planningWorkspace,
+      units: unitWorkspace,
+      lessons: lessonWorkspace,
+      shift: shiftState,
+    }, operation)
+    if (!prepared.ok) return prepared.message
 
-      const persisted = saveShiftStateToBrowser(candidate)
-      setShiftState(candidate)
-      setStorageNotice(persisted
-        ? `Shift applied to ${section.name}. Undo is available.`
-        : `Shift applied to ${section.name} for this session, but Arc could not save the Section schedule in this browser.`)
-      return null
-    } catch (error) {
-      return error instanceof Error ? error.message : String(error)
-    }
+    const persisted = saveShiftStateToBrowser(prepared.value.shift)
+    setShiftState(prepared.value.shift)
+    setStorageNotice(persisted
+      ? `Shift applied to ${prepared.value.sectionName}. Undo is available.`
+      : `Shift applied to ${prepared.value.sectionName} for this session, but Arc could not save the Section schedule in this browser.`)
+    return null
   }
 
   function undoLastShift() {
     if (!calendar || !planningWorkspace || !unitWorkspace || !lessonWorkspace || !shiftState?.undo) return
-    const section = planningWorkspace.sections.find((candidate) => candidate.id === shiftState.undo?.sectionId)
-    try {
-      const overrides = undoShiftOperation(shiftState.overrides, shiftState.undo)
-      const candidate: ShiftPersistenceInput = { calendarId: calendar.id, overrides, undo: null }
-      const validation = validateShiftPersistenceInput(candidate, calendar, planningWorkspace, unitWorkspace, lessonWorkspace)
-      if (validation.scheduleErrors.length > 0) {
-        setStorageNotice('Arc could not safely undo that Shift because the previous Section schedule is no longer valid. Nothing changed.')
-        return
-      }
-      const persisted = saveShiftStateToBrowser(candidate)
-      setShiftState(candidate)
-      setStorageNotice(persisted
-        ? `Undid the last Shift${section ? ` for ${section.name}` : ''}.`
-        : `Undid the last Shift${section ? ` for ${section.name}` : ''} for this session, but Arc could not save the restored Section schedule.`)
-    } catch (error) {
-      setStorageNotice(error instanceof Error ? error.message : String(error))
+
+    const prepared = prepareUndoShift({
+      calendar,
+      planning: planningWorkspace,
+      units: unitWorkspace,
+      lessons: lessonWorkspace,
+      shift: shiftState,
+    })
+    if (!prepared.ok) {
+      setStorageNotice(prepared.message)
+      return
     }
+
+    const persisted = saveShiftStateToBrowser(prepared.value.shift)
+    setShiftState(prepared.value.shift)
+    setStorageNotice(persisted
+      ? `Undid the last Shift${prepared.value.sectionName ? ` for ${prepared.value.sectionName}` : ''}.`
+      : `Undid the last Shift${prepared.value.sectionName ? ` for ${prepared.value.sectionName}` : ''} for this session, but Arc could not save the restored Section schedule.`)
   }
 
   function movePeriod(direction: PeriodDirection) {
