@@ -57,6 +57,7 @@ jobs:
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/cross-view-readability.browser.mjs
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/long-range-planning.browser.mjs
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/hostile-teacher-scenarios.browser.mjs
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/hostile-schedule-persistence.browser.mjs
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/object-actions-fridge.browser.mjs
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/legacy-setup-retirement.browser.mjs
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/fridge-door-nondrag.browser.mjs
