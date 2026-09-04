@@ -58,3 +58,4 @@ jobs:
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/legacy-setup-retirement.browser.mjs
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/fridge-door-nondrag.browser.mjs
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/fridge-door-stacks.browser.mjs
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/drag-reactive-preview.browser.mjs
