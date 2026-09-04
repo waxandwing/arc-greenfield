@@ -9,6 +9,8 @@
     "outDir": "tests/generated"
   },
   "include": [
+    "src/app/shiftCommands.ts",
+    "src/app/shiftCommands.contract.ts",
     "src/calendar/**/*.ts",
     "src/planning/**/*.ts",
     "tests/calendar.contract.ts"
