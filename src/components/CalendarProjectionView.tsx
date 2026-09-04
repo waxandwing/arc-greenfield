@@ -85,9 +85,15 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
             <p className="projection-range-label">{formatMonth(anchorDate)}</p>
             <TermContext quarters={projection.quarters} semesters={projection.semesters} />
           </div>
-          {monthPlanning ? (
+          {monthPlanning && planningContext ? (
             <div className="planning-scroll-frame">
-              <PlanningMonthView month={projection} planning={monthPlanning} onOpenUnit={onOpenUnit} onOpenLesson={onOpenLesson} />
+              <PlanningMonthView
+                month={projection}
+                planning={monthPlanning}
+                onOpenUnit={onOpenUnit}
+                onOpenLesson={onOpenLesson}
+                unitIdForLesson={(lessonId) => planningContext.lessons.lessons.find((lesson) => lesson.id === lessonId)?.unitId}
+              />
             </div>
           ) : (
             <CalendarOnlyMonth projection={projection} label={formatMonth(anchorDate)} />
