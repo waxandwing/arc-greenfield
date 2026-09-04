@@ -1,10 +1,16 @@
-import { useState, type DragEvent } from 'react'
+import { useEffect, useState, type DragEvent } from 'react'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { CalendarViewRail } from './CalendarViewRail'
 import { FridgeDoorPanel } from './FridgeDoorPanel'
 import { ObjectFocusLayer, type ObjectFocusState } from './ObjectFocusLayer'
 import { WorkspaceStage } from './WorkspaceStage'
 import { buildFridgeLessonCapture, buildFridgeUnitCapture } from '../app/fridgeCapture'
+import {
+  loadReversibleActionSlot,
+  saveReversibleActionSlot,
+  type ReversibleAction,
+  type ReversibleActionSlot,
+} from '../app/reversibleActionPersistence'
 import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useFridgeDoorWorkspace } from '../app/useFridgeDoorWorkspace'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
@@ -15,7 +21,6 @@ import {
   hydrateUnitWorkspace,
   moveLesson,
   type FridgeDoorState,
-  type FridgeEntityRef,
   type LessonWorkspaceInput,
   type UnitWorkspaceInput,
 } from '../planning'
@@ -25,11 +30,6 @@ export type DragPreviewState =
   | { kind: 'magnet'; entityRef: `magnet:${string}` }
   | { kind: 'stack'; stackId: string }
   | null
-
-type LastReversibleAction =
-  | { kind: 'shift' }
-  | { kind: 'lesson-move'; lessonId: string; previousDate: ISODate | null; beforeFridge: FridgeDoorState }
-  | { kind: 'fridge'; label: string; beforeFridge: FridgeDoorState }
 
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
@@ -42,14 +42,24 @@ export function AppFrame() {
   })
   const [focus, setFocus] = useState<ObjectFocusState | null>(null)
   const [dragPreview, setDragPreview] = useState<DragPreviewState>(null)
-  const [lastAction, setLastAction] = useState<LastReversibleAction | null>(null)
-  const [shiftUndoSuperseded, setShiftUndoSuperseded] = useState(false)
+  const [undoSlot, setUndoSlot] = useState<ReversibleActionSlot>(() => loadReversibleActionSlot(workspace.calendar?.id ?? null))
   const [transactionNotice, setTransactionNotice] = useState<string | null>(null)
+
+  useEffect(() => {
+    setUndoSlot(loadReversibleActionSlot(workspace.calendar?.id ?? null))
+  }, [workspace.calendar?.id])
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
   const canUseObjectFocus = Boolean(workspace.calendar && workspace.planningWorkspace && workspace.unitWorkspace && workspace.lessonWorkspace)
-  const undoLabel = undoLabelFor(lastAction, workspace.shiftState?.undo ? true : false, shiftUndoSuperseded)
+  const undoLabel = undoLabelFor(undoSlot.action, Boolean(workspace.shiftState?.undo), undoSlot.supersedesShift)
+
+  function saveUndoSlot(action: ReversibleAction | null, supersedesShift: boolean): boolean {
+    const next = { action, supersedesShift }
+    setUndoSlot(next)
+    if (!workspace.calendar) return false
+    return saveReversibleActionSlot(workspace.calendar.id, next)
+  }
 
   function openWorkspaceMode(mode: Parameters<typeof workspaceMode.open>[0]) {
     setFocus(null)
@@ -131,9 +141,10 @@ export function AppFrame() {
     const beforeFridge = cloneFridgeState(fridge.state)
     const result = action()
     if (result) return result
-    setLastAction({ kind: 'fridge', label, beforeFridge })
-    setShiftUndoSuperseded(true)
-    setTransactionNotice(`${label} complete. Undo is available.`)
+    const persisted = saveUndoSlot({ kind: 'fridge', label, beforeFridge }, true)
+    setTransactionNotice(persisted
+      ? `${label} complete. Undo is available.`
+      : `${label} complete. Undo is available for this session, but Arc could not save the Undo record in this browser.`)
     return null
   }
 
@@ -163,9 +174,10 @@ export function AppFrame() {
         return rollback ? `${moveResult} Arc also could not restore the prior Fridge placement: ${rollback}` : moveResult
       }
 
-      setLastAction({ kind: 'lesson-move', lessonId, previousDate: lesson.plannedDate, beforeFridge })
-      setShiftUndoSuperseded(true)
-      setTransactionNotice('Lesson moved. Its Fridge placement was removed. Undo is available.')
+      const persisted = saveUndoSlot({ kind: 'lesson-move', lessonId, previousDate: lesson.plannedDate, beforeFridge }, true)
+      setTransactionNotice(persisted
+        ? 'Lesson moved. Its Fridge placement was removed. Undo is available.'
+        : 'Lesson moved and its Fridge placement was removed. Undo is available for this session, but Arc could not save the Undo record in this browser.')
       return null
     } catch (error) {
       return error instanceof Error ? error.message : String(error)
@@ -174,9 +186,9 @@ export function AppFrame() {
 
   function undoLastAction() {
     setTransactionNotice(null)
+    const lastAction = undoSlot.action
     if (lastAction?.kind === 'shift') {
       workspace.undoLastShift()
-      setLastAction(null)
       return
     }
     if (lastAction?.kind === 'fridge') {
@@ -185,8 +197,10 @@ export function AppFrame() {
         setTransactionNotice(`Undo is blocked. ${result}`)
         return
       }
-      setLastAction(null)
-      setTransactionNotice(`Undid ${lastAction.label}.`)
+      const persisted = saveUndoSlot(null, true)
+      setTransactionNotice(persisted
+        ? `Undid ${lastAction.label}.`
+        : `Undid ${lastAction.label}, but Arc could not save the updated Undo state in this browser.`)
       return
     }
     if (lastAction?.kind === 'lesson-move') {
@@ -206,18 +220,19 @@ export function AppFrame() {
           : `Undo is blocked. ${moveResult}`)
         return
       }
-      setLastAction(null)
-      setTransactionNotice('Undid Lesson move and restored its prior Fridge placement.')
+      const persisted = saveUndoSlot(null, true)
+      setTransactionNotice(persisted
+        ? 'Undid Lesson move and restored its prior Fridge placement.'
+        : 'Undid Lesson move and restored its prior Fridge placement, but Arc could not save the updated Undo state in this browser.')
       return
     }
-    if (!shiftUndoSuperseded && workspace.shiftState?.undo) workspace.undoLastShift()
+    if (!undoSlot.supersedesShift && workspace.shiftState?.undo) workspace.undoLastShift()
   }
 
   function applyRecoveryShiftWithUndo(operation: Parameters<typeof workspace.applyRecoveryShift>[0]): string | null {
     const result = workspace.applyRecoveryShift(operation)
     if (!result) {
-      setLastAction({ kind: 'shift' })
-      setShiftUndoSuperseded(false)
+      saveUndoSlot({ kind: 'shift' }, false)
       setTransactionNotice(null)
     }
     return result
@@ -426,7 +441,7 @@ function cloneFridgeState(state: FridgeDoorState): FridgeDoorState {
   }
 }
 
-function undoLabelFor(lastAction: LastReversibleAction | null, shiftUndoAvailable: boolean, shiftUndoSuperseded: boolean): string | null {
+function undoLabelFor(lastAction: ReversibleAction | null, shiftUndoAvailable: boolean, shiftUndoSuperseded: boolean): string | null {
   if (lastAction?.kind === 'shift') return shiftUndoAvailable ? 'Undo last Shift' : null
   if (lastAction?.kind === 'lesson-move') return 'Undo Lesson move'
   if (lastAction?.kind === 'fridge') return `Undo ${lastAction.label}`
