@@ -91,7 +91,10 @@ async function capture(page, value) {
 async function auditViewport(browser, width, height) {
   const context = await browser.newContext({ viewport: { width, height } })
   await context.addInitScript((entries) => {
+    const marker = 'arc.fridgeDoor.auditSeeded'
+    if (sessionStorage.getItem(marker) === '1') return
     for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value)
+    sessionStorage.setItem(marker, '1')
   }, storage)
   const page = await context.newPage()
   const runtimeErrors = []
