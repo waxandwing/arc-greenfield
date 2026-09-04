@@ -37,7 +37,13 @@ const fridgeInput = {
     ],
   },
 }
-const shiftInput = { calendarId: calendarInput.id, overrides: [], undo: null }
+const staleShiftUndo = {
+  operationId: 'older-shift-token',
+  sectionId: 'section-p5',
+  previousSectionOverrides: [],
+  appliedSectionOverrides: [],
+}
+const shiftInput = { calendarId: calendarInput.id, overrides: [], undo: staleShiftUndo }
 const storage = {
   'arc.calendar.v1': JSON.stringify({ schemaVersion: 1, savedAt: '2026-09-14T12:00:00.000Z', input: calendarInput }),
   'arc.planningWorkspace.v1': JSON.stringify({ schemaVersion: 1, input: planningInput }),
@@ -80,11 +86,12 @@ async function auditViewport(browser, width, height) {
   page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`))
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
 
-  const fridge = page.getByRole('region', { name: 'Fridge Door' })
+  let fridge = page.getByRole('region', { name: 'Fridge Door' })
   const unit = fridge.locator('[data-fridge-ref="unit:unit-meso"]')
   assert(await unit.getAttribute('draggable') !== 'true', `${width}px: Unit became draggable without approved one-date Unit semantics.`)
   assert(await fridge.getByLabel('Position').count() > 0, `${width}px: non-drag Reposition route disappeared.`)
   assert(await fridge.getByRole('group', { name: 'Stack items' }).isVisible(), `${width}px: non-drag Stack route disappeared.`)
+  assert(await page.getByRole('button', { name: 'Undo last Shift', exact: true }).isVisible(), `${width}px: valid existing Shift Undo was not available before a newer reversible action.`)
 
   await page.getByRole('button', { name: 'Month', exact: true }).click()
   let lesson = fridge.locator('[data-fridge-ref="lesson:lesson-drag"]')
@@ -102,7 +109,17 @@ async function auditViewport(browser, width, height) {
   let fridgeStored = await storedInput(page, 'arc.fridgeDoor.v1')
   assert(lessonsStored.lessons.find((item) => item.id === 'lesson-drag')?.plannedDate === '2026-09-14', `${width}px: calendar drop did not use canonical Lesson Move.`)
   assert(!fridgeStored.state.placements.some((item) => item.entityRef === 'lesson:lesson-drag'), `${width}px: successful calendar Move left the Lesson on the Fridge.`)
-  assert(await page.getByRole('button', { name: 'Undo Lesson move', exact: true }).isVisible(), `${width}px: Lesson drop did not expose unified Undo.`)
+  assert(await page.getByRole('button', { name: 'Undo Lesson move', exact: true }).isVisible(), `${width}px: Lesson drop did not replace the Undo slot.`)
+  assert(await page.getByRole('button', { name: 'Undo last Shift', exact: true }).count() === 0, `${width}px: older Shift Undo remained visible after a newer Lesson move.`)
+
+  await page.reload({ waitUntil: 'networkidle' })
+  fridge = page.getByRole('region', { name: 'Fridge Door' })
+  assert(await page.getByRole('button', { name: 'Undo Lesson move', exact: true }).isVisible(), `${width}px: Lesson Undo did not survive reload.`)
+  assert(await page.getByRole('button', { name: 'Undo last Shift', exact: true }).count() === 0, `${width}px: older Shift Undo resurfaced after reload.`)
+  lessonsStored = await storedInput(page, 'arc.lessons.v1')
+  fridgeStored = await storedInput(page, 'arc.fridgeDoor.v1')
+  assert(lessonsStored.lessons.find((item) => item.id === 'lesson-drag')?.plannedDate === '2026-09-14', `${width}px: moved Lesson did not survive reload before Undo.`)
+  assert(!fridgeStored.state.placements.some((item) => item.entityRef === 'lesson:lesson-drag'), `${width}px: removed Fridge placement reappeared before Undo.`)
 
   await page.getByRole('button', { name: 'Undo Lesson move', exact: true }).click()
   lessonsStored = await storedInput(page, 'arc.lessons.v1')
@@ -112,6 +129,12 @@ async function auditViewport(browser, width, height) {
   assert(restoredLesson?.plannedDate === null && restoredLesson?.datePolicy === 'flexible', `${width}px: Lesson Undo did not restore the prior canonical placement state.`)
   assert(restoredPlacement?.surface === 'door' && restoredPlacement.row === 0 && restoredPlacement.column === 1, `${width}px: Lesson Undo did not restore exact Fridge coordinates.`)
   assert(restoredPlacement?.priority === 'must' && restoredPlacement.stackId === null, `${width}px: Lesson Undo lost prior Fridge metadata.`)
+  assert(await page.getByRole('button', { name: 'Undo last Shift', exact: true }).count() === 0, `${width}px: older Shift Undo resurfaced immediately after undoing the newer Lesson move.`)
+
+  await page.reload({ waitUntil: 'networkidle' })
+  fridge = page.getByRole('region', { name: 'Fridge Door' })
+  assert(await page.getByRole('button', { name: 'Undo last Shift', exact: true }).count() === 0, `${width}px: older Shift Undo resurrected after the newer action was undone and the page reloaded.`)
+  assert(await page.getByRole('button', { name: 'Undo Lesson move', exact: true }).count() === 0, `${width}px: completed Lesson Undo remained available after reload.`)
 
   let magnet = fridge.locator('[data-fridge-ref="magnet:magnet-loose"]')
   transfer = await startDrag(page, magnet)
@@ -184,7 +207,7 @@ try {
   await auditViewport(browser, 800, 900)
   await auditViewport(browser, 390, 844)
   await auditViewport(browser, 320, 800)
-  console.log('Reactive drag + unified Undo Chromium audit passed at 1024px, 800px, 390px, and 320px.')
+  console.log('Reactive drag + persistent unified Undo Chromium audit passed at 1024px, 800px, 390px, and 320px.')
 } finally {
   await browser.close()
 }
