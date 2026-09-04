@@ -1,27 +1,3 @@
-.fridge-door-strip{
-  display:grid;
-  gap:var(--space-3);
-  margin-bottom:var(--space-4);
-  padding:var(--space-3) var(--space-4);
-  border-block:1px solid var(--line-subtle);
-  background:rgba(228,179,61,.06);
-}
-
-.fridge-door-heading{
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  gap:var(--space-4);
-}
-
-.fridge-door-heading>div{display:grid;gap:2px}
-.fridge-door-note,.fridge-door-count{margin:0;color:var(--soft-charcoal);font-size:14px}
-.fridge-door-count{font-weight:700}
-.fridge-door-items{display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
-.fridge-door-lesson{flex:0 0 min(280px,78vw);display:grid;gap:2px;min-height:56px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--paper-raised);padding:8px 10px;text-align:left;cursor:pointer}
-.fridge-door-lesson strong{font-size:16px;line-height:1.35;overflow-wrap:anywhere}
-.fridge-door-lesson span{color:var(--soft-charcoal);font-size:14px}
-
 .object-focus-layer{
   position:fixed;
   z-index:40;
@@ -87,8 +63,6 @@
 }
 
 @media (max-width:520px){
-  .fridge-door-strip{margin-inline:calc(var(--space-3) * -1);padding-inline:var(--space-3)}
-  .fridge-door-heading{align-items:start;flex-direction:column;gap:var(--space-1)}
   .object-focus-layer{top:64px;right:0;bottom:64px;left:0;width:auto;border-left:0}
   .object-focus-panel{padding:var(--space-4)}
   .object-action-date-grid{grid-template-columns:1fr}
