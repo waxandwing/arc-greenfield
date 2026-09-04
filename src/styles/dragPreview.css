@@ -1,0 +1,60 @@
+.drag-preview-status{
+  margin:0 0 var(--space-3);
+  padding:var(--space-2) var(--space-3);
+  border-left:4px solid var(--dusty-blue);
+  background:rgba(124,156,173,.08);
+  color:var(--soft-charcoal);
+  font-size:14px;
+}
+
+.fridge-item[draggable="true"],
+.fridge-stack[draggable="true"]{
+  cursor:grab;
+}
+
+.fridge-item--dragging,
+.fridge-stack--dragging{
+  opacity:.62;
+}
+
+.fridge-door-cell--drag-target{
+  border-style:solid;
+  border-color:var(--dusty-blue);
+  background:rgba(124,156,173,.09);
+}
+
+.fridge-stack--drag-target{
+  outline:2px solid var(--dusty-blue);
+  outline-offset:2px;
+}
+
+.drag-date-target{
+  position:relative;
+}
+
+.drag-date-target::after{
+  content:"";
+  position:absolute;
+  inset:3px;
+  border:2px solid var(--dusty-blue);
+  pointer-events:none;
+}
+
+.drag-date-target--week::after{
+  inset:2px 4px;
+}
+
+.drag-date-target--month::after{
+  inset:2px;
+}
+
+.drag-date-target--day::after{
+  inset:0;
+}
+
+@media (prefers-reduced-motion:reduce){
+  .fridge-item--dragging,
+  .fridge-stack--dragging{
+    transition:none;
+  }
+}
