@@ -170,6 +170,10 @@ export function AppFrame() {
               onCreateUnit={captureUnit}
               onCreateLesson={captureLesson}
               onReposition={fridge.reposition}
+              onStack={fridge.stackItem}
+              onReorderStack={fridge.reorderStackItem}
+              onRepositionStack={fridge.repositionStack}
+              onUnstack={fridge.unstackItem}
               onSetPriority={fridge.setPriority}
               onPutAway={fridge.putAwayItem}
               onBringBack={fridge.bringBackItem}
