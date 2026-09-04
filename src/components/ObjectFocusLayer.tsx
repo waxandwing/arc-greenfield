@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { ISODate, SchoolCalendar } from '../calendar'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { eachCalendarDay, isConfirmedInstructionalDay, type ISODate, type SchoolCalendar } from '../calendar'
 import type {
   Lesson,
   LessonWorkspace,
@@ -38,12 +38,18 @@ type ActionMode = 'move' | 'edit' | 'unplace' | 'delete' | null
 
 export function ObjectFocusLayer(props: Props) {
   const { focus, units, lessons } = props
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const focusIdentity = focus.kind === 'unit' ? `unit:${focus.unitId}` : `lesson:${focus.lessonId}`
   const unit = focus.kind === 'unit' ? units.units.find((candidate) => candidate.id === focus.unitId) ?? null : null
   const lesson = focus.kind === 'lesson'
     ? lessons.lessons.find((candidate) => candidate.id === focus.lessonId) ?? null
     : focus.lessonId
       ? lessons.lessons.find((candidate) => candidate.id === focus.lessonId) ?? null
       : null
+
+  useEffect(() => {
+    closeRef.current?.focus()
+  }, [focusIdentity])
 
   if (focus.kind === 'unit' && !unit) return null
   if (focus.kind === 'lesson' && !lesson) return null
@@ -56,7 +62,7 @@ export function ObjectFocusLayer(props: Props) {
             <p className="section-label">{focus.kind === 'unit' ? 'Unit Focus' : 'Lesson'}</p>
             <h2>{focus.kind === 'unit' ? unit!.title : lesson!.title}</h2>
           </div>
-          <button type="button" className="quiet-button object-focus-close" onClick={props.onClose}>Close</button>
+          <button ref={closeRef} type="button" className="quiet-button object-focus-close" onClick={props.onClose}>Close</button>
         </header>
 
         {focus.kind === 'unit' ? (
@@ -227,6 +233,9 @@ function LessonActionSurface({ lesson, ...props }: Props & { lesson: Lesson }) {
   const unit = props.units.units.find((candidate) => candidate.id === lesson.unitId)
   const relatedOverrides = (props.shiftState?.overrides ?? []).filter((override) => override.lessonId === lesson.id)
   const canUnplace = Boolean(lesson.plannedDate || relatedOverrides.length)
+  const validMoveDates = unit?.placement
+    ? eachCalendarDay(unit.placement.startDate, unit.placement.endDate).filter((date) => isConfirmedInstructionalDay(props.calendar, date))
+    : []
 
   useEffect(() => {
     setMode(null)
@@ -263,7 +272,13 @@ function LessonActionSurface({ lesson, ...props }: Props & { lesson: Lesson }) {
 
       {mode === 'move' ? (
         <ActionReview title="Move Lesson">
-          <label><span>Destination date</span><input type="date" disabled={!unit?.placement} min={unit?.placement?.startDate} max={unit?.placement?.endDate} value={plannedDate} onChange={(event) => setPlannedDate(event.target.value)} /></label>
+          <label>
+            <span>Destination date</span>
+            <select disabled={!unit?.placement || validMoveDates.length === 0} value={plannedDate} onChange={(event) => setPlannedDate(event.target.value)}>
+              <option value="">Choose a confirmed instructional day</option>
+              {validMoveDates.map((date) => <option value={date} key={date}>{date}</option>)}
+            </select>
+          </label>
           {plannedDate ? <p className="object-action-preview">Preview: {lesson.title} → {plannedDate}</p> : <p className="object-action-preview">Choose a confirmed instructional day inside this Unit.</p>}
           <ActionCommit label="Move Lesson" disabled={!plannedDate} onCancel={() => setMode(null)} onCommit={() => {
             const result = props.onMoveLesson(lesson.id, plannedDate as ISODate)
