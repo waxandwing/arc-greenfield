@@ -9,7 +9,7 @@ function assert(condition, message) {
 const calendarInput = {
   id: 'calendar-hostile-schedule-persistence',
   schoolYearLabel: '2026–27',
-  firstDay: '2026-08-10',
+  firstDay: '2026-10-05',
   lastDay: '2027-05-28',
   instructionalWeekdays: [1, 2, 3, 4, 5],
   patternSource: 'manual',
@@ -18,13 +18,13 @@ const calendarInput = {
     { date: '2026-10-12', kind: 'teacher-workday', label: 'Planning day', source: 'manual', confidence: 'confirmed' },
   ],
   quarters: [
-    { id: 'q1', label: 'Quarter 1', startDate: '2026-08-10', endDate: '2026-10-09' },
+    { id: 'q1', label: 'Quarter 1', startDate: '2026-10-05', endDate: '2026-10-09' },
     { id: 'q2', label: 'Quarter 2', startDate: '2026-10-13', endDate: '2026-12-18' },
     { id: 'q3', label: 'Quarter 3', startDate: '2027-01-04', endDate: '2027-03-12' },
     { id: 'q4', label: 'Quarter 4', startDate: '2027-03-15', endDate: '2027-05-28' },
   ],
   semesters: [
-    { id: 's1', label: 'Semester 1', startDate: '2026-08-10', endDate: '2026-12-18' },
+    { id: 's1', label: 'Semester 1', startDate: '2026-10-05', endDate: '2026-12-18' },
     { id: 's2', label: 'Semester 2', startDate: '2027-01-04', endDate: '2027-05-28' },
   ],
 }
@@ -45,7 +45,7 @@ const unitsInput = {
     calendarId: calendarInput.id,
     courseId: 'course-3d',
     title: 'Recycled Fashion Structures',
-    placement: { startDate: '2026-09-28', endDate: '2026-10-16' },
+    placement: { startDate: '2026-10-05', endDate: '2026-10-16' },
   }],
 }
 
