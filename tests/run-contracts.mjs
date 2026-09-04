@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process'
 
 const contracts = [
   'tests/generated/tests/calendar.contract.js',
+  'tests/generated/src/app/shiftCommands.contract.js',
   'tests/generated/src/calendar/projections.contract.js',
   'tests/generated/src/calendar/hydration.contract.js',
   'tests/generated/src/calendar/persistence.contract.js',
@@ -42,6 +43,7 @@ for (const contract of contracts) run(process.execPath, [contract])
 
 function assertManifestComplete() {
   const discovered = [
+    ...discoverContracts('src/app'),
     ...discoverContracts('src/calendar'),
     ...discoverContracts('src/planning'),
     ...discoverContracts('tests', { topLevelOnly: true }),
