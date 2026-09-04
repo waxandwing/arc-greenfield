@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "vite",
     "test:contracts": "tsc -p tsconfig.contracts.json && node tests/run-contracts.mjs",
-    "build": "npm run test:contracts && tsc -b && vite build",
-    "preview": "vite preview"
+    "typecheck": "tsc -b",
+    "build:bundle": "vite build",
+    "build": "npm run test:contracts && npm run typecheck && npm run build:bundle",
+    "preview": "vite preview",
+    "test:browser-a11y": "node tests/browser-a11y.smoke.mjs"
   },
   "dependencies": {
     "react": "19.2.8",

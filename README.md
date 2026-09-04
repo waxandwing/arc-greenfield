@@ -1,172 +1,153 @@
 # Arc
 
-Greenfield rebuild. Calendar-first. Trust-first.
+Calendar-first teacher planning for plans that change.
 
-## Authority
-- `main` — protected, release-only. Never use it as the active development source.
-- `develop` — the only integrated pre-release source of truth.
-- `feature/easel-continuity` — the only active domain implementation branch for this checkpoint.
-- `archive/pre-frame-reset-2026-09-02` — preserved rollback point.
-- every other branch is historical, abandoned, experimental, accidental, reference-only, or parallel UI work unless this file explicitly says otherwise.
+This repository is the implementation source for Arc. Product and UX authority live in the canonical Google Drive Product Spec. Visual authority lives in the canonical Wax & Wing Brand System. GitHub issues translate those authorities into implementation work.
 
-Google Drive canonical Product Spec owns product/architecture decisions. Google Drive canonical Brand System owns visual/construction rules. Git owns implementation history. Do not create duplicate handoff, blueprint, audit, or design-system documents in this repository.
+## Branch authority
 
-## Authoritative rebuild direction
-When older phase prose conflicts with later decisions, the constrained rebuild order wins:
+- `main` — protected release branch. Do not develop directly here.
+- `develop` — integrated pre-release source of truth. Branch protection is currently being tightened under issue #30; until that lands, treat direct pushes as prohibited by team policy.
+- `feature/**` — isolated implementation work. Rebase/adapt to current `develop` before integration.
+- `audit/**` — temporary hostile-audit and verification lanes.
+- `archive/**` — preserved historical checkpoints only.
 
-frame/shell → navigation → calendar truth → movement/recovery → real planning surface → Day/Easel teaching continuity → integrations/account foundation → long-range completion + secondary systems → release hardening.
+Old Easel branches and repositories are historical reference. Easel is no longer a separate product. Its surviving classroom-teaching behavior belongs to Arc Live Classroom.
 
-The primary product loop outranks convenient implementation order.
+## Authority order
 
-### Integrated and cleared through `develop`
-- trustworthy shell and six calendar navigation horizons;
-- explicit school-calendar truth, terms, navigation, and local declaration persistence;
-- real Course/Section setup;
-- Unit and Lesson domain/editing foundations;
-- sparse per-Section delivery state;
-- recovery consequence preview;
-- Section-scoped Shift Apply, local persistence, reload-safe Undo, and hostile recovery preflight;
-- exact same-day collision approval **domain only**;
-- AppFrame decomposition into discoverable ownership boundaries;
-- real Week planning projection plus hostile Week/Day projection clearance;
-- real Month planning projection;
-- Week↔Day↔Month exact Section-effective cross-view clearance;
-- dedicated Day teaching-continuity projection and teacher-facing presentation;
-- exact integrated Day head `07f6f32da53feaf4a3824cad98e69030f84ec1d1`.
+When implementation sources disagree:
 
-### Active checkpoint
-Arc→Easel→Arc domain continuity is undergoing elevated hostile clearance before integration. Easel is inside Arc, not a separate product or data store. A live session is bound to one exact current Day + Course + Section + Unit + Lesson context. Before any writeback, Arc revalidates current canonical Planning/Unit/Lesson workspaces and reconstructs the live Day/Easel context from current Section overrides. Easel may return only validated Section delivery state; it may never mutate the calendar or perform Shift.
+1. canonical Product Spec
+2. canonical Brand System and approved Arc assets
+3. current verified `develop`
+4. implementation issues/PRs that explicitly cite the current authorities
+5. README operating rules
+6. historical branches, comments, and prototypes
 
-### Not complete
-- Easel teacher-facing live teaching surface and Day→Easel→Day interaction flow;
-- browser-driven Day/Easel keyboard/touch/responsive verification;
-- Quarter/Semester/Year Map planning presentation at final density;
-- auth and account isolation;
-- account-backed/Drive persistence and reconciliation;
-- landing-view preference persistence;
-- Notes, Ideas, Unit Focus, Must/Should/Could, Tack, Extend, filters, Year markers;
-- browser-driven keyboard/touch/responsive release verification across the product.
+Historical code does not become authority because it still compiles.
 
-## Frozen / reference-only work
-- `feature/quarter-planning-projection` is an experiment, **not authorized source**. It was stopped when the redevelopment audit showed that continuing long-range projection before Day/Easel would favor comfortable work over the primary teacher loop. Do not merge or cherry-pick it wholesale.
-- `feature/same-day-approval-persistence` remains abandoned/reference-only. Same-day approval persistence/UI stays deferred until the ordinary planning loop needs it.
-- historical standalone Easel repositories/deployments are reference-only. They may inform classroom-screen behavior, but they do not own Arc state, product architecture, or deployment direction.
+## Architecture
 
-Reusable architecture must be rebuilt or deliberately extracted from `develop`; historical code does not become authority because it compiles.
+Arc keeps one canonical planning truth. Views are lenses over that truth, not independent models.
 
-## Code ownership map
-Keep one obvious owner per concern.
+```text
+UI / React
+    ↓
+application commands + orchestration
+    ↓
+domain rules
+    ↓
+persistence adapters
+```
 
-### App / state
-- `src/components/AppFrame.tsx` — composition only.
-- `src/app/useArcWorkspace.ts` — canonical workspace state transitions and validated saves. Do not turn it into an Easel/Ideas/Notes/auth dumping ground merely because it has workspace access.
-- `src/app/workspaceBootstrap.ts` — restore order and initial persistence notices only.
-- `src/app/shiftReconciliation.ts` — policy for preserving/dropping Shift and Undo when upstream planning changes.
-- `src/app/useWorkspaceMode.ts` — one mutually exclusive temporary workspace mode.
+A component is not a state store. A view is not a second domain model. React should not own transaction policy. Domain modules must not depend on React or presentation code.
 
-### Calendar shell / routing
-- `src/components/WorkspaceStage.tsx` — selects the active calendar/editor/recovery surface.
-- `src/components/CalendarStageHeader.tsx` — calendar-stage controls only.
-- `src/components/CalendarViewRail.tsx` — horizon navigation only.
-- `src/components/CalendarProjectionView.tsx` — horizon routing/delegation only.
-- `src/components/CalendarProjectionPrimitives.tsx` — shared non-interactive calendar projection primitives and term context.
-- `src/components/dateLabels.ts` — single UI date-label formatter boundary.
-- `src/calendar/schoolCalendar.ts` — calendar-day truth including the shared `isConfirmedInstructionalDay` rule used anywhere teaching progress is recorded.
+Primary ownership:
 
-### Planning projection / presentation
-- `src/planning/planningProjection.ts` — canonical range projection from shared Course/Unit/Lesson state + Section-effective dates/delivery state.
-- `src/planning/planningLessonSignals.ts` — exact shared-Lesson aggregation from canonical per-Section placements.
-- `src/planning/monthPlanningProjection.ts` — Month geometry aggregation only.
-- `src/planning/dayContinuityProjection.ts` — read-only Day continuity projection. It may surface unfinished teaching but may not mutate/reschedule.
-- `src/planning/easelSessionProjection.ts` — read-only Arc→Easel live-session boundary. It binds one explicit Section + Lesson candidate from the **current confirmed instructional Day** and preserves exact Arc identity/state. It never guesses between carryover and today’s plan, never opens past/future/no-school live sessions, and never reopens completed/skipped history.
-- `src/planning/easelTeachingOutcome.ts` — Easel→Arc adapter over existing delivery-state rules. Before writeback it validates canonical workspaces and reconstructs the current Day/Easel session from current Section schedule state. It may return validated Section delivery state; it may not Shift the calendar or create another recovery model.
-- `src/components/PlanningDayContinuityView.tsx` — Day continuity presentation only.
-- `src/components/PlanningWeekDayView.tsx` — Week planning presentation only.
-- `src/components/PlanningMonthView.tsx` — Month planning presentation only.
-- `src/calendar/**` — school-calendar truth and calendar-only projections.
-- `src/planning/**` — Course/Section/Unit/Lesson/delivery/recovery/Shift domain and persistence boundaries.
+- `src/calendar/**` — school-calendar truth, date geometry, calendar persistence, projections.
+- `src/planning/**` — Course/Section/Unit/Lesson identity, delivery state, Shift/Recovery, object actions, planning persistence.
+- `src/app/**` — application orchestration, hydration order, reconciliation, React adapter state.
+- `src/components/**` — presentation and interaction only.
+- `src/styles/**` — perceptual system only.
 
-A UI component is not a state store. A view is not a second domain model. A controller does not absorb unrelated domains because it can reach them.
+`src/app/useArcWorkspace.ts` is currently being decomposed under issue #30. Do not add new Fridge, Voice, Personal, School Notes, Catch Up, or Live Classroom transaction policy to that hook.
 
-## Arc ↔ Easel continuity rules
-- Easel is Arc’s live teaching surface, not a separate product or planning database.
-- Arc Day provides the launch truth. Easel binds to an explicit Section + Lesson candidate; it cannot silently choose between unfinished carryover and a different Lesson planned today.
-- live Easel launch is allowed only when the selected Day equals the supplied current live date and that date is a confirmed instructional day. Past/future/no-school Day views remain useful Arc context but are not live-teaching permission.
-- the same shared Lesson may be open for different Sections while preserving distinct stable Section IDs, even when two Sections have the same display name.
-- unscheduled in-progress teaching may enter Easel as current-Day carryover without inventing an effective schedule date.
-- a Section-specific Shift changes which candidate is scheduled. If Shift or other structural schedule context changes after Easel opens, the old session is stale and must refuse writeback.
-- carryover→scheduled or scheduled→moved is a meaningful context change and requires reopening the live session.
-- title-only/copy changes do not invalidate an otherwise identical live session; stale protection must not become general interface stickiness.
-- opening/projecting an Easel session is read-only.
-- completed/skipped Lessons remain visible in Arc history but are not valid live Easel launch candidates.
-- Easel outcomes reuse Arc’s existing delivery-state rules.
-- Easel may record `completed`, `stopped` with a concrete resume note, or `skipped` for not-started work.
-- completed/skipped history is terminal and cannot be rewritten through Easel.
-- already-started work cannot be relabeled skipped.
-- before writeback Arc validates Planning, Unit, and Lesson workspace integrity against the current loaded school calendar.
-- before writeback Arc reconstructs the exact current Easel session from canonical Day + Section schedule state. A session opened against older delivery or schedule truth cannot overwrite newer Arc state.
-- replaying an already-consumed session fails closed rather than applying a second outcome.
-- unrelated changes in another Section do not invalidate the selected Section’s unchanged live session.
-- Easel never performs Shift. A stopped Lesson becomes ordinary in-progress Section state; the existing Arc Recovery pipeline owns consequence preview and schedule repair.
+## Trust rules
 
-## Cross-view truth
-- Day, Week, and Month are lenses over one Section-effective schedule.
-- shared Unit/Lesson identity never forks by view.
-- a Section override moves only that Section’s effective placement and leaves no ghost on the shared date.
-- distinct Sections may share a display name and still remain distinct by stable ID.
-- Month grouping must reconstruct exact Section identity/name/delivery/fixed/Shift truth from Week/Day placements.
-- Day may additionally surface genuine in-progress carryover. That is teaching-state truth, not a new schedule placement.
-- outside-month padding retains real planning continuity.
-- Unit bands may cross weekend/no-school dates without converting them to instructional days.
-- malformed date geometry and duplicate placements fail closed.
-
-## Accessibility truth
-- no UI may claim ARIA grid behavior unless keyboard grid interaction is implemented.
-- core UI/body text remains at least 16px; 14px is metadata only with adequate contrast.
-- no state is communicated only through color/opacity.
-- drag remains optional; every eventual drag operation needs a non-drag route.
-- browser keyboard/touch/responsive behavior is a separate release gate and is never inferred from source compilation.
-
-## Operations
-- every preview/build exposes exact Git commit fingerprint.
-- GitHub Actions is the canonical read-only source/build gate.
-- exact dependency tree comes only from committed `package-lock.json` + `npm ci`.
-- Vercel is the intended preview platform.
-- legacy Cloudflare repository integration is disconnected.
-- `main` is protected; `develop` is controlled integration truth.
-
-## Core trust rules
 - calendar stays at the center;
 - one shared Course/Unit/Lesson plan; Sections carry actual teaching state;
-- missing delivery state means `not-started`; divergence remains sparse;
 - missing calendar truth is unknown, never silently instructional;
-- preview before consequence; no silent loss; fixed dates stay fixed;
-- completed/skipped work is not future recovery pressure;
+- fixed dates stay fixed;
+- preview before consequence;
+- no silent loss, cascade deletion, hidden auto-repair, or fake saves;
+- completed/skipped teaching history is terminal unless an explicit future product rule says otherwise;
 - Shift changes only its target Section;
-- Undo is Section-scoped and refuses to overwrite newer work;
-- destructive upstream edits fail rather than orphan or silently repair downstream state;
-- no fake controls, data, saves, or deployment claims.
+- Undo must refuse to overwrite newer truth;
+- destructive upstream edits fail closed when they would orphan protected downstream state;
+- Live Classroom is a temporary Arc teaching mode, never a second planner or state store.
+
+## Persistence
+
+Browser persistence is currently local-first. Loaders distinguish `empty`, `restored`, `invalid`, and `unavailable` and must fail closed.
+
+Operations that span multiple stores must use an explicit transaction boundary with compensating rollback where required. UI code must not invent its own partial-save semantics.
+
+Current transaction/persistence hardening is tracked in issue #30.
+
+## Accessibility contract
+
+Accessibility is structural, not a polish pass.
+
+- use semantic HTML and native controls where possible;
+- no ARIA role without its required interaction behavior;
+- no state communicated only by color, opacity, position, or motion;
+- core body/interface text stays at least 16px; smaller text is metadata only and must remain readable;
+- interactive targets must remain usable by keyboard and touch;
+- drag is optional enhancement; every drag action requires equivalent non-drag behavior;
+- focus must remain visible and predictable;
+- reduced-motion preferences are respected;
+- 320px/reflow/high-zoom behavior is a release concern;
+- browser interaction proof is separate from source compilation;
+- automated accessibility checks are evidence, not absolution.
+
+The permanent browser accessibility gate is being established under issue #30. Draft PR #29 contains the first hostile Day keyboard/touch/reflow proof and a repaired focus-order defect.
 
 ## Verification
-`npm run build` must pass:
-1. the full domain contract manifest in `tests/run-contracts.mjs`;
-2. TypeScript compile;
-3. Vite production bundle.
 
-Permanent gates include calendar truth, terms, Course/Section, Units, Lessons/delivery, recovery/Shift/Undo/persistence, Week/Day hostile projection, Month projection, shared Lesson-signal identity, Week↔Day↔Month truth, Day continuity, Arc→Easel session projection, Easel→Arc teaching outcomes, and the high-stakes Easel core-loop hostile contract.
+Repository Node version is declared in `.node-version`.
 
-The high-stakes Easel gate must cover at minimum stale Shift after launch, unrelated Section changes, same-name Section identity, title-only non-stickiness, structural Lesson changes, carryover→scheduled transition, duplicate/replayed outcome, invalid workspace ownership, terminal-history launch blocking, current-Day enforcement, no-school blocking, and no schedule/shared-Lesson mutation.
+Local full gate:
 
-No feature advances to `develop` without an exact-head green gate. `develop` must pass again after integration.
+```bash
+npm ci
+npm run build
+```
 
-## Next authorized work
-1. integrate the exact elevated-audit Arc↔Easel domain head only after the documented head remains green, then require `develop` to pass independently;
-2. the parallel live-surface branch must rebase/adapt to this audited API rather than preserving older permissive Easel call signatures;
-3. prove browser-level Arc Day → Easel → Arc continuity before expanding secondary Easel tools;
-4. add only classroom tools that support the proven teaching loop without turning Easel into a widget pile;
-5. return to Quarter/Semester/Year Map as natural zoom-outs of the proven calendar language;
-6. close auth/account isolation and account/Drive persistence before external beta;
-7. complete physical browser accessibility/responsive verification before release.
+The build contract is intentionally decomposable:
+
+```bash
+npm run test:contracts
+npm run typecheck
+npm run build:bundle
+```
+
+CI reports separate gates for:
+
+- domain contracts
+- TypeScript
+- production bundle
+- browser accessibility/interaction
+
+`tests/run-contracts.mjs` verifies that every discovered `*.contract.ts` file is represented in the contract runner. Adding a contract that CI does not execute must fail the gate.
+
+## Integration rule
+
+No material feature is GREEN merely because it compiles.
+
+The default milestone cadence is:
+
+```text
+implementation
+→ hostile break pass
+→ repair
+→ independent clean audit
+→ second independent clean audit on the exact final head
+→ GREEN
+```
+
+Any material code change resets the clean-pass count.
+
+## Deployment
+
+GitHub Actions is the canonical source/build verification gate. Do not use a deployment result as a substitute for source or browser-interaction proof.
+
+Vercel is not an implementation authority and should not be allowed to mutate product architecture. Current deployment policy may change independently of repository truth.
+
+## Current hardening authority
+
+Issue #30 — Infrastructure + accessibility constitution — owns the current backend/a11y cleanup: branch policy, permanent browser gates, orchestration decomposition, persistence vocabulary, contract discovery, CI/runtime hygiene, and reusable accessibility interaction rules.
 
 ## Release wall
-Nothing moves to `main` until product, functional, visual, accessibility, persistence, account-isolation, regression, exact-build, browser-interaction, and dependency-lock gates are explicitly cleared.
+
+Nothing moves to `main` until the relevant product, functional, visual, accessibility, persistence, account-isolation, regression, exact-build, browser-interaction, and dependency-lock gates are explicitly cleared.

@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useMemo, useRef, useState } from 'react'
 import {
   buildManualCalendarInput,
   createManualCalendarId,
@@ -56,6 +56,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
     label: day.label ?? '',
   })))
   const [errors, setErrors] = useState<string[]>([])
+  const errorSummaryRef = useRef<HTMLDivElement | null>(null)
 
   const input = useMemo<CalendarHydrationInput>(() => buildManualCalendarInput({
     calendarId,
@@ -75,6 +76,11 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
     quarters: initialValue?.quarters,
     semesters: initialValue?.semesters,
   }), [calendarId, schoolYearLabel, firstDay, lastDay, weekdays, exceptions, initialValue])
+
+  const validationVisible = errors.length > 0
+  const schoolYearInvalid = validationVisible && !schoolYearLabel.trim()
+  const firstDayInvalid = validationVisible && !firstDay
+  const lastDayInvalid = validationVisible && !lastDay
 
   function toggleWeekday(day: Weekday) {
     setWeekdays((current) => current.includes(day)
@@ -108,6 +114,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
 
     if (nextErrors.length > 0) {
       setErrors(nextErrors)
+      requestAnimationFrame(() => errorSummaryRef.current?.focus())
       return
     }
 
@@ -125,24 +132,53 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
 
       <form className="calendar-setup-form" onSubmit={submit} noValidate>
         {errors.length > 0 && (
-          <div className="setup-errors" role="alert" aria-label="Calendar setup issues">
+          <div
+            ref={errorSummaryRef}
+            id="calendar-setup-errors"
+            className="setup-errors"
+            role="alert"
+            aria-label="Calendar setup issues"
+            tabIndex={-1}
+          >
             <strong>Check these before saving:</strong>
             <ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul>
           </div>
         )}
 
         <div className="setup-field-grid">
-          <label>
+          <label htmlFor="school-year-label">
             <span>School year</span>
-            <input value={schoolYearLabel} onChange={(event) => setSchoolYearLabel(event.target.value)} placeholder="2026–27" autoComplete="off" />
+            <input
+              id="school-year-label"
+              value={schoolYearLabel}
+              onChange={(event) => setSchoolYearLabel(event.target.value)}
+              placeholder="2026–27"
+              autoComplete="off"
+              aria-invalid={schoolYearInvalid || undefined}
+              aria-describedby={schoolYearInvalid ? 'calendar-setup-errors' : undefined}
+            />
           </label>
-          <label>
+          <label htmlFor="first-school-day">
             <span>First day</span>
-            <input type="date" value={firstDay} onChange={(event) => setFirstDay(event.target.value)} />
+            <input
+              id="first-school-day"
+              type="date"
+              value={firstDay}
+              onChange={(event) => setFirstDay(event.target.value)}
+              aria-invalid={firstDayInvalid || undefined}
+              aria-describedby={firstDayInvalid ? 'calendar-setup-errors' : undefined}
+            />
           </label>
-          <label>
+          <label htmlFor="last-school-day">
             <span>Last day</span>
-            <input type="date" value={lastDay} onChange={(event) => setLastDay(event.target.value)} />
+            <input
+              id="last-school-day"
+              type="date"
+              value={lastDay}
+              onChange={(event) => setLastDay(event.target.value)}
+              aria-invalid={lastDayInvalid || undefined}
+              aria-describedby={lastDayInvalid ? 'calendar-setup-errors' : undefined}
+            />
           </label>
         </div>
 
@@ -171,25 +207,36 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
             <p className="empty-exceptions">No exceptions added yet.</p>
           ) : (
             <div className="exception-list">
-              {exceptions.map((item) => (
-                <div className="exception-row" key={item.id}>
-                  <label>
-                    <span className="sr-only">Exception date</span>
-                    <input type="date" value={item.date} onChange={(event) => updateException(item.id, { date: event.target.value })} />
-                  </label>
-                  <label>
-                    <span className="sr-only">Exception type</span>
-                    <select value={item.kind} onChange={(event) => updateException(item.id, { kind: event.target.value as DraftException['kind'] })}>
-                      {DAY_KINDS.map((kind) => <option key={kind.value} value={kind.value}>{kind.label}</option>)}
-                    </select>
-                  </label>
-                  <label className="exception-label-field">
-                    <span className="sr-only">Optional label</span>
-                    <input value={item.label} onChange={(event) => updateException(item.id, { label: event.target.value })} placeholder="Optional label" />
-                  </label>
-                  <button type="button" className="text-button" onClick={() => removeException(item.id)}>Remove</button>
-                </div>
-              ))}
+              {exceptions.map((item, index) => {
+                const position = index + 1
+                const context = item.date ? ` for ${item.date}` : ''
+                return (
+                  <div className="exception-row" key={item.id}>
+                    <label>
+                      <span className="sr-only">Exception {position} date</span>
+                      <input type="date" value={item.date} onChange={(event) => updateException(item.id, { date: event.target.value })} />
+                    </label>
+                    <label>
+                      <span className="sr-only">Exception {position} type</span>
+                      <select value={item.kind} onChange={(event) => updateException(item.id, { kind: event.target.value as DraftException['kind'] })}>
+                        {DAY_KINDS.map((kind) => <option key={kind.value} value={kind.value}>{kind.label}</option>)}
+                      </select>
+                    </label>
+                    <label className="exception-label-field">
+                      <span className="sr-only">Exception {position} optional label</span>
+                      <input value={item.label} onChange={(event) => updateException(item.id, { label: event.target.value })} placeholder="Optional label" />
+                    </label>
+                    <button
+                      type="button"
+                      className="text-button"
+                      aria-label={`Remove exception ${position}${context}`}
+                      onClick={() => removeException(item.id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

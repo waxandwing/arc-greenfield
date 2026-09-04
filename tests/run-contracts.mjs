@@ -1,3 +1,5 @@
+import { readdirSync, statSync } from 'node:fs'
+import { join, relative, sep } from 'node:path'
 import { spawnSync } from 'node:child_process'
 
 const contracts = [
@@ -35,7 +37,48 @@ const contracts = [
   'tests/generated/src/planning/lessonShiftPersistence.contract.js',
 ]
 
+assertManifestComplete()
 for (const contract of contracts) run(process.execPath, [contract])
+
+function assertManifestComplete() {
+  const discovered = [
+    ...discoverContracts('src/calendar'),
+    ...discoverContracts('src/planning'),
+    ...discoverContracts('tests', { topLevelOnly: true }),
+  ].map(toGeneratedPath).sort()
+
+  const listed = [...contracts].sort()
+  const missing = discovered.filter((path) => !listed.includes(path))
+  const stale = listed.filter((path) => !discovered.includes(path))
+
+  if (missing.length === 0 && stale.length === 0) return
+
+  const messages = [
+    missing.length ? `Contract files missing from runner:\n- ${missing.join('\n- ')}` : null,
+    stale.length ? `Runner entries without source contract:\n- ${stale.join('\n- ')}` : null,
+  ].filter(Boolean)
+
+  throw new Error(messages.join('\n\n'))
+}
+
+function discoverContracts(root, options = {}) {
+  const results = []
+  for (const entry of readdirSync(root)) {
+    const path = join(root, entry)
+    const stats = statSync(path)
+    if (stats.isDirectory()) {
+      if (!options.topLevelOnly && entry !== 'generated') results.push(...discoverContracts(path, options))
+      continue
+    }
+    if (entry.endsWith('.contract.ts')) results.push(path)
+  }
+  return results
+}
+
+function toGeneratedPath(sourcePath) {
+  const normalized = relative('.', sourcePath).split(sep).join('/')
+  return `tests/generated/${normalized.replace(/\.ts$/, '.js')}`
+}
 
 function run(command, args) {
   const result = spawnSync(command, args, { stdio: 'inherit', shell: process.platform === 'win32' })

@@ -13,22 +13,77 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  contracts:
     runs-on: ubuntu-latest
     steps:
       - name: Check out exact commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
         with:
-          fetch-depth: 0
-
-      - name: Use Node 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+          node-version-file: .node-version
           cache: npm
-
       - name: Install exact dependency tree
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run domain contracts
+        run: npm run test:contracts
 
-      - name: Run Arc build gate
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build production bundle
+        run: npm run build:bundle
+
+  browser-a11y:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Chromium audit runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Build browser target
         run: npm run build
+      - name: Run browser accessibility smoke gate
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/arc-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          ARC_BASE_URL=http://127.0.0.1:4173 npm run test:browser-a11y
