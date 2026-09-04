@@ -110,8 +110,19 @@ async function auditViewport(browser, width, height) {
   assert(await page.getByRole('heading', { name: 'Month' }).isVisible(), `${width}px: Arc did not restore into Month.`)
   assert(await page.getByText('Fridge Door', { exact: true }).count() === 0, `${width}px: Fridge Door showed a scheduled Lesson before Unplace.`)
 
+  const openingTargets = await page.locator('.planning-object-openable').evaluateAll((nodes) => nodes.map((node) => ({
+    height: node.getBoundingClientRect().height,
+    text: node.textContent?.trim() ?? '',
+  })))
+  assert(openingTargets.length > 0, `${width}px: no calendar object opening targets rendered.`)
+  for (const target of openingTargets) {
+    assert(target.height >= 44, `${width}px: calendar object opening target fell below 44px (${target.height}px): ${target.text}`)
+  }
+
   await openMonthLessonByKeyboard(page, movableTitle)
   const focus = page.locator('.object-focus-layer')
+  const closeButton = focus.getByRole('button', { name: 'Close', exact: true })
+  assert(await closeButton.evaluate((node) => document.activeElement === node), `${width}px: keyboard opening did not move focus into Unit Focus.`)
   assert(await focus.getByText('Unit Focus', { exact: true }).isVisible(), `${width}px: scheduled Lesson did not open Unit Focus.`)
   assert(await focus.getByText(movableTitle, { exact: true }).first().isVisible(), `${width}px: Unit Focus did not preserve selected Lesson context.`)
 
@@ -133,6 +144,7 @@ async function auditViewport(browser, width, height) {
   await page.getByText('Fridge Door', { exact: true }).waitFor()
   assert(await page.getByRole('button', { name: new RegExp(movableTitle) }).isVisible(), `${width}px: Unplaced Lesson is not immediately findable on the Fridge Door.`)
   assert(await focus.getByText('Lesson', { exact: true }).first().isVisible(), `${width}px: Unplaced Lesson did not resolve to the lightweight Lesson editor.`)
+  assert(await focus.getByRole('button', { name: 'Close', exact: true }).evaluate((node) => document.activeElement === node), `${width}px: switching to the lightweight Lesson editor did not establish an operable focus point.`)
 
   const afterUnplaceLessons = await storedInput(page, 'arc.lessons.v1')
   const afterUnplaceShift = await storedInput(page, 'arc.shift.v1')
@@ -151,7 +163,8 @@ async function auditViewport(browser, width, height) {
   await lessonActions.getByRole('button', { name: 'Move', exact: true }).click()
   const moveReview = focus.getByRole('region', { name: 'Move Lesson' })
   const destination = moveReview.getByLabel('Destination date')
-  await destination.fill('2026-09-18')
+  assert(await destination.locator('option[value="2026-09-19"]').count() === 0, `${width}px: non-instructional Saturday was offered by the Move chooser.`)
+  await destination.selectOption('2026-09-18')
   assert(await moveReview.getByText(new RegExp(`Preview: .*2026-09-18`)).isVisible(), `${width}px: Move did not preview the destination.`)
   await moveReview.getByRole('button', { name: 'Move Lesson', exact: true }).click()
 
@@ -164,11 +177,20 @@ async function auditViewport(browser, width, height) {
   lessonActions = focus.locator('.object-action-bar')
   await lessonActions.getByRole('button', { name: 'Move', exact: true }).click()
   const rejectedMove = focus.getByRole('region', { name: 'Move Lesson' })
-  await rejectedMove.getByLabel('Destination date').fill('2026-09-19')
+  const hostileDestination = rejectedMove.getByLabel('Destination date')
+  await hostileDestination.evaluate((node) => {
+    if (!(node instanceof HTMLSelectElement)) throw new Error('Destination chooser is not a select.')
+    const option = document.createElement('option')
+    option.value = '2026-09-19'
+    option.textContent = 'Injected invalid Saturday'
+    node.append(option)
+    node.value = option.value
+    node.dispatchEvent(new Event('change', { bubbles: true }))
+  })
   await rejectedMove.getByRole('button', { name: 'Move Lesson', exact: true }).click()
-  assert(await focus.getByRole('alert').getByText(/confirmed instructional day/i).isVisible(), `${width}px: rejected Move did not surface the domain error in the open editor.`)
+  assert(await focus.getByRole('alert').getByText(/confirmed instructional day/i).isVisible(), `${width}px: hostile rejected Move did not surface the domain error in the open editor.`)
   const afterRejectedMove = await storedInput(page, 'arc.lessons.v1')
-  assert(afterRejectedMove?.lessons?.find((lesson) => lesson.id === 'lesson-movable')?.plannedDate === '2026-09-18', `${width}px: rejected Move mutated the Lesson.`)
+  assert(afterRejectedMove?.lessons?.find((lesson) => lesson.id === 'lesson-movable')?.plannedDate === '2026-09-18', `${width}px: hostile rejected Move mutated the Lesson.`)
   assert(await focus.isVisible(), `${width}px: rejected Move closed the editor.`)
 
   await focus.getByRole('button', { name: 'Close', exact: true }).click()
