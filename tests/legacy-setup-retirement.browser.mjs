@@ -155,6 +155,7 @@ async function auditViewport(browser, width, height) {
   assert(!(await page.getByLabel('Unit').isDisabled()), `${width}px: new Lesson draft Unit assignment is not editable.`)
   await page.getByRole('button', { name: 'Discard draft', exact: true }).click()
   assert(await page.locator('.lesson-list-item').count() === 1, `${width}px: Lesson draft discard did not remove only the draft.`)
+  await page.locator('.lesson-list-item').first().click()
 
   const typeSizes = await page.evaluate(() => ({
     listTitle: parseFloat(getComputedStyle(document.querySelector('.lesson-list-item strong')).fontSize),
