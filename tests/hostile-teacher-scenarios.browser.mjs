@@ -49,7 +49,7 @@ const unitsInput = {
   units: [
     {
       id: 'unit-meso', calendarId: calendarInput.id, courseId: 'course-apah',
-      title: 'Ancient Mesopotamia', placement: { startDate: '2026-09-14', endDate: '2026-09-25' },
+      title: 'Ancient Mesopotamia', placement: { startDate: '2026-09-08', endDate: '2026-09-25' },
     },
     {
       id: 'unit-collage', calendarId: calendarInput.id, courseId: 'course-2d',
