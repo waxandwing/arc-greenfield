@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type PointerEventHandler } from 'react'
 import {
   parseCaptureIntent,
   type FridgeDoorState,
@@ -9,6 +9,7 @@ import {
   type UnitWorkspace,
 } from '../planning'
 import { FRIDGE_DOOR_CAPACITY } from '../app/useFridgeDoorWorkspace'
+import { useFridgePointerDrag } from './useFridgePointerDrag'
 
 type PendingCapture = { kind: 'unit' | 'lesson'; title: string } | null
 type Placement = FridgeDoorState['placements'][number]
@@ -48,6 +49,13 @@ export function FridgeDoorPanel(props: Props) {
   const [stackAnchorRef, setStackAnchorRef] = useState<FridgeEntityRef | ''>('')
   const [stackMemberRef, setStackMemberRef] = useState<FridgeEntityRef | ''>('')
   const [localError, setLocalError] = useState<string | null>(null)
+  const drag = useFridgePointerDrag({
+    onRepositionEntity: props.onReposition,
+    onRepositionStack: props.onRepositionStack,
+    onPutAway: props.onPutAway,
+    onBringBack: props.onBringBack,
+    onReject: setLocalError,
+  })
   const door = props.state.placements
     .filter((item) => item.surface === 'door')
     .slice()
@@ -197,10 +205,12 @@ export function FridgeDoorPanel(props: Props) {
       ) : null}
 
       {status ? <p className="fridge-door-status" role="status">{status}</p> : null}
+      <p className="sr-only" role="status">{drag.active ? 'Fridge drag active. Release over a valid Fridge target, or release elsewhere to cancel.' : ''}</p>
 
       <div className="fridge-door-scroll" tabIndex={0} aria-label="Fridge Door spatial surface">
         <div
-          className="fridge-door-grid"
+          className={`fridge-door-grid${drag.active ? ' fridge-door-grid--dragging' : ''}`}
+          data-fridge-drop-door="true"
           style={{
             gridTemplateColumns: `repeat(${FRIDGE_DOOR_CAPACITY.columns}, minmax(150px, 1fr))`,
             gridTemplateRows: `repeat(${FRIDGE_DOOR_CAPACITY.rows}, minmax(108px, auto))`,
@@ -209,7 +219,17 @@ export function FridgeDoorPanel(props: Props) {
           {Array.from({ length: FRIDGE_DOOR_CAPACITY.rows * FRIDGE_DOOR_CAPACITY.columns }, (_, index) => {
             const row = Math.floor(index / FRIDGE_DOOR_CAPACITY.columns)
             const column = index % FRIDGE_DOOR_CAPACITY.columns
-            return <div key={`${row}:${column}`} className="fridge-door-cell" aria-hidden="true" style={{ gridRow: row + 1, gridColumn: column + 1 }} />
+            return (
+              <div
+                key={`${row}:${column}`}
+                className="fridge-door-cell"
+                aria-hidden="true"
+                data-fridge-drop-cell="true"
+                data-fridge-row={row}
+                data-fridge-column={column}
+                style={{ gridRow: row + 1, gridColumn: column + 1 }}
+              />
+            )
           })}
           {looseDoor.map((placement) => {
             const item = resolveItem(placement.entityRef, props.units, props.lessons, props.state)
@@ -221,6 +241,7 @@ export function FridgeDoorPanel(props: Props) {
                 placement={placement}
                 door={door}
                 onOpen={() => openItem(item, props)}
+                onDragStart={(event) => drag.startEntity(event, item.ref, 'door')}
                 onReposition={(row, column) => report(props.onReposition(item.ref, row, column))}
                 onSetPriority={(priority) => report(props.onSetPriority(item.ref, priority))}
                 onPutAway={() => report(props.onPutAway(item.ref))}
@@ -240,6 +261,7 @@ export function FridgeDoorPanel(props: Props) {
                 units={props.units}
                 lessons={props.lessons}
                 onOpen={(item) => openItem(item, props)}
+                onDragStart={(event) => drag.startStack(event, stackId)}
                 onReposition={(row, column) => report(props.onRepositionStack(stackId, row, column))}
                 onSetPriority={(ref, priority) => report(props.onSetPriority(ref, priority))}
                 onReorder={(ref, direction) => report(props.onReorderStack(ref, direction))}
@@ -250,7 +272,7 @@ export function FridgeDoorPanel(props: Props) {
         </div>
       </div>
 
-      <details className="fridge-drawer" open={drawer.length > 0}>
+      <details className={`fridge-drawer${drag.active ? ' fridge-drawer--dragging' : ''}`} data-fridge-drop-drawer="true" open={drawer.length > 0}>
         <summary>Drawer <span>{drawer.length}</span></summary>
         <p>Things worth keeping, but not in front of you right now.</p>
         {drawer.length === 0 ? <p className="fridge-drawer-empty">Nothing put away.</p> : (
@@ -259,7 +281,8 @@ export function FridgeDoorPanel(props: Props) {
               const item = resolveItem(placement.entityRef, props.units, props.lessons, props.state)
               if (!item) return null
               return (
-                <div className="fridge-drawer-item" key={placement.entityRef}>
+                <div className="fridge-drawer-item" key={placement.entityRef} data-fridge-ref={placement.entityRef}>
+                  <DragHandle label={`Drag ${item.title}`} onPointerDown={(event) => drag.startEntity(event, item.ref, 'drawer')} />
                   <div>
                     <span>{item.kind}</span>
                     {item.kind === 'Magnet' ? <strong>{item.title}</strong> : (
@@ -284,6 +307,7 @@ function FridgeItem({
   placement,
   door,
   onOpen,
+  onDragStart,
   onReposition,
   onSetPriority,
   onPutAway,
@@ -292,6 +316,7 @@ function FridgeItem({
   placement: Placement
   door: Placement[]
   onOpen: () => void
+  onDragStart: PointerEventHandler<HTMLButtonElement>
   onReposition: (row: number, column: number) => void
   onSetPriority: (priority: FridgePriority) => void
   onPutAway: () => void
@@ -301,7 +326,11 @@ function FridgeItem({
       className={`fridge-item fridge-item--${item.kind.toLowerCase()}`}
       style={{ gridRow: placement.row + 1, gridColumn: placement.column + 1 }}
       data-fridge-ref={item.ref}
+      data-fridge-drop-cell="true"
+      data-fridge-row={placement.row}
+      data-fridge-column={placement.column}
     >
+      <DragHandle label={`Drag ${item.title}`} onPointerDown={onDragStart} />
       <div className="fridge-item-copy">
         <span>{item.kind}</span>
         {item.kind === 'Magnet' ? <strong>{item.title}</strong> : <button type="button" className="fridge-item-title" onClick={onOpen}>{item.title}</button>}
@@ -330,6 +359,7 @@ function FridgeStack({
   units,
   lessons,
   onOpen,
+  onDragStart,
   onReposition,
   onSetPriority,
   onReorder,
@@ -342,6 +372,7 @@ function FridgeStack({
   units: UnitWorkspace
   lessons: LessonWorkspace
   onOpen: (item: ItemInfo) => void
+  onDragStart: PointerEventHandler<HTMLButtonElement>
   onReposition: (row: number, column: number) => void
   onSetPriority: (ref: FridgeEntityRef, priority: FridgePriority) => void
   onReorder: (ref: FridgeEntityRef, direction: 'up' | 'down') => void
@@ -358,7 +389,11 @@ function FridgeStack({
       className="fridge-stack"
       style={{ gridRow: anchor.row + 1, gridColumn: anchor.column + 1 }}
       data-fridge-stack={stackId}
+      data-fridge-drop-cell="true"
+      data-fridge-row={anchor.row}
+      data-fridge-column={anchor.column}
     >
+      <DragHandle label={`Drag stack with ${ordered.length} items`} onPointerDown={onDragStart} />
       <div className="fridge-stack-heading">
         <div>
           <span>Stack</span>
@@ -415,6 +450,21 @@ function FridgeStack({
         </div>
       </details>
     </article>
+  )
+}
+
+function DragHandle({ label, onPointerDown }: { label: string; onPointerDown: PointerEventHandler<HTMLButtonElement> }) {
+  return (
+    <button
+      type="button"
+      className="fridge-drag-handle"
+      aria-label={`${label}. Use the Position control for keyboard movement.`}
+      tabIndex={-1}
+      onPointerDown={onPointerDown}
+      onClick={(event) => event.preventDefault()}
+    >
+      Drag
+    </button>
   )
 }
 
