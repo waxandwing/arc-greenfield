@@ -23,18 +23,18 @@ export function reconcileShiftState(
   if (!shiftState) {
     return {
       allowed: true,
-      next: { calendarId: nextCalendar.id, overrides: [], undo: null },
+      next: { calendarId: nextCalendar.id, overrides: [], sameDayApprovals: [], undo: null },
       undoDropped: false,
     }
   }
 
   if (!nextPlanning || !nextUnits || !nextLessons) {
-    if (shiftState.overrides.length > 0) {
+    if (shiftState.overrides.length > 0 || shiftState.sameDayApprovals.length > 0) {
       return { allowed: false, next: shiftState, undoDropped: false }
     }
     return {
       allowed: true,
-      next: { calendarId: nextCalendar.id, overrides: [], undo: null },
+      next: { calendarId: nextCalendar.id, overrides: [], sameDayApprovals: [], undo: null },
       undoDropped: Boolean(shiftState.undo),
     }
   }
