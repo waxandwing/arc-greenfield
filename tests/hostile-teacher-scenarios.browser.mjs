@@ -53,7 +53,7 @@ const unitsInput = {
     },
     {
       id: 'unit-collage', calendarId: calendarInput.id, courseId: 'course-2d',
-      title: 'Collage and Surface', placement: { startDate: '2026-09-21', endDate: '2026-10-02' },
+      title: 'Collage and Surface', placement: { startDate: '2026-09-16', endDate: '2026-10-02' },
     },
   ],
 }
