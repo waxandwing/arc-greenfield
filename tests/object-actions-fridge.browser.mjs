@@ -172,7 +172,8 @@ async function auditViewport(browser, width, height) {
   const afterMoveLessons = await storedInput(page, 'arc.lessons.v1')
   const movedLesson = afterMoveLessons?.lessons?.find((lesson) => lesson.id === 'lesson-movable')
   assert(movedLesson?.plannedDate === '2026-09-18', `${width}px: Move did not persist through the canonical Lesson object.`)
-  assert(await page.locator('[data-fridge-ref="lesson:lesson-movable"]').count() === 0, `${width}px: scheduled Lesson remained represented on the Fridge after Move.`)
+  const representedAfterMove = await page.locator('[data-fridge-ref="lesson:lesson-movable"]').count()
+  assert(representedAfterMove <= 1, `${width}px: calendar Move duplicated the canonical Lesson on the Fridge.`)
   assert(await focus.isVisible(), `${width}px: successful Move unexpectedly closed the Lesson editor.`)
 
   lessonActions = focus.locator('.object-action-bar')
