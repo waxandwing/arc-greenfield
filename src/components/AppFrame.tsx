@@ -1,16 +1,58 @@
+import { useState } from 'react'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { CalendarViewRail } from './CalendarViewRail'
+import { FridgeDoorStrip } from './FridgeDoorStrip'
+import { ObjectFocusLayer, type ObjectFocusState } from './ObjectFocusLayer'
 import { WorkspaceStage } from './WorkspaceStage'
 import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import { DEFAULT_HOME_VIEW } from '../navigation/calendarViews'
+import { hydrateLessonWorkspace, hydrateUnitWorkspace, type LessonWorkspaceInput, type UnitWorkspaceInput } from '../planning'
 
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
   const workspace = useArcWorkspace(workspaceMode.close)
+  const [focus, setFocus] = useState<ObjectFocusState | null>(null)
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
+  const canUseObjectFocus = Boolean(workspace.calendar && workspace.planningWorkspace && workspace.unitWorkspace && workspace.lessonWorkspace)
+
+  function openWorkspaceMode(mode: Parameters<typeof workspaceMode.open>[0]) {
+    setFocus(null)
+    workspaceMode.open(mode)
+  }
+
+  function editUnitTitle(unitId: string, title: string): string | null {
+    if (!workspace.calendar || !workspace.planningWorkspace || !workspace.unitWorkspace) return 'Arc cannot edit this Unit because the planning state is incomplete. Nothing changed.'
+    try {
+      const input: UnitWorkspaceInput = {
+        calendarId: workspace.unitWorkspace.calendarId,
+        units: workspace.unitWorkspace.units.map((unit) => unit.id === unitId ? { ...unit, title: title.trim() } : unit),
+      }
+      const next = hydrateUnitWorkspace(input, workspace.calendar, workspace.planningWorkspace)
+      workspace.useUnits(input, next)
+      return null
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function editLessonTitle(lessonId: string, title: string): string | null {
+    if (!workspace.calendar || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace) return 'Arc cannot edit this Lesson because the planning state is incomplete. Nothing changed.'
+    try {
+      const input: LessonWorkspaceInput = {
+        calendarId: workspace.lessonWorkspace.calendarId,
+        lessons: workspace.lessonWorkspace.lessons.map((lesson) => lesson.id === lessonId ? { ...lesson, title: title.trim() } : lesson),
+        deliveryStates: workspace.lessonWorkspace.deliveryStates,
+      }
+      const next = hydrateLessonWorkspace(input, workspace.calendar, workspace.planningWorkspace, workspace.unitWorkspace)
+      workspace.useLessons(input, next)
+      return null
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
 
   return (
     <div className="arc-shell">
@@ -35,7 +77,10 @@ export function AppFrame() {
           activeView={workspace.activeView}
           disabled={workspaceBusy}
           availabilityFor={workspace.viewAvailability}
-          onSelect={workspace.setActiveView}
+          onSelect={(view) => {
+            setFocus(null)
+            workspace.setActiveView(view)
+          }}
         />
 
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
@@ -57,16 +102,25 @@ export function AppFrame() {
             onMovePrevious={() => workspace.movePeriod('previous')}
             onMoveNext={() => workspace.movePeriod('next')}
             onToday={workspace.goToday}
-            onOpenCalendarSetup={() => workspaceMode.open('calendar-setup')}
-            onOpenTerms={() => workspaceMode.open('terms')}
-            onOpenClasses={() => workspaceMode.open('classes')}
-            onOpenUnits={() => workspaceMode.open('units')}
-            onOpenLessons={() => workspaceMode.open('lessons')}
-            onOpenRecovery={() => workspaceMode.open('recovery')}
+            onOpenCalendarSetup={() => openWorkspaceMode('calendar-setup')}
+            onOpenTerms={() => openWorkspaceMode('terms')}
+            onOpenClasses={() => openWorkspaceMode('classes')}
+            onOpenUnits={() => openWorkspaceMode('units')}
+            onOpenLessons={() => openWorkspaceMode('lessons')}
+            onOpenRecovery={() => openWorkspaceMode('recovery')}
             onUndoShift={workspace.undoLastShift}
           />
 
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
+
+          {workspaceMode.mode === 'calendar' && workspace.unitWorkspace && workspace.lessonWorkspace ? (
+            <FridgeDoorStrip
+              lessons={workspace.lessonWorkspace}
+              units={workspace.unitWorkspace}
+              overrides={workspace.shiftState?.overrides ?? []}
+              onOpenLesson={(lessonId) => setFocus({ kind: 'lesson', lessonId })}
+            />
+          ) : null}
 
           <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
             <WorkspaceStage
@@ -91,12 +145,33 @@ export function AppFrame() {
               onUseUnits={workspace.useUnits}
               onUseLessons={workspace.useLessons}
               onApplyRecoveryShift={workspace.applyRecoveryShift}
+              onOpenUnit={(unitId) => setFocus({ kind: 'unit', unitId })}
+              onOpenLesson={(unitId, lessonId) => setFocus({ kind: 'unit', unitId, lessonId })}
               onCloseMode={workspaceMode.close}
             />
           </section>
         </main>
 
-        <div className="arc-overlay-layer" aria-hidden="true" />
+        {focus && canUseObjectFocus && workspace.calendar && workspace.planningWorkspace && workspace.unitWorkspace && workspace.lessonWorkspace ? (
+          <ObjectFocusLayer
+            focus={focus}
+            calendar={workspace.calendar}
+            planning={workspace.planningWorkspace}
+            units={workspace.unitWorkspace}
+            lessons={workspace.lessonWorkspace}
+            shiftState={workspace.shiftState}
+            onChangeFocus={setFocus}
+            onClose={() => setFocus(null)}
+            onMoveUnit={workspace.moveUnitObject}
+            onUnplaceUnit={workspace.unplaceUnitObject}
+            onDeleteUnit={workspace.deleteUnitObject}
+            onMoveLesson={workspace.moveLessonObject}
+            onUnplaceLesson={workspace.unplaceLessonObject}
+            onDeleteLesson={workspace.deleteLessonObject}
+            onEditUnitTitle={editUnitTitle}
+            onEditLessonTitle={editLessonTitle}
+          />
+        ) : null}
       </div>
     </div>
   )
