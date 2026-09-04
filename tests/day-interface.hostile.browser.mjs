@@ -31,26 +31,14 @@ const planningInput = {
 
 const unitsInput = {
   calendarId: calendarInput.id,
-  units: [{
-    id: 'unit-meso',
-    calendarId: calendarInput.id,
-    courseId: 'course-apah',
-    title: 'Ancient Mesopotamia: Power, Place, and Early Urban Systems',
-    placement: { startDate: '2026-09-14', endDate: '2026-09-25' },
-  }],
+  units: [{ id: 'unit-meso', calendarId: calendarInput.id, courseId: 'course-apah', title: 'Ancient Mesopotamia: Power, Place, and Early Urban Systems', placement: { startDate: '2026-09-14', endDate: '2026-09-25' } }],
 }
 
 const lessonsInput = {
   calendarId: calendarInput.id,
   lessons: [
-    {
-      id: 'lesson-17', calendarId: calendarInput.id, courseId: 'course-apah', unitId: 'unit-meso',
-      title: 'Ziggurat of Ur: Monumentality, Ritual, and Civic Power', sequence: 17, plannedDate: '2026-09-14', datePolicy: 'flexible',
-    },
-    {
-      id: 'lesson-18', calendarId: calendarInput.id, courseId: 'course-apah', unitId: 'unit-meso',
-      title: 'Standard of Ur: War, Peace, Register, and Royal Authority', sequence: 18, plannedDate: '2026-09-15', datePolicy: 'fixed',
-    },
+    { id: 'lesson-17', calendarId: calendarInput.id, courseId: 'course-apah', unitId: 'unit-meso', title: 'Ziggurat of Ur: Monumentality, Ritual, and Civic Power', sequence: 17, plannedDate: '2026-09-14', datePolicy: 'flexible' },
+    { id: 'lesson-18', calendarId: calendarInput.id, courseId: 'course-apah', unitId: 'unit-meso', title: 'Standard of Ur: War, Peace, Register, and Royal Authority', sequence: 18, plannedDate: '2026-09-15', datePolicy: 'fixed' },
   ],
   deliveryStates: [
     { lessonId: 'lesson-17', sectionId: 'section-p2', status: 'completed', taughtDate: '2026-09-14', resumeNote: null },
@@ -76,9 +64,7 @@ async function seededContext(browser, options) {
 
 function trackRuntimeErrors(page) {
   const runtimeErrors = []
-  page.on('console', (message) => {
-    if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`)
-  })
+  page.on('console', (message) => { if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`) })
   page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`))
   return runtimeErrors
 }
@@ -123,18 +109,23 @@ async function auditKeyboard(browser) {
   const page = await context.newPage()
   const runtimeErrors = trackRuntimeErrors(page)
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
-
-  await page.keyboard.press('Tab')
   const skip = page.locator('.skip-link')
-  assert(await skip.evaluate((node) => document.activeElement === node), 'Keyboard: first Tab does not reach Skip to calendar.')
-  const focus = await skip.evaluate((node) => {
+  const before = await page.evaluate(() => ({ tag: document.activeElement?.tagName, cls: document.activeElement?.className || '', text: document.activeElement?.textContent?.trim() || '' }))
+  const skipState = await skip.evaluate((node) => {
     const style = getComputedStyle(node)
-    return { outline: style.outlineStyle, width: parseFloat(style.outlineWidth || '0') }
+    const rect = node.getBoundingClientRect()
+    return { tabIndex: node.tabIndex, display: style.display, visibility: style.visibility, pointerEvents: style.pointerEvents, width: rect.width, height: rect.height, x: rect.x, y: rect.y }
   })
+  await page.keyboard.press('Tab')
+  const after = await page.evaluate(() => {
+    const el = document.activeElement
+    return { tag: el?.tagName, cls: el?.className || '', text: el?.textContent?.trim() || '', aria: el?.getAttribute?.('aria-label') || '' }
+  })
+  assert(await skip.evaluate((node) => document.activeElement === node), `Keyboard: first Tab does not reach Skip to calendar. before=${JSON.stringify(before)} skip=${JSON.stringify(skipState)} after=${JSON.stringify(after)}`)
+  const focus = await skip.evaluate((node) => { const style = getComputedStyle(node); return { outline: style.outlineStyle, width: parseFloat(style.outlineWidth || '0') } })
   assert(focus.outline !== 'none' && focus.width >= 3, 'Keyboard: skip-link focus is not visibly strong enough.')
   await page.keyboard.press('Enter')
   assert(await page.locator('#calendar-stage').evaluate((node) => document.activeElement === node), 'Keyboard: activating Skip to calendar does not move focus to the main stage.')
-
   const week = page.getByRole('button', { name: 'Week', exact: true })
   const day = page.getByRole('button', { name: 'Day', exact: true })
   await week.focus()
@@ -170,11 +161,7 @@ async function auditReducedMotion(browser) {
   const context = await seededContext(browser, { viewport: { width: 1024, height: 900 }, reducedMotion: 'reduce' })
   const { page, runtimeErrors } = await openDay(context)
   assert(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), 'Reduced motion: Chromium context did not expose the requested preference.')
-  const timing = await page.locator('.view-nav-item').first().evaluate((node) => {
-    const style = getComputedStyle(node)
-    const parse = (value) => value.split(',').map((item) => parseFloat(item) || 0)
-    return { animation: Math.max(...parse(style.animationDuration)), transition: Math.max(...parse(style.transitionDuration)) }
-  })
+  const timing = await page.locator('.view-nav-item').first().evaluate((node) => { const style = getComputedStyle(node); const parse = (value) => value.split(',').map((item) => parseFloat(item) || 0); return { animation: Math.max(...parse(style.animationDuration)), transition: Math.max(...parse(style.transitionDuration)) } })
   assert(timing.animation <= 0.01 && timing.transition <= 0.01, `Reduced motion: motion was not effectively suppressed (${JSON.stringify(timing)}).`)
   assert(runtimeErrors.length === 0, `Reduced motion: runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
