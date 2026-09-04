@@ -1,0 +1,29 @@
+.fridge-drag-handle{
+  justify-self:start;
+  min-width:44px;
+  min-height:44px;
+  padding:0 var(--space-2);
+  border:1px solid var(--line-subtle);
+  border-radius:var(--radius-sm);
+  background:transparent;
+  color:var(--soft-charcoal);
+  font:inherit;
+  font-size:14px;
+  font-weight:700;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.fridge-drag-handle:active{cursor:grabbing}
+.fridge-door-grid--dragging .fridge-door-cell{border-style:solid}
+.fridge-drawer--dragging{outline:1px dashed var(--line-strong);outline-offset:4px}
+.fridge-drawer-item{
+  position:relative;
+}
+.fridge-drawer-item>.fridge-drag-handle{
+  justify-self:start;
+}
+@media (max-width:700px){
+  .fridge-drawer-item>.fridge-drag-handle{grid-column:1/-1}
+}
