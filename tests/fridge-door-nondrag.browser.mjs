@@ -104,7 +104,8 @@ async function auditViewport(browser, width, height) {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   const fridge = page.getByRole('region', { name: 'Fridge Door' })
   assert(await fridge.isVisible(), `${width}px: persistent Fridge Door is not visible.`)
-  assert(await page.locator('[draggable="true"]').count() === 0, `${width}px: drag semantics appeared before non-drag Fridge reached Green.`)
+  assert(await fridge.locator('[data-fridge-ref^="unit:"][draggable="true"]').count() === 0, `${width}px: Unit drag appeared without an approved one-date Unit Move contract.`)
+  assert(await fridge.getByLabel('Position').count() > 0, `${width}px: non-drag Position controls disappeared after drag preview was introduced.`)
 
   const unplaced = page.locator('[data-fridge-ref="lesson:lesson-unplaced"]')
   assert(await unplaced.isVisible(), `${width}px: canonical unplaced Lesson did not reconcile onto the Door.`)
@@ -232,7 +233,8 @@ async function auditViewport(browser, width, height) {
   assert(visual.minControlHeight >= 44, `${width}px: Fridge interactive target fell below 44px (${visual.minControlHeight}px).`)
   assert(visual.documentWidth <= visual.viewportWidth + 1, `${width}px: finite Fridge surface leaked horizontal overflow into the document.`)
   if (width <= 520) assert(visual.fridgeScrollWidth > visual.fridgeClientWidth, `${width}px: mobile Fridge did not preserve the finite surface through internal scrolling.`)
-  assert(await page.locator('[draggable="true"]').count() === 0, `${width}px: drag semantics appeared during non-drag audit.`)
+  assert(await fridge.locator('[data-fridge-ref^="unit:"][draggable="true"]').count() === 0, `${width}px: Unit became draggable during the non-drag regression.`)
+  assert(await fridge.getByLabel('Position').count() > 0, `${width}px: non-drag Position controls disappeared during the regression.`)
   assert(runtimeErrors.length === 0, `${width}px: runtime errors detected: ${runtimeErrors.join(' | ')}`)
 
   await context.close()
