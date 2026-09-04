@@ -11,6 +11,12 @@ import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import { DEFAULT_HOME_VIEW } from '../navigation/calendarViews'
 import { hydrateLessonWorkspace, hydrateUnitWorkspace, type LessonWorkspaceInput, type UnitWorkspaceInput } from '../planning'
 
+export type DragPreviewState =
+  | { kind: 'lesson'; lessonId: string; entityRef: `lesson:${string}` }
+  | { kind: 'magnet'; entityRef: `magnet:${string}` }
+  | { kind: 'stack'; stackId: string }
+  | null
+
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
   const workspace = useArcWorkspace(workspaceMode.close)
@@ -21,6 +27,7 @@ export function AppFrame() {
     overrides: workspace.shiftState?.overrides ?? [],
   })
   const [focus, setFocus] = useState<ObjectFocusState | null>(null)
+  const [dragPreview, setDragPreview] = useState<DragPreviewState>(null)
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
@@ -28,6 +35,7 @@ export function AppFrame() {
 
   function openWorkspaceMode(mode: Parameters<typeof workspaceMode.open>[0]) {
     setFocus(null)
+    setDragPreview(null)
     workspaceMode.open(mode)
   }
 
@@ -102,7 +110,7 @@ export function AppFrame() {
   }
 
   return (
-    <div className="arc-shell">
+    <div className={`arc-shell${dragPreview ? ' arc-shell--drag-preview' : ''}`}>
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
 
       <header className="arc-header" aria-label="Arc application header">
@@ -126,6 +134,7 @@ export function AppFrame() {
           availabilityFor={workspace.viewAvailability}
           onSelect={(view) => {
             setFocus(null)
+            setDragPreview(null)
             workspace.setActiveView(view)
           }}
         />
@@ -158,6 +167,15 @@ export function AppFrame() {
           />
 
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
+          {dragPreview ? (
+            <p className="drag-preview-status" role="status">
+              {dragPreview.kind === 'lesson'
+                ? 'Drag preview: valid Lesson dates and Fridge targets are highlighted. Release cancels until reversible Move is wired.'
+                : dragPreview.kind === 'magnet'
+                  ? 'Drag preview: valid Fridge positions and stack targets are highlighted. Release cancels.'
+                  : 'Drag preview: valid Fridge positions are highlighted. Release cancels.'}
+            </p>
+          ) : null}
 
           {workspaceMode.mode === 'calendar' && workspace.planningWorkspace && workspace.unitWorkspace && workspace.lessonWorkspace ? (
             <FridgeDoorPanel
@@ -166,6 +184,8 @@ export function AppFrame() {
               units={workspace.unitWorkspace}
               lessons={workspace.lessonWorkspace}
               notice={fridge.notice}
+              dragPreview={dragPreview}
+              onDragPreviewChange={setDragPreview}
               onCreateMagnet={fridge.createLooseMagnet}
               onCreateUnit={captureUnit}
               onCreateLesson={captureLesson}
@@ -196,6 +216,7 @@ export function AppFrame() {
               lessonWorkspace={workspace.lessonWorkspace}
               lessonInput={workspace.lessonInput}
               shiftState={workspace.shiftState}
+              dragLessonId={dragPreview?.kind === 'lesson' ? dragPreview.lessonId : undefined}
               protectedCourseIds={workspace.protectedCourseIds}
               protectedSectionIds={workspace.protectedSectionIds}
               onUseCalendar={workspace.useCalendar}
