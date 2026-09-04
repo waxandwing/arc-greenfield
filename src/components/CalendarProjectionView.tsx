@@ -7,6 +7,7 @@ import { projectPlanningRange } from '../planning/planningProjection'
 import { projectMonthPlanning } from '../planning/monthPlanningProjection'
 import type { LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, UnitWorkspace } from '../planning'
 import { PlanningDayContinuityView } from './PlanningDayContinuityView'
+import { PlanningLongRangeView } from './PlanningLongRangeView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
 import { CalendarDayCell, MissingBoundary, ProjectionHeading, RangeProjection, TermContext } from './CalendarProjectionPrimitives'
@@ -104,13 +105,13 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
     case 'Quarter': {
       const projection = projectQuarter(calendar, anchorDate)
       return projection
-        ? <RangeProjection title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} />
+        ? <LongRangeProjection title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} planningContext={planningContext} onOpenUnit={onOpenUnit} onOpenLesson={onOpenLesson} />
         : <MissingBoundary label="Quarter dates are not configured for this part of the school year." />
     }
     case 'Semester': {
       const projection = projectSemester(calendar, anchorDate)
       return projection
-        ? <RangeProjection title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} />
+        ? <LongRangeProjection title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} planningContext={planningContext} onOpenUnit={onOpenUnit} onOpenLesson={onOpenLesson} />
         : <MissingBoundary label="Semester dates are not configured for this part of the school year." />
     }
     case 'Year Map': {
@@ -124,13 +125,56 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
             </div>
             <TermContext quarters={projection.quarters} semesters={projection.semesters} detailed />
           </div>
-          <div className="projection-range projection-range--compact">
-            {projection.days.map((day) => <CalendarDayCell key={day.date} day={day} compact />)}
-          </div>
+          {planningContext ? (
+            <PlanningLongRangeView
+              days={projection.days}
+              planning={planningForDays(projection.days, planningContext)}
+              onOpenUnit={onOpenUnit}
+              onOpenLesson={onOpenLesson}
+            />
+          ) : (
+            <div className="projection-range projection-range--compact">
+              {projection.days.map((day) => <CalendarDayCell key={day.date} day={day} compact />)}
+            </div>
+          )}
         </section>
       )
     }
   }
+}
+
+function LongRangeProjection({
+  title,
+  subtitle,
+  days,
+  planningContext,
+  onOpenUnit,
+  onOpenLesson,
+}: {
+  title: string
+  subtitle: string
+  days: ProjectedDay[]
+  planningContext?: PlanningContext | null
+  onOpenUnit?: (unitId: string) => void
+  onOpenLesson?: (unitId: string, lessonId: string) => void
+}) {
+  if (!planningContext) return <RangeProjection title={title} subtitle={subtitle} days={days} />
+  return (
+    <section className="projection-section" aria-label={title}>
+      <div className="projection-heading-row">
+        <div>
+          <p className="projection-range-label">{title}</p>
+          <p className="projection-subtitle">{subtitle}</p>
+        </div>
+      </div>
+      <PlanningLongRangeView
+        days={days}
+        planning={planningForDays(days, planningContext)}
+        onOpenUnit={onOpenUnit}
+        onOpenLesson={onOpenLesson}
+      />
+    </section>
+  )
 }
 
 function PlanningDayStrip({ title, day, planningContext, termContext, onOpenUnit, onOpenLesson }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode; onOpenUnit?: (unitId: string) => void; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
