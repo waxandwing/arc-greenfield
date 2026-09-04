@@ -29,16 +29,13 @@ type FridgeContext = {
 
 export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }: FridgeContext) {
   const [state, setState] = useState<FridgeDoorState>(createEmptyFridgeDoorState)
-  const stateRef = useRef<FridgeDoorState>(state)
   const [notice, setNotice] = useState<string | null>(null)
   const loadedCalendarId = useRef<string | null>(null)
 
   useEffect(() => {
     if (!calendarId || !units || !lessons) {
-      const empty = createEmptyFridgeDoorState()
       loadedCalendarId.current = null
-      stateRef.current = empty
-      setState(empty)
+      setState(createEmptyFridgeDoorState())
       return
     }
 
@@ -54,7 +51,6 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
         ? loaded.state
         : reconcileFridgeDoor(createEmptyFridgeDoorState(), units.units, lessons.lessons, overrides, FRIDGE_DOOR_CAPACITY)
       loadedCalendarId.current = calendarId
-      stateRef.current = next
       setState(next)
       if (loaded.status === 'invalid') setNotice('Arc found Fridge Door layout data it could not verify. Canonical Units and Lessons are safe; the Door was rebuilt from recoverable planning state.')
       else if (loaded.status === 'unavailable') setNotice('Fridge Door storage is unavailable in this browser. Spatial changes may last only for this session.')
@@ -62,12 +58,12 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
       return
     }
 
-    const current = stateRef.current
-    const next = reconcileFridgeDoor(current, units.units, lessons.lessons, overrides, FRIDGE_DOOR_CAPACITY)
-    if (sameState(current, next)) return
-    stateRef.current = next
-    saveFridgeDoorToBrowser({ calendarId, state: next })
-    setState(next)
+    setState((current) => {
+      const next = reconcileFridgeDoor(current, units.units, lessons.lessons, overrides, FRIDGE_DOOR_CAPACITY)
+      if (sameState(current, next)) return current
+      saveFridgeDoorToBrowser({ calendarId, state: next })
+      return next
+    })
   }, [calendarId, units, lessons, overrides])
 
   function commit(next: FridgeDoorState): string | null {
@@ -82,7 +78,6 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
       const errors = validateFridgeDoorState(reconciled, canonicalUnits.units, canonicalLessons.lessons)
       if (errors.length > 0) return `Arc refused that Fridge Door change. ${errors[0]}`
       const persisted = saveFridgeDoorToBrowser({ calendarId, state: reconciled })
-      stateRef.current = reconciled
       setState(reconciled)
       setNotice(persisted ? null : 'This Fridge Door change is active for this session, but Arc could not save its spatial layout in this browser.')
       return null
