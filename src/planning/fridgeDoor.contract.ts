@@ -68,6 +68,27 @@ const other = createLesson({ id: 'lesson-b', calendarId: 'calendar-a', courseId:
 }
 
 {
+  const persistedBadUnitStack = {
+    magnets: [],
+    placements: [
+      { entityRef: 'unit:unit-a' as const, surface: 'door' as const, row: 0, column: 0, stackId: 'stack-a', stackOrder: 0, priority: null },
+    ],
+  }
+  assert(validateFridgeDoorState(persistedBadUnitStack, [unit], [unplaced]).some((error) => error.includes('Units cannot be stack members')), 'Persisted Unit stack membership must be rejected on validation.')
+}
+
+{
+  const duplicateStackOrder = {
+    magnets: [],
+    placements: [
+      { entityRef: 'lesson:lesson-a' as const, surface: 'door' as const, row: 0, column: 0, stackId: 'stack-a', stackOrder: 0, priority: null },
+      { entityRef: 'lesson:lesson-b' as const, surface: 'door' as const, row: 0, column: 0, stackId: 'stack-a', stackOrder: 0, priority: null },
+    ],
+  }
+  assert(validateFridgeDoorState(duplicateStackOrder, [unit], [unplaced, other]).some((error) => error.includes('Duplicate stack order')), 'Duplicate ordering inside one stack must be invalid.')
+}
+
+{
   const magnet = createMagnet('Maybe use foil', 'magnet-a')
   const state = {
     magnets: [magnet],
@@ -96,6 +117,22 @@ const other = createLesson({ id: 'lesson-b', calendarId: 'calendar-a', courseId:
   try { bringBack(state, 'lesson:lesson-a', { rows: 1, columns: 1 }) } catch { blocked = true }
   assert(blocked, 'Bring Back must fail visibly when Door is full.')
   assert(state.placements.find((item) => item.entityRef === 'lesson:lesson-a')?.surface === 'drawer', 'Failed Bring Back must leave item recoverable in Drawer.')
+}
+
+{
+  const manyLessons = Array.from({ length: 60 }, (_, index) => createLesson({
+    id: `pressure-${index}`,
+    calendarId: 'calendar-a',
+    courseId: 'course-a',
+    unitId: unit.id,
+    title: `Pressure Lesson ${index}`,
+    sequence: index + 1,
+  }))
+  const first = reconcileFridgeDoor(createEmptyFridgeDoorState(), [unit], manyLessons, [], { rows: 5, columns: 5 })
+  assert(first.placements.filter((item) => item.surface === 'door').length === 25, 'Finite Door capacity must remain finite under 60-Lesson pressure.')
+  assert(first.placements.filter((item) => item.surface === 'drawer').length === 35, 'Overflow under pressure must remain reachable in Drawer.')
+  const second = reconcileFridgeDoor(first, [unit], manyLessons, [], { rows: 5, columns: 5 })
+  assert(JSON.stringify(second) === JSON.stringify(first), 'Reconciliation must be idempotent for stable canonical state.')
 }
 
 console.log('Fridge Door hostile contract passed.')
