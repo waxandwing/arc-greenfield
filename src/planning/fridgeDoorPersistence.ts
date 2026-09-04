@@ -7,6 +7,7 @@ import {
   validateFridgeDoorState,
   type FridgeCapacity,
   type FridgeDoorState,
+  type FridgePlacement,
 } from './fridgeDoor'
 
 export const FRIDGE_DOOR_STORAGE_KEY = 'arc.fridgeDoor.v1'
@@ -39,7 +40,7 @@ export function deserializeFridgeDoorState(raw: string): FridgeDoorState | null 
       return { id: magnet.id, title: magnet.title }
     })
 
-    const placements = parsed.state.placements.map((candidate) => {
+    const placements: FridgePlacement[] = parsed.state.placements.map((candidate) => {
       if (!candidate || typeof candidate !== 'object') throw new Error('Invalid placement.')
       const item = candidate as Record<string, unknown>
       if (typeof item.entityRef !== 'string' || !/^(unit|lesson|magnet):.+/.test(item.entityRef)) throw new Error('Invalid entity ref.')
@@ -49,13 +50,13 @@ export function deserializeFridgeDoorState(raw: string): FridgeDoorState | null 
       if (item.stackOrder !== null && typeof item.stackOrder !== 'number') throw new Error('Invalid stack order.')
       if (item.priority !== null && item.priority !== 'must' && item.priority !== 'should' && item.priority !== 'could') throw new Error('Invalid priority.')
       return {
-        entityRef: item.entityRef as `unit:${string}` | `lesson:${string}` | `magnet:${string}`,
+        entityRef: item.entityRef as FridgePlacement['entityRef'],
         surface: item.surface,
         row: item.row,
         column: item.column,
         stackId: item.stackId as string | null,
         stackOrder: item.stackOrder as number | null,
-        priority: item.priority as 'must' | 'should' | 'could' | null,
+        priority: item.priority as FridgePlacement['priority'],
       }
     })
 
