@@ -108,7 +108,8 @@ async function auditViewport(browser, width, height) {
 
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   assert(await page.getByRole('heading', { name: 'Month' }).isVisible(), `${width}px: Arc did not restore into Month.`)
-  assert(await page.getByText('Fridge Door', { exact: true }).count() === 0, `${width}px: Fridge Door showed a scheduled Lesson before Unplace.`)
+  assert(await page.getByText('Fridge Door', { exact: true }).isVisible(), `${width}px: persistent Fridge Door surface is missing.`)
+  assert(await page.locator('[data-fridge-ref="lesson:lesson-movable"]').count() === 0, `${width}px: scheduled Lesson appeared on the Fridge before Unplace.`)
 
   const openingTargets = await page.locator('.planning-object-openable').evaluateAll((nodes) => nodes.map((node) => ({
     height: node.getBoundingClientRect().height,
@@ -141,7 +142,7 @@ async function auditViewport(browser, width, height) {
   assert(await unplaceReview.getByText(/visible on the Fridge Door/i).isVisible(), `${width}px: Unplace did not explain the Fridge Door consequence.`)
 
   await unplaceReview.getByRole('button', { name: 'Unplace Lesson', exact: true }).click()
-  await page.getByText('Fridge Door', { exact: true }).waitFor()
+  await page.locator('[data-fridge-ref="lesson:lesson-movable"]').waitFor()
   assert(await page.getByRole('button', { name: new RegExp(movableTitle) }).isVisible(), `${width}px: Unplaced Lesson is not immediately findable on the Fridge Door.`)
   assert(await focus.getByText('Lesson', { exact: true }).first().isVisible(), `${width}px: Unplaced Lesson did not resolve to the lightweight Lesson editor.`)
   assert(await focus.getByRole('button', { name: 'Close', exact: true }).evaluate((node) => document.activeElement === node), `${width}px: switching to the lightweight Lesson editor did not establish an operable focus point.`)
@@ -171,7 +172,7 @@ async function auditViewport(browser, width, height) {
   const afterMoveLessons = await storedInput(page, 'arc.lessons.v1')
   const movedLesson = afterMoveLessons?.lessons?.find((lesson) => lesson.id === 'lesson-movable')
   assert(movedLesson?.plannedDate === '2026-09-18', `${width}px: Move did not persist through the canonical Lesson object.`)
-  assert(await page.getByText('Fridge Door', { exact: true }).count() === 0, `${width}px: scheduled Lesson remained on the Fridge Door after Move.`)
+  assert(await page.locator('[data-fridge-ref="lesson:lesson-movable"]').count() === 0, `${width}px: scheduled Lesson remained represented on the Fridge after Move.`)
   assert(await focus.isVisible(), `${width}px: successful Move unexpectedly closed the Lesson editor.`)
 
   lessonActions = focus.locator('.object-action-bar')
