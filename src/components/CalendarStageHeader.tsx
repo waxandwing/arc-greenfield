@@ -13,7 +13,6 @@ type CalendarStageHeaderProps = {
   hasTerms: boolean
   hasClasses: boolean
   hasUnits: boolean
-  hasLessons: boolean
   recoveryCount: number
   undoAvailable: boolean
   stageTitle: string
@@ -41,7 +40,6 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     hasTerms,
     hasClasses,
     hasUnits,
-    hasLessons,
     recoveryCount,
     undoAvailable,
     stageTitle,
@@ -80,8 +78,8 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
               <button type="button" className="text-button" onClick={onOpenCalendarSetup}>Edit dates</button>
               <button type="button" className="text-button" onClick={onOpenTerms}>{hasTerms ? 'Edit terms' : 'Set terms'}</button>
               <button type="button" className="text-button" onClick={onOpenClasses}>{hasClasses ? 'Edit classes' : 'Set classes'}</button>
-              {hasClasses && <button type="button" className="text-button" onClick={onOpenUnits}>{hasUnits ? 'Edit Units' : 'Add Units'}</button>}
-              {hasUnits && <button type="button" className="text-button" onClick={onOpenLessons}>{hasLessons ? 'Edit Lessons' : 'Add Lessons'}</button>}
+              {hasClasses && <button type="button" className="text-button" onClick={onOpenUnits}>Unit setup</button>}
+              {hasUnits && <button type="button" className="text-button" onClick={onOpenLessons}>Lesson setup</button>}
               {recoveryCount > 0 && <button type="button" className="text-button recovery-review-trigger" onClick={onOpenRecovery}>Review recovery ({recoveryCount})</button>}
               {undoAvailable && <button type="button" className="text-button" onClick={onUndoShift}>Undo last Shift</button>}
             </div>
