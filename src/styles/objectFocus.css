@@ -1,0 +1,97 @@
+.fridge-door-strip{
+  display:grid;
+  gap:var(--space-3);
+  margin-bottom:var(--space-4);
+  padding:var(--space-3) var(--space-4);
+  border-block:1px solid var(--line-subtle);
+  background:rgba(228,179,61,.06);
+}
+
+.fridge-door-heading{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:var(--space-4);
+}
+
+.fridge-door-heading>div{display:grid;gap:2px}
+.fridge-door-note,.fridge-door-count{margin:0;color:var(--soft-charcoal);font-size:14px}
+.fridge-door-count{font-weight:700}
+.fridge-door-items{display:flex;gap:var(--space-2);overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}
+.fridge-door-lesson{flex:0 0 min(280px,78vw);display:grid;gap:2px;min-height:56px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--paper-raised);padding:8px 10px;text-align:left;cursor:pointer}
+.fridge-door-lesson strong{font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+.fridge-door-lesson span{color:var(--soft-charcoal);font-size:14px}
+
+.object-focus-layer{
+  position:fixed;
+  z-index:40;
+  top:72px;
+  right:0;
+  bottom:0;
+  width:min(500px,calc(100vw - 112px));
+  overflow:auto;
+  border-left:1px solid var(--line-strong);
+  background:var(--paper);
+  box-shadow:-8px 0 24px rgba(44,46,46,.08);
+}
+
+.object-focus-panel{display:grid;min-height:100%;align-content:start;padding:var(--space-6);gap:var(--space-6)}
+.object-focus-header{display:flex;align-items:start;justify-content:space-between;gap:var(--space-4);padding-bottom:var(--space-4);border-bottom:1px solid var(--line-strong)}
+.object-focus-header>div{min-width:0}
+.object-focus-header h2{margin:4px 0 0;font:600 28px/1.15 var(--font-editorial);letter-spacing:-.02em;overflow-wrap:anywhere}
+.object-focus-close{flex:0 0 auto}
+.object-focus-body{display:grid;gap:var(--space-6)}
+.object-focus-context,.object-focus-empty{margin:0;color:var(--soft-charcoal)}
+.object-focus-object,.unit-focus-lessons,.unit-focus-selected-lesson{display:grid;gap:var(--space-3)}
+.object-focus-section-heading{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--line-subtle)}
+.object-focus-section-heading>span{font-size:14px;font-weight:700;color:var(--soft-charcoal)}
+.object-focus-facts{display:flex;flex-wrap:wrap;gap:var(--space-2) var(--space-3);color:var(--soft-charcoal);font-size:14px}
+.object-focus-facts span+span::before{content:'·';margin-right:var(--space-3);color:var(--line-strong)}
+
+.unit-focus-lesson-list{display:grid}
+.unit-focus-lesson{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--space-3);align-items:baseline;min-height:48px;border:0;border-bottom:1px solid var(--line-subtle);background:transparent;padding:10px 0;text-align:left;cursor:pointer}
+.unit-focus-lesson strong{overflow-wrap:anywhere}
+.unit-focus-lesson span{color:var(--soft-charcoal);font-size:14px}
+.unit-focus-lesson[aria-current='true']{font-weight:700}
+.unit-focus-lesson[aria-current='true'] strong{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:var(--mustard)}
+
+.object-action-surface{display:grid;gap:var(--space-3)}
+.object-action-bar{display:flex;flex-wrap:wrap;align-items:center;border-block:1px solid var(--line-subtle)}
+.object-action-bar button{min-height:44px;border:0;background:transparent;padding:8px 12px;font-weight:700;cursor:pointer}
+.object-action-bar button+button{border-left:1px solid var(--line-subtle)}
+.object-action-bar button:last-child{color:var(--terracotta-text)}
+.object-action-bar button:disabled{cursor:not-allowed;opacity:.45}
+.object-action-error{margin:0;padding:var(--space-3);border-left:4px solid var(--terracotta);background:rgba(201,104,69,.07)}
+.object-action-review{display:grid;gap:var(--space-3);padding:var(--space-4) 0 var(--space-2);border-top:1px solid var(--line-strong)}
+.object-action-review--destructive{border-top-color:var(--terracotta)}
+.object-action-review h3{margin:0;font:600 20px/1.2 var(--font-editorial)}
+.object-action-review p{margin:0;color:var(--soft-charcoal)}
+.object-action-review label{display:grid;gap:6px;font-weight:600}
+.object-action-review label>span{font-size:14px;color:var(--soft-charcoal)}
+.object-action-date-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)}
+.object-action-preview{padding-left:var(--space-3);border-left:3px solid var(--mustard)}
+.object-action-impact{display:grid;gap:var(--space-2)}
+.object-action-impact ul{margin:0;padding-left:20px;color:var(--soft-charcoal)}
+.object-action-commit{display:flex;justify-content:flex-end;gap:var(--space-2);padding-top:var(--space-2)}
+.object-delete-button{min-height:44px;border:1px solid var(--terracotta);border-radius:var(--radius-sm);background:transparent;padding:10px 16px;color:var(--terracotta-text);font-weight:700;cursor:pointer}
+
+.planning-object-openable,.day-continuity-lesson--openable{cursor:pointer}
+.planning-object-openable:hover,.day-continuity-lesson--openable:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:var(--dusty-blue)}
+.day-continuity-unit-links{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.day-continuity-unit-links button{border:0;background:transparent;padding:0;color:var(--ink);font-size:16px;font-weight:700;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.day-continuity-unit-links button+button::before{content:'·';margin-right:var(--space-2);color:var(--soft-charcoal)}
+
+@media (max-width:800px){
+  .object-focus-layer{top:64px;width:min(500px,calc(100vw - 96px))}
+  .object-focus-panel{padding:var(--space-4)}
+}
+
+@media (max-width:520px){
+  .fridge-door-strip{margin-inline:calc(var(--space-3) * -1);padding-inline:var(--space-3)}
+  .fridge-door-heading{align-items:start;flex-direction:column;gap:var(--space-1)}
+  .object-focus-layer{top:64px;right:0;bottom:64px;left:0;width:auto;border-left:0}
+  .object-focus-panel{padding:var(--space-4)}
+  .object-action-date-grid{grid-template-columns:1fr}
+  .object-action-commit{align-items:stretch;flex-direction:column-reverse}
+  .object-action-commit .text-button,.object-action-commit .primary-button,.object-delete-button{width:100%}
+}
