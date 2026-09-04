@@ -95,8 +95,6 @@ export function AppFrame() {
             />
           </section>
         </main>
-
-        <div className="arc-overlay-layer" aria-hidden="true" />
       </div>
     </div>
   )
