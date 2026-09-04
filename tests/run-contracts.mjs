@@ -34,6 +34,7 @@ const contracts = [
   'tests/generated/src/planning/shiftPersistence.contract.js',
   'tests/generated/src/planning/lessonShiftPersistence.contract.js',
   'tests/generated/src/planning/fridgeDoor.contract.js',
+  'tests/generated/src/planning/lessonShiftFridgePersistence.contract.js',
 ]
 
 for (const contract of contracts) run(process.execPath, [contract])
