@@ -32,11 +32,18 @@
 .fridge-capture-context button{min-height:44px}
 .fridge-door-status{margin:0;padding:var(--space-2) var(--space-3);border-left:4px solid var(--terracotta);font-size:14px;background:rgba(201,104,69,.07)}
 
+.fridge-stack-builder{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(180px,1fr) minmax(180px,1fr) auto;gap:var(--space-3);align-items:end;padding:var(--space-3) 0;border-block:1px solid var(--line-subtle)}
+.fridge-stack-builder p{margin:0;align-self:center;font-size:14px;color:var(--soft-charcoal)}
+.fridge-stack-builder label{display:grid;gap:4px;min-width:0}
+.fridge-stack-builder label>span{font-size:14px;color:var(--soft-charcoal)}
+.fridge-stack-builder select,.fridge-stack-builder button{min-height:44px;font-size:14px}
+
 .fridge-door-scroll{overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
 .fridge-door-grid{display:grid;gap:var(--space-2);min-width:680px;position:relative}
 .fridge-door-cell{min-height:108px;border:1px dashed var(--line-subtle);background:rgba(243,235,221,.22)}
 
-.fridge-item{
+.fridge-item,
+.fridge-stack{
   z-index:1;
   align-self:stretch;
   display:grid;
@@ -53,19 +60,30 @@
 .fridge-item--unit{border-left-color:var(--mustard)}
 .fridge-item--lesson{border-left-color:var(--dusty-blue)}
 .fridge-item--magnet{border-left-color:var(--terracotta)}
-.fridge-item--stacked{outline:1px dashed var(--line-strong);outline-offset:2px}
+.fridge-stack{border-left-color:var(--soft-charcoal)}
 .fridge-item-copy{display:grid;gap:2px;min-width:0}
-.fridge-item-copy>span,.fridge-drawer-item>div>span{font-size:14px;font-weight:700;color:var(--soft-charcoal)}
-.fridge-item-copy>strong,.fridge-item-title{font-size:16px;line-height:1.35;overflow-wrap:anywhere}
-.fridge-item-copy small,.fridge-drawer-item small{font-size:14px;color:var(--soft-charcoal);overflow-wrap:anywhere}
+.fridge-item-copy>span,.fridge-drawer-item>div>span,.fridge-stack-heading span,.fridge-stack-member-copy>span{font-size:14px;font-weight:700;color:var(--soft-charcoal)}
+.fridge-item-copy>strong,.fridge-item-title,.fridge-stack-heading strong,.fridge-stack-member-copy>strong{font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+.fridge-item-copy small,.fridge-drawer-item small,.fridge-stack-member-copy small{font-size:14px;color:var(--soft-charcoal);overflow-wrap:anywhere}
 .fridge-item-title{min-height:44px;border:0;background:transparent;padding:0;text-align:left;color:var(--ink);font-weight:700;cursor:pointer}
 .fridge-item-title:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:var(--dusty-blue)}
 
 .fridge-item-controls{display:grid;grid-template-columns:minmax(112px,1fr) minmax(104px,1fr);gap:var(--space-2);align-items:end}
-.fridge-item-controls label,.fridge-priority-control{display:grid;gap:4px;min-width:0}
-.fridge-item-controls label>span,.fridge-priority-control>span{font-size:14px;color:var(--soft-charcoal)}
-.fridge-item-controls select,.fridge-priority-control select{min-height:44px;min-width:0;font-size:14px}
+.fridge-item-controls label,.fridge-priority-control,.fridge-stack-heading label,.fridge-unstack label{display:grid;gap:4px;min-width:0}
+.fridge-item-controls label>span,.fridge-priority-control>span,.fridge-stack-heading label>span,.fridge-unstack label>span{font-size:14px;color:var(--soft-charcoal)}
+.fridge-item-controls select,.fridge-priority-control select,.fridge-stack-heading select,.fridge-unstack select{min-height:44px;min-width:0;font-size:14px}
 .fridge-item-action{grid-column:1/-1;justify-self:start;min-height:44px}
+
+.fridge-stack-heading{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,1fr);gap:var(--space-2);align-items:end}
+.fridge-stack-heading>div{display:grid;gap:2px}
+.fridge-stack details{border-top:1px solid var(--line-subtle);padding-top:var(--space-2)}
+.fridge-stack summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:700}
+.fridge-stack-members{display:grid;border-top:1px solid var(--line-subtle)}
+.fridge-stack-member{display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,.7fr) auto minmax(150px,1fr);gap:var(--space-2);align-items:end;padding:var(--space-2) 0;border-bottom:1px solid var(--line-subtle)}
+.fridge-stack-member-copy{display:grid;gap:2px;min-width:0}
+.fridge-stack-order{display:flex;gap:var(--space-1)}
+.fridge-stack-order button,.fridge-unstack button{min-height:44px}
+.fridge-unstack{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--space-2);align-items:end}
 
 .fridge-drawer{border-top:1px solid var(--line-subtle);padding-top:var(--space-3)}
 .fridge-drawer summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:var(--space-2);font-weight:700}
@@ -78,6 +96,13 @@
 .fridge-drawer-item .fridge-item-action{grid-column:auto;justify-self:end}
 .fridge-drawer-empty{padding-bottom:var(--space-2)}
 
+@media (max-width:900px){
+  .fridge-stack-builder{grid-template-columns:1fr 1fr}
+  .fridge-stack-builder p{grid-column:1/-1}
+  .fridge-stack-member{grid-template-columns:1fr 1fr}
+  .fridge-stack-member-copy{grid-column:1/-1}
+}
+
 @media (max-width:800px){
   .fridge-capture-context{grid-template-columns:1fr 1fr}
   .fridge-capture-context p{grid-column:1/-1}
@@ -89,8 +114,8 @@
   .fridge-door-counts{justify-content:flex-start}
   .fridge-capture{grid-template-columns:1fr}
   .fridge-capture .quiet-button{justify-self:start}
-  .fridge-capture-context{grid-template-columns:1fr}
-  .fridge-capture-context p{grid-column:auto}
+  .fridge-capture-context,.fridge-stack-builder{grid-template-columns:1fr}
+  .fridge-capture-context p,.fridge-stack-builder p{grid-column:auto}
   .fridge-capture-context>div{flex-wrap:wrap}
   .fridge-drawer-item{grid-template-columns:1fr 1fr}
   .fridge-drawer-item>div{grid-column:1/-1}
@@ -100,7 +125,8 @@
 @media (max-width:520px){
   .fridge-door{margin-inline:calc(var(--space-3) * -1);padding-inline:var(--space-3)}
   .fridge-door-grid{min-width:640px}
-  .fridge-item-controls{grid-template-columns:1fr 1fr}
+  .fridge-item-controls,.fridge-stack-heading,.fridge-stack-member,.fridge-unstack{grid-template-columns:1fr}
+  .fridge-stack-member-copy{grid-column:auto}
   .fridge-drawer-item{grid-template-columns:1fr}
   .fridge-drawer-item>div{grid-column:auto}
 }
