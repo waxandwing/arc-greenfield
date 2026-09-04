@@ -74,13 +74,18 @@ async function seededContext(browser, options) {
   return context
 }
 
-async function openDay(context) {
-  const page = await context.newPage()
+function trackRuntimeErrors(page) {
   const runtimeErrors = []
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`)
   })
   page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`))
+  return runtimeErrors
+}
+
+async function openDay(context) {
+  const page = await context.newPage()
+  const runtimeErrors = trackRuntimeErrors(page)
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   const day = page.getByRole('button', { name: 'Day', exact: true })
   await day.click()
@@ -115,8 +120,10 @@ async function auditZoomEquivalent(browser) {
 
 async function auditKeyboard(browser) {
   const context = await seededContext(browser, { viewport: { width: 1024, height: 900 } })
-  const { page, runtimeErrors } = await openDay(context)
-  await page.locator('body').press('Home')
+  const page = await context.newPage()
+  const runtimeErrors = trackRuntimeErrors(page)
+  await page.goto(baseUrl, { waitUntil: 'networkidle' })
+
   await page.keyboard.press('Tab')
   const skip = page.locator('.skip-link')
   assert(await skip.evaluate((node) => document.activeElement === node), 'Keyboard: first Tab does not reach Skip to calendar.')
@@ -127,6 +134,15 @@ async function auditKeyboard(browser) {
   assert(focus.outline !== 'none' && focus.width >= 3, 'Keyboard: skip-link focus is not visibly strong enough.')
   await page.keyboard.press('Enter')
   assert(await page.locator('#calendar-stage').evaluate((node) => document.activeElement === node), 'Keyboard: activating Skip to calendar does not move focus to the main stage.')
+
+  const week = page.getByRole('button', { name: 'Week', exact: true })
+  const day = page.getByRole('button', { name: 'Day', exact: true })
+  await week.focus()
+  await page.keyboard.press('Tab')
+  assert(await day.evaluate((node) => document.activeElement === node), 'Keyboard: Tab from Week does not advance to Day.')
+  await page.keyboard.press('Enter')
+  await page.getByRole('heading', { name: 'Day' }).waitFor()
+  assert(await day.getAttribute('aria-current') === 'page', 'Keyboard: Enter on Day does not activate Day view.')
   assert(runtimeErrors.length === 0, `Keyboard: runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
 }
@@ -134,9 +150,7 @@ async function auditKeyboard(browser) {
 async function auditTouch(browser) {
   const context = await seededContext(browser, { viewport: { width: 390, height: 844 }, hasTouch: true })
   const page = await context.newPage()
-  const runtimeErrors = []
-  page.on('console', (message) => { if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`) })
-  page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`))
+  const runtimeErrors = trackRuntimeErrors(page)
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   const day = page.getByRole('button', { name: 'Day', exact: true })
   const dayBox = await day.boundingBox()
