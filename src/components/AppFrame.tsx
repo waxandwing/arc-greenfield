@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { CalendarViewRail } from './CalendarViewRail'
-import { FridgeDoorStrip } from './FridgeDoorStrip'
+import { FridgeDoorPanel } from './FridgeDoorPanel'
 import { ObjectFocusLayer, type ObjectFocusState } from './ObjectFocusLayer'
 import { WorkspaceStage } from './WorkspaceStage'
 import { useArcWorkspace } from '../app/useArcWorkspace'
+import { useFridgeDoorWorkspace } from '../app/useFridgeDoorWorkspace'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import { DEFAULT_HOME_VIEW } from '../navigation/calendarViews'
 import { hydrateLessonWorkspace, hydrateUnitWorkspace, type LessonWorkspaceInput, type UnitWorkspaceInput } from '../planning'
@@ -12,6 +13,12 @@ import { hydrateLessonWorkspace, hydrateUnitWorkspace, type LessonWorkspaceInput
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
   const workspace = useArcWorkspace(workspaceMode.close)
+  const fridge = useFridgeDoorWorkspace({
+    calendarId: workspace.calendar?.id ?? null,
+    units: workspace.unitWorkspace,
+    lessons: workspace.lessonWorkspace,
+    overrides: workspace.shiftState?.overrides ?? [],
+  })
   const [focus, setFocus] = useState<ObjectFocusState | null>(null)
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
@@ -113,10 +120,17 @@ export function AppFrame() {
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
           {workspaceMode.mode === 'calendar' && workspace.unitWorkspace && workspace.lessonWorkspace ? (
-            <FridgeDoorStrip
-              lessons={workspace.lessonWorkspace}
+            <FridgeDoorPanel
+              state={fridge.state}
               units={workspace.unitWorkspace}
-              overrides={workspace.shiftState?.overrides ?? []}
+              lessons={workspace.lessonWorkspace}
+              notice={fridge.notice}
+              onCreateMagnet={fridge.createLooseMagnet}
+              onReposition={fridge.reposition}
+              onSetPriority={fridge.setPriority}
+              onPutAway={fridge.putAwayItem}
+              onBringBack={fridge.bringBackItem}
+              onOpenUnit={(unitId) => setFocus({ kind: 'unit', unitId })}
               onOpenLesson={(lessonId) => setFocus({ kind: 'lesson', lessonId })}
             />
           ) : null}
