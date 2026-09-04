@@ -24,6 +24,8 @@ const contracts = [
   'tests/generated/src/planning/easelTeachingOutcome.contract.js',
   'tests/generated/src/planning/easelCoreLoop.hostile.contract.js',
   'tests/generated/src/planning/objectActions.contract.js',
+  'tests/generated/src/planning/fridgeDoor.contract.js',
+  'tests/generated/src/planning/fridgeDoorPersistence.contract.js',
   'tests/generated/src/planning/recoveryPreview.contract.js',
   'tests/generated/src/planning/recoveryShiftDraft.contract.js',
   'tests/generated/src/planning/recoveryResolution.contract.js',
