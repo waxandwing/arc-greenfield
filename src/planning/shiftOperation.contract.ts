@@ -3,6 +3,7 @@ import { createCourse, createSection } from './courses'
 import { createLessonDeliveryState, updateLessonDeliveryState, type LessonDeliveryState } from './deliveryState'
 import { createLesson } from './lessons'
 import { effectiveLessonDate, type SectionLessonDateOverride } from './sectionSchedule'
+import type { SameDayLessonApproval } from './sameDayApproval'
 import { applyShiftOperation, createShiftOperation, undoShiftOperation, validateShiftOperation, type ShiftOperation } from './shiftOperation'
 import { createUnit, placeUnit } from './units'
 
@@ -32,7 +33,7 @@ const test = createLesson({ id: 'lesson-test', calendarId: calendar.id, courseId
 const lessons = [lesson17, lesson18, test]
 const units = [unit]
 const overrides: SectionLessonDateOverride[] = []
-const approvals = []
+const approvals: SameDayLessonApproval[] = []
 const deliveryStates: LessonDeliveryState[] = []
 
 function validate(operation: ShiftOperation, nextOverrides = overrides, states = deliveryStates) {
