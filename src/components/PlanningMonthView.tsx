@@ -10,11 +10,13 @@ export function PlanningMonthView({
   planning,
   onOpenUnit,
   onOpenLesson,
+  unitIdForLesson,
 }: {
   month: MonthProjection
   planning: MonthPlanningProjection
   onOpenUnit?: (unitId: string) => void
   onOpenLesson?: (unitId: string, lessonId: string) => void
+  unitIdForLesson?: (lessonId: string) => string | undefined
 }) {
   return (
     <div className="planning-month">
@@ -38,6 +40,7 @@ export function PlanningMonthView({
                   inAnchorMonth={day.date.slice(0, 7) === month.monthKey}
                   signals={planningWeek?.days[dayIndex]?.lessonSignals ?? []}
                   onOpenLesson={onOpenLesson}
+                  unitIdForLesson={unitIdForLesson}
                 />
               ))}
             </div>
@@ -73,11 +76,13 @@ function MonthDayCell({
   inAnchorMonth,
   signals,
   onOpenLesson,
+  unitIdForLesson,
 }: {
   day: ProjectedDay
   inAnchorMonth: boolean
   signals: MonthLessonSignal[]
   onOpenLesson?: (unitId: string, lessonId: string) => void
+  unitIdForLesson?: (lessonId: string) => string | undefined
 }) {
   const dayStatus = day.kind === 'instructional' ? null : day.label || humanizeKind(day.kind)
   const classes = [
@@ -97,23 +102,26 @@ function MonthDayCell({
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
       </div>
       <div className="planning-month-signals">
-        {signals.map((signal) => <MonthLessonSignalView key={`${signal.courseId}:${signal.lessonId}`} signal={signal} onOpenLesson={onOpenLesson} />)}
+        {signals.map((signal) => <MonthLessonSignalView key={`${signal.courseId}:${signal.lessonId}`} signal={signal} onOpenLesson={onOpenLesson} unitId={unitIdForLesson?.(signal.lessonId)} />)}
       </div>
     </div>
   )
 }
 
-function MonthLessonSignalView({ signal, onOpenLesson }: { signal: MonthLessonSignal; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
+function MonthLessonSignalView({ signal, onOpenLesson, unitId }: { signal: MonthLessonSignal; onOpenLesson?: (unitId: string, lessonId: string) => void; unitId?: string }) {
   const statusSummary = summarizeStatuses(signal)
   const shiftedNames = signal.sections.filter((section) => section.isSectionOverride).map((section) => section.sectionName)
   const sectionNames = signal.sections.map((section) => section.sectionName)
-  const open = () => onOpenLesson?.(signal.unitId, signal.lessonId)
+  const canOpen = Boolean(onOpenLesson && unitId)
+  const open = () => {
+    if (unitId) onOpenLesson?.(unitId, signal.lessonId)
+  }
 
   return (
     <article
-      className={`planning-month-signal${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}${onOpenLesson ? ' planning-object-openable' : ''}`}
-      role={onOpenLesson ? 'button' : undefined}
-      tabIndex={onOpenLesson ? 0 : undefined}
+      className={`planning-month-signal${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}${canOpen ? ' planning-object-openable' : ''}`}
+      role={canOpen ? 'button' : undefined}
+      tabIndex={canOpen ? 0 : undefined}
       onClick={open}
       onKeyDown={(event) => activateOnKeyboard(event, open)}
     >
