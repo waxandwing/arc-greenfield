@@ -8,6 +8,7 @@ import {
   placeEntity,
   putAway,
   reconcileFridgeDoor,
+  removeEntityReference,
   saveFridgeDoorToBrowser,
   stackEntities,
   unstackEntity,
@@ -88,6 +89,23 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
     }
   }
 
+  function restoreExactState(next: FridgeDoorState): string | null {
+    if (!calendarId || !units || !lessons) return 'Arc cannot restore that Fridge Door state because planning state is incomplete. Nothing changed.'
+    try {
+      const reconciled = reconcileFridgeDoor(next, units.units, lessons.lessons, overrides, FRIDGE_DOOR_CAPACITY)
+      if (!sameState(next, reconciled)) return 'Arc could not safely restore the exact previous Fridge Door state. Nothing changed.'
+      const errors = validateFridgeDoorState(next, units.units, lessons.lessons)
+      if (errors.length > 0) return `Arc could not safely restore the previous Fridge Door state. ${errors[0]}`
+      const persisted = saveFridgeDoorToBrowser({ calendarId, state: next })
+      if (!persisted) return 'Arc could not save the restored Fridge Door state. Nothing changed.'
+      setState(next)
+      setNotice(null)
+      return null
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
   function createLooseMagnet(title: string): string | null {
     try {
       const magnet = createMagnet(title)
@@ -102,6 +120,24 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
   function placeCanonicalEntity(entityRef: FridgeEntityRef, canonicalUnits: UnitWorkspace, canonicalLessons: LessonWorkspace): string | null {
     if (state.placements.some((item) => item.entityRef === entityRef)) return null
     return commitWithCanonical(placeRecoverably(state, entityRef), canonicalUnits, canonicalLessons)
+  }
+
+  function removeReferenceWithCanonical(entityRef: FridgeEntityRef, canonicalUnits: UnitWorkspace, canonicalLessons: LessonWorkspace): string | null {
+    const current = state.placements.find((item) => item.entityRef === entityRef)
+    if (!current) return null
+    let next = removeEntityReference(state, entityRef)
+    if (current.stackId) {
+      const remaining = state.placements
+        .filter((item) => item.stackId === current.stackId && item.entityRef !== entityRef)
+        .sort((a, b) => (a.stackOrder ?? 0) - (b.stackOrder ?? 0))
+      if (remaining.length === 1) {
+        const item = remaining[0]
+        next = unstackEntity(next, item.entityRef, item.row, item.column)
+      } else if (remaining.length > 1) {
+        next = stackEntities(next, remaining.map((item) => item.entityRef), current.stackId)
+      }
+    }
+    return commitWithCanonical(next, canonicalUnits, canonicalLessons)
   }
 
   function reposition(entityRef: FridgeEntityRef, row: number, column: number): string | null {
@@ -228,6 +264,8 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
     clearNotice: () => setNotice(null),
     createLooseMagnet,
     placeCanonicalEntity,
+    removeReferenceWithCanonical,
+    restoreExactState,
     reposition,
     stackItem,
     reorderStackItem,
