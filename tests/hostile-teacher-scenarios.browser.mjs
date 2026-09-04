@@ -78,6 +78,10 @@ const shiftInput = {
   overrides: [
     { sectionId: 'section-p7', lessonId: 'lesson-c', plannedDate: '2026-09-18' },
   ],
+  sameDayApprovals: [
+    { sectionId: 'section-p5', date: '2026-09-16', lessonIds: ['lesson-a', 'lesson-b'] },
+    { sectionId: 'section-p7', date: '2026-09-16', lessonIds: ['lesson-a', 'lesson-b'] },
+  ],
   undo: null,
 }
 
@@ -86,7 +90,7 @@ const storage = {
   'arc.planningWorkspace.v1': JSON.stringify({ schemaVersion: 1, input: planningInput }),
   'arc.units.v1': JSON.stringify({ schemaVersion: 1, input: unitsInput }),
   'arc.lessons.v1': JSON.stringify({ schemaVersion: 1, input: lessonsInput }),
-  'arc.shift.v1': JSON.stringify({ schemaVersion: 1, input: shiftInput }),
+  'arc.shift.v1': JSON.stringify({ schemaVersion: 2, input: shiftInput }),
 }
 
 async function activateView(page, view) {
@@ -183,7 +187,7 @@ try {
   assert(touchTargets.length > 0 && touchTargets.every((height) => height >= 44), `390px touch: an object activation target fell below the 44px floor (${Math.min(...touchTargets)}px).`)
   await touch.close()
 
-  console.log('Hostile teacher scenario audit passed: multiple same-day Lessons, multi-course truth, one Section behind, no-school protection, multi-week Units, Quarter/Year identity, keyboard routing, reload persistence, 390px touch containment.')
+  console.log('Hostile teacher scenario audit passed: explicit same-day approval, multiple same-day Lessons, multi-course truth, one Section behind, no-school protection, multi-week Units, Quarter/Year identity, keyboard routing, reload persistence, 390px touch containment.')
 } finally {
   await browser.close()
 }
