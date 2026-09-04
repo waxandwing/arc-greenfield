@@ -67,10 +67,15 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
   }, [calendarId, units, lessons, overrides])
 
   function commit(next: FridgeDoorState): string | null {
-    if (!calendarId || !units || !lessons) return 'Arc cannot change the Fridge Door because planning state is incomplete. Nothing changed.'
+    if (!units || !lessons) return 'Arc cannot change the Fridge Door because planning state is incomplete. Nothing changed.'
+    return commitWithCanonical(next, units, lessons)
+  }
+
+  function commitWithCanonical(next: FridgeDoorState, canonicalUnits: UnitWorkspace, canonicalLessons: LessonWorkspace): string | null {
+    if (!calendarId) return 'Arc cannot change the Fridge Door because planning state is incomplete. Nothing changed.'
     try {
-      const reconciled = reconcileFridgeDoor(next, units.units, lessons.lessons, overrides, FRIDGE_DOOR_CAPACITY)
-      const errors = validateFridgeDoorState(reconciled, units.units, lessons.lessons)
+      const reconciled = reconcileFridgeDoor(next, canonicalUnits.units, canonicalLessons.lessons, overrides, FRIDGE_DOOR_CAPACITY)
+      const errors = validateFridgeDoorState(reconciled, canonicalUnits.units, canonicalLessons.lessons)
       if (errors.length > 0) return `Arc refused that Fridge Door change. ${errors[0]}`
       const persisted = saveFridgeDoorToBrowser({ calendarId, state: reconciled })
       setState(reconciled)
@@ -85,15 +90,16 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
     try {
       const magnet = createMagnet(title)
       let next: FridgeDoorState = { ...state, magnets: [...state.magnets, magnet] }
-      const ref = `magnet:${magnet.id}` as const
-      const slot = firstFreeDoorSlot(next)
-      next = slot
-        ? placeEntity(next, ref, 'door', slot.row, slot.column)
-        : placeEntity(next, ref, 'drawer', 0, next.placements.filter((item) => item.surface === 'drawer').length)
+      next = placeRecoverably(next, `magnet:${magnet.id}`)
       return commit(next)
     } catch (error) {
       return error instanceof Error ? error.message : String(error)
     }
+  }
+
+  function placeCanonicalEntity(entityRef: FridgeEntityRef, canonicalUnits: UnitWorkspace, canonicalLessons: LessonWorkspace): string | null {
+    if (state.placements.some((item) => item.entityRef === entityRef)) return null
+    return commitWithCanonical(placeRecoverably(state, entityRef), canonicalUnits, canonicalLessons)
   }
 
   function reposition(entityRef: FridgeEntityRef, row: number, column: number): string | null {
@@ -138,11 +144,19 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
     notice,
     clearNotice: () => setNotice(null),
     createLooseMagnet,
+    placeCanonicalEntity,
     reposition,
     setPriority,
     putAwayItem,
     bringBackItem,
   }
+}
+
+function placeRecoverably(state: FridgeDoorState, entityRef: FridgeEntityRef): FridgeDoorState {
+  const slot = firstFreeDoorSlot(state)
+  return slot
+    ? placeEntity(state, entityRef, 'door', slot.row, slot.column)
+    : placeEntity(state, entityRef, 'drawer', 0, state.placements.filter((item) => item.surface === 'drawer').length)
 }
 
 function firstFreeDoorSlot(state: FridgeDoorState): { row: number; column: number } | null {
