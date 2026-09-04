@@ -1,0 +1,1 @@
+Temporary isolated preview-repair branch for validating the latest Arc build without touching active development. This branch is not intended for merge unless explicitly reviewed and approved.
