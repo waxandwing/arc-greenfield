@@ -9,6 +9,8 @@ import {
   putAway,
   reconcileFridgeDoor,
   saveFridgeDoorToBrowser,
+  stackEntities,
+  unstackEntity,
   validateFridgeDoorState,
   type FridgeDoorState,
   type FridgeEntityRef,
@@ -103,9 +105,8 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
   }
 
   function reposition(entityRef: FridgeEntityRef, row: number, column: number): string | null {
-    if (!Number.isInteger(row) || !Number.isInteger(column) || row < 0 || column < 0 || row >= FRIDGE_DOOR_CAPACITY.rows || column >= FRIDGE_DOOR_CAPACITY.columns) {
-      return 'Choose a valid Fridge Door position.'
-    }
+    const positionError = validateDoorPosition(row, column)
+    if (positionError) return positionError
     const current = state.placements.find((item) => item.entityRef === entityRef)
     if (!current) return 'That Fridge item is no longer available.'
     if (current.stackId) return 'Open the stack before repositioning an individual item.'
@@ -114,6 +115,88 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
     let next = placeEntity(state, entityRef, 'door', row, column)
     if (current.priority) next = assignPriority(next, entityRef, current.priority)
     return commit(next)
+  }
+
+  function stackItem(anchorRef: FridgeEntityRef, memberRef: FridgeEntityRef): string | null {
+    if (anchorRef === memberRef) return 'Choose two different Fridge items to stack.'
+    if (anchorRef.startsWith('unit:') || memberRef.startsWith('unit:')) return 'Units stay separate on the Fridge Door and cannot be stack members.'
+    const anchor = state.placements.find((item) => item.entityRef === anchorRef)
+    const member = state.placements.find((item) => item.entityRef === memberRef)
+    if (!anchor || !member) return 'One of those Fridge items is no longer available.'
+    if (anchor.surface !== member.surface) return 'Stack members must be on the same Fridge surface.'
+    if (member.stackId) return member.stackId === anchor.stackId ? null : 'Open the other stack before combining stacks.'
+
+    const stackId = anchor.stackId ?? createStackId()
+    const existing = anchor.stackId
+      ? state.placements
+        .filter((item) => item.stackId === anchor.stackId)
+        .sort((a, b) => (a.stackOrder ?? 0) - (b.stackOrder ?? 0))
+        .map((item) => item.entityRef)
+      : [anchorRef]
+    try {
+      return commit(stackEntities(state, [...existing, memberRef], stackId))
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function reorderStackItem(entityRef: FridgeEntityRef, direction: 'up' | 'down'): string | null {
+    const current = state.placements.find((item) => item.entityRef === entityRef)
+    if (!current?.stackId) return 'That item is not in a stack.'
+    const members = state.placements
+      .filter((item) => item.stackId === current.stackId)
+      .sort((a, b) => (a.stackOrder ?? 0) - (b.stackOrder ?? 0))
+      .map((item) => item.entityRef)
+    const index = members.indexOf(entityRef)
+    const target = direction === 'up' ? index - 1 : index + 1
+    if (index < 0 || target < 0 || target >= members.length) return null
+    ;[members[index], members[target]] = [members[target], members[index]]
+    try {
+      return commit(stackEntities(state, members, current.stackId))
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function repositionStack(stackId: string, row: number, column: number): string | null {
+    const positionError = validateDoorPosition(row, column)
+    if (positionError) return positionError
+    const members = state.placements
+      .filter((item) => item.stackId === stackId)
+      .sort((a, b) => (a.stackOrder ?? 0) - (b.stackOrder ?? 0))
+    if (members.length < 2) return 'That stack is no longer available.'
+    const occupied = state.placements.some((item) => item.surface === 'door' && item.stackId !== stackId && item.row === row && item.column === column)
+    if (occupied) return 'That Fridge Door position is already occupied.'
+    try {
+      let next = state
+      for (const member of members) next = unstackEntity(next, member.entityRef, row, column)
+      next = stackEntities(next, members.map((member) => member.entityRef), stackId)
+      return commit(next)
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function unstackItem(entityRef: FridgeEntityRef, row: number, column: number): string | null {
+    const positionError = validateDoorPosition(row, column)
+    if (positionError) return positionError
+    const current = state.placements.find((item) => item.entityRef === entityRef)
+    if (!current?.stackId) return 'That item is not in a stack.'
+    const occupied = state.placements.some((item) => item.surface === 'door' && item.stackId !== current.stackId && item.row === row && item.column === column)
+    if (occupied) return 'That Fridge Door position is already occupied.'
+    const members = state.placements
+      .filter((item) => item.stackId === current.stackId)
+      .sort((a, b) => (a.stackOrder ?? 0) - (b.stackOrder ?? 0))
+    try {
+      let next = unstackEntity(state, entityRef, row, column)
+      if (members.length === 2) {
+        const remaining = members.find((item) => item.entityRef !== entityRef)
+        if (remaining) next = unstackEntity(next, remaining.entityRef, remaining.row, remaining.column)
+      }
+      return commit(next)
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
   }
 
   function setPriority(entityRef: FridgeEntityRef, priority: FridgePriority): string | null {
@@ -146,6 +229,10 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
     createLooseMagnet,
     placeCanonicalEntity,
     reposition,
+    stackItem,
+    reorderStackItem,
+    repositionStack,
+    unstackItem,
     setPriority,
     putAwayItem,
     bringBackItem,
@@ -167,6 +254,20 @@ function firstFreeDoorSlot(state: FridgeDoorState): { row: number; column: numbe
     }
   }
   return null
+}
+
+function validateDoorPosition(row: number, column: number): string | null {
+  if (!Number.isInteger(row) || !Number.isInteger(column) || row < 0 || column < 0 || row >= FRIDGE_DOOR_CAPACITY.rows || column >= FRIDGE_DOOR_CAPACITY.columns) {
+    return 'Choose a valid Fridge Door position.'
+  }
+  return null
+}
+
+function createStackId(): string {
+  const token = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  return `stack-${token}`
 }
 
 function sameState(a: FridgeDoorState, b: FridgeDoorState): boolean {
