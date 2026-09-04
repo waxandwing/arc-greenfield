@@ -36,6 +36,20 @@ async function auditDesktop(browser) {
   const alert = page.getByRole('alert', { name: 'Calendar setup issues' })
   assert(await alert.isVisible(), 'Validation: failed calendar submit must expose an alert summary.')
   assert((await alert.textContent())?.includes('Check these before saving'), 'Validation: alert summary copy missing.')
+  assert(await alert.evaluate((node) => document.activeElement === node), 'Validation: failed submit must move focus to the error summary.')
+
+  const schoolYear = page.locator('#school-year-label')
+  const firstDay = page.locator('#first-school-day')
+  const lastDay = page.locator('#last-school-day')
+  for (const [name, field] of [['school year', schoolYear], ['first day', firstDay], ['last day', lastDay]]) {
+    assert(await field.getAttribute('aria-invalid') === 'true', `Validation: ${name} is not exposed as invalid.`)
+    assert(await field.getAttribute('aria-describedby') === 'calendar-setup-errors', `Validation: ${name} is not connected to the error summary.`)
+  }
+
+  await page.getByRole('button', { name: 'Add date' }).click()
+  assert(await page.getByLabel('Exception 1 date').count() === 1, 'Dynamic rows: exception date needs contextual accessible naming.')
+  assert(await page.getByLabel('Exception 1 type').count() === 1, 'Dynamic rows: exception type needs contextual accessible naming.')
+  assert(await page.getByRole('button', { name: 'Remove exception 1' }).count() === 1, 'Dynamic rows: remove action needs contextual accessible naming.')
 
   const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(geometry.scroll <= geometry.width + 1, `Desktop: unexpected document horizontal overflow (${geometry.scroll} > ${geometry.width}).`)
@@ -90,7 +104,7 @@ try {
   await auditTouchAndReflow(browser)
   await auditMinimumWidth(browser)
   await auditReducedMotion(browser)
-  console.log('Arc browser accessibility smoke gate passed: landmarks, initial keyboard order, skip link, validation alert, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
+  console.log('Arc browser accessibility smoke gate passed: landmarks, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
 } finally {
   await browser.close()
 }
