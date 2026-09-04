@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { CalendarView } from '../navigation/calendarViews'
-import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
+import { eachCalendarDay, isConfirmedInstructionalDay, projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import { projectDayContinuity, type DayContinuityProjection } from '../planning/dayContinuityProjection'
 import { projectPlanningRange } from '../planning/planningProjection'
@@ -24,13 +24,14 @@ type Props = {
   calendar: SchoolCalendar | null
   anchorDate: ISODate | null
   planningContext?: PlanningContext | null
+  dragLessonId?: string
   onOpenUnit?: (unitId: string) => void
   onOpenLesson?: (unitId: string, lessonId: string) => void
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, onOpenUnit, onOpenLesson }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, dragLessonId, onOpenUnit, onOpenLesson }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -40,6 +41,8 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
     )
   }
 
+  const dragValidDates = validLessonDragDates(calendar, planningContext, dragLessonId)
+
   switch (view) {
     case 'Day': {
       const projection = projectDay(calendar, anchorDate)
@@ -48,6 +51,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           title={formatLongDate(projection.date)}
           day={projection.day}
           planningContext={planningContext}
+          dragTarget={dragValidDates.has(projection.date)}
           onOpenUnit={onOpenUnit}
           onOpenLesson={onOpenLesson}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
@@ -62,6 +66,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           title={formatDateRange(weekdays[0]?.date ?? projection.startDate, weekdays[weekdays.length - 1]?.date ?? projection.endDate)}
           days={weekdays}
           planningContext={planningContext}
+          dragValidDates={dragValidDates}
           onOpenUnit={onOpenUnit}
           onOpenLesson={onOpenLesson}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
@@ -90,6 +95,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
               <PlanningMonthView
                 month={projection}
                 planning={monthPlanning}
+                dragValidDates={dragValidDates}
                 onOpenUnit={onOpenUnit}
                 onOpenLesson={onOpenLesson}
                 unitIdForLesson={(lessonId) => planningContext.lessons.lessons.find((lesson) => lesson.id === lessonId)?.unitId}
@@ -133,9 +139,9 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, termContext, onOpenUnit, onOpenLesson }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode; onOpenUnit?: (unitId: string) => void; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
+function PlanningDayStrip({ title, day, planningContext, termContext, dragTarget, onOpenUnit, onOpenLesson }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode; dragTarget: boolean; onOpenUnit?: (unitId: string) => void; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
   return (
-    <section className="projection-section" aria-label={title}>
+    <section className={`projection-section${dragTarget ? ' drag-date-target drag-date-target--day' : ''}`} aria-label={title} data-drag-date-target={dragTarget ? day.date : undefined}>
       <ProjectionHeading title={title} termContext={termContext} />
       {planningContext ? (
         <PlanningDayContinuityView
@@ -153,7 +159,7 @@ function PlanningDayStrip({ title, day, planningContext, termContext, onOpenUnit
   )
 }
 
-function PlanningWeekStrip({ title, days, planningContext, termContext, onOpenUnit, onOpenLesson }: { title: string; days: ProjectedDay[]; planningContext?: PlanningContext | null; termContext?: ReactNode; onOpenUnit?: (unitId: string) => void; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
+function PlanningWeekStrip({ title, days, planningContext, termContext, dragValidDates, onOpenUnit, onOpenLesson }: { title: string; days: ProjectedDay[]; planningContext?: PlanningContext | null; termContext?: ReactNode; dragValidDates: Set<ISODate>; onOpenUnit?: (unitId: string) => void; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
@@ -163,6 +169,7 @@ function PlanningWeekStrip({ title, days, planningContext, termContext, onOpenUn
             days={days}
             planning={planningForDays(days, planningContext)}
             continuity={days.map((day) => continuityForDay(day.date, planningContext))}
+            dragValidDates={dragValidDates}
             onOpenUnit={onOpenUnit}
             onOpenLesson={onOpenLesson}
           />
@@ -211,4 +218,13 @@ function continuityForDay(date: ISODate, context: PlanningContext): DayContinuit
     lessons: context.lessons,
     overrides: context.shiftState?.overrides ?? [],
   })
+}
+
+function validLessonDragDates(calendar: SchoolCalendar, context: PlanningContext | null | undefined, lessonId: string | undefined): Set<ISODate> {
+  if (!context || !lessonId) return new Set()
+  const lesson = context.lessons.lessons.find((candidate) => candidate.id === lessonId)
+  if (!lesson) return new Set()
+  const unit = context.units.units.find((candidate) => candidate.id === lesson.unitId)
+  if (!unit?.placement) return new Set()
+  return new Set(eachCalendarDay(unit.placement.startDate, unit.placement.endDate).filter((date) => isConfirmedInstructionalDay(calendar, date)))
 }
