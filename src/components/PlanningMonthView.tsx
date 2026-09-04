@@ -1,15 +1,20 @@
+import type { KeyboardEvent } from 'react'
 import type { MonthProjection, ProjectedDay } from '../calendar/projections'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
-import { formatLongDate, formatMonthKey, formatShortDate } from './dateLabels'
+import { formatLongDate, formatShortDate } from './dateLabels'
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function PlanningMonthView({
   month,
   planning,
+  onOpenUnit,
+  onOpenLesson,
 }: {
   month: MonthProjection
   planning: MonthPlanningProjection
+  onOpenUnit?: (unitId: string) => void
+  onOpenLesson?: (unitId: string, lessonId: string) => void
 }) {
   return (
     <div className="planning-month">
@@ -22,7 +27,7 @@ export function PlanningMonthView({
           <section className="planning-month-week" key={calendarWeek.startDate} aria-label={`Week of ${formatShortDate(calendarWeek.startDate)}`}>
             {planningWeek?.unitSegments.length ? (
               <div className="planning-month-unit-stack">
-                {planningWeek.unitSegments.map((segment) => <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} />)}
+                {planningWeek.unitSegments.map((segment) => <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} onOpenUnit={onOpenUnit} />)}
               </div>
             ) : null}
             <div className="planning-month-days">
@@ -32,6 +37,7 @@ export function PlanningMonthView({
                   day={day}
                   inAnchorMonth={day.date.slice(0, 7) === month.monthKey}
                   signals={planningWeek?.days[dayIndex]?.lessonSignals ?? []}
+                  onOpenLesson={onOpenLesson}
                 />
               ))}
             </div>
@@ -42,13 +48,18 @@ export function PlanningMonthView({
   )
 }
 
-function MonthUnitLane({ segment }: { segment: MonthUnitSegment }) {
+function MonthUnitLane({ segment, onOpenUnit }: { segment: MonthUnitSegment; onOpenUnit?: (unitId: string) => void }) {
+  const open = () => onOpenUnit?.(segment.unitId)
   return (
     <div className="planning-month-unit-lane">
       <div
-        className="planning-month-unit-band"
+        className={`planning-month-unit-band${onOpenUnit ? ' planning-object-openable' : ''}`}
         style={{ gridColumn: `${segment.startColumn + 1} / ${segment.endColumn + 2}` }}
         title={`${segment.courseTitle} · ${segment.title}`}
+        role={onOpenUnit ? 'button' : undefined}
+        tabIndex={onOpenUnit ? 0 : undefined}
+        onClick={open}
+        onKeyDown={(event) => activateOnKeyboard(event, open)}
       >
         <span className="planning-month-unit-course">{segment.courseTitle}</span>
         <span className="planning-month-unit-title">{segment.title}</span>
@@ -61,10 +72,12 @@ function MonthDayCell({
   day,
   inAnchorMonth,
   signals,
+  onOpenLesson,
 }: {
   day: ProjectedDay
   inAnchorMonth: boolean
   signals: MonthLessonSignal[]
+  onOpenLesson?: (unitId: string, lessonId: string) => void
 }) {
   const dayStatus = day.kind === 'instructional' ? null : day.label || humanizeKind(day.kind)
   const classes = [
@@ -84,19 +97,26 @@ function MonthDayCell({
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
       </div>
       <div className="planning-month-signals">
-        {signals.map((signal) => <MonthLessonSignalView key={`${signal.courseId}:${signal.lessonId}`} signal={signal} />)}
+        {signals.map((signal) => <MonthLessonSignalView key={`${signal.courseId}:${signal.lessonId}`} signal={signal} onOpenLesson={onOpenLesson} />)}
       </div>
     </div>
   )
 }
 
-function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
+function MonthLessonSignalView({ signal, onOpenLesson }: { signal: MonthLessonSignal; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
   const statusSummary = summarizeStatuses(signal)
   const shiftedNames = signal.sections.filter((section) => section.isSectionOverride).map((section) => section.sectionName)
   const sectionNames = signal.sections.map((section) => section.sectionName)
+  const open = () => onOpenLesson?.(signal.unitId, signal.lessonId)
 
   return (
-    <article className={`planning-month-signal${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}`}>
+    <article
+      className={`planning-month-signal${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}${onOpenLesson ? ' planning-object-openable' : ''}`}
+      role={onOpenLesson ? 'button' : undefined}
+      tabIndex={onOpenLesson ? 0 : undefined}
+      onClick={open}
+      onKeyDown={(event) => activateOnKeyboard(event, open)}
+    >
       <div className="planning-month-signal-heading">
         <span className="planning-month-signal-title">{signal.title}</span>
         {signal.datePolicy === 'fixed' ? <span className="planning-month-fixed">Fixed</span> : null}
@@ -120,6 +140,12 @@ function summarizeStatuses(signal: MonthLessonSignal): string | null {
   if (counts.completed) pieces.push(`${counts.completed} completed`)
   if (counts.skipped) pieces.push(`${counts.skipped} skipped`)
   return pieces.length ? pieces.join(' · ') : null
+}
+
+function activateOnKeyboard(event: KeyboardEvent<HTMLElement>, action: () => void) {
+  if (event.key !== 'Enter' && event.key !== ' ') return
+  event.preventDefault()
+  action()
 }
 
 function humanizeKind(kind: ProjectedDay['kind']): string {
