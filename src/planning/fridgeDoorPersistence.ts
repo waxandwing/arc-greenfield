@@ -9,6 +9,7 @@ import {
   type FridgeEntityRef,
   type FridgePlacement,
   type FridgePriority,
+  type FridgePriorityAssignment,
   type FridgeSurface,
   type Magnet,
 } from './fridgeDoor'
@@ -20,9 +21,17 @@ export type FridgeDoorPersistenceInput = {
   state: FridgeDoorState
 }
 
-type StoredFridgeDoor = {
-  schemaVersion: 1
+type StoredFridgeDoorV2 = {
+  schemaVersion: 2
   input: FridgeDoorPersistenceInput
+}
+
+type StoredFridgeDoorV1 = {
+  schemaVersion: 1
+  input: {
+    calendarId: string
+    state: unknown
+  }
 }
 
 export type FridgeDoorLoadResult =
@@ -32,15 +41,22 @@ export type FridgeDoorLoadResult =
   | { status: 'unavailable' }
 
 export function serializeFridgeDoor(input: FridgeDoorPersistenceInput): string {
-  return JSON.stringify({ schemaVersion: 1, input } satisfies StoredFridgeDoor)
+  return JSON.stringify({ schemaVersion: 2, input } satisfies StoredFridgeDoorV2)
 }
 
 export function deserializeFridgeDoor(raw: string): FridgeDoorPersistenceInput | null {
   try {
-    const parsed = JSON.parse(raw) as Partial<StoredFridgeDoor>
-    if (parsed.schemaVersion !== 1 || !parsed.input || typeof parsed.input.calendarId !== 'string') return null
-    const state = parseState(parsed.input.state)
-    return state ? { calendarId: parsed.input.calendarId, state } : null
+    const parsed = JSON.parse(raw) as Partial<StoredFridgeDoorV2 & StoredFridgeDoorV1>
+    if (!parsed.input || typeof parsed.input.calendarId !== 'string') return null
+    if (parsed.schemaVersion === 2) {
+      const state = parseStateV2(parsed.input.state)
+      return state ? { calendarId: parsed.input.calendarId, state } : null
+    }
+    if (parsed.schemaVersion === 1) {
+      const state = parseStateV1(parsed.input.state)
+      return state ? { calendarId: parsed.input.calendarId, state } : null
+    }
+    return null
   } catch {
     return null
   }
@@ -98,25 +114,29 @@ export function loadFridgeDoorFromBrowser(
   return restoreFridgeDoor(raw, calendarId, units, lessons, overrides, capacity)
 }
 
-function parseState(raw: unknown): FridgeDoorState | null {
+function parseStateV2(raw: unknown): FridgeDoorState | null {
   if (!raw || typeof raw !== 'object') return null
   const candidate = raw as Partial<FridgeDoorState>
-  if (!Array.isArray(candidate.magnets) || !Array.isArray(candidate.placements)) return null
+  if (!Array.isArray(candidate.magnets) || !Array.isArray(candidate.placements) || !Array.isArray(candidate.priorities)) return null
+  const magnets = parseMagnets(candidate.magnets)
+  const placements = parsePlacements(candidate.placements)
+  const priorities = parsePriorities(candidate.priorities)
+  return magnets && placements && priorities ? { magnets, placements, priorities } : null
+}
 
-  const magnets: Magnet[] = []
-  for (const rawMagnet of candidate.magnets) {
-    if (!rawMagnet || typeof rawMagnet !== 'object') return null
-    const magnet = rawMagnet as Partial<Magnet>
-    if (typeof magnet.id !== 'string' || typeof magnet.title !== 'string') return null
-    magnets.push({ id: magnet.id, title: magnet.title })
-  }
+function parseStateV1(raw: unknown): FridgeDoorState | null {
+  if (!raw || typeof raw !== 'object') return null
+  const candidate = raw as { magnets?: unknown; placements?: unknown }
+  if (!Array.isArray(candidate.magnets) || !Array.isArray(candidate.placements)) return null
+  const magnets = parseMagnets(candidate.magnets)
+  if (!magnets) return null
 
   const placements: FridgePlacement[] = []
+  const priorities: FridgePriorityAssignment[] = []
   for (const rawPlacement of candidate.placements) {
     if (!rawPlacement || typeof rawPlacement !== 'object') return null
-    const placement = rawPlacement as Partial<FridgePlacement>
-    if (!isEntityRef(placement.entityRef)) return null
-    if (!isSurface(placement.surface)) return null
+    const placement = rawPlacement as Record<string, unknown>
+    if (!isEntityRef(placement.entityRef) || !isSurface(placement.surface)) return null
     if (!Number.isInteger(placement.row) || !Number.isInteger(placement.column)) return null
     if (!(placement.stackId === null || typeof placement.stackId === 'string')) return null
     if (!(placement.stackOrder === null || Number.isInteger(placement.stackOrder))) return null
@@ -126,13 +146,55 @@ function parseState(raw: unknown): FridgeDoorState | null {
       surface: placement.surface,
       row: placement.row as number,
       column: placement.column as number,
+      stackId: placement.stackId as string | null,
+      stackOrder: placement.stackOrder as number | null,
+    })
+    if (placement.priority) priorities.push({ entityRef: placement.entityRef, priority: placement.priority })
+  }
+  return { magnets, placements, priorities }
+}
+
+function parseMagnets(rawMagnets: unknown[]): Magnet[] | null {
+  const magnets: Magnet[] = []
+  for (const rawMagnet of rawMagnets) {
+    if (!rawMagnet || typeof rawMagnet !== 'object') return null
+    const magnet = rawMagnet as Partial<Magnet>
+    if (typeof magnet.id !== 'string' || typeof magnet.title !== 'string') return null
+    magnets.push({ id: magnet.id, title: magnet.title })
+  }
+  return magnets
+}
+
+function parsePlacements(rawPlacements: unknown[]): FridgePlacement[] | null {
+  const placements: FridgePlacement[] = []
+  for (const rawPlacement of rawPlacements) {
+    if (!rawPlacement || typeof rawPlacement !== 'object') return null
+    const placement = rawPlacement as Partial<FridgePlacement>
+    if (!isEntityRef(placement.entityRef) || !isSurface(placement.surface)) return null
+    if (!Number.isInteger(placement.row) || !Number.isInteger(placement.column)) return null
+    if (!(placement.stackId === null || typeof placement.stackId === 'string')) return null
+    if (!(placement.stackOrder === null || Number.isInteger(placement.stackOrder))) return null
+    placements.push({
+      entityRef: placement.entityRef,
+      surface: placement.surface,
+      row: placement.row as number,
+      column: placement.column as number,
       stackId: placement.stackId,
       stackOrder: placement.stackOrder as number | null,
-      priority: placement.priority,
     })
   }
+  return placements
+}
 
-  return { magnets, placements }
+function parsePriorities(rawPriorities: unknown[]): FridgePriorityAssignment[] | null {
+  const priorities: FridgePriorityAssignment[] = []
+  for (const rawPriority of rawPriorities) {
+    if (!rawPriority || typeof rawPriority !== 'object') return null
+    const assignment = rawPriority as Partial<FridgePriorityAssignment>
+    if (!isEntityRef(assignment.entityRef) || !isPriority(assignment.priority) || assignment.priority === null) return null
+    priorities.push({ entityRef: assignment.entityRef, priority: assignment.priority })
+  }
+  return priorities
 }
 
 function doorFitsCapacity(state: FridgeDoorState, capacity: FridgeCapacity): boolean {
