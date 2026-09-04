@@ -136,6 +136,7 @@ async function auditViewport(browser, width, height) {
   members = stackMembers(fridgeStored, stackId)
   assert(members.length === 3, `${width}px: adding a loose Lesson did not extend the existing stack.`)
   assert(members.map((item) => item.stackOrder).join(',') === '0,1,2', `${width}px: three-item stack orders are not unique and contiguous.`)
+  assert(members.every((item) => !item.entityRef.startsWith('unit:')), `${width}px: Unit entered persisted stack membership.`)
 
   const stackCard = page.locator(`[data-fridge-stack="${stackId}"]`)
   assert(await stackCard.isVisible(), `${width}px: stack is not rendered as one grouped object.`)
@@ -178,6 +179,21 @@ async function auditViewport(browser, width, height) {
 
   const reloadedStack = page.locator(`[data-fridge-stack="${stackId}"]`)
   await reloadedStack.getByText('Open stack', { exact: true }).click()
+
+  const liveStackVisual = await reloadedStack.evaluate((stack) => {
+    const label = stack.querySelector('.fridge-stack-heading strong')
+    const meta = stack.querySelector('.fridge-stack-heading span')
+    const controls = [...stack.querySelectorAll('button:not(:disabled), select:not(:disabled), summary')]
+    return {
+      labelSize: label ? parseFloat(getComputedStyle(label).fontSize) : 0,
+      metaSize: meta ? parseFloat(getComputedStyle(meta).fontSize) : 0,
+      minControlHeight: controls.length ? Math.min(...controls.map((node) => node.getBoundingClientRect().height)) : 0,
+    }
+  })
+  assert(liveStackVisual.labelSize >= 16, `${width}px: live stack primary text fell below 16px.`)
+  assert(liveStackVisual.metaSize >= 14, `${width}px: live stack metadata fell below 14px.`)
+  assert(liveStackVisual.minControlHeight >= 44, `${width}px: live expanded stack control fell below 44px (${liveStackVisual.minControlHeight}px).`)
+
   const reloadedLessonA = reloadedStack.locator('[data-fridge-ref="lesson:lesson-a"]')
   const titleButton = reloadedLessonA.getByRole('button', { name: 'Cylinder Seal Comparison', exact: true })
   await titleButton.focus()
@@ -216,28 +232,18 @@ async function auditViewport(browser, width, height) {
   assert(JSON.stringify(canonicalAfterUnstack.units) === JSON.stringify(canonicalBefore.units), `${width}px: unstacking mutated canonical Unit data.`)
   assert(JSON.stringify(canonicalAfterUnstack.lessons) === JSON.stringify(canonicalBefore.lessons), `${width}px: unstacking mutated canonical Lesson data.`)
 
-  const visual = await page.evaluate(() => {
-    const stack = document.querySelector('.fridge-stack')
-    const stackLabel = stack?.querySelector('.fridge-stack-heading strong')
-    const stackMeta = stack?.querySelector('.fridge-stack-heading span')
-    const controls = [...document.querySelectorAll('.fridge-door button:not(:disabled), .fridge-door select:not(:disabled), .fridge-door input:not(:disabled), .fridge-door summary')]
+  const geometry = await page.evaluate(() => {
     const root = document.documentElement
     const scroll = document.querySelector('.fridge-door-scroll')
     return {
-      stackLabelSize: stackLabel ? parseFloat(getComputedStyle(stackLabel).fontSize) : 16,
-      stackMetaSize: stackMeta ? parseFloat(getComputedStyle(stackMeta).fontSize) : 14,
-      minControlHeight: controls.length ? Math.min(...controls.map((node) => node.getBoundingClientRect().height)) : 0,
       documentWidth: root.scrollWidth,
       viewportWidth: root.clientWidth,
       fridgeScrollWidth: scroll?.scrollWidth ?? 0,
       fridgeClientWidth: scroll?.clientWidth ?? 0,
     }
   })
-  assert(visual.stackLabelSize >= 16, `${width}px: stack primary text fell below 16px.`)
-  assert(visual.stackMetaSize >= 14, `${width}px: stack metadata fell below 14px.`)
-  assert(visual.minControlHeight >= 44, `${width}px: Fridge stack control fell below 44px (${visual.minControlHeight}px).`)
-  assert(visual.documentWidth <= visual.viewportWidth + 1, `${width}px: stack controls leaked horizontal overflow into the document.`)
-  if (width <= 520) assert(visual.fridgeScrollWidth > visual.fridgeClientWidth, `${width}px: mobile Fridge stopped preserving finite Door geometry through internal scrolling.`)
+  assert(geometry.documentWidth <= geometry.viewportWidth + 1, `${width}px: stack controls leaked horizontal overflow into the document.`)
+  if (width <= 520) assert(geometry.fridgeScrollWidth > geometry.fridgeClientWidth, `${width}px: mobile Fridge stopped preserving finite Door geometry through internal scrolling.`)
   assert(await page.locator('[draggable="true"]').count() === 0, `${width}px: drag semantics appeared during stack audit.`)
   assert(runtimeErrors.length === 0, `${width}px: runtime errors detected: ${runtimeErrors.join(' | ')}`)
 
