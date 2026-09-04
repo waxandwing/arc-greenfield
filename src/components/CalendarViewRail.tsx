@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react'
 import { CALENDAR_VIEWS, type CalendarView } from '../navigation/calendarViews'
 
 type ViewAvailability = { available: boolean; reason?: string }
@@ -11,12 +10,6 @@ type CalendarViewRailProps = {
 }
 
 export function CalendarViewRail({ activeView, disabled, availabilityFor, onSelect }: CalendarViewRailProps) {
-  const activeViewRef = useRef<HTMLButtonElement | null>(null)
-
-  useEffect(() => {
-    activeViewRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
-  }, [activeView])
-
   return (
     <nav className="arc-view-rail" aria-label="Calendar views">
       {CALENDAR_VIEWS.map((view) => {
@@ -27,7 +20,6 @@ export function CalendarViewRail({ activeView, disabled, availabilityFor, onSele
         return (
           <button
             key={view}
-            ref={isCurrent ? activeViewRef : undefined}
             type="button"
             className="view-nav-item"
             aria-current={isCurrent ? 'page' : undefined}
