@@ -75,10 +75,10 @@
 .object-action-commit{display:flex;justify-content:flex-end;gap:var(--space-2);padding-top:var(--space-2)}
 .object-delete-button{min-height:44px;border:1px solid var(--terracotta);border-radius:var(--radius-sm);background:transparent;padding:10px 16px;color:var(--terracotta-text);font-weight:700;cursor:pointer}
 
-.planning-object-openable,.day-continuity-lesson--openable{cursor:pointer}
+.planning-object-openable,.day-continuity-lesson--openable{min-height:44px;cursor:pointer}
 .planning-object-openable:hover,.day-continuity-lesson--openable:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:var(--dusty-blue)}
 .day-continuity-unit-links{display:flex;flex-wrap:wrap;gap:var(--space-2)}
-.day-continuity-unit-links button{border:0;background:transparent;padding:0;color:var(--ink);font-size:16px;font-weight:700;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.day-continuity-unit-links button{display:inline-flex;align-items:center;min-height:44px;border:0;background:transparent;padding:0;color:var(--ink);font-size:16px;font-weight:700;text-align:left;cursor:pointer;overflow-wrap:anywhere}
 .day-continuity-unit-links button+button::before{content:'·';margin-right:var(--space-2);color:var(--soft-charcoal)}
 
 @media (max-width:800px){
