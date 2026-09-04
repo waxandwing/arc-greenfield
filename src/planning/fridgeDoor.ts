@@ -18,12 +18,17 @@ export type FridgePlacement = {
   column: number
   stackId: string | null
   stackOrder: number | null
-  priority: FridgePriority
+}
+
+export type FridgePriorityAssignment = {
+  entityRef: FridgeEntityRef
+  priority: Exclude<FridgePriority, null>
 }
 
 export type FridgeDoorState = {
   magnets: Magnet[]
   placements: FridgePlacement[]
+  priorities: FridgePriorityAssignment[]
 }
 
 export type FridgeCapacity = {
@@ -37,7 +42,7 @@ export type CaptureIntent =
   | { kind: 'lesson'; title: string }
 
 export function createEmptyFridgeDoorState(): FridgeDoorState {
-  return { magnets: [], placements: [] }
+  return { magnets: [], placements: [], priorities: [] }
 }
 
 export function createMagnet(title: string, id = createMagnetId()): Magnet {
@@ -65,6 +70,7 @@ export function validateFridgeDoorState(
 ): string[] {
   const errors: string[] = []
   const refs = new Set<string>()
+  const priorityRefs = new Set<string>()
   const magnets = new Set(state.magnets.map((magnet) => magnet.id))
   const unitIds = new Set(units.map((unit) => unit.id))
   const lessonIds = new Set(lessons.map((lesson) => lesson.id))
@@ -83,6 +89,18 @@ export function validateFridgeDoorState(
     if (kind === 'magnet' && !magnets.has(id)) errors.push(`Orphaned Magnet Fridge reference: ${placement.entityRef}.`)
   }
 
+  for (const assignment of state.priorities) {
+    if (priorityRefs.has(assignment.entityRef)) errors.push(`Duplicate Fridge priority reference: ${assignment.entityRef}.`)
+    priorityRefs.add(assignment.entityRef)
+    if (assignment.priority !== 'must' && assignment.priority !== 'should' && assignment.priority !== 'could') {
+      errors.push(`Invalid Fridge priority for ${assignment.entityRef}.`)
+    }
+    const [kind, id] = splitRef(assignment.entityRef)
+    if (kind === 'unit' && !unitIds.has(id)) errors.push(`Orphaned Unit priority reference: ${assignment.entityRef}.`)
+    if (kind === 'lesson' && !lessonIds.has(id)) errors.push(`Orphaned Lesson priority reference: ${assignment.entityRef}.`)
+    if (kind === 'magnet' && !magnets.has(id)) errors.push(`Orphaned Magnet priority reference: ${assignment.entityRef}.`)
+  }
+
   for (const magnet of state.magnets) {
     if (!magnet.id.trim()) errors.push('Magnet ID is required.')
     if (!magnet.title.trim()) errors.push(`Magnet ${magnet.id || '(missing id)'} needs a title.`)
@@ -98,7 +116,7 @@ export function placeEntity(
   row: number,
   column: number,
 ): FridgeDoorState {
-  const next: FridgePlacement = { entityRef, surface, row, column, stackId: null, stackOrder: null, priority: null }
+  const next: FridgePlacement = { entityRef, surface, row, column, stackId: null, stackOrder: null }
   return {
     ...state,
     placements: [...state.placements.filter((item) => item.entityRef !== entityRef), next],
@@ -106,10 +124,15 @@ export function placeEntity(
 }
 
 export function assignPriority(state: FridgeDoorState, entityRef: FridgeEntityRef, priority: FridgePriority): FridgeDoorState {
+  const remaining = state.priorities.filter((item) => item.entityRef !== entityRef)
   return {
     ...state,
-    placements: state.placements.map((item) => item.entityRef === entityRef ? { ...item, priority } : item),
+    priorities: priority ? [...remaining, { entityRef, priority }] : remaining,
   }
+}
+
+export function priorityForEntity(state: FridgeDoorState, entityRef: FridgeEntityRef): FridgePriority {
+  return state.priorities.find((item) => item.entityRef === entityRef)?.priority ?? null
 }
 
 export function putAway(state: FridgeDoorState, entityRef: FridgeEntityRef): FridgeDoorState {
@@ -119,7 +142,7 @@ export function putAway(state: FridgeDoorState, entityRef: FridgeEntityRef): Fri
 export function bringBack(state: FridgeDoorState, entityRef: FridgeEntityRef, capacity: FridgeCapacity): FridgeDoorState {
   const slot = firstFreeDoorSlot(state, capacity)
   if (!slot) throw new Error('Fridge Door is full. Keep this item in the Drawer until space is available.')
-  return placeEntityPreservingPriority(state, entityRef, 'door', slot.row, slot.column)
+  return placeEntity(state, entityRef, 'door', slot.row, slot.column)
 }
 
 export function stackEntities(state: FridgeDoorState, refs: FridgeEntityRef[], stackId: string): FridgeDoorState {
@@ -159,12 +182,14 @@ export function reconcileFridgeDoor(
   const unitIds = new Set(units.map((unit) => unit.id))
   const lessonIds = new Set(lessons.map((lesson) => lesson.id))
   const magnetIds = new Set(state.magnets.map((magnet) => magnet.id))
+  const refStillExists = (ref: FridgeEntityRef) => {
+    const [kind, id] = splitRef(ref)
+    return kind === 'unit' ? unitIds.has(id) : kind === 'lesson' ? lessonIds.has(id) : magnetIds.has(id)
+  }
   let next: FridgeDoorState = {
     magnets: state.magnets.map((magnet) => ({ ...magnet })),
-    placements: state.placements.filter((placement) => {
-      const [kind, id] = splitRef(placement.entityRef)
-      return kind === 'unit' ? unitIds.has(id) : kind === 'lesson' ? lessonIds.has(id) : magnetIds.has(id)
-    }).map((placement) => ({ ...placement })),
+    placements: state.placements.filter((placement) => refStillExists(placement.entityRef)).map((placement) => ({ ...placement })),
+    priorities: state.priorities.filter((assignment) => refStillExists(assignment.entityRef)).map((assignment) => ({ ...assignment })),
   }
 
   for (const lesson of lessons) {
@@ -203,12 +228,6 @@ function setSurface(state: FridgeDoorState, entityRef: FridgeEntityRef, surface:
   const item = state.placements.find((candidate) => candidate.entityRef === entityRef)
   if (!item) throw new Error(`Fridge item does not exist: ${entityRef}.`)
   return { ...state, placements: state.placements.map((candidate) => candidate.entityRef === entityRef ? { ...candidate, surface } : candidate) }
-}
-
-function placeEntityPreservingPriority(state: FridgeDoorState, entityRef: FridgeEntityRef, surface: FridgeSurface, row: number, column: number): FridgeDoorState {
-  const current = state.placements.find((item) => item.entityRef === entityRef)
-  const next = placeEntity(state, entityRef, surface, row, column)
-  return current?.priority ? assignPriority(next, entityRef, current.priority) : next
 }
 
 function splitRef(ref: FridgeEntityRef): ['unit' | 'lesson' | 'magnet', string] {
