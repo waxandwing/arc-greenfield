@@ -4,6 +4,7 @@ import { CalendarViewRail } from './CalendarViewRail'
 import { FridgeDoorPanel } from './FridgeDoorPanel'
 import { ObjectFocusLayer, type ObjectFocusState } from './ObjectFocusLayer'
 import { WorkspaceStage } from './WorkspaceStage'
+import { buildFridgeLessonCapture, buildFridgeUnitCapture } from '../app/fridgeCapture'
 import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useFridgeDoorWorkspace } from '../app/useFridgeDoorWorkspace'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
@@ -56,6 +57,45 @@ export function AppFrame() {
       const next = hydrateLessonWorkspace(input, workspace.calendar, workspace.planningWorkspace, workspace.unitWorkspace)
       workspace.useLessons(input, next)
       return null
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function captureUnit(title: string, courseId: string): string | null {
+    if (!workspace.calendar || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace) {
+      return 'Arc cannot create this Unit because planning state is incomplete. Nothing changed.'
+    }
+    try {
+      const result = buildFridgeUnitCapture({
+        calendar: workspace.calendar,
+        planning: workspace.planningWorkspace,
+        units: workspace.unitWorkspace,
+        courseId,
+        title,
+      })
+      workspace.useUnits(result.persistence, result.workspace)
+      return fridge.placeCanonicalEntity(`unit:${result.unit.id}`, result.workspace, workspace.lessonWorkspace)
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  function captureLesson(title: string, unitId: string): string | null {
+    if (!workspace.calendar || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace) {
+      return 'Arc cannot create this Lesson because planning state is incomplete. Nothing changed.'
+    }
+    try {
+      const result = buildFridgeLessonCapture({
+        calendar: workspace.calendar,
+        planning: workspace.planningWorkspace,
+        units: workspace.unitWorkspace,
+        lessons: workspace.lessonWorkspace,
+        unitId,
+        title,
+      })
+      workspace.useLessons(result.persistence, result.workspace)
+      return fridge.placeCanonicalEntity(`lesson:${result.lesson.id}`, workspace.unitWorkspace, result.workspace)
     } catch (error) {
       return error instanceof Error ? error.message : String(error)
     }
@@ -119,13 +159,16 @@ export function AppFrame() {
 
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
-          {workspaceMode.mode === 'calendar' && workspace.unitWorkspace && workspace.lessonWorkspace ? (
+          {workspaceMode.mode === 'calendar' && workspace.planningWorkspace && workspace.unitWorkspace && workspace.lessonWorkspace ? (
             <FridgeDoorPanel
               state={fridge.state}
+              planning={workspace.planningWorkspace}
               units={workspace.unitWorkspace}
               lessons={workspace.lessonWorkspace}
               notice={fridge.notice}
               onCreateMagnet={fridge.createLooseMagnet}
+              onCreateUnit={captureUnit}
+              onCreateLesson={captureLesson}
               onReposition={fridge.reposition}
               onSetPriority={fridge.setPriority}
               onPutAway={fridge.putAwayItem}
