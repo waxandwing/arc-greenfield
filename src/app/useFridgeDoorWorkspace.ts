@@ -182,7 +182,7 @@ export function useFridgeDoorWorkspace({ calendarId, units, lessons, overrides }
     if (positionError) return positionError
     const current = state.placements.find((item) => item.entityRef === entityRef)
     if (!current?.stackId) return 'That item is not in a stack.'
-    const occupied = state.placements.some((item) => item.surface === 'door' && item.stackId !== current.stackId && item.row === row && item.column === column)
+    const occupied = state.placements.some((item) => item.surface === 'door' && item.entityRef !== entityRef && item.row === row && item.column === column)
     if (occupied) return 'That Fridge Door position is already occupied.'
     const members = state.placements
       .filter((item) => item.stackId === current.stackId)
