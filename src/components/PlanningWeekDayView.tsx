@@ -10,6 +10,7 @@ export function PlanningWeekDayView({
   planning,
   continuity,
   single = false,
+  dragValidDates = new Set<ISODate>(),
   onOpenUnit,
   onOpenLesson,
 }: {
@@ -17,6 +18,7 @@ export function PlanningWeekDayView({
   planning: PlanningRangeProjection
   continuity: DayContinuityProjection[]
   single?: boolean
+  dragValidDates?: Set<ISODate>
   onOpenUnit?: (unitId: string) => void
   onOpenLesson?: (unitId: string, lessonId: string) => void
 }) {
@@ -26,7 +28,7 @@ export function PlanningWeekDayView({
 
   return (
     <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'}>
-      <PlanningDateHeader days={days} single={single} />
+      <PlanningDateHeader days={days} single={single} dragValidDates={dragValidDates} />
       {planning.courses.map((course) => (
         <PlanningCourse key={course.course.id} course={course} days={days} continuity={continuity} single={single} onOpenUnit={onOpenUnit} onOpenLesson={onOpenLesson} />
       ))}
@@ -34,17 +36,24 @@ export function PlanningWeekDayView({
   )
 }
 
-function PlanningDateHeader({ days, single }: { days: ProjectedDay[]; single: boolean }) {
+function PlanningDateHeader({ days, single, dragValidDates }: { days: ProjectedDay[]; single: boolean; dragValidDates: Set<ISODate> }) {
   return (
     <div className="planning-date-header" style={gridTemplate(days.length)} aria-hidden="true">
       <span className="planning-row-label planning-row-label--header">Class</span>
-      {days.map((day) => (
-        <span key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}`}>
-          {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
-          <span>{formatShortDate(day.date)}</span>
-          {day.kind !== 'instructional' ? <span className="planning-date-kind">{day.label || humanizeKind(day.kind)}</span> : null}
-        </span>
-      ))}
+      {days.map((day) => {
+        const dragTarget = dragValidDates.has(day.date)
+        return (
+          <span
+            key={day.date}
+            className={`planning-date-heading planning-date-heading--${day.kind}${dragTarget ? ' drag-date-target drag-date-target--week' : ''}`}
+            data-drag-date-target={dragTarget ? day.date : undefined}
+          >
+            {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
+            <span>{formatShortDate(day.date)}</span>
+            {day.kind !== 'instructional' ? <span className="planning-date-kind">{day.label || humanizeKind(day.kind)}</span> : null}
+          </span>
+        )
+      })}
     </div>
   )
 }
