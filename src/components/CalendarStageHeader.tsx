@@ -14,7 +14,7 @@ type CalendarStageHeaderProps = {
   hasClasses: boolean
   hasUnits: boolean
   recoveryCount: number
-  undoAvailable: boolean
+  undoLabel: string | null
   stageTitle: string
   onMovePrevious: () => void
   onMoveNext: () => void
@@ -25,7 +25,7 @@ type CalendarStageHeaderProps = {
   onOpenUnits: () => void
   onOpenLessons: () => void
   onOpenRecovery: () => void
-  onUndoShift: () => void
+  onUndo: () => void
 }
 
 export function CalendarStageHeader(props: CalendarStageHeaderProps) {
@@ -41,7 +41,7 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     hasClasses,
     hasUnits,
     recoveryCount,
-    undoAvailable,
+    undoLabel,
     stageTitle,
     onMovePrevious,
     onMoveNext,
@@ -52,7 +52,7 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     onOpenUnits,
     onOpenLessons,
     onOpenRecovery,
-    onUndoShift,
+    onUndo,
   } = props
 
   const isCalendarMode = mode === 'calendar'
@@ -81,7 +81,7 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
               {hasClasses && <button type="button" className="text-button" onClick={onOpenUnits}>Unit setup</button>}
               {hasUnits && <button type="button" className="text-button" onClick={onOpenLessons}>Lesson setup</button>}
               {recoveryCount > 0 && <button type="button" className="text-button recovery-review-trigger" onClick={onOpenRecovery}>Review recovery ({recoveryCount})</button>}
-              {undoAvailable && <button type="button" className="text-button" onClick={onUndoShift}>Undo last Shift</button>}
+              {undoLabel && <button type="button" className="text-button" onClick={onUndo}>{undoLabel}</button>}
             </div>
           </div>
         </div>
