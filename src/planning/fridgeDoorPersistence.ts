@@ -26,14 +26,6 @@ type StoredFridgeDoorV2 = {
   input: FridgeDoorPersistenceInput
 }
 
-type StoredFridgeDoorV1 = {
-  schemaVersion: 1
-  input: {
-    calendarId: string
-    state: unknown
-  }
-}
-
 export type FridgeDoorLoadResult =
   | { status: 'empty' }
   | { status: 'restored'; input: FridgeDoorPersistenceInput; state: FridgeDoorState }
@@ -46,7 +38,7 @@ export function serializeFridgeDoor(input: FridgeDoorPersistenceInput): string {
 
 export function deserializeFridgeDoor(raw: string): FridgeDoorPersistenceInput | null {
   try {
-    const parsed = JSON.parse(raw) as Partial<StoredFridgeDoorV2 & StoredFridgeDoorV1>
+    const parsed = JSON.parse(raw) as { schemaVersion?: unknown; input?: { calendarId?: unknown; state?: unknown } }
     if (!parsed.input || typeof parsed.input.calendarId !== 'string') return null
     if (parsed.schemaVersion === 2) {
       const state = parseStateV2(parsed.input.state)
