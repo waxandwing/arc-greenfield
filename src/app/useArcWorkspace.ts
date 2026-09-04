@@ -68,7 +68,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
   const [lessonInput, setLessonInput] = useState<LessonWorkspaceInput | null>(restoredLessons?.input ?? null)
   const [shiftState, setShiftState] = useState<ShiftPersistenceInput | null>(
     restoredShift?.input
-      ?? (restoredCalendar ? { calendarId: restoredCalendar.calendar.id, overrides: [], undo: null } : null),
+      ?? (restoredCalendar ? { calendarId: restoredCalendar.calendar.id, overrides: [], sameDayApprovals: [], undo: null } : null),
   )
   const [storageNotice, setStorageNotice] = useState<string | null>(snapshot.storageNotice)
 
@@ -241,6 +241,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     const candidateShift: ShiftPersistenceInput = {
       calendarId: calendar.id,
       overrides,
+      sameDayApprovals: shiftState?.sameDayApprovals ?? [],
       undo: shiftState?.undo ?? null,
     }
     const shift = reconcileShiftState(candidateShift, calendar, planningWorkspace, unitWorkspace, next)
@@ -333,8 +334,14 @@ export function useArcWorkspace(onCloseMode: () => void) {
         units: unitWorkspace.units,
         calendar,
         overrides: shiftState.overrides,
+        sameDayApprovals: shiftState.sameDayApprovals,
       })
-      const candidate: ShiftPersistenceInput = { calendarId: calendar.id, overrides: applied.overrides, undo: applied.undo }
+      const candidate: ShiftPersistenceInput = {
+        calendarId: calendar.id,
+        overrides: applied.overrides,
+        sameDayApprovals: applied.sameDayApprovals,
+        undo: applied.undo,
+      }
       const validation = validateShiftPersistenceInput(candidate, calendar, planningWorkspace, unitWorkspace, lessonWorkspace)
       if (validation.scheduleErrors.length > 0 || !validation.undoValid) {
         return 'Arc refused this Shift because the resulting Section schedule did not pass its integrity check. Nothing changed.'
@@ -355,8 +362,13 @@ export function useArcWorkspace(onCloseMode: () => void) {
     if (!calendar || !planningWorkspace || !unitWorkspace || !lessonWorkspace || !shiftState?.undo) return
     const section = planningWorkspace.sections.find((candidate) => candidate.id === shiftState.undo?.sectionId)
     try {
-      const overrides = undoShiftOperation(shiftState.overrides, shiftState.undo)
-      const candidate: ShiftPersistenceInput = { calendarId: calendar.id, overrides, undo: null }
+      const restored = undoShiftOperation(shiftState.overrides, shiftState.sameDayApprovals, shiftState.undo)
+      const candidate: ShiftPersistenceInput = {
+        calendarId: calendar.id,
+        overrides: restored.overrides,
+        sameDayApprovals: restored.sameDayApprovals,
+        undo: null,
+      }
       const validation = validateShiftPersistenceInput(candidate, calendar, planningWorkspace, unitWorkspace, lessonWorkspace)
       if (validation.scheduleErrors.length > 0) {
         setStorageNotice('Arc could not safely undo that Shift because the previous Section schedule is no longer valid. Nothing changed.')
