@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - 'feature/**'
+      - 'audit/**'
   pull_request:
     branches:
       - develop
@@ -51,3 +52,4 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/day-interface.browser.mjs
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/day-interface.hostile.browser.mjs
