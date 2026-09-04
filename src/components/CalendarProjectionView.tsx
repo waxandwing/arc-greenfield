@@ -24,11 +24,13 @@ type Props = {
   calendar: SchoolCalendar | null
   anchorDate: ISODate | null
   planningContext?: PlanningContext | null
+  onOpenUnit?: (unitId: string) => void
+  onOpenLesson?: (unitId: string, lessonId: string) => void
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, onOpenUnit, onOpenLesson }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -46,6 +48,8 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           title={formatLongDate(projection.date)}
           day={projection.day}
           planningContext={planningContext}
+          onOpenUnit={onOpenUnit}
+          onOpenLesson={onOpenLesson}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
         />
       )
@@ -58,6 +62,8 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           title={formatDateRange(weekdays[0]?.date ?? projection.startDate, weekdays[weekdays.length - 1]?.date ?? projection.endDate)}
           days={weekdays}
           planningContext={planningContext}
+          onOpenUnit={onOpenUnit}
+          onOpenLesson={onOpenLesson}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
         />
       )
@@ -81,7 +87,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           </div>
           {monthPlanning ? (
             <div className="planning-scroll-frame">
-              <PlanningMonthView month={projection} planning={monthPlanning} />
+              <PlanningMonthView month={projection} planning={monthPlanning} onOpenUnit={onOpenUnit} onOpenLesson={onOpenLesson} />
             </div>
           ) : (
             <CalendarOnlyMonth projection={projection} label={formatMonth(anchorDate)} />
@@ -121,7 +127,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, termContext }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
+function PlanningDayStrip({ title, day, planningContext, termContext, onOpenUnit, onOpenLesson }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode; onOpenUnit?: (unitId: string) => void; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
@@ -129,6 +135,8 @@ function PlanningDayStrip({ title, day, planningContext, termContext }: { title:
         <PlanningDayContinuityView
           day={day}
           continuity={continuityForDay(day.date, planningContext)}
+          onOpenUnit={onOpenUnit}
+          onOpenLesson={onOpenLesson}
         />
       ) : (
         <div className="projection-day-strip projection-day-strip--single">
@@ -139,7 +147,7 @@ function PlanningDayStrip({ title, day, planningContext, termContext }: { title:
   )
 }
 
-function PlanningWeekStrip({ title, days, planningContext, termContext }: { title: string; days: ProjectedDay[]; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
+function PlanningWeekStrip({ title, days, planningContext, termContext, onOpenUnit, onOpenLesson }: { title: string; days: ProjectedDay[]; planningContext?: PlanningContext | null; termContext?: ReactNode; onOpenUnit?: (unitId: string) => void; onOpenLesson?: (unitId: string, lessonId: string) => void }) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
@@ -149,6 +157,8 @@ function PlanningWeekStrip({ title, days, planningContext, termContext }: { titl
             days={days}
             planning={planningForDays(days, planningContext)}
             continuity={days.map((day) => continuityForDay(day.date, planningContext))}
+            onOpenUnit={onOpenUnit}
+            onOpenLesson={onOpenLesson}
           />
         </div>
       ) : (
