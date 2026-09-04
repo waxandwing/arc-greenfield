@@ -23,7 +23,7 @@ async function auditDesktop(browser) {
 
   assert(await page.getByRole('main').count() === 1, 'Desktop: expected exactly one main landmark.')
   assert(await page.getByRole('navigation', { name: 'Calendar views' }).count() === 1, 'Desktop: Calendar views navigation lost its accessible name.')
-  assert(await page.getByRole('heading', { name: 'Calendar' }).count() >= 1, 'Desktop: calendar setup heading is missing.')
+  assert(await page.getByRole('heading', { name: 'Tell Arc which days are actually yours.' }).count() === 1, 'Desktop: calendar setup heading is missing or duplicated.')
 
   await page.keyboard.press('Tab')
   const skip = page.getByRole('link', { name: 'Skip to calendar' })
