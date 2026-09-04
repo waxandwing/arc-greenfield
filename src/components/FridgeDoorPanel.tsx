@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type DragEvent } from 'react'
 import {
   parseCaptureIntent,
   type FridgeDoorState,
@@ -12,6 +12,11 @@ import { FRIDGE_DOOR_CAPACITY } from '../app/useFridgeDoorWorkspace'
 
 type PendingCapture = { kind: 'unit' | 'lesson'; title: string } | null
 type Placement = FridgeDoorState['placements'][number]
+type DragPreview =
+  | { kind: 'lesson'; lessonId: string; entityRef: `lesson:${string}` }
+  | { kind: 'magnet'; entityRef: `magnet:${string}` }
+  | { kind: 'stack'; stackId: string }
+  | null
 
 type Props = {
   state: FridgeDoorState
@@ -19,6 +24,8 @@ type Props = {
   units: UnitWorkspace
   lessons: LessonWorkspace
   notice: string | null
+  dragPreview: DragPreview
+  onDragPreviewChange: (preview: DragPreview) => void
   onCreateMagnet: (title: string) => string | null
   onCreateUnit: (title: string, courseId: string) => string | null
   onCreateLesson: (title: string, unitId: string) => string | null
@@ -121,7 +128,7 @@ export function FridgeDoorPanel(props: Props) {
   const availableMembers = stackMembers.filter((placement) => placement.entityRef !== stackAnchorRef)
 
   return (
-    <section className="fridge-door" aria-label="Fridge Door">
+    <section className={`fridge-door${props.dragPreview ? ' fridge-door--drag-preview' : ''}`} aria-label="Fridge Door">
       <header className="fridge-door-heading">
         <div>
           <p className="section-label">Fridge Door</p>
@@ -209,7 +216,17 @@ export function FridgeDoorPanel(props: Props) {
           {Array.from({ length: FRIDGE_DOOR_CAPACITY.rows * FRIDGE_DOOR_CAPACITY.columns }, (_, index) => {
             const row = Math.floor(index / FRIDGE_DOOR_CAPACITY.columns)
             const column = index % FRIDGE_DOOR_CAPACITY.columns
-            return <div key={`${row}:${column}`} className="fridge-door-cell" aria-hidden="true" style={{ gridRow: row + 1, gridColumn: column + 1 }} />
+            const occupied = door.some((item) => item.row === row && item.column === column)
+            const previewTarget = Boolean(props.dragPreview && !occupied)
+            return (
+              <div
+                key={`${row}:${column}`}
+                className={`fridge-door-cell${previewTarget ? ' fridge-door-cell--drag-target' : ''}`}
+                aria-hidden="true"
+                data-fridge-drag-target={previewTarget ? `${row}:${column}` : undefined}
+                style={{ gridRow: row + 1, gridColumn: column + 1 }}
+              />
+            )
           })}
           {looseDoor.map((placement) => {
             const item = resolveItem(placement.entityRef, props.units, props.lessons, props.state)
@@ -220,6 +237,8 @@ export function FridgeDoorPanel(props: Props) {
                 item={item}
                 placement={placement}
                 door={door}
+                dragPreview={props.dragPreview}
+                onDragPreviewChange={props.onDragPreviewChange}
                 onOpen={() => openItem(item, props)}
                 onReposition={(row, column) => report(props.onReposition(item.ref, row, column))}
                 onSetPriority={(priority) => report(props.onSetPriority(item.ref, priority))}
@@ -239,6 +258,8 @@ export function FridgeDoorPanel(props: Props) {
                 state={props.state}
                 units={props.units}
                 lessons={props.lessons}
+                dragPreview={props.dragPreview}
+                onDragPreviewChange={props.onDragPreviewChange}
                 onOpen={(item) => openItem(item, props)}
                 onReposition={(row, column) => report(props.onRepositionStack(stackId, row, column))}
                 onSetPriority={(ref, priority) => report(props.onSetPriority(ref, priority))}
@@ -283,6 +304,8 @@ function FridgeItem({
   item,
   placement,
   door,
+  dragPreview,
+  onDragPreviewChange,
   onOpen,
   onReposition,
   onSetPriority,
@@ -291,16 +314,24 @@ function FridgeItem({
   item: ItemInfo
   placement: Placement
   door: Placement[]
+  dragPreview: DragPreview
+  onDragPreviewChange: (preview: DragPreview) => void
   onOpen: () => void
   onReposition: (row: number, column: number) => void
   onSetPriority: (priority: FridgePriority) => void
   onPutAway: () => void
 }) {
+  const draggable = item.kind === 'Lesson' || item.kind === 'Magnet'
+  const active = dragPreview?.kind === 'lesson' && dragPreview.entityRef === item.ref
+    || dragPreview?.kind === 'magnet' && dragPreview.entityRef === item.ref
   return (
     <article
-      className={`fridge-item fridge-item--${item.kind.toLowerCase()}`}
+      className={`fridge-item fridge-item--${item.kind.toLowerCase()}${active ? ' fridge-item--dragging' : ''}`}
       style={{ gridRow: placement.row + 1, gridColumn: placement.column + 1 }}
       data-fridge-ref={item.ref}
+      draggable={draggable}
+      onDragStart={draggable ? (event) => startItemDragPreview(event, item, onDragPreviewChange) : undefined}
+      onDragEnd={draggable ? () => onDragPreviewChange(null) : undefined}
     >
       <div className="fridge-item-copy">
         <span>{item.kind}</span>
@@ -329,6 +360,8 @@ function FridgeStack({
   state,
   units,
   lessons,
+  dragPreview,
+  onDragPreviewChange,
   onOpen,
   onReposition,
   onSetPriority,
@@ -341,6 +374,8 @@ function FridgeStack({
   state: FridgeDoorState
   units: UnitWorkspace
   lessons: LessonWorkspace
+  dragPreview: DragPreview
+  onDragPreviewChange: (preview: DragPreview) => void
   onOpen: (item: ItemInfo) => void
   onReposition: (row: number, column: number) => void
   onSetPriority: (ref: FridgeEntityRef, priority: FridgePriority) => void
@@ -352,12 +387,22 @@ function FridgeStack({
   if (!anchor) return null
   const memberRefs = ordered.map((item) => item.entityRef)
   const freePositions = doorPositions().filter(({ row, column }) => !door.some((item) => item.row === row && item.column === column))
+  const active = dragPreview?.kind === 'stack' && dragPreview.stackId === stackId
+  const stackTarget = Boolean(dragPreview && dragPreview.kind !== 'stack' && !memberRefs.includes(dragPreview.entityRef))
 
   return (
     <article
-      className="fridge-stack"
+      className={`fridge-stack${active ? ' fridge-stack--dragging' : ''}${stackTarget ? ' fridge-stack--drag-target' : ''}`}
       style={{ gridRow: anchor.row + 1, gridColumn: anchor.column + 1 }}
       data-fridge-stack={stackId}
+      data-fridge-stack-target={stackTarget ? stackId : undefined}
+      draggable
+      onDragStart={(event) => {
+        event.dataTransfer.effectAllowed = 'move'
+        event.dataTransfer.setData('text/plain', `stack:${stackId}`)
+        onDragPreviewChange({ kind: 'stack', stackId })
+      }}
+      onDragEnd={() => onDragPreviewChange(null)}
     >
       <div className="fridge-stack-heading">
         <div>
@@ -507,4 +552,14 @@ function openItem(item: ItemInfo, props: Pick<Props, 'onOpenUnit' | 'onOpenLesso
   const id = item.ref.slice(item.ref.indexOf(':') + 1)
   if (item.kind === 'Unit') props.onOpenUnit(id)
   if (item.kind === 'Lesson') props.onOpenLesson(id)
+}
+
+function startItemDragPreview(event: DragEvent<HTMLElement>, item: ItemInfo, onChange: (preview: DragPreview) => void) {
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('text/plain', item.ref)
+  if (item.kind === 'Lesson') {
+    const lessonId = item.ref.slice('lesson:'.length)
+    onChange({ kind: 'lesson', lessonId, entityRef: item.ref as `lesson:${string}` })
+  }
+  if (item.kind === 'Magnet') onChange({ kind: 'magnet', entityRef: item.ref as `magnet:${string}` })
 }
