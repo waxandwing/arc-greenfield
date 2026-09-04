@@ -35,6 +35,34 @@ const other = createLesson({ id: 'lesson-b', calendarId: 'calendar-a', courseId:
 }
 
 {
+  const scheduled = { ...unplaced, plannedDate: '2026-09-09' as const }
+  let state = placeEntity(createEmptyFridgeDoorState(), 'lesson:lesson-a', 'door', 0, 0)
+  state = assignPriority(state, 'lesson:lesson-a', 'must')
+  const reconciled = reconcileFridgeDoor(state, [unit], [scheduled], [], { rows: 1, columns: 1 })
+  const preserved = reconciled.placements.find((item) => item.entityRef === 'lesson:lesson-a')
+  assert(preserved?.surface === 'door', 'Scheduling a Lesson must not remove an existing Fridge reference.')
+  assert(preserved?.row === 0 && preserved.column === 0, 'Scheduling a Lesson must preserve existing Fridge coordinates.')
+  assert(preserved?.priority === 'must', 'Scheduling a Lesson must preserve existing Fridge priority.')
+}
+
+{
+  const scheduledA = { ...unplaced, plannedDate: '2026-09-09' as const }
+  const scheduledB = { ...other, plannedDate: '2026-09-10' as const }
+  let state = placeEntity(createEmptyFridgeDoorState(), 'lesson:lesson-a', 'door', 0, 0)
+  state = placeEntity(state, 'lesson:lesson-b', 'door', 0, 1)
+  state = assignPriority(state, 'lesson:lesson-a', 'must')
+  state = stackEntities(state, ['lesson:lesson-a', 'lesson:lesson-b'], 'stack-scheduled')
+  const beforeA = state.placements.find((item) => item.entityRef === 'lesson:lesson-a')
+  const beforeB = state.placements.find((item) => item.entityRef === 'lesson:lesson-b')
+  const reconciled = reconcileFridgeDoor(state, [unit], [scheduledA, scheduledB], [], { rows: 1, columns: 2 })
+  const afterA = reconciled.placements.find((item) => item.entityRef === 'lesson:lesson-a')
+  const afterB = reconciled.placements.find((item) => item.entityRef === 'lesson:lesson-b')
+  assert(afterA?.stackId === beforeA?.stackId && afterB?.stackId === beforeB?.stackId, 'Scheduling stacked Lessons must preserve stack identity.')
+  assert(afterA?.stackOrder === beforeA?.stackOrder && afterB?.stackOrder === beforeB?.stackOrder, 'Scheduling stacked Lessons must preserve member order.')
+  assert(afterA?.priority === 'must', 'Scheduling a stacked Lesson must preserve its priority.')
+}
+
+{
   const overrides = [{ sectionId: 'section-a', lessonId: unplaced.id, plannedDate: '2026-09-08' as const }]
   assert(!isFullyUnplacedLesson(unplaced, overrides), 'A Section-specific placement means the Lesson is not fully unplaced.')
   const reconciled = reconcileFridgeDoor(createEmptyFridgeDoorState(), [unit], [unplaced], overrides, { rows: 1, columns: 1 })
