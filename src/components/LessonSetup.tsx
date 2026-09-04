@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { ISODate, SchoolCalendar } from '../calendar'
 import {
   createLesson,
@@ -28,6 +28,7 @@ type Props = {
 }
 
 export function LessonSetup({ calendar, planning, units, initialValue, onSave, onCancel }: Props) {
+  const persistedLessonIds = useMemo(() => new Set(initialValue?.lessons.map((lesson) => lesson.id) ?? []), [initialValue])
   const [lessons, setLessons] = useState<Lesson[]>(() => initialValue?.lessons.map((lesson) => ({ ...lesson })) ?? [])
   const [deliveryStates, setDeliveryStates] = useState<LessonDeliveryState[]>(() => initialValue?.deliveryStates.map((state) => ({ ...state })) ?? [])
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(() => initialValue?.lessons[0]?.id ?? null)
@@ -36,6 +37,7 @@ export function LessonSetup({ calendar, planning, units, initialValue, onSave, o
   const selectedLesson = lessons.find((lesson) => lesson.id === selectedLessonId) ?? null
   const selectedUnit = selectedLesson ? units.units.find((unit) => unit.id === selectedLesson.unitId) ?? null : null
   const selectedSections = selectedLesson ? planning.sections.filter((section) => section.courseId === selectedLesson.courseId) : []
+  const selectedPersisted = selectedLesson ? persistedLessonIds.has(selectedLesson.id) : false
 
   function addLesson() {
     const unit = units.units[0]
@@ -55,17 +57,10 @@ export function LessonSetup({ calendar, planning, units, initialValue, onSave, o
     setSelectedLessonId(lesson.id)
   }
 
-  function changeUnit(lessonId: string, unitId: string) {
+  function changeDraftUnit(lessonId: string, unitId: string) {
+    if (persistedLessonIds.has(lessonId)) return
     const unit = units.units.find((candidate) => candidate.id === unitId)
-    const lesson = lessons.find((candidate) => candidate.id === lessonId)
-    if (!unit || !lesson) return
-
-    const hasTeachingHistory = deliveryStates.some((state) => state.lessonId === lessonId)
-    if (unit.courseId !== lesson.courseId && hasTeachingHistory) {
-      setErrors(['This Lesson has saved class progress. Arc will not move it to a different course and erase or detach that history. Resolve the class progress first.'])
-      return
-    }
-
+    if (!unit) return
     setErrors([])
     setLessons((current) => current.map((item) => item.id === lessonId ? {
       ...item,
@@ -76,13 +71,20 @@ export function LessonSetup({ calendar, planning, units, initialValue, onSave, o
     } : item))
   }
 
-  function removeLesson(lessonId: string) {
-    if (deliveryStates.some((state) => state.lessonId === lessonId)) {
-      setErrors(['Clear the class progress for this Lesson before removing it. Arc will not erase teaching history silently.'])
-      return
-    }
+  function discardDraft(lessonId: string) {
+    if (persistedLessonIds.has(lessonId)) return
     setLessons((current) => current.filter((lesson) => lesson.id !== lessonId))
+    setDeliveryStates((states) => states.filter((state) => state.lessonId !== lessonId))
     if (selectedLessonId === lessonId) setSelectedLessonId(null)
+  }
+
+  function updateDraft(lessonId: string, patch: Partial<Pick<Lesson, 'title' | 'plannedDate' | 'datePolicy'>>) {
+    if (persistedLessonIds.has(lessonId)) return
+    setLessons((current) => current.map((lesson) => lesson.id === lessonId ? { ...lesson, ...patch } : lesson))
+  }
+
+  function updateSequence(lessonId: string, sequence: number) {
+    setLessons((current) => current.map((lesson) => lesson.id === lessonId ? { ...lesson, sequence } : lesson))
   }
 
   function changeDelivery(
@@ -134,7 +136,7 @@ export function LessonSetup({ calendar, planning, units, initialValue, onSave, o
 
   return (
     <div className="lesson-setup">
-      <div className="calendar-setup-intro"><p className="section-label">Lessons</p><h2>One plan. Different places.</h2><p>Build the shared Lesson once. Then record where each class actually is without changing the plan for everyone else.</p></div>
+      <div className="calendar-setup-intro"><p className="section-label">Lesson setup</p><h2>Build shared Lessons in batches.</h2><p>New Lesson drafts can be structured here. Existing Lessons use Unit Focus or the Lesson editor for Move, Edit, Unplace, and Delete; setup keeps only batch order and class-progress correction.</p></div>
       {errors.length > 0 && <div className="setup-errors" role="alert"><strong>Check the Lessons.</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div>}
       <div className="lesson-workspace-grid">
         <aside className="lesson-list" aria-label="Lessons">
@@ -147,13 +149,14 @@ export function LessonSetup({ calendar, planning, units, initialValue, onSave, o
         <div className="lesson-detail">
           {!selectedLesson ? <p className="projection-empty-state">Choose a Lesson or add one.</p> : <>
             <section className="lesson-shared-plan">
-              <div className="lesson-detail-heading"><div><p className="section-label">Shared plan</p><h3>{selectedLesson.title || 'Untitled Lesson'}</h3></div><button type="button" className="text-button" onClick={() => removeLesson(selectedLesson.id)}>Remove Lesson</button></div>
+              <div className="lesson-detail-heading"><div><p className="section-label">Shared plan</p><h3>{selectedLesson.title || 'Untitled Lesson'}</h3></div>{selectedPersisted ? <span className="lesson-setup-owner-note">Existing Lesson</span> : <button type="button" className="text-button" onClick={() => discardDraft(selectedLesson.id)}>Discard draft</button>}</div>
+              {selectedPersisted && <p className="lesson-date-policy-note">Move, Edit, Unplace, and Delete this Lesson from Unit Focus or the Lesson editor. Setup keeps batch order and class-progress correction only.</p>}
               <div className="lesson-field-grid lesson-field-grid--schedule">
-                <label><span>Lesson title</span><input value={selectedLesson.title} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, title: event.target.value } : lesson))} /></label>
-                <label><span>Unit</span><select value={selectedLesson.unitId} onChange={(event) => changeUnit(selectedLesson.id, event.target.value)}>{units.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}</select></label>
-                <label><span>Order</span><input type="number" min="1" step="1" value={selectedLesson.sequence} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, sequence: Number(event.target.value) } : lesson))} /></label>
-                <label><span>Planned date</span><input type="date" disabled={!selectedUnit?.placement} min={selectedUnit?.placement?.startDate} max={selectedUnit?.placement?.endDate} value={selectedLesson.plannedDate ?? ''} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, plannedDate: event.target.value ? event.target.value as ISODate : null, datePolicy: event.target.value ? lesson.datePolicy : 'flexible' } : lesson))} /></label>
-                <label><span>Date behavior</span><select value={selectedLesson.datePolicy} disabled={!selectedLesson.plannedDate} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, datePolicy: event.target.value as LessonDatePolicy } : lesson))}><option value="flexible">Flexible</option><option value="fixed">Fixed</option></select></label>
+                <label><span>Lesson title</span><input disabled={selectedPersisted} value={selectedLesson.title} onChange={(event) => updateDraft(selectedLesson.id, { title: event.target.value })} /></label>
+                <label><span>Unit</span><select disabled={selectedPersisted} value={selectedLesson.unitId} onChange={(event) => changeDraftUnit(selectedLesson.id, event.target.value)}>{units.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}</select></label>
+                <label><span>Order</span><input type="number" min="1" step="1" value={selectedLesson.sequence} onChange={(event) => updateSequence(selectedLesson.id, Number(event.target.value))} /></label>
+                <label><span>Planned date</span><input type="date" disabled={selectedPersisted || !selectedUnit?.placement} min={selectedUnit?.placement?.startDate} max={selectedUnit?.placement?.endDate} value={selectedLesson.plannedDate ?? ''} onChange={(event) => updateDraft(selectedLesson.id, { plannedDate: event.target.value ? event.target.value as ISODate : null, datePolicy: event.target.value ? selectedLesson.datePolicy : 'flexible' })} /></label>
+                <label><span>Date behavior</span><select value={selectedLesson.datePolicy} disabled={selectedPersisted || !selectedLesson.plannedDate} onChange={(event) => updateDraft(selectedLesson.id, { datePolicy: event.target.value as LessonDatePolicy })}><option value="flexible">Flexible</option><option value="fixed">Fixed</option></select></label>
               </div>
               <p className="lesson-date-policy-note">Flexible dates may be surfaced for recovery review. Fixed dates are anchors: Arc may show a collision, but it will not move them automatically.</p>
             </section>
@@ -172,7 +175,7 @@ export function LessonSetup({ calendar, planning, units, initialValue, onSave, o
           </>}
         </div>
       </div>
-      <div className="setup-actions"><p>Arc stores only the classes that diverge. Untouched classes remain “Not started” without creating extra records.</p><div className="setup-action-buttons"><button type="button" className="text-button" onClick={onCancel}>Cancel</button><button type="button" className="primary-button" onClick={submit}>Save Lessons</button></div></div>
+      <div className="setup-actions"><p>Existing Lesson placement and object actions live in the calendar surfaces. This workspace saves draft construction, batch order, and explicit class-progress corrections.</p><div className="setup-action-buttons"><button type="button" className="text-button" onClick={onCancel}>Cancel</button><button type="button" className="primary-button" onClick={submit}>Save Lesson setup</button></div></div>
     </div>
   )
 }
