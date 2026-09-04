@@ -68,6 +68,7 @@ export function validateFridgeDoorState(
   const magnets = new Set(state.magnets.map((magnet) => magnet.id))
   const unitIds = new Set(units.map((unit) => unit.id))
   const lessonIds = new Set(lessons.map((lesson) => lesson.id))
+  const stackOrders = new Map<string, Set<number>>()
 
   for (const placement of state.placements) {
     if (refs.has(placement.entityRef)) errors.push(`Duplicate Fridge reference: ${placement.entityRef}.`)
@@ -81,6 +82,14 @@ export function validateFridgeDoorState(
     if (kind === 'unit' && !unitIds.has(id)) errors.push(`Orphaned Unit Fridge reference: ${placement.entityRef}.`)
     if (kind === 'lesson' && !lessonIds.has(id)) errors.push(`Orphaned Lesson Fridge reference: ${placement.entityRef}.`)
     if (kind === 'magnet' && !magnets.has(id)) errors.push(`Orphaned Magnet Fridge reference: ${placement.entityRef}.`)
+    if (kind === 'unit' && placement.stackId !== null) errors.push(`Units cannot be stack members: ${placement.entityRef}.`)
+
+    if (placement.stackId !== null && placement.stackOrder !== null) {
+      const orders = stackOrders.get(placement.stackId) ?? new Set<number>()
+      if (orders.has(placement.stackOrder)) errors.push(`Duplicate stack order ${placement.stackOrder} in ${placement.stackId}.`)
+      orders.add(placement.stackOrder)
+      stackOrders.set(placement.stackId, orders)
+    }
   }
 
   for (const magnet of state.magnets) {
