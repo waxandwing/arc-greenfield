@@ -8,7 +8,9 @@ import {
   isFullyUnplacedLesson,
   parseCaptureIntent,
   placeEntity,
+  priorityForEntity,
   reconcileFridgeDoor,
+  removeEntityReference,
   stackEntities,
   validateFridgeDoorState,
 } from './fridgeDoor'
@@ -55,8 +57,14 @@ const other = createLesson({ id: 'lesson-b', calendarId: 'calendar-a', courseId:
   state = placeEntity(state, 'lesson:lesson-b', 'door', 0, 1)
   state = assignPriority(state, 'lesson:lesson-a', 'must')
   state = stackEntities(state, ['lesson:lesson-a', 'lesson:lesson-b'], 'stack-a')
-  assert(state.placements.find((item) => item.entityRef === 'lesson:lesson-a')?.priority === 'must', 'Stacking must preserve priority.')
+  assert(priorityForEntity(state, 'lesson:lesson-a') === 'must', 'Stacking must preserve the independent priority relationship.')
   assert(state.placements.every((item) => item.stackId === 'stack-a'), 'Stack members must share stack ID.')
+  state = removeEntityReference(state, 'lesson:lesson-a')
+  assert(priorityForEntity(state, 'lesson:lesson-a') === 'must', 'Removing a Fridge placement must not remove Must/Should/Could priority.')
+  state = placeEntity(state, 'lesson:lesson-a', 'drawer', 0, 0)
+  assert(priorityForEntity(state, 'lesson:lesson-a') === 'must', 'Returning an object to Fridge depth must preserve its previous priority relationship.')
+  state = assignPriority(state, 'lesson:lesson-a', null)
+  assert(priorityForEntity(state, 'lesson:lesson-a') === null, 'Clearing priority must remove the relationship without changing placement.')
 }
 
 {
@@ -72,9 +80,10 @@ const other = createLesson({ id: 'lesson-b', calendarId: 'calendar-a', courseId:
   const state = {
     magnets: [magnet],
     placements: [
-      { entityRef: 'magnet:magnet-a' as const, surface: 'door' as const, row: 0, column: 0, stackId: null, stackOrder: null, priority: null },
-      { entityRef: 'magnet:magnet-a' as const, surface: 'drawer' as const, row: 0, column: 0, stackId: null, stackOrder: null, priority: null },
+      { entityRef: 'magnet:magnet-a' as const, surface: 'door' as const, row: 0, column: 0, stackId: null, stackOrder: null },
+      { entityRef: 'magnet:magnet-a' as const, surface: 'drawer' as const, row: 0, column: 0, stackId: null, stackOrder: null },
     ],
+    priorities: [],
   }
   assert(validateFridgeDoorState(state, [unit], [unplaced]).some((error) => error.includes('Duplicate')), 'Duplicate entity references must be invalid.')
 }
@@ -82,11 +91,13 @@ const other = createLesson({ id: 'lesson-b', calendarId: 'calendar-a', courseId:
 {
   const state = {
     magnets: [],
-    placements: [{ entityRef: 'lesson:deleted' as const, surface: 'door' as const, row: 0, column: 0, stackId: null, stackOrder: null, priority: null }],
+    placements: [{ entityRef: 'lesson:deleted' as const, surface: 'door' as const, row: 0, column: 0, stackId: null, stackOrder: null }],
+    priorities: [{ entityRef: 'lesson:deleted' as const, priority: 'must' as const }],
   }
   assert(validateFridgeDoorState(state, [unit], [unplaced]).some((error) => error.includes('Orphaned Lesson')), 'Orphaned Lesson refs must be invalid.')
   const reconciled = reconcileFridgeDoor(state, [unit], [unplaced], [], { rows: 1, columns: 1 })
-  assert(!reconciled.placements.some((item) => item.entityRef === 'lesson:deleted'), 'Reconciliation must remove orphaned canonical refs.')
+  assert(!reconciled.placements.some((item) => item.entityRef === 'lesson:deleted'), 'Reconciliation must remove orphaned canonical placement refs.')
+  assert(priorityForEntity(reconciled, 'lesson:deleted') === null, 'Reconciliation must remove orphaned priority relationships.')
 }
 
 {
