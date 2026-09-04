@@ -1,19 +1,26 @@
 import { useState } from 'react'
-import type {
-  FridgeDoorState,
-  FridgeEntityRef,
-  FridgePriority,
-  LessonWorkspace,
-  UnitWorkspace,
+import {
+  parseCaptureIntent,
+  type FridgeDoorState,
+  type FridgeEntityRef,
+  type FridgePriority,
+  type LessonWorkspace,
+  type PlanningWorkspace,
+  type UnitWorkspace,
 } from '../planning'
 import { FRIDGE_DOOR_CAPACITY } from '../app/useFridgeDoorWorkspace'
 
+type PendingCapture = { kind: 'unit' | 'lesson'; title: string } | null
+
 type Props = {
   state: FridgeDoorState
+  planning: PlanningWorkspace
   units: UnitWorkspace
   lessons: LessonWorkspace
   notice: string | null
   onCreateMagnet: (title: string) => string | null
+  onCreateUnit: (title: string, courseId: string) => string | null
+  onCreateLesson: (title: string, unitId: string) => string | null
   onReposition: (entityRef: FridgeEntityRef, row: number, column: number) => string | null
   onSetPriority: (entityRef: FridgeEntityRef, priority: FridgePriority) => string | null
   onPutAway: (entityRef: FridgeEntityRef) => string | null
@@ -31,6 +38,8 @@ type ItemInfo = {
 
 export function FridgeDoorPanel(props: Props) {
   const [capture, setCapture] = useState('')
+  const [pendingCapture, setPendingCapture] = useState<PendingCapture>(null)
+  const [captureContextId, setCaptureContextId] = useState('')
   const [localError, setLocalError] = useState<string | null>(null)
   const door = props.state.placements
     .filter((item) => item.surface === 'door')
@@ -47,6 +56,42 @@ export function FridgeDoorPanel(props: Props) {
     setLocalError(result)
   }
 
+  function resetCapture() {
+    setCapture('')
+    setPendingCapture(null)
+    setCaptureContextId('')
+  }
+
+  function beginCapture() {
+    try {
+      const intent = parseCaptureIntent(capture)
+      if (intent.kind === 'magnet') {
+        const result = props.onCreateMagnet(intent.title)
+        report(result)
+        if (!result) resetCapture()
+        return
+      }
+      setPendingCapture({ kind: intent.kind, title: intent.title })
+      setCaptureContextId('')
+      setLocalError(null)
+    } catch (error) {
+      setLocalError(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  function finishContextCapture() {
+    if (!pendingCapture) return
+    if (!captureContextId) {
+      setLocalError(pendingCapture.kind === 'unit' ? 'Choose a Course for this Unit.' : 'Choose a Unit for this Lesson.')
+      return
+    }
+    const result = pendingCapture.kind === 'unit'
+      ? props.onCreateUnit(pendingCapture.title, captureContextId)
+      : props.onCreateLesson(pendingCapture.title, captureContextId)
+    report(result)
+    if (!result) resetCapture()
+  }
+
   return (
     <section className="fridge-door" aria-label="Fridge Door">
       <header className="fridge-door-heading">
@@ -60,23 +105,39 @@ export function FridgeDoorPanel(props: Props) {
         </div>
       </header>
 
-      <form className="fridge-capture" onSubmit={(event) => {
-        event.preventDefault()
-        const result = props.onCreateMagnet(capture)
-        report(result)
-        if (!result) setCapture('')
-      }}>
+      <form className="fridge-capture" onSubmit={(event) => { event.preventDefault(); beginCapture() }}>
         <label>
-          <span>Quick magnet</span>
+          <span>Quick capture</span>
           <input
             value={capture}
-            onChange={(event) => setCapture(event.target.value)}
-            placeholder="Try the comparison before the quiz"
+            onChange={(event) => {
+              setCapture(event.target.value)
+              setPendingCapture(null)
+              setCaptureContextId('')
+            }}
+            placeholder="M gallery walk idea"
           />
         </label>
-        <button type="submit" className="quiet-button" disabled={!capture.trim()}>Add magnet</button>
+        <button type="submit" className="quiet-button" disabled={!capture.trim()}>Capture</button>
       </form>
-      <p className="fridge-capture-note">For the thought you want in sight before you decide what it becomes.</p>
+      <p className="fridge-capture-note"><strong>U</strong> Unit · <strong>L</strong> Lesson · <strong>M</strong> Magnet. No prefix becomes a Magnet.</p>
+
+      {pendingCapture ? (
+        <div className="fridge-capture-context" role="group" aria-label={`${pendingCapture.kind === 'unit' ? 'Unit' : 'Lesson'} capture context`}>
+          <p><strong>{pendingCapture.title}</strong> needs one piece of context before Arc creates it.</p>
+          <label>
+            <span>{pendingCapture.kind === 'unit' ? 'Course' : 'Unit'}</span>
+            <select value={captureContextId} onChange={(event) => setCaptureContextId(event.target.value)}>
+              <option value="">Choose…</option>
+              {(pendingCapture.kind === 'unit' ? props.planning.courses : props.units.units).map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+            </select>
+          </label>
+          <div>
+            <button type="button" className="text-button" onClick={() => { setPendingCapture(null); setCaptureContextId('') }}>Cancel</button>
+            <button type="button" className="primary-button" onClick={finishContextCapture}>Create {pendingCapture.kind === 'unit' ? 'Unit' : 'Lesson'}</button>
+          </div>
+        </div>
+      ) : null}
 
       {status ? <p className="fridge-door-status" role="status">{status}</p> : null}
 
