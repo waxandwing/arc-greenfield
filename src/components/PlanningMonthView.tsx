@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from 'react'
 import type { MonthProjection, ProjectedDay } from '../calendar/projections'
+import type { ISODate } from '../calendar/types'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
 import { formatLongDate, formatShortDate } from './dateLabels'
 
@@ -8,12 +9,14 @@ const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 export function PlanningMonthView({
   month,
   planning,
+  dragValidDates = new Set<ISODate>(),
   onOpenUnit,
   onOpenLesson,
   unitIdForLesson,
 }: {
   month: MonthProjection
   planning: MonthPlanningProjection
+  dragValidDates?: Set<ISODate>
   onOpenUnit?: (unitId: string) => void
   onOpenLesson?: (unitId: string, lessonId: string) => void
   unitIdForLesson?: (lessonId: string) => string | undefined
@@ -39,6 +42,7 @@ export function PlanningMonthView({
                   day={day}
                   inAnchorMonth={day.date.slice(0, 7) === month.monthKey}
                   signals={planningWeek?.days[dayIndex]?.lessonSignals ?? []}
+                  dragTarget={dragValidDates.has(day.date)}
                   onOpenLesson={onOpenLesson}
                   unitIdForLesson={unitIdForLesson}
                 />
@@ -75,12 +79,14 @@ function MonthDayCell({
   day,
   inAnchorMonth,
   signals,
+  dragTarget,
   onOpenLesson,
   unitIdForLesson,
 }: {
   day: ProjectedDay
   inAnchorMonth: boolean
   signals: MonthLessonSignal[]
+  dragTarget: boolean
   onOpenLesson?: (unitId: string, lessonId: string) => void
   unitIdForLesson?: (lessonId: string) => string | undefined
 }) {
@@ -91,10 +97,11 @@ function MonthDayCell({
     day.isWeekend ? 'planning-month-day--weekend' : '',
     inAnchorMonth ? '' : 'planning-month-day--outside-month',
     day.inSchoolYear ? '' : 'planning-month-day--outside-year',
+    dragTarget ? 'drag-date-target drag-date-target--month' : '',
   ].filter(Boolean).join(' ')
 
   return (
-    <div className={classes}>
+    <div className={classes} data-drag-date-target={dragTarget ? day.date : undefined}>
       <div className="planning-month-day-heading">
         <time className="planning-month-date" dateTime={day.date} aria-label={formatLongDate(day.date)}>
           {Number(day.date.slice(8))}
