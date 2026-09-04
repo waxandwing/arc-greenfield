@@ -13,7 +13,6 @@ import './styles/classSetup.css'
 import './styles/unitSetup.css'
 import './styles/lessonSetup.css'
 import './styles/recoveryReview.css'
-import './styles/buildFingerprint.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>,
