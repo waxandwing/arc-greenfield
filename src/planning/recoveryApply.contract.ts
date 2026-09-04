@@ -68,6 +68,7 @@ const applied = applyShiftOperation({
   units: units.units,
   calendar,
   overrides: [],
+  sameDayApprovals: [],
 })
 
 assert(effectiveLessonDate(lesson17, p5.id, applied.overrides) === '2026-09-17', 'P5 interrupted Lesson must move to Thursday.')
@@ -76,7 +77,12 @@ assert(effectiveLessonDate(test, p5.id, applied.overrides) === '2026-09-18', 'P5
 assert(effectiveLessonDate(lesson17, p2.id, applied.overrides) === '2026-09-16', 'P2 must remain on the shared Lesson plan.')
 assert(effectiveLessonDate(lesson18, p7.id, applied.overrides) === '2026-09-17', 'P7 must remain on the shared Lesson plan.')
 
-const persisted: ShiftPersistenceInput = { calendarId: calendar.id, overrides: applied.overrides, undo: applied.undo }
+const persisted: ShiftPersistenceInput = {
+  calendarId: calendar.id,
+  overrides: applied.overrides,
+  sameDayApprovals: applied.sameDayApprovals,
+  undo: applied.undo,
+}
 const storage = new MemoryStorage()
 Object.defineProperty(globalThis, 'window', { configurable: true, value: { localStorage: storage } })
 assert(saveShiftStateToBrowser(persisted), 'Canonical Shift must persist to browser storage.')
@@ -96,11 +102,12 @@ const afterReloadPreview = createRecoveryPreview({
 assert(createRecoveryShiftDraft(afterReloadPreview) === null, 'Reloaded adjusted schedule must not reoffer the same recovery Shift.')
 
 assert(restored.input.undo !== null, 'Canonical restored Shift must retain Undo.')
-const undoneOverrides = undoShiftOperation(restored.input.overrides, restored.input.undo)
-assert(effectiveLessonDate(lesson17, p5.id, undoneOverrides) === '2026-09-16', 'Undo must restore P5 interrupted Lesson to the exact prior date.')
-assert(effectiveLessonDate(lesson18, p5.id, undoneOverrides) === '2026-09-17', 'Undo must restore P5 displaced Lesson to the exact prior date.')
-assert(effectiveLessonDate(lesson17, p2.id, undoneOverrides) === '2026-09-16', 'Undo must not alter P2.')
-assert(effectiveLessonDate(lesson18, p7.id, undoneOverrides) === '2026-09-17', 'Undo must not alter P7.')
+const undone = undoShiftOperation(restored.input.overrides, restored.input.sameDayApprovals, restored.input.undo)
+assert(effectiveLessonDate(lesson17, p5.id, undone.overrides) === '2026-09-16', 'Undo must restore P5 interrupted Lesson to the exact prior date.')
+assert(effectiveLessonDate(lesson18, p5.id, undone.overrides) === '2026-09-17', 'Undo must restore P5 displaced Lesson to the exact prior date.')
+assert(effectiveLessonDate(lesson17, p2.id, undone.overrides) === '2026-09-16', 'Undo must not alter P2.')
+assert(effectiveLessonDate(lesson18, p7.id, undone.overrides) === '2026-09-17', 'Undo must not alter P7.')
+assert(undone.sameDayApprovals.length === 0, 'Undo must restore the exact prior same-day approval state.')
 
 const fixedInterrupted = updateLessonDeliveryState(
   createLessonDeliveryState({ lesson: test, section: p5 }),
