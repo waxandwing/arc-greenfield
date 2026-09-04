@@ -28,6 +28,7 @@ const contracts = [
   'tests/generated/src/planning/fridgeDoorPersistence.contract.js',
   'tests/generated/src/planning/storageTransaction.contract.js',
   'tests/generated/src/planning/fridgeDoorApplicationCommit.contract.js',
+  'tests/generated/src/planning/fridgeDoorOperations.contract.js',
   'tests/generated/src/planning/recoveryPreview.contract.js',
   'tests/generated/src/planning/recoveryShiftDraft.contract.js',
   'tests/generated/src/planning/recoveryResolution.contract.js',
