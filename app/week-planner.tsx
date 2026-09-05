@@ -64,11 +64,11 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
 
   function actionRow(plan: Plan) {
     const dayIndex = plan.date ? days.findIndex((day) => day.key === plan.date) : -1;
-    return <div className="magnetActions" aria-label={`Actions for ${plan.title}`}>
+    return <div className="magnetActions" role="toolbar" aria-label={`Actions for ${plan.title}`}>
       <button type="button" onClick={(e) => { e.stopPropagation(); setEditDraft({ id: plan.id, title: plan.title }); }}>Edit</button>
-      <button type="button" title="Move earlier" aria-label={`Move ${plan.title} earlier`} disabled={dayIndex <= 0} onClick={(e) => { e.stopPropagation(); moveOneDay(plan, -1); }}>←</button>
-      <button type="button" title="Move later" aria-label={`Move ${plan.title} later`} disabled={dayIndex < 0 || dayIndex >= days.length - 1} onClick={(e) => { e.stopPropagation(); moveOneDay(plan, 1); }}>→</button>
-      <button type="button" onClick={(e) => { e.stopPropagation(); onReturnToIdeas(plan.id); }}>Ideas</button>
+      <button type="button" title="Move earlier" aria-label={`Move ${plan.title} earlier`} disabled={dayIndex <= 0} onClick={(e) => { e.stopPropagation(); moveOneDay(plan, -1); }}>Move ←</button>
+      <button type="button" title="Move later" aria-label={`Move ${plan.title} later`} disabled={dayIndex < 0 || dayIndex >= days.length - 1} onClick={(e) => { e.stopPropagation(); moveOneDay(plan, 1); }}>Move →</button>
+      <button type="button" onClick={(e) => { e.stopPropagation(); onReturnToIdeas(plan.id); }}>Put in Fridge</button>
       <button type="button" className="dangerAction" onClick={(e) => { e.stopPropagation(); onDeletePlan(plan.id); }}>Delete</button>
     </div>;
   }
@@ -108,7 +108,7 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
                 const collapsed = workspace.preferences.collapsedUnitIds.includes(plan.id);
                 const children = plan.type === "unit" ? orderedUnitChildren(workspace.plans, plan.id) : [];
                 const prefix = plan.type === "unit" ? <><button type="button" className="disclosureButton" aria-label={collapsed ? "Expand unit" : "Collapse unit"} aria-expanded={!collapsed} onClick={(e) => { e.stopPropagation(); onToggleUnit(plan.id); }}>{collapsed ? "▸" : "▾"}</button></> : undefined;
-                return <article key={plan.id} className={`${plan.type === "unit" ? "lessonMagnet unitMagnet" : "lessonMagnet"}${selected ? " selected" : ""}`} draggable={editDraft?.id !== plan.id} onDragStart={(e) => { e.dataTransfer.setData("text/arc-plan", plan.id); e.dataTransfer.effectAllowed = "move"; }} onClick={(e) => { e.stopPropagation(); onSelectPlan(plan); }}>
+                return <article key={plan.id} className={`${plan.type === "unit" ? "lessonMagnet unitMagnet" : "lessonMagnet"}${selected ? " selected" : ""}`} draggable={editDraft?.id !== plan.id} onDragStart={(e) => { e.dataTransfer.setData("text/arc-plan", plan.id); e.dataTransfer.effectAllowed = "move"; }} onClick={(e) => { e.stopPropagation(); onSelectPlan(plan); }} tabIndex={0} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && editDraft?.id !== plan.id) { e.preventDefault(); onSelectPlan(plan); } }}>
                   {editDraft?.id === plan.id ? editableTitle(plan) : <div className="magnetTitleRow">{prefix}<strong>{plan.title}</strong>{plan.type === "unit" && <span className="unitCount">{children.length} lesson{children.length === 1 ? "" : "s"}</span>}</div>}
                   {plan.type === "unit" && !collapsed && <div className="unitChildren unitChildrenSummary"><div className="unitSequenceSummary">{children.length ? children.map((child) => <span key={child.id}>{child.date ? `${child.date.slice(5)} · ` : ""}{child.title}</span>) : <span>No lessons yet</span>}</div>{childDraft?.unitId === plan.id ? <div className="childComposer"><input autoFocus value={childDraft.title} onChange={(e) => setChildDraft({ unitId: plan.id, title: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter" && childDraft.title.trim()) { onAddChildLesson(plan, childDraft.title.trim()); setChildDraft(null); } if (e.key === "Escape") setChildDraft(null); }} placeholder="Lesson title" /><button type="button" onClick={() => { if (!childDraft.title.trim()) return; onAddChildLesson(plan, childDraft.title.trim()); setChildDraft(null); }}>Add</button></div> : <button type="button" className="addChild" onClick={(e) => { e.stopPropagation(); setChildDraft({ unitId: plan.id, title: "" }); }}>＋ Lesson</button>}</div>}
                   {editDraft?.id !== plan.id && actionRow(plan)}
