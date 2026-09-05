@@ -20,10 +20,20 @@ async function configureCalendar(page) {
   await page.locator('#first-school-day').fill('2026-09-02')
   await page.locator('#last-school-day').fill('2027-05-28')
   await page.getByRole('button', { name: 'Use this calendar', exact: true }).click()
+
+  try {
+    await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible', timeout: 5000 })
+  } catch {
+    const errors = await page.locator('[role="alert"]').allTextContents()
+    const body = (await page.locator('body').innerText()).slice(0, 2500)
+    throw new Error(`Phase 2: calendar save did not return to Month. Alerts: ${errors.join(' | ') || 'none'}. Rendered text: ${body}`)
+  }
 }
 
 async function createClasses(page) {
-  await page.getByRole('button', { name: 'Set classes', exact: true }).click()
+  const setClasses = page.getByRole('button', { name: 'Set classes', exact: true })
+  assert(await setClasses.count() === 1, 'Phase 2: configured calendar did not expose exactly one Set classes action.')
+  await setClasses.click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('AP Art History')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
