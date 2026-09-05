@@ -6,8 +6,9 @@ These rules are explicit product direction. They outrank older prototypes, archi
 
 ## 0. Deployment law
 - **Do not deploy Arc to Vercel.**
-- No Vercel production deployment, preview deployment, release automation, or accidental publish step is authorized.
+- No Vercel production deployment, preview deployment, branch deployment, release automation, or accidental publish step is authorized.
 - Development may continue in isolated Git branches, draft pull requests, Figma, local/file previews, and canonical Drive documents.
+- A GitHub pull request is for review/testing only and is not permission to deploy.
 - Deployment remains blocked until Kelly explicitly reverses this rule.
 
 ## 1. Calendar is the center
