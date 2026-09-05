@@ -78,12 +78,16 @@ function unitRow(page, title) {
   return page.locator('.unit-editor-row').filter({ hasText: title })
 }
 
+async function inputValues(locator) {
+  return locator.evaluateAll((nodes) => nodes.map((node) => node.value))
+}
+
 async function describeUnitRow(row) {
   return {
     count: await row.count(),
     text: await row.allInnerTexts(),
-    starts: await row.getByRole('textbox', { name: 'Start', exact: true }).allInputValues(),
-    ends: await row.getByRole('textbox', { name: 'End', exact: true }).allInputValues(),
+    starts: await inputValues(row.getByRole('textbox', { name: 'Start', exact: true })),
+    ends: await inputValues(row.getByRole('textbox', { name: 'End', exact: true })),
     buttons: await row.getByRole('button').allTextContents(),
   }
 }
@@ -99,7 +103,6 @@ try {
   await createUnits(page)
   await createLessons(page)
 
-  // Destructive Unit actions must fail closed while a scheduled child Lesson exists.
   await headerAction(page, 'Edit Units').click()
   let actionUnit = unitRow(page, 'Action Unit')
   const initialActionUnit = await describeUnitRow(actionUnit)
@@ -112,7 +115,6 @@ try {
   assert((await page.getByRole('alert').innerText()).includes('Lessons first'), 'Phase 2 object actions: Unit Delete did not fail closed while a child Lesson existed.')
   await page.getByRole('button', { name: 'Cancel', exact: true }).click()
 
-  // Section-specific delivery state must diverge without cloning the shared Lesson.
   await headerAction(page, 'Edit Lessons').click()
   await selectLesson(page, 'Progress lesson')
   const p2 = page.locator('.delivery-row').filter({ hasText: 'Period 2' })
@@ -133,7 +135,6 @@ try {
   assert(await reloadedP2.getByRole('textbox', { name: 'Pick up here', exact: true }).inputValue() === 'Continue with guided comparison.', 'Phase 2 divergence: Period 2 resume note did not survive reload.')
   assert(await reloadedP5.getByRole('combobox', { name: 'Status', exact: true }).inputValue() === 'not-started', 'Phase 2 divergence: Period 5 inherited Period 2 state after reload.')
 
-  // Lesson Unplace preserves the object but removes its calendar placement.
   await selectLesson(page, 'Action lesson')
   await page.getByRole('button', { name: 'Unplace', exact: true }).click()
   assert((await page.getByRole('status').innerText()).includes('teaching history were preserved'), 'Phase 2 object actions: Lesson Unplace did not report preservation semantics.')
@@ -144,7 +145,6 @@ try {
   await selectLesson(page, 'Action lesson')
   assert(await page.getByRole('textbox', { name: 'Planned date', exact: true }).inputValue() === '', 'Phase 2 object actions: unplaced Lesson regained a date after reload.')
 
-  // Once unplaced and with no dependent history/overrides, Lesson Delete is allowed.
   await page.getByRole('button', { name: 'Delete', exact: true }).click()
   assert((await page.getByRole('status').innerText()).includes('Lesson deleted'), 'Phase 2 object actions: safe Lesson Delete did not report success.')
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
@@ -155,7 +155,6 @@ try {
   assert(await page.getByRole('button', { name: /^Progress lesson/ }).count() === 1, 'Phase 2 object actions: deleting Action lesson disturbed Progress lesson.')
   await page.getByRole('button', { name: 'Cancel', exact: true }).click()
 
-  // With dependencies gone, Unit Unplace preserves the Unit, and Delete can then destroy it explicitly.
   await headerAction(page, 'Edit Units').click()
   actionUnit = unitRow(page, 'Action Unit')
   await actionUnit.getByRole('button', { name: 'Unplace', exact: true }).click()
