@@ -32,6 +32,7 @@ The newest scheduling commits must receive their own green verification before a
 - Keep PR #48 draft and unmerged.
 - Do not deploy to Vercel under any circumstance.
 - Do not treat a successful GitHub build as deployment permission.
+- Current remaining architectural work includes controlled ArcShell state-owner migration, richer Calendar editing, and the full interaction/a11y audit.
 
 ## Next after current green CI
 1. Migrate ArcShell workspace ownership from component-local history to the prepared Zustand Arc store in a controlled pass.
