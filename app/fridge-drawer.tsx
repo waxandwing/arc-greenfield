@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Plan } from "../lib/domain";
+import type { Plan, PriorityTier } from "../lib/domain";
 import { objectLocation } from "../lib/object-lifecycle";
 
 type Props = {
@@ -13,9 +13,11 @@ type Props = {
   onCreate: (title: string, type: "note" | "lesson" | "unit") => void;
   onSelect: (plan: Plan) => void;
   onDelete: (id: string) => void;
+  onMoveToTaskBar: (id: string, tier: PriorityTier) => void;
+  onDropObject: (id: string) => void;
 };
 
-export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, onCreate, onSelect, onDelete }: Props) {
+export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, onCreate, onSelect, onDelete, onMoveToTaskBar, onDropObject }: Props) {
   const [draft, setDraft] = useState("");
   const [type, setType] = useState<"note" | "lesson" | "unit">("note");
   const fridgePlans = plans.filter((plan) => objectLocation(plan) === "fridge" && !plan.parentUnitId);
@@ -27,7 +29,17 @@ export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, on
   }
 
   return (
-    <aside className={open ? "edgeDrawer fridgeDrawer open" : "edgeDrawer fridgeDrawer"} aria-hidden={!open} aria-label="Fridge">
+    <aside
+      className={open ? "edgeDrawer fridgeDrawer open" : "edgeDrawer fridgeDrawer"}
+      aria-hidden={!open}
+      aria-label="Fridge"
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => {
+        event.preventDefault();
+        const id = event.dataTransfer.getData("text/arc-plan");
+        if (id) onDropObject(id);
+      }}
+    >
       <div className="edgeDrawerHeader">
         <div>
           <p className="eyebrow">Fridge</p>
@@ -50,11 +62,12 @@ export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, on
       <div className="fridgeObjectList">
         {fridgePlans.map((plan) => {
           const course = courses.find((item) => item.id === plan.courseId);
+          const selected = selectedPlanId === plan.id;
           return (
             <article
               key={plan.id}
               draggable
-              className={`fridgeObject fridgeObject-${plan.type}${selectedPlanId === plan.id ? " selected" : ""}`}
+              className={`fridgeObject fridgeObject-${plan.type}${selected ? " selected" : ""}`}
               onDragStart={(event) => {
                 event.dataTransfer.setData("text/arc-plan", plan.id);
                 event.dataTransfer.effectAllowed = "move";
@@ -67,7 +80,15 @@ export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, on
               <strong>{plan.title}</strong>
               {course && <small><span style={{ background: course.color }} />{course.name}</small>}
               {(plan.notes || plan.resources.length > 0 || Object.keys(plan.details).length > 0 || plan.taskContext) && <span className="retainedDataFlag">More info retained</span>}
-              <button type="button" className="fridgeDelete" onClick={(event) => { event.stopPropagation(); onDelete(plan.id); }}>Delete</button>
+
+              {selected && (
+                <div className="fridgeObjectActions" role="toolbar" aria-label={`Move ${plan.title}`}>
+                  <button type="button" onClick={(event) => { event.stopPropagation(); onMoveToTaskBar(plan.id, "must"); }}>Must</button>
+                  <button type="button" onClick={(event) => { event.stopPropagation(); onMoveToTaskBar(plan.id, "should"); }}>Should</button>
+                  <button type="button" onClick={(event) => { event.stopPropagation(); onMoveToTaskBar(plan.id, "could"); }}>Could</button>
+                  <button type="button" className="dangerAction" onClick={(event) => { event.stopPropagation(); onDelete(plan.id); }}>Delete</button>
+                </div>
+              )}
             </article>
           );
         })}
