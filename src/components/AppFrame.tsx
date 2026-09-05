@@ -25,6 +25,7 @@ export function AppFrame() {
   const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [liveSession, setLiveSession] = useState<LiveClassroomSession | null>(null)
+  const [dayReturnSectionId, setDayReturnSectionId] = useState<string | null>(null)
   const [interactionNotice, setInteractionNotice] = useState<string | null>(null)
   const settingsTabRef = useRef<HTMLButtonElement | null>(null)
 
@@ -51,6 +52,7 @@ export function AppFrame() {
 
   function returnHome() {
     if (workspaceBusy) return
+    setDayReturnSectionId(null)
     selectView(resolveAvailableHomeView(viewPreferences, workspace.viewAvailability))
   }
 
@@ -81,6 +83,7 @@ export function AppFrame() {
         calendar: workspace.calendar,
         liveDate: currentLocalISODate(),
       })
+      setDayReturnSectionId(sectionId)
       setInteractionNotice(null)
       setLiveSession(session)
     } catch (error) {
@@ -204,7 +207,10 @@ export function AppFrame() {
                   activeView={workspace.activeView}
                   disabled={workspaceBusy}
                   availabilityFor={workspace.viewAvailability}
-                  onSelect={selectView}
+                  onSelect={(view) => {
+                    if (view !== 'Day') setDayReturnSectionId(null)
+                    selectView(view)
+                  }}
                 />
               )}
 
@@ -242,6 +248,7 @@ export function AppFrame() {
                   onApplyRecoveryShift={workspace.applyRecoveryShift}
                   onCloseMode={workspaceMode.close}
                   onLaunchLive={liveAvailable ? launchLive : undefined}
+                  dayFocusSectionId={workspace.activeView === 'Day' ? dayReturnSectionId : null}
                 />
               </section>
             </>
