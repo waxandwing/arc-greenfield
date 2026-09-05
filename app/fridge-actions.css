@@ -1,0 +1,19 @@
+.fridgeObjectActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(38,51,58,.12);
+}
+.fridgeObjectActions button {
+  min-height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255,255,255,.7);
+  padding: 4px 7px;
+  font-size: .54rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+.fridgeObjectActions .dangerAction { color: #8c4138; }
