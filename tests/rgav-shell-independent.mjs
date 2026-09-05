@@ -57,17 +57,23 @@ try {
   const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(geometry.scroll <= geometry.width + 1, `RGAV-B: shell overflowed horizontally at 1366×768 (${geometry.scroll} > ${geometry.width}).`)
 
-  // Keyboard hostile pass after reload: the skip link must still be first and functional.
-  await page.evaluate(() => document.activeElement?.blur())
-  await page.keyboard.press('Tab')
-  const skip = page.getByRole('link', { name: 'Skip to calendar' })
-  assert(await skip.evaluate((node) => document.activeElement === node), 'RGAV-B: Skip to calendar is not first in keyboard order.')
-  await page.keyboard.press('Enter')
-  assert(await page.locator('#calendar-stage').evaluate((node) => document.activeElement === node), 'RGAV-B: skip link failed to focus the calendar stage.')
+  // Fresh page, same browser context: local Arc state persists while sequential keyboard focus
+  // starts legitimately from the beginning of the new document.
+  const keyboardPage = await context.newPage()
+  const keyboardRuntimeErrors = trackRuntimeErrors(keyboardPage)
+  await keyboardPage.goto(baseUrl, { waitUntil: 'networkidle' })
+  assert(await keyboardPage.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: persisted Last used Week did not survive a fresh page in the same browser context.')
+  await keyboardPage.keyboard.press('Tab')
+  const skip = keyboardPage.getByRole('link', { name: 'Skip to calendar' })
+  assert(await skip.evaluate((node) => document.activeElement === node), 'RGAV-B: Skip to calendar is not first in keyboard order on a fresh page.')
+  await keyboardPage.keyboard.press('Enter')
+  assert(await keyboardPage.locator('#calendar-stage').evaluate((node) => document.activeElement === node), 'RGAV-B: skip link failed to focus the calendar stage.')
 
   assert(runtimeErrors.length === 0, `RGAV-B runtime errors: ${runtimeErrors.join(' | ')}`)
+  assert(keyboardRuntimeErrors.length === 0, `RGAV-B fresh-page keyboard runtime errors: ${keyboardRuntimeErrors.join(' | ')}`)
+  await keyboardPage.close()
   await context.close()
-  console.log('Independent RGAV shell pass B succeeded: Last used persistence, optional weekends, navigation/home/reload, 1366×768 overflow, keyboard skip path, and runtime-error checks.')
+  console.log('Independent RGAV shell pass B succeeded: Last used persistence, optional weekends, navigation/home/reload, fresh-page keyboard skip, 1366×768 overflow, and runtime-error checks.')
 } finally {
   await browser.close()
 }
