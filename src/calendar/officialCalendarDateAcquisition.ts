@@ -19,6 +19,56 @@ export type OfficialCalendarStructuredExtraction = {
   rows: OfficialCalendarStructuredRow[]
 }
 
+export type OfficialCalendarExtractionAdapter = {
+  id: string
+  supports: (source: OfficialCalendarSourceCandidate) => boolean
+  extract: (source: OfficialCalendarSourceCandidate) => Promise<OfficialCalendarStructuredExtraction>
+}
+
+export type OfficialCalendarDateAcquisitionResult =
+  | { status: 'payload'; payload: OfficialCalendarPayload; adapterId: string }
+  | { status: 'unsupported'; message: string }
+  | { status: 'invalid'; message: string }
+
+export async function acquireOfficialCalendarPayload(
+  schoolCandidate: OfficialSourceCandidate,
+  calendarSource: OfficialCalendarSourceCandidate,
+  adapter: OfficialCalendarExtractionAdapter,
+): Promise<OfficialCalendarDateAcquisitionResult> {
+  if (calendarSource.schoolCandidateId !== schoolCandidate.id) {
+    return { status: 'invalid', message: 'Official calendar source does not belong to the selected school candidate.' }
+  }
+  if (!adapter.supports(calendarSource)) {
+    return {
+      status: 'unsupported',
+      message: 'Arc does not yet have a safe extractor for this official calendar source. No dates were created.',
+    }
+  }
+
+  let extraction: OfficialCalendarStructuredExtraction
+  try {
+    extraction = await adapter.extract({ ...calendarSource })
+  } catch (error) {
+    return {
+      status: 'invalid',
+      message: `Arc could not read this official calendar source. No dates were created. ${messageOf(error)}`,
+    }
+  }
+
+  try {
+    return {
+      status: 'payload',
+      payload: buildOfficialCalendarPayloadFromStructuredRows(schoolCandidate, calendarSource, extraction),
+      adapterId: adapter.id,
+    }
+  } catch (error) {
+    return {
+      status: 'invalid',
+      message: `Arc could not turn this source into trustworthy school-calendar dates. No dates were created. ${messageOf(error)}`,
+    }
+  }
+}
+
 export function buildOfficialCalendarPayloadFromStructuredRows(
   schoolCandidate: OfficialSourceCandidate,
   calendarSource: OfficialCalendarSourceCandidate,
@@ -201,4 +251,8 @@ function normalizeLabel(value: string): string {
 
 function cleanOptional(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined
+}
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }
