@@ -26,11 +26,12 @@ type Props = {
   planningContext?: PlanningContext | null
   showWeekends?: boolean
   onLaunchLive?: (sectionId: string, lessonId: string) => void
+  dayFocusSectionId?: string | null
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false, onLaunchLive }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false, onLaunchLive, dayFocusSectionId = null }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -49,6 +50,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           day={projection.day}
           planningContext={planningContext}
           onLaunchLive={onLaunchLive}
+          dayFocusSectionId={dayFocusSectionId}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
         />
       )
@@ -128,12 +130,14 @@ function PlanningDayStrip({
   planningContext,
   termContext,
   onLaunchLive,
+  dayFocusSectionId,
 }: {
   title: string
   day: ProjectedDay
   planningContext?: PlanningContext | null
   termContext?: ReactNode
   onLaunchLive?: (sectionId: string, lessonId: string) => void
+  dayFocusSectionId?: string | null
 }) {
   return (
     <section className="projection-section" aria-label={title}>
@@ -149,6 +153,7 @@ function PlanningDayStrip({
             overrides: planningContext.shiftState?.overrides ?? [],
           })}
           onLaunchLive={onLaunchLive}
+          initialFocusedSectionId={dayFocusSectionId}
         />
       ) : (
         <div className="projection-day-strip projection-day-strip--single">
