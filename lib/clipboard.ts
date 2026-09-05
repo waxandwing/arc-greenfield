@@ -116,6 +116,15 @@ export function pasteClipboard(workspace: Workspace, clipboard: ArcClipboard, ta
     const relocated = relocateCutTree(clipboard, target);
     const pastedRoot = relocated.find((plan) => plan.id === clipboard.sourceRootId) ?? relocated[0] ?? null;
     if (!pastedRoot) return { workspace, pastedRootId: null, nextClipboard: clipboard };
+
+    // Cut is only valid after the source tree has been removed. If any of the
+    // stable IDs still exist, appending the relocated tree would create two
+    // canonical records with one identity. Fail closed and keep the clipboard.
+    const occupiedIds = new Set(workspace.plans.map((plan) => plan.id));
+    if (relocated.some((plan) => occupiedIds.has(plan.id))) {
+      return { workspace, pastedRootId: null, nextClipboard: clipboard };
+    }
+
     return {
       workspace: { ...workspace, plans: [...workspace.plans, ...relocated] },
       pastedRootId: pastedRoot.id,
