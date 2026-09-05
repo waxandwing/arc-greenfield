@@ -1,9 +1,9 @@
 import type { ArcView, WorkspacePreferences } from "./domain";
 
-export type CurrentPlannerView = "week" | "month" | "quarter";
+export type CurrentPlannerView = "day" | "week" | "month" | "quarter";
 
 export function isCurrentPlannerView(view: ArcView): view is CurrentPlannerView {
-  return view === "week" || view === "month" || view === "quarter";
+  return view === "day" || view === "week" || view === "month" || view === "quarter";
 }
 
 export function isPlannerViewAvailable(view: CurrentPlannerView, quarterAvailable: boolean): boolean {
@@ -25,6 +25,7 @@ export function resolvePlannerHome(preferences: WorkspacePreferences, quarterAva
 export function currentLandingChoices(quarterAvailable: boolean): Array<{ value: WorkspacePreferences["landingView"]; label: string }> {
   return [
     { value: "last-used", label: "Last used" },
+    { value: "day", label: "Day" },
     { value: "week", label: "Week" },
     { value: "month", label: "Month" },
     ...(quarterAvailable ? [{ value: "quarter" as const, label: "Quarter" }] : [])
