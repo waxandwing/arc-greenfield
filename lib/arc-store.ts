@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { emptyWorkspace, type PriorityTier, type TaskContext, type Workspace } from "./domain";
 import { migrateLegacyPriorities, moveObjectToTaskBar, updateTaskContext } from "./object-lifecycle";
 import { movePlanToCalendarDate } from "./plan-operations";
-import { collectPlanTree, movePlanTreeToIdeas } from "./plan-tree";
+import { movePlanTreeToIdeas, unitUnplaceBlocker } from "./plan-tree";
 import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "./workspace-history";
 import { loadWorkspaceResult, saveWorkspace } from "./workspace-store";
 
@@ -80,10 +80,12 @@ export const useArcStore = create<ArcStore>((set, get) => ({
 
   sendToTaskBar(id, tier) {
     get().commit((workspace) => {
-      const treeIds = new Set(collectPlanTree(workspace.plans, id).map((plan) => plan.id));
+      if (unitUnplaceBlocker(workspace.plans, id)) return workspace;
       return {
         ...workspace,
-        plans: workspace.plans.map((plan) => treeIds.has(plan.id) ? moveObjectToTaskBar(plan, tier) : plan)
+        // Location belongs to each stable object. Moving a Unit into the Task
+        // Bar must not silently move its child Lessons with it.
+        plans: workspace.plans.map((plan) => plan.id === id ? moveObjectToTaskBar(plan, tier) : plan)
       };
     });
   },
