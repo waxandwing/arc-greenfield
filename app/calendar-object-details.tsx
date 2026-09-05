@@ -25,6 +25,8 @@ function safeResourceUrl(value: string): string | null {
 
 export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch, onClose }: Props) {
   const [title, setTitle] = useState(plan.title);
+  const [notesDraft, setNotesDraft] = useState(plan.notes);
+  const [standardsDraft, setStandardsDraft] = useState(plan.details.standards ?? "");
   const [resourceLabel, setResourceLabel] = useState("");
   const [resourceUrl, setResourceUrl] = useState("");
   const [resourceError, setResourceError] = useState<string | null>(null);
@@ -35,8 +37,22 @@ export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch
     onRename(plan.id, next);
   }
 
+  function commitLongText() {
+    const patch: Partial<Plan> = {};
+    if (notesDraft !== plan.notes) patch.notes = notesDraft;
+    if (standardsDraft !== (plan.details.standards ?? "")) patch.details = { ...plan.details, standards: standardsDraft };
+    if (Object.keys(patch).length) onPatch(plan.id, patch);
+  }
+
+  function closeWithCommit() {
+    commitTitle();
+    commitLongText();
+    onClose();
+  }
+
   function move(date: string, courseId: string) {
     if (!date || !courseId) return;
+    commitLongText();
     onMove(plan.id, date, courseId);
   }
 
@@ -47,6 +63,7 @@ export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch
       setResourceError("Use a valid http:// or https:// link.");
       return;
     }
+    commitLongText();
     onPatch(plan.id, {
       resources: [...plan.resources, { id: crypto.randomUUID(), label: resourceLabel.trim(), url: safeUrl }]
     });
@@ -64,7 +81,7 @@ export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch
       onKeyDown={(event) => {
         if (event.key === "Escape") {
           event.stopPropagation();
-          onClose();
+          closeWithCommit();
         }
       }}
     >
@@ -73,7 +90,7 @@ export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch
           <span>{plan.type === "unit" ? "Unit" : plan.type === "lesson" ? "Lesson" : "Note"}</span>
           <strong>Full planning details</strong>
         </div>
-        <button type="button" onClick={onClose} aria-label="Close full details">×</button>
+        <button type="button" onClick={closeWithCommit} aria-label="Close full details">×</button>
       </header>
 
       <label>
@@ -97,16 +114,16 @@ export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch
 
       <label>
         Notes
-        <textarea value={plan.notes} onChange={(event) => onPatch(plan.id, { notes: event.target.value })} placeholder="What do you need to remember when you get here?" />
+        <textarea value={notesDraft} onChange={(event) => setNotesDraft(event.target.value)} onBlur={commitLongText} placeholder="What do you need to remember when you get here?" />
       </label>
 
       <label>
         Standards / alignment
-        <textarea value={plan.details.standards ?? ""} onChange={(event) => onPatch(plan.id, { details: { ...plan.details, standards: event.target.value } })} placeholder="Optional" />
+        <textarea value={standardsDraft} onChange={(event) => setStandardsDraft(event.target.value)} onBlur={commitLongText} placeholder="Optional" />
       </label>
 
       <label className="calendarFixedRow">
-        <input type="checkbox" checked={plan.fixedDate} onChange={(event) => onPatch(plan.id, { fixedDate: event.target.checked })} />
+        <input type="checkbox" checked={plan.fixedDate} onChange={(event) => { commitLongText(); onPatch(plan.id, { fixedDate: event.target.checked }); }} />
         <span><strong>Keep this date fixed</strong><small>Shift and recovery must respect this anchor unless you explicitly override it.</small></span>
       </label>
 
@@ -115,7 +132,7 @@ export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch
         {plan.resources.map((resource) => (
           <div className="calendarResourceRow" key={resource.id}>
             <a href={resource.url} target="_blank" rel="noreferrer">{resource.label}</a>
-            <button type="button" onClick={() => onPatch(plan.id, { resources: plan.resources.filter((item) => item.id !== resource.id) })}>Remove</button>
+            <button type="button" onClick={() => { commitLongText(); onPatch(plan.id, { resources: plan.resources.filter((item) => item.id !== resource.id) }); }}>Remove</button>
           </div>
         ))}
         <div className="calendarResourceAdder">
@@ -135,7 +152,7 @@ export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch
 
       <footer className="calendarObjectDetailsFooter">
         <span>Same object. More planning depth.</span>
-        <button type="button" onClick={onClose}>Done</button>
+        <button type="button" onClick={closeWithCommit}>Done</button>
       </footer>
     </section>
   );
