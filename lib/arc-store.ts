@@ -1,15 +1,17 @@
 import { create } from "zustand";
 import { emptyWorkspace, type PriorityTier, type TaskContext, type Workspace } from "./domain";
+import { migrateLegacyPriorities, moveObjectToCalendar, moveObjectToFridge, moveObjectToTaskBar, updateTaskContext, type ArcPlanningObject } from "./object-lifecycle";
 import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "./workspace-history";
 import { loadWorkspace, saveWorkspace } from "./workspace-store";
-import { moveObjectToCalendar, moveObjectToFridge, moveObjectToTaskBar, updateTaskContext, type ArcPlanningObject } from "./object-lifecycle";
 
 export type ArcStore = {
   history: WorkspaceHistory;
   hydrated: boolean;
   selectedObjectId: string | null;
+  lastSavedAt: string | null;
   hydrate: () => void;
   commit: (updater: (workspace: Workspace) => Workspace) => void;
+  replace: (workspace: Workspace) => void;
   selectObject: (id: string | null) => void;
   sendToFridge: (id: string) => void;
   sendToTaskBar: (id: string, tier: PriorityTier) => void;
@@ -26,18 +28,22 @@ function replacePlan(workspace: Workspace, id: string, updater: (plan: ArcPlanni
   };
 }
 
-function persist(history: WorkspaceHistory) {
-  if (typeof window !== "undefined") saveWorkspace(history.present);
+function persist(history: WorkspaceHistory): string | null {
+  if (typeof window === "undefined") return null;
+  return saveWorkspace(history.present).savedAt;
 }
 
 export const useArcStore = create<ArcStore>((set, get) => ({
   history: createWorkspaceHistory(emptyWorkspace()),
   hydrated: false,
   selectedObjectId: null,
+  lastSavedAt: null,
 
   hydrate() {
-    const workspace = loadWorkspace();
-    set({ history: createWorkspaceHistory(workspace), hydrated: true });
+    const workspace = migrateLegacyPriorities(loadWorkspace());
+    const history = createWorkspaceHistory(workspace);
+    const lastSavedAt = workspace.priorities.length === 0 ? persist(history) : workspace.updatedAt;
+    set({ history, hydrated: true, lastSavedAt });
   },
 
   commit(updater) {
@@ -47,8 +53,16 @@ export const useArcStore = create<ArcStore>((set, get) => ({
       updatedAt: new Date().toISOString()
     };
     const nextHistory = commitWorkspace(current, nextWorkspace);
-    persist(nextHistory);
-    set({ history: nextHistory });
+    const lastSavedAt = persist(nextHistory);
+    set({ history: nextHistory, lastSavedAt });
+  },
+
+  replace(workspace) {
+    const current = get().history;
+    const nextWorkspace = { ...workspace, updatedAt: new Date().toISOString() };
+    const nextHistory = commitWorkspace(current, nextWorkspace);
+    const lastSavedAt = persist(nextHistory);
+    set({ history: nextHistory, lastSavedAt });
   },
 
   selectObject(id) {
@@ -75,15 +89,15 @@ export const useArcStore = create<ArcStore>((set, get) => ({
     const current = get().history;
     if (!canUndo(current)) return;
     const next = undoWorkspace(current);
-    persist(next);
-    set({ history: next, selectedObjectId: null });
+    const lastSavedAt = persist(next);
+    set({ history: next, selectedObjectId: null, lastSavedAt });
   },
 
   redo() {
     const current = get().history;
     if (!canRedo(current)) return;
     const next = redoWorkspace(current);
-    persist(next);
-    set({ history: next, selectedObjectId: null });
+    const lastSavedAt = persist(next);
+    set({ history: next, selectedObjectId: null, lastSavedAt });
   }
 }));
