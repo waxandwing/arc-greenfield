@@ -15,8 +15,14 @@ function trackRuntimeErrors(page) {
   return errors
 }
 
-function headerAction(page, text) {
-  return page.locator('.calendar-context-actions button').filter({ hasText: text })
+async function settingsAction(page, text) {
+  const drawer = page.getByRole('complementary', { name: 'Settings and setup' })
+  if (!(await drawer.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  }
+  const button = page.getByRole('complementary', { name: 'Settings and setup' }).getByRole('button', { name: text, exact: true })
+  assert(await button.count() === 1, `Calendar-edge gate: Settings did not expose exactly one ${text} action.`)
+  return button
 }
 
 async function configureCalendarWithEdges(page) {
@@ -39,7 +45,7 @@ async function configureCalendarWithEdges(page) {
 }
 
 async function createClass(page) {
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('Studio Art')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
@@ -48,7 +54,7 @@ async function createClass(page) {
 }
 
 async function createAndProbeUnits(page) {
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   const unitFields = page.getByRole('textbox', { name: 'Unit', exact: true })
   const startFields = page.getByRole('textbox', { name: 'Start', exact: true })
@@ -72,7 +78,7 @@ async function createAndProbeUnits(page) {
 }
 
 async function createAndProbeLessons(page) {
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
 
   await page.getByRole('button', { name: 'Add Lesson', exact: true }).click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('No-school lesson')
@@ -120,6 +126,7 @@ try {
   assert(await page.locator('.planning-date-heading').count() === 5, 'Phase 2 calendar edge: default Week did not remain Monday–Friday.')
   assert(await page.getByText('Saturday studio lesson', { exact: true }).count() === 0, 'Phase 2 calendar edge: Saturday Lesson leaked into Week while weekends were hidden.')
 
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
   await page.getByText('View options', { exact: true }).click()
   const weekendToggle = page.getByRole('checkbox', { name: 'Show weekends in Week view', exact: true })
   await weekendToggle.check()
@@ -130,6 +137,7 @@ try {
   assert(await page.getByText('Saturday studio lesson', { exact: true }).count() === 0, 'Phase 2 calendar edge: Saturday Lesson remained visible after weekends were hidden again.')
   await weekendToggle.check()
   assert(await page.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: hiding weekends mutated/deleted Saturday planning data.')
+  await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
 
   await page.reload({ waitUntil: 'networkidle' })
   await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
