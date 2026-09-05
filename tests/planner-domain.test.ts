@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type { Plan, Workspace } from "../lib/domain";
 import { applyCut, createClipboard, pasteClipboard } from "../lib/clipboard";
 import { removeCourseSafely } from "../lib/course-operations";
-import { clonePlanTree, collectPlanTree, movePlanTreeToIdeas, shiftPlanTree } from "../lib/plan-tree";
+import { clonePlanTree, collectPlanTree, movePlanTreeToIdeas, shiftPlanTree, unitUnplaceBlocker } from "../lib/plan-tree";
 import { quarterRange } from "../lib/view-ranges";
 
 function plan(overrides: Partial<Plan> & Pick<Plan, "id" | "title" | "type">): Plan {
@@ -72,10 +72,27 @@ test("copying a Unit creates new IDs while preserving hierarchy", () => {
   assert.equal(children[1].date, "2026-10-08");
 });
 
-test("moving a Unit to Ideas preserves its internal dates for later scheduling", () => {
+test("putting a Unit in the Fridge fails closed while scheduled child Lessons remain", () => {
+  const blocker = unitUnplaceBlocker(plans, unit.id);
+  assert.equal(blocker?.code, "scheduled-children");
+  assert.deepEqual(blocker?.scheduledChildren.map((item) => item.id), ["lesson-a", "lesson-b"]);
+
   const moved = movePlanTreeToIdeas(plans, unit.id);
-  assert.ok(moved.every((item) => item.location === "ideas"));
-  assert.equal(moved.find((item) => item.id === "lesson-b")?.date, "2026-09-10");
+  assert.deepEqual(moved, plans, "the Unit move cannot silently unschedule its Lessons");
+});
+
+test("once child Lessons are already reconciled, putting the Unit in Fridge changes only the Unit", () => {
+  const reconciledChildren = plans.map((item) => item.id === unit.id ? item : { ...item, location: "ideas" as const, arcLocation: "fridge" as const });
+  assert.equal(unitUnplaceBlocker(reconciledChildren, unit.id), null);
+
+  const moved = movePlanTreeToIdeas(reconciledChildren, unit.id);
+  const movedUnit = moved.find((item) => item.id === unit.id);
+  const movedLessonA = moved.find((item) => item.id === lessonA.id);
+  assert.equal(movedUnit?.location, "ideas");
+  assert.equal(movedUnit?.arcLocation, "fridge");
+  assert.equal(movedLessonA?.location, "ideas");
+  assert.equal(movedLessonA?.arcLocation, "fridge");
+  assert.equal(movedLessonA?.date, lessonA.date, "child history is retained rather than rewritten");
 });
 
 test("cut then paste restores the whole Unit tree at a new date and class", () => {
