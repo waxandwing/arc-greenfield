@@ -29,3 +29,9 @@ export function eachCalendarDay(start: ISODate, end: ISODate): ISODate[] {
   }
   return result
 }
+
+export function mondayFirstWeekdayIndex(date: ISODate): number {
+  assertISODate(date)
+  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay()
+  return weekday === 0 ? 6 : weekday - 1
+}

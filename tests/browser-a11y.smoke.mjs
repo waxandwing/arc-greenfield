@@ -57,6 +57,43 @@ async function auditDesktop(browser) {
   await context.close()
 }
 
+async function auditMondayFirstAlignment(browser) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+  const page = await context.newPage()
+  const runtimeErrors = trackRuntimeErrors(page)
+  await page.goto(baseUrl, { waitUntil: 'networkidle' })
+
+  await page.locator('#school-year-label').fill('2026–27')
+  await page.locator('#first-school-day').fill('2026-09-02')
+  await page.locator('#last-school-day').fill('2026-09-13')
+  await page.getByRole('button', { name: 'Use this calendar' }).click()
+
+  await page.getByRole('button', { name: 'Year Map' }).click()
+  const yearMap = page.getByRole('region', { name: '2026–27 year map' })
+  assert(await yearMap.count() === 1, 'Monday-first: Year Map did not render after calendar setup.')
+
+  const columns = await yearMap.locator('.projection-range--compact').evaluate((grid) => {
+    const children = Array.from(grid.children)
+    const columnFor = (date) => {
+      const index = children.findIndex((child) => child.getAttribute('data-date') === date)
+      return index < 0 ? null : (index % 7) + 1
+    }
+    return {
+      leadingBlanks: children.filter((child, index) => index < 2 && child.classList.contains('calendar-day-cell--blank')).length,
+      wednesday: columnFor('2026-09-02'),
+      sunday: columnFor('2026-09-06'),
+      monday: columnFor('2026-09-07'),
+    }
+  })
+
+  assert(columns.leadingBlanks === 2, `Monday-first: a Wednesday start must reserve two leading cells; got ${columns.leadingBlanks}.`)
+  assert(columns.wednesday === 3, `Monday-first: Wednesday rendered in column ${columns.wednesday}, expected 3.`)
+  assert(columns.sunday === 7, `Monday-first: Sunday rendered in column ${columns.sunday}, expected 7.`)
+  assert(columns.monday === 1, `Monday-first: next Monday rendered in column ${columns.monday}, expected 1.`)
+  assert(runtimeErrors.length === 0, `Monday-first runtime errors: ${runtimeErrors.join(' | ')}`)
+  await context.close()
+}
+
 async function auditTouchAndReflow(browser) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true })
   const page = await context.newPage()
@@ -101,10 +138,11 @@ async function auditReducedMotion(browser) {
 const browser = await chromium.launch({ headless: true })
 try {
   await auditDesktop(browser)
+  await auditMondayFirstAlignment(browser)
   await auditTouchAndReflow(browser)
   await auditMinimumWidth(browser)
   await auditReducedMotion(browser)
-  console.log('Arc browser accessibility smoke gate passed: landmarks, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
+  console.log('Arc browser accessibility smoke gate passed: landmarks, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
 } finally {
   await browser.close()
 }

@@ -103,6 +103,15 @@ input,select,.quiet-button,.primary-button,.weekday-option span{
   color:var(--soft-charcoal);
 }
 
+.projection-range--compact{
+  grid-template-columns:repeat(7,minmax(42px,1fr));
+  min-width:700px;
+}
+
+.calendar-day-cell--blank{
+  background:transparent;
+}
+
 @media (max-width:800px){
   .projection-heading-row{
     flex-direction:column;
@@ -117,4 +126,5 @@ input,select,.quiet-button,.primary-button,.weekday-option span{
 
 @media (max-width:520px){
   .month-weekday-row{min-width:644px}
+  .projection-range--compact{min-width:644px}
 }
