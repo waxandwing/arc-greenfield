@@ -1,3 +1,4 @@
+import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
@@ -79,6 +80,9 @@ async function auditShellHierarchyAndZoom(browser) {
 
   const options = page.getByText('View options', { exact: true })
   assert(await options.count() === 1, 'Shell hierarchy: View options disclosure is missing or duplicated.')
+
+  mkdirSync('artifacts', { recursive: true })
+  await page.screenshot({ path: 'artifacts/phase1-shell-1280.png', fullPage: true })
 
   await page.evaluate(() => { document.documentElement.style.zoom = '2' })
   const zoom200 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
