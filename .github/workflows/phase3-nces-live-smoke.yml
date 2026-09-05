@@ -11,20 +11,23 @@ on:
       - '.github/workflows/phase3-nces-live-smoke.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   nces-live-identity:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Check out exact commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Use repository Node version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .node-version
           cache: npm
       - name: Install exact dependency tree
-        run: npm ci
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Run domain contracts
         run: npm run test:contracts
       - name: Query live NCES public-school directory
