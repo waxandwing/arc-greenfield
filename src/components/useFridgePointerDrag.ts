@@ -14,32 +14,67 @@ type DropHandlers = {
 }
 
 type ActiveDrag = FridgeDragPayload & { pointerId: number }
+type PointerPosition = { x: number; y: number }
+
+const AUTO_SCROLL_EDGE = 56
+const AUTO_SCROLL_STEP = 14
 
 export function useFridgePointerDrag(handlers: DropHandlers) {
   const activeRef = useRef<ActiveDrag | null>(null)
+  const pointerRef = useRef<PointerPosition | null>(null)
+  const autoScrollFrameRef = useRef<number | null>(null)
   const [active, setActive] = useState<FridgeDragPayload | null>(null)
 
   function start(event: ReactPointerEvent<HTMLElement>, payload: FridgeDragPayload) {
     if (event.button !== 0 || activeRef.current) return
     event.preventDefault()
     activeRef.current = { ...payload, pointerId: event.pointerId }
+    pointerRef.current = { x: event.clientX, y: event.clientY }
     setActive(payload)
+    beginAutoScroll()
 
+    const move = (pointerEvent: PointerEvent) => {
+      if (activeRef.current?.pointerId !== pointerEvent.pointerId) return
+      pointerRef.current = { x: pointerEvent.clientX, y: pointerEvent.clientY }
+    }
     const finish = (pointerEvent: PointerEvent) => {
       if (activeRef.current?.pointerId !== pointerEvent.pointerId) return
-      window.removeEventListener('pointerup', finish)
-      window.removeEventListener('pointercancel', cancel)
+      cleanupListeners()
       complete(pointerEvent.clientX, pointerEvent.clientY)
     }
     const cancel = (pointerEvent: PointerEvent) => {
       if (activeRef.current?.pointerId !== pointerEvent.pointerId) return
-      window.removeEventListener('pointerup', finish)
-      window.removeEventListener('pointercancel', cancel)
+      cleanupListeners()
       clear()
     }
+    const cleanupListeners = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', finish)
+      window.removeEventListener('pointercancel', cancel)
+    }
 
+    window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', finish)
     window.addEventListener('pointercancel', cancel)
+  }
+
+  function beginAutoScroll() {
+    if (autoScrollFrameRef.current !== null) return
+    const tick = () => {
+      if (!activeRef.current) {
+        autoScrollFrameRef.current = null
+        return
+      }
+      const pointer = pointerRef.current
+      if (pointer) {
+        let deltaY = 0
+        if (pointer.y < AUTO_SCROLL_EDGE) deltaY = -AUTO_SCROLL_STEP
+        else if (pointer.y > window.innerHeight - AUTO_SCROLL_EDGE) deltaY = AUTO_SCROLL_STEP
+        if (deltaY !== 0) window.scrollBy(0, deltaY)
+      }
+      autoScrollFrameRef.current = window.requestAnimationFrame(tick)
+    }
+    autoScrollFrameRef.current = window.requestAnimationFrame(tick)
   }
 
   function complete(clientX: number, clientY: number) {
@@ -96,6 +131,11 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
 
   function clear() {
     activeRef.current = null
+    pointerRef.current = null
+    if (autoScrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(autoScrollFrameRef.current)
+      autoScrollFrameRef.current = null
+    }
     setActive(null)
   }
 
