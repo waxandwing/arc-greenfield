@@ -85,6 +85,10 @@ function placement(state, ref) {
   return state.placements.find((item) => item.entityRef === ref)
 }
 
+function dragHandle(container) {
+  return container.locator('.fridge-drag-handle')
+}
+
 async function seedContext(browser, viewport, marker) {
   const context = await browser.newContext({ viewport })
   await context.addInitScript(({ entries, markerName }) => {
@@ -108,8 +112,9 @@ async function auditDesktop(browser) {
   assert(await page.locator('[draggable="true"]').count() === 0, 'desktop: native draggable semantics appeared; pointer drag should remain separate from HTML drag-and-drop.')
 
   const moveItem = page.locator('[data-fridge-ref="magnet:move"]')
-  const moveHandle = moveItem.getByRole('button', { name: /Drag Move me/ })
+  const moveHandle = dragHandle(moveItem)
   assert(await moveHandle.getAttribute('tabindex') === '-1', 'desktop: drag handle entered keyboard tab order instead of leaving Position as the non-drag route.')
+  assert(await moveHandle.getAttribute('aria-label') === 'Drag Fridge item', 'desktop: item drag handle accessible name leaked object-title or control-label semantics.')
   assert(await moveItem.getByLabel('Position').isVisible(), 'desktop: explicit Position route disappeared after drag was added.')
   assert(await moveItem.getByRole('button', { name: 'Put away', exact: true }).isVisible(), 'desktop: explicit Put away route disappeared after drag was added.')
 
@@ -122,13 +127,13 @@ async function auditDesktop(browser) {
 
   const blocker = page.locator('[data-fridge-ref="magnet:blocker"]')
   const beforeOccupied = await rawFridge(page)
-  await dragBetween(page, page.locator('[data-fridge-ref="magnet:move"]').getByRole('button', { name: /Drag Move me/ }), blocker, 'desktop occupied rejection')
+  await dragBetween(page, dragHandle(page.locator('[data-fridge-ref="magnet:move"]')), blocker, 'desktop occupied rejection')
   const afterOccupied = await rawFridge(page)
   assert(afterOccupied === beforeOccupied, 'desktop: occupied-cell rejection mutated persisted Fridge state.')
   assert(await fridge.getByRole('status').getByText(/already occupied/i).isVisible(), 'desktop: occupied-cell rejection was not explained visibly.')
 
   const drawerSummary = page.locator('.fridge-drawer > summary')
-  await dragBetween(page, page.locator('[data-fridge-ref="magnet:move"]').getByRole('button', { name: /Drag Move me/ }), drawerSummary, 'desktop put away')
+  await dragBetween(page, dragHandle(page.locator('[data-fridge-ref="magnet:move"]')), drawerSummary, 'desktop put away')
   state = await storedFridge(page)
   move = placement(state, 'magnet:move')
   assert(move?.surface === 'drawer', 'desktop: Door-to-Drawer drag did not invoke Put Away.')
@@ -136,14 +141,15 @@ async function auditDesktop(browser) {
 
   const drawerMove = page.locator('.fridge-drawer-item[data-fridge-ref="magnet:move"]')
   const exactReturnCell = page.locator('.fridge-door-cell[data-fridge-row="2"][data-fridge-column="3"]')
-  await dragBetween(page, drawerMove.getByRole('button', { name: /Drag Move me/ }), exactReturnCell, 'desktop exact drawer return')
+  await dragBetween(page, dragHandle(drawerMove), exactReturnCell, 'desktop exact drawer return')
   state = await storedFridge(page)
   move = placement(state, 'magnet:move')
   assert(move?.surface === 'door' && move.row === 2 && move.column === 3, 'desktop: Drawer-to-specific-cell drag ignored the teacher-selected coordinate.')
   assert(move.priority === 'must', 'desktop: exact Drawer return lost Must priority.')
 
   const stack = page.locator('[data-fridge-stack="stack-audit"]')
-  const stackHandle = stack.getByRole('button', { name: /Drag stack with 2 items/ })
+  const stackHandle = dragHandle(stack)
+  assert(await stackHandle.getAttribute('aria-label') === 'Drag Fridge stack', 'desktop: stack drag handle accessible name leaked member-title or Position semantics.')
   const stackTarget = page.locator('.fridge-door-cell[data-fridge-row="1"][data-fridge-column="2"]')
   await dragBetween(page, stackHandle, stackTarget, 'desktop stack reposition')
   state = await storedFridge(page)
@@ -155,14 +161,14 @@ async function auditDesktop(browser) {
   assert(stackA.priority === 'could' && stackB.priority === 'must', 'desktop: stack drag changed member priority.')
 
   const beforeStackDrawer = await rawFridge(page)
-  await dragBetween(page, page.locator('[data-fridge-stack="stack-audit"]').getByRole('button', { name: /Drag stack with 2 items/ }), drawerSummary, 'desktop stack drawer rejection')
+  await dragBetween(page, dragHandle(page.locator('[data-fridge-stack="stack-audit"]')), drawerSummary, 'desktop stack drawer rejection')
   const afterStackDrawer = await rawFridge(page)
   assert(afterStackDrawer === beforeStackDrawer, 'desktop: rejected stack-to-Drawer drag mutated persisted state.')
   assert(await fridge.getByRole('status').getByText(/Stacks stay together/i).isVisible(), 'desktop: rejected stack-to-Drawer drag was not explained.')
 
   const beforeCancel = await rawFridge(page)
   const headerTarget = page.locator('.arc-header')
-  await dragBetween(page, page.locator('[data-fridge-ref="magnet:blocker"]').getByRole('button', { name: /Drag Occupied target/ }), headerTarget, 'desktop outside cancel')
+  await dragBetween(page, dragHandle(page.locator('[data-fridge-ref="magnet:blocker"]')), headerTarget, 'desktop outside cancel')
   const afterCancel = await rawFridge(page)
   assert(afterCancel === beforeCancel, 'desktop: releasing outside a Fridge target mutated state instead of cancelling.')
 
@@ -215,7 +221,7 @@ async function auditScrolledMobile(browser) {
   assert(sourceBox && sourceBox.x < 390 && sourceBox.x + sourceBox.width > 0, '390px: manually scrolled source is not actually visible; audit would be invalid.')
   assert(targetBox && targetBox.x < 390 && targetBox.x + targetBox.width > 0, '390px: manually scrolled target is not actually visible; audit would be invalid.')
 
-  await dragBetween(page, source.getByRole('button', { name: /Drag Right edge item/ }), target, '390px scrolled drag')
+  await dragBetween(page, dragHandle(source), target, '390px scrolled drag')
   const state = await storedFridge(page)
   const moved = placement(state, 'magnet:right-edge')
   assert(moved?.row === 1 && moved.column === 3, '390px: drag used stale pre-scroll geometry instead of the live drop target.')
