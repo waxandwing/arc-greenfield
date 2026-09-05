@@ -1,0 +1,161 @@
+.source-calendar-review {
+  display: grid;
+  gap: 24px;
+  padding: 24px 0 28px;
+  border-bottom: 1px solid color-mix(in srgb, var(--arc-ink) 16%, transparent);
+}
+
+.source-calendar-review-copy {
+  max-width: 720px;
+}
+
+.source-calendar-review-copy h3 {
+  margin: 4px 0 8px;
+  font-family: var(--arc-serif);
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.source-calendar-review-copy p:last-child {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.source-calendar-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px 24px;
+  margin: 0;
+  padding: 16px 0;
+  border-top: 1px solid color-mix(in srgb, var(--arc-ink) 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--arc-ink) 12%, transparent);
+}
+
+.source-calendar-facts div {
+  min-width: 0;
+}
+
+.source-calendar-facts dt,
+.source-calendar-kicker {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.source-calendar-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.source-calendar-evidence ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.source-calendar-evidence li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--arc-ink) 10%, transparent);
+}
+
+.source-calendar-evidence li span {
+  color: color-mix(in srgb, var(--arc-ink) 72%, transparent);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.source-calendar-miniature {
+  display: grid;
+  gap: 10px;
+  max-width: 760px;
+}
+
+.source-calendar-miniature-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: end;
+}
+
+.source-calendar-miniature-heading p:last-child {
+  margin: 0;
+  max-width: 34ch;
+  text-align: right;
+  font-size: 0.875rem;
+}
+
+.source-calendar-weekdays,
+.source-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.source-calendar-weekdays span {
+  padding: 2px 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.source-calendar-day {
+  position: relative;
+  min-height: 42px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--arc-ink) 14%, transparent);
+  background: color-mix(in srgb, var(--arc-paper) 94%, white);
+  font-size: 0.78rem;
+}
+
+.source-calendar-day.is-no-school,
+.source-calendar-day.is-break,
+.source-calendar-day.is-holiday {
+  background: color-mix(in srgb, var(--arc-kraft) 18%, var(--arc-paper));
+}
+
+.source-calendar-day.is-teacher-workday {
+  background: color-mix(in srgb, var(--arc-dusty-blue) 16%, var(--arc-paper));
+}
+
+.source-calendar-day.is-uncertain::after {
+  content: '?';
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.source-calendar-day.is-blank {
+  border-color: transparent;
+  background: transparent;
+}
+
+@media (max-width: 760px) {
+  .source-calendar-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .source-calendar-miniature-heading {
+    display: grid;
+    gap: 8px;
+  }
+
+  .source-calendar-miniature-heading p:last-child {
+    text-align: left;
+  }
+
+  .source-calendar-day {
+    min-height: 36px;
+    padding: 4px;
+  }
+}
