@@ -1,4 +1,5 @@
 import type { ArcObjectLocation, Plan, Priority, PriorityTier, TaskContext, Workspace } from "./domain";
+import { unitUnplaceBlocker } from "./plan-tree";
 
 export type ArcPlanningObject = Plan;
 
@@ -29,6 +30,11 @@ export function moveObjectToTaskBar(plan: ArcPlanningObject, tier: PriorityTier)
       tier
     }
   };
+}
+
+export function movePlanToTaskBarSafely(plans: Plan[], id: string, tier: PriorityTier): Plan[] {
+  if (unitUnplaceBlocker(plans, id)) return plans;
+  return plans.map((plan) => plan.id === id ? moveObjectToTaskBar(plan, tier) : plan);
 }
 
 export function moveObjectToCalendar(
