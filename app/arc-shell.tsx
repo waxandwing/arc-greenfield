@@ -97,15 +97,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     setSelectedPlanId(null);
   }
 
-  function makePlan(
-    title: string,
-    type: PlanType,
-    courseId: string | null,
-    date: string | null,
-    location: "calendar" | "ideas",
-    parentUnitId: string | null = null,
-    childOrder: number | null = null
-  ): Plan {
+  function makePlan(title: string, type: PlanType, courseId: string | null, date: string | null, location: "calendar" | "ideas", parentUnitId: string | null = null, childOrder: number | null = null): Plan {
     return {
       id: crypto.randomUUID(),
       type,
@@ -192,10 +184,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   }
 
   function toggleWeekends() {
-    updateWorkspace((current) => ({
-      ...current,
-      calendar: { ...current.calendar, weekendsVisible: !current.calendar.weekendsVisible }
-    }));
+    updateWorkspace((current) => ({ ...current, calendar: { ...current.calendar, weekendsVisible: !current.calendar.weekendsVisible } }));
   }
 
   function toggleUnit(unitId: string) {
@@ -293,36 +282,18 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   return (
     <main className="arcApp">
       <header className="arcTopbar">
-        <button className="arcBrand" type="button" onClick={() => setActiveView("week")} aria-label="Arc home">
-          <span className="arcBrandEyebrow">Wax &amp; Wing</span>
-          <span className="arcBrandWord">Arc</span>
-        </button>
+        <button className="arcBrand" type="button" onClick={() => setActiveView("week")} aria-label="Arc home"><span className="arcBrandEyebrow">Wax &amp; Wing</span><span className="arcBrandWord">Arc</span></button>
         <div className="arcMeta"><span>{saveLabel}</span><code>{buildId} · {gitSha.slice(0, 7)}</code></div>
       </header>
 
       <section className="deskPage reconciledDeskPage">
         <div className="deskToolbar">
           <div><p className="eyebrow">Planning desk</p><h1>{workspace.teacherName ? `${workspace.teacherName}’s ${activeView}` : `Your ${activeView}`}</h1></div>
-          <div className="deskActions" aria-label="Planner actions">
-            <button type="button" onClick={undo} disabled={!canUndo(history)}>Undo</button>
-            <button type="button" onClick={redo} disabled={!canRedo(history)}>Redo</button>
-            <span className="actionDivider" />
-            <button type="button" onClick={() => copySelection("copy")} disabled={!selectedPlanId}>Copy</button>
-            <button type="button" onClick={() => copySelection("cut")} disabled={!selectedPlanId}>Cut</button>
-            <button type="button" onClick={pasteSelection} disabled={!clipboard || !pasteTarget}>Paste</button>
-            <span className="actionDivider" />
-            <button type="button" onClick={goPrevious}>←</button>
-            <button type="button" className="todayButton" onClick={goToday}>Today</button>
-            <button type="button" onClick={goNext}>→</button>
-          </div>
+          <div className="deskActions" aria-label="Planner actions"><button type="button" onClick={undo} disabled={!canUndo(history)}>Undo</button><button type="button" onClick={redo} disabled={!canRedo(history)}>Redo</button><span className="actionDivider" /><button type="button" onClick={() => copySelection("copy")} disabled={!selectedPlanId}>Copy</button><button type="button" onClick={() => copySelection("cut")} disabled={!selectedPlanId}>Cut</button><button type="button" onClick={pasteSelection} disabled={!clipboard || !pasteTarget}>Paste</button><span className="actionDivider" /><button type="button" onClick={goPrevious}>←</button><button type="button" className="todayButton" onClick={goToday}>Today</button><button type="button" onClick={goNext}>→</button></div>
         </div>
 
         <div className="viewControlBar">
-          <div className="viewSwitcher" aria-label="Planner view">
-            <button type="button" className={activeView === "week" ? "active" : ""} onClick={() => setActiveView("week")}>Week</button>
-            <button type="button" className={activeView === "month" ? "active" : ""} onClick={() => setActiveView("month")}>Month</button>
-            <button type="button" className={activeView === "quarter" ? "active" : ""} disabled={quarterRanges.length === 0} title={quarterRanges.length === 0 ? "Add quarter dates in Setup first" : undefined} onClick={() => setActiveView("quarter")}>Quarter</button>
-          </div>
+          <div className="viewSwitcher" aria-label="Planner view"><button type="button" className={activeView === "week" ? "active" : ""} onClick={() => setActiveView("week")}>Week</button><button type="button" className={activeView === "month" ? "active" : ""} onClick={() => setActiveView("month")}>Month</button><button type="button" className={activeView === "quarter" ? "active" : ""} disabled={quarterRanges.length === 0} title={quarterRanges.length === 0 ? "Add quarter dates in Setup first" : undefined} onClick={() => setActiveView("quarter")}>Quarter</button></div>
           {activeView !== "week" && <label className="rangeCoursePicker"><span>Class</span><select value={selectedCourseId} onChange={(event) => setActiveCourseId(event.target.value)}>{workspace.courses.map((course) => <option key={course.id} value={course.id}>{course.name}{course.periodLabel ? ` · ${course.periodLabel}` : ""}</option>)}</select></label>}
           {activeView === "quarter" && quarterRanges.length > 1 && <label className="rangeCoursePicker"><span>Quarter</span><select value={Math.min(quarterIndex, quarterRanges.length - 1)} onChange={(event) => setQuarterIndex(Number(event.target.value))}>{quarterRanges.map((quarter, index) => <option value={index} key={quarter.id}>{quarter.label}</option>)}</select></label>}
         </div>
@@ -333,14 +304,12 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
 
           <section className="calendarDesk canonicalCalendarDesk" aria-label={`${activeView} planning workspace`}>
             {activeView === "week" && <WeekPlanner workspace={workspace} days={days} weekLabel={weekLabel} selectedPlanId={selectedPlanId} pasteTarget={pasteTarget} onSelectPlan={selectPlan} onSelectDate={(courseId, date) => setPasteTarget({ courseId, date, location: "calendar" })} onMovePlan={movePlanToDate} onRenamePlan={renamePlan} onAddPlan={(title, type, courseId, date) => addPlan(title, type, courseId, date, "calendar")} onAddChildLesson={addChildLesson} onToggleUnit={toggleUnit} onDeletePlan={deletePlan} onReturnToIdeas={putPlanInFridge} />}
-
             {activeView === "month" && selectedCourseId && <MonthView workspace={workspace} anchor={monthAnchor} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} onAddPlan={(title, type, date) => addPlan(title, type, selectedCourseId, date, "calendar")} />}
-
             {activeView === "quarter" && activeQuarter && selectedCourseId && <QuarterView workspace={workspace} range={activeQuarter} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} onAddPlan={(title, type, date) => addPlan(title, type, selectedCourseId, date, "calendar")} />}
           </section>
 
           <button type="button" className="edgePullTab fridgePullTab" onClick={openFridge} aria-expanded={fridgeOpen}>Fridge</button>
-          <FridgeDrawer open={fridgeOpen} plans={workspace.plans} courses={workspace.courses} selectedPlanId={selectedPlanId} onClose={() => setFridgeOpen(false)} onCreate={addFridgeObject} onSelect={selectPlan} onDelete={deletePlan} />
+          <FridgeDrawer open={fridgeOpen} plans={workspace.plans} courses={workspace.courses} selectedPlanId={selectedPlanId} onClose={() => setFridgeOpen(false)} onCreate={addFridgeObject} onSelect={selectPlan} onDelete={deletePlan} onMoveToTaskBar={movePlanToTaskTier} onDropObject={putPlanInFridge} />
         </div>
 
         <TaskBar plans={workspace.plans} onCreate={addTaskObject} onMoveTier={movePlanToTaskTier} onUpdateTask={patchTaskContext} onPutInFridge={putPlanInFridge} onSelect={selectPlan} />
