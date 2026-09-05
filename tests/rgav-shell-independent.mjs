@@ -22,6 +22,15 @@ async function configureCalendar(page) {
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 }
 
+async function openSettings(page) {
+  const drawer = page.getByRole('complementary', { name: 'Settings and setup' })
+  if (!(await drawer.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  }
+  await drawer.waitFor({ state: 'visible' })
+  return drawer
+}
+
 const browser = await chromium.launch({ headless: true })
 try {
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 } })
@@ -32,17 +41,20 @@ try {
 
   // Different path from the primary smoke gate: teacher configures preferences first,
   // uses a seven-day Week, navigates, returns Home, then reloads.
-  await page.getByText('View options', { exact: true }).click()
-  await page.getByLabel('Open Arc to').selectOption('last-used')
-  await page.getByLabel('Show weekends in Week view').check()
-  await page.getByRole('button', { name: 'Week' }).click()
+  let drawer = await openSettings(page)
+  await drawer.getByText('View options', { exact: true }).click()
+  await drawer.getByLabel('Open Arc to').selectOption('last-used')
+  await drawer.getByLabel('Show weekends in Week view').check()
+  await drawer.getByRole('button', { name: 'Close Settings', exact: true }).click()
+  await page.getByRole('button', { name: 'Week', exact: true }).click()
 
   const weekRegion = page.locator('.projection-section').first()
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: Week did not become the active workspace view.')
   const weekdayLabels = await weekRegion.locator('.calendar-day-weekday').allTextContents()
   assert(weekdayLabels.includes('Sat') && weekdayLabels.includes('Sun'), `RGAV-B: enabled weekends were not visible in Week (${weekdayLabels.join(', ')}).`)
+  assert(weekdayLabels[0] === 'Sun' && weekdayLabels[6] === 'Sat', `RGAV-B: weekend-enabled Week did not follow founder-locked Sunday–Saturday order (${weekdayLabels.join(', ')}).`)
 
-  await page.getByRole('button', { name: 'Next Week' }).click()
+  await page.getByRole('button', { name: 'Next Week', exact: true }).click()
   const nextRange = await weekRegion.getAttribute('aria-label')
   assert(Boolean(nextRange), 'RGAV-B: navigated Week lost its accessible range label.')
 
@@ -51,8 +63,10 @@ try {
 
   await page.reload({ waitUntil: 'networkidle' })
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: reload did not restore Last used Week behavior.')
-  await page.getByText('View options', { exact: true }).click()
-  assert(await page.getByLabel('Show weekends in Week view').isChecked(), 'RGAV-B: weekend preference did not persist across reload.')
+  drawer = await openSettings(page)
+  await drawer.getByText('View options', { exact: true }).click()
+  assert(await drawer.getByLabel('Show weekends in Week view').isChecked(), 'RGAV-B: weekend preference did not persist across reload.')
+  await drawer.getByRole('button', { name: 'Close Settings', exact: true }).click()
 
   const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(geometry.scroll <= geometry.width + 1, `RGAV-B: shell overflowed horizontally at 1366×768 (${geometry.scroll} > ${geometry.width}).`)
@@ -73,7 +87,7 @@ try {
   assert(keyboardRuntimeErrors.length === 0, `RGAV-B fresh-page keyboard runtime errors: ${keyboardRuntimeErrors.join(' | ')}`)
   await keyboardPage.close()
   await context.close()
-  console.log('Independent RGAV shell pass B succeeded: Last used persistence, optional weekends, navigation/home/reload, fresh-page keyboard skip, 1366×768 overflow, and runtime-error checks.')
+  console.log('Independent RGAV shell pass B succeeded: edge Settings, Last used persistence, optional Sunday–Saturday Week, navigation/home/reload, fresh-page keyboard skip, 1366×768 overflow, and runtime-error checks.')
 } finally {
   await browser.close()
 }
