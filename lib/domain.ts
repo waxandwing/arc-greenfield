@@ -3,6 +3,16 @@ export type ArcView = "day" | "week" | "month" | "quarter" | "semester" | "year"
 export type PlanType = "unit" | "lesson" | "note";
 export type PlanLocation = "calendar" | "ideas";
 export type PriorityTier = "must" | "should" | "could";
+export type ArcObjectLocation = "fridge" | "taskbar" | "calendar";
+
+export type TaskContext = {
+  tier: PriorityTier;
+  notes?: string;
+  startTime?: string;
+  durationMinutes?: number;
+  targetDate?: string;
+  completed?: boolean;
+};
 
 export type Course = {
   id: string;
@@ -27,6 +37,10 @@ export type Plan = {
   date: string | null;
   endDate: string | null;
   location: PlanLocation;
+  /** Canonical interaction location. Optional for backwards-compatible stored workspaces. */
+  arcLocation?: ArcObjectLocation;
+  /** Task Bar metadata belongs to the same object and survives movement to/from calendar and Fridge. */
+  taskContext?: TaskContext | null;
   parentUnitId: string | null;
   childOrder: number | null;
   fixedDate: boolean;
@@ -36,6 +50,10 @@ export type Plan = {
   details: Record<string, string>;
 };
 
+/**
+ * Legacy pre-progressive-depth task records. New task creation should use Plan.taskContext.
+ * Kept temporarily so stored beta workspaces can be migrated without silent loss.
+ */
 export type Priority = {
   id: string;
   title: string;
@@ -68,6 +86,7 @@ export type Workspace = {
   courses: Course[];
   calendar: SchoolCalendar;
   plans: Plan[];
+  /** Legacy only. Reconciled UI migrates these into plans and stops creating new Priority records. */
   priorities: Priority[];
   yearMarkers: YearMarker[];
   preferences: WorkspacePreferences;
