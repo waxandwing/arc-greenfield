@@ -44,7 +44,7 @@ export function TermContext({ quarters, semesters, detailed = false }: { quarter
   if (quarters.length === 0 && semesters.length === 0) return null
 
   return (
-    <div className={`term-context${detailed ? ' term-context--detailed' : ''}`} aria-label="Term context">
+    <div className={`term-context${detailed ? ' term-context--detailed' : ''}`} role="group" aria-label="Term context">
       {semesters.map((term) => (
         <span className="term-context-item term-context-item--semester" key={term.id}>
           {term.label}{detailed ? ` · ${formatDateRange(term.startDate, term.endDate)}` : ''}
@@ -72,7 +72,7 @@ export function CalendarDayCell({ day, compact = false, showWeekday = false }: {
   const accessibleLabel = `${formatLongDate(day.date)}. ${status}.`
 
   return (
-    <div className={classes} data-date={day.date} data-kind={day.kind} aria-label={accessibleLabel}>
+    <div className={classes} role="group" data-date={day.date} data-kind={day.kind} aria-label={accessibleLabel}>
       {showWeekday && !compact ? <span className="calendar-day-weekday">{formatWeekday(day.date)}</span> : null}
       <span className="calendar-day-date">{day.date.slice(8)}</span>
       {!compact && day.label ? <span className="calendar-day-label">{day.label}</span> : null}
