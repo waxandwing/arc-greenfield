@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Plan, PriorityTier, TaskContext } from "../lib/domain";
 import { objectLocation } from "../lib/object-lifecycle";
+import { ScheduleObjectPopover } from "./schedule-object-popover";
 
 const TIERS: Array<{ id: PriorityTier; label: string }> = [
   { id: "must", label: "Must Do" },
@@ -12,16 +13,19 @@ const TIERS: Array<{ id: PriorityTier; label: string }> = [
 
 type Props = {
   plans: Plan[];
+  courses: Array<{ id: string; name: string; periodLabel?: string }>;
   onCreate: (tier: PriorityTier, title: string) => void;
   onMoveTier: (id: string, tier: PriorityTier) => void;
   onUpdateTask: (id: string, patch: Partial<TaskContext>) => void;
   onPutInFridge: (id: string) => void;
+  onSchedule: (id: string, date: string, courseId: string) => void;
   onSelect: (plan: Plan) => void;
 };
 
-export function TaskBar({ plans, onCreate, onMoveTier, onUpdateTask, onPutInFridge, onSelect }: Props) {
+export function TaskBar({ plans, courses, onCreate, onMoveTier, onUpdateTask, onPutInFridge, onSchedule, onSelect }: Props) {
   const [draft, setDraft] = useState<{ tier: PriorityTier; title: string } | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [schedulingId, setSchedulingId] = useState<string | null>(null);
 
   const taskPlans = plans.filter((plan) => objectLocation(plan) === "taskbar" && !plan.parentUnitId);
 
@@ -60,11 +64,12 @@ export function TaskBar({ plans, onCreate, onMoveTier, onUpdateTask, onPutInFrid
               <div className="taskTierItems">
                 {items.map((plan) => {
                   const expanded = expandedId === plan.id;
+                  const scheduling = schedulingId === plan.id;
                   return (
                     <article
                       key={plan.id}
                       className={plan.taskContext?.completed ? "taskObject completed" : "taskObject"}
-                      draggable
+                      draggable={!expanded && !scheduling}
                       onDragStart={(event) => {
                         event.dataTransfer.setData("text/arc-plan", plan.id);
                         event.dataTransfer.effectAllowed = "move";
@@ -92,15 +97,16 @@ export function TaskBar({ plans, onCreate, onMoveTier, onUpdateTask, onPutInFrid
                       <button
                         type="button"
                         className="taskMore"
-                        aria-expanded={expanded}
+                        aria-expanded={expanded || scheduling}
                         aria-label={`Task details for ${plan.title}`}
                         onClick={(event) => {
                           event.stopPropagation();
+                          setSchedulingId(null);
                           setExpandedId(expanded ? null : plan.id);
                         }}
                       >•••</button>
 
-                      {expanded && (
+                      {expanded && !scheduling && (
                         <div className="taskDetailPopover" onClick={(event) => event.stopPropagation()}>
                           <label>Notes<textarea value={plan.taskContext?.notes ?? ""} onChange={(event) => onUpdateTask(plan.id, { notes: event.target.value })} /></label>
                           <div className="taskDetailPair">
@@ -111,9 +117,26 @@ export function TaskBar({ plans, onCreate, onMoveTier, onUpdateTask, onPutInFrid
                             <select value={plan.taskContext?.tier ?? "should"} onChange={(event) => onMoveTier(plan.id, event.target.value as PriorityTier)} aria-label={`Move ${plan.title} to task tier`}>
                               {TIERS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
                             </select>
+                            <button type="button" onClick={() => { setExpandedId(null); setSchedulingId(plan.id); }}>Schedule…</button>
                             <button type="button" onClick={() => { onPutInFridge(plan.id); setExpandedId(null); }}>Put in Fridge</button>
                             <button type="button" onClick={() => setExpandedId(null)}>Done</button>
                           </div>
+                        </div>
+                      )}
+
+                      {scheduling && (
+                        <div className="taskDetailPopover" onClick={(event) => event.stopPropagation()}>
+                          <ScheduleObjectPopover
+                            title={plan.title}
+                            courses={courses}
+                            initialCourseId={plan.courseId}
+                            initialDate={plan.date ?? plan.taskContext?.targetDate}
+                            onCancel={() => setSchedulingId(null)}
+                            onSchedule={(date, courseId) => {
+                              onSchedule(plan.id, date, courseId);
+                              setSchedulingId(null);
+                            }}
+                          />
                         </div>
                       )}
                     </article>
