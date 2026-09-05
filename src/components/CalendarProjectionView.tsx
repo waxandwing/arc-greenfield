@@ -9,7 +9,7 @@ import type { LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, UnitWor
 import { PlanningDayContinuityView } from './PlanningDayContinuityView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
-import { CalendarDayCell, MissingBoundary, ProjectionHeading, RangeProjection, TermContext } from './CalendarProjectionPrimitives'
+import { CalendarDayCell, MissingBoundary, ProjectionHeading, RangeProjection, TermContext, WeekdayAlignedRange } from './CalendarProjectionPrimitives'
 import { formatDateRange, formatLongDate, formatMonth } from './dateLabels'
 
 type PlanningContext = {
@@ -112,9 +112,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
             </div>
             <TermContext quarters={projection.quarters} semesters={projection.semesters} detailed />
           </div>
-          <div className="projection-range projection-range--compact">
-            {projection.days.map((day) => <CalendarDayCell key={day.date} day={day} compact />)}
-          </div>
+          <WeekdayAlignedRange days={projection.days} compact />
         </section>
       )
     }
