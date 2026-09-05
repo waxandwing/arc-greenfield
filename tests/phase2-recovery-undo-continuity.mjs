@@ -15,8 +15,14 @@ function trackRuntimeErrors(page) {
   return errors
 }
 
-function headerAction(page, text) {
-  return page.locator('.calendar-context-actions button').filter({ hasText: text })
+async function settingsAction(page, text) {
+  const drawer = page.getByRole('complementary', { name: 'Settings and setup' })
+  if (!(await drawer.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  }
+  const button = page.getByRole('complementary', { name: 'Settings and setup' }).getByRole('button', { name: text, exact: true })
+  assert(await button.count() === 1, `Recovery gate: Settings did not expose exactly one ${text} action.`)
+  return button
 }
 
 async function configureCalendar(page) {
@@ -28,7 +34,7 @@ async function configureCalendar(page) {
 }
 
 async function createClasses(page) {
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('AP Art History')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
@@ -39,7 +45,7 @@ async function createClasses(page) {
 }
 
 async function createUnit(page) {
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('Recovery Unit')
   await page.getByRole('textbox', { name: 'Start', exact: true }).fill('2026-09-14')
@@ -55,7 +61,7 @@ async function addLesson(page, title, date, fixed = false) {
 }
 
 async function createRecoveryLessons(page) {
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   await addLesson(page, 'Interrupted lesson', '2026-09-16')
   await addLesson(page, 'Flexible follow-up', '2026-09-17')
   await addLesson(page, 'Fixed checkpoint', '2026-09-23', true)
@@ -117,7 +123,6 @@ async function assertShiftedWeek(page) {
 async function assertRestoredWeek(page) {
   const p2 = await lessonTitlesByDate(page, 'Period 2')
   const p5 = await lessonTitlesByDate(page, 'Period 5')
-
   assert(titlesForDate(p2, '2026-09-16').includes('Interrupted lesson'), 'Undo did not restore Period 2 interrupted Lesson to Wednesday.')
   assert(titlesForDate(p2, '2026-09-17').includes('Flexible follow-up'), 'Undo did not restore Period 2 flexible follow-up to Thursday.')
   assert(!titlesForDate(p2, '2026-09-18').includes('Flexible follow-up'), 'Undo left the Period 2 follow-up on its shifted Friday.')
@@ -137,9 +142,7 @@ try {
   await createUnit(page)
   await createRecoveryLessons(page)
 
-  const recoveryTrigger = headerAction(page, 'Review recovery')
-  assert(await recoveryTrigger.count() === 1, 'In-progress Period 2 Lesson did not surface exactly one Recovery review trigger.')
-  assert((await recoveryTrigger.innerText()).includes('(1)'), 'Recovery count did not reflect the single in-progress Section/Lesson state.')
+  const recoveryTrigger = await settingsAction(page, 'Review recovery (1)')
   await recoveryTrigger.click()
 
   await page.getByRole('heading', { level: 2, name: 'Arc held the stopping point.', exact: true }).waitFor({ state: 'visible' })
@@ -158,9 +161,11 @@ try {
   await moveSelect.selectOption('2026-09-18')
   await card.getByRole('button', { name: 'Apply Shift', exact: true }).click()
 
-  assert(await headerAction(page, 'Undo last Shift').count() === 1, 'Applying Recovery Shift did not expose Undo.')
+  const undoAction = await settingsAction(page, 'Undo last Shift')
+  assert(await undoAction.count() === 1, 'Applying Recovery Shift did not expose Undo.')
   const appliedNotice = await page.locator('.storage-notice').innerText()
   assert(appliedNotice.includes('Shift applied to Period 2. Undo is available.'), `Recovery Apply did not report Section-specific success. Notice: ${appliedNotice}`)
+  await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
 
   await moveToWeekOfSeptember14(page)
   await assertShiftedWeek(page)
@@ -169,20 +174,24 @@ try {
 
   await page.reload({ waitUntil: 'networkidle' })
   await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
-  assert(await headerAction(page, 'Undo last Shift').count() === 1, 'Reload lost the persisted Recovery Undo token.')
+  assert(await (await settingsAction(page, 'Undo last Shift')).count() === 1, 'Reload lost the persisted Recovery Undo token.')
+  await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
   await moveToWeekOfSeptember14(page)
   await assertShiftedWeek(page)
 
-  // Undo from the actual teacher-facing header and prove the restored schedule persists.
-  await headerAction(page, 'Undo last Shift').click()
+  await (await settingsAction(page, 'Undo last Shift')).click()
   const undoNotice = await page.locator('.storage-notice').innerText()
   assert(undoNotice.includes('Undid the last Shift for Period 2.'), `Undo did not report the restored Section. Notice: ${undoNotice}`)
-  assert(await headerAction(page, 'Undo last Shift').count() === 0, 'Undo token remained available after being consumed.')
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  assert(await page.getByRole('button', { name: 'Undo last Shift', exact: true }).count() === 0, 'Undo token remained available after being consumed.')
+  await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
   await assertRestoredWeek(page)
 
   await page.reload({ waitUntil: 'networkidle' })
   await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
-  assert(await headerAction(page, 'Undo last Shift').count() === 0, 'Consumed Undo token returned after reload.')
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  assert(await page.getByRole('button', { name: 'Undo last Shift', exact: true }).count() === 0, 'Consumed Undo token returned after reload.')
+  await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
   await moveToWeekOfSeptember14(page)
   await assertRestoredWeek(page)
 
