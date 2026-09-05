@@ -32,6 +32,7 @@
 .unitChild.selected {
   outline: 2px solid rgba(47,111,115,.7);
   outline-offset: 1px;
+  z-index: 12;
 }
 .unitMagnet {
   border-color: rgba(38,51,58,.27);
@@ -106,6 +107,51 @@
 .childComposer input { min-height: 30px; padding: 5px 7px; font-size: .64rem; }
 .childComposer button { border: 0; border-radius: 6px; background: var(--ink); color: white; font-size: .58rem; font-weight: 800; }
 
+/* Object actions are contextual furniture: hidden until the object is selected. */
+.magnetActions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  display: none;
+  width: max-content;
+  max-width: min(360px, 85vw);
+  flex-wrap: wrap;
+  gap: 3px;
+  margin: 0;
+  padding: 5px;
+  border: 1px solid rgba(38,51,58,.2);
+  border-radius: 9px;
+  background: var(--ink);
+  box-shadow: 0 10px 24px rgba(38,51,58,.18);
+}
+.lessonMagnet.selected .magnetActions,
+.lessonMagnet:focus-within .magnetActions { display: flex; }
+.magnetActions button,.ideaDelete {
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 6px;
+  background: transparent;
+  padding: 5px 7px;
+  font-size: .55rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.magnetActions button { color: white; }
+.magnetActions button:hover,.magnetActions button:focus-visible { background: rgba(255,255,255,.12); }
+.magnetActions .dangerAction,.ideaDelete { color: #ffb7ae; }
+.calendarDesk,.dayCell,.classRow,.dayCells,.cellPlans { overflow: visible; }
+
+.magnetEditor { display: grid; gap: 6px; }
+.magnetEditor input { min-height: 34px; padding: 7px 8px; font-size: .7rem; }
+.magnetEditor > div { display: flex; gap: 4px; }
+.magnetEditor button { padding: 6px 8px; border-radius: 6px; font-size: .58rem; }
+.magnetEditor button:last-child { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.cellAdd { width: 100%; min-height: 34px; margin-top: 5px; border: 1px dashed rgba(38,51,58,.2); border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; opacity: .6; }
+.dayCell:hover .cellAdd,.cellAdd:focus-visible { opacity: 1; }
+.cellComposer { display: grid; gap: 5px; margin-top: 5px; }
+.cellComposer input { min-height: 36px; font-size: .72rem; }
+.cellComposer button { padding: 7px 9px; font-size: .7rem; }
+
 .cellComposerActions { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
 .cellComposerActions .secondaryComposerAction {
   background: #e7ddcc;
@@ -113,7 +159,6 @@
   border: 1px solid rgba(38,51,58,.12);
 }
 
-/* v23.4 recovery: Unit creation is a class-level planning action. */
 .classUnitAdd {
   margin-top: 7px;
   min-height: 28px;
