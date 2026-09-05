@@ -142,7 +142,7 @@ export function AppFrame() {
         <div className="arc-header-space" aria-hidden="true" />
       </header>
 
-      <div className="arc-planner-wall">
+      <div className={`arc-planner-wall${settingsOpen ? ' arc-planner-wall--settings-open' : ''}`}>
         <button
           ref={settingsTabRef}
           type="button"
@@ -259,20 +259,19 @@ export function AppFrame() {
   )
 }
 
-function resolveAvailableHomeView(
-  preferences: ViewPreferences,
-  availabilityFor: (view: CalendarView) => { available: boolean },
-): CalendarView {
-  const preferred = resolveHomeView(preferences)
-  return availabilityFor(preferred).available ? preferred : DEFAULT_HOME_VIEW
+function resolveAvailableHomeView(preferences: ViewPreferences, availabilityFor: (view: CalendarView) => { available: boolean }) {
+  const resolved = resolveHomeView(preferences)
+  if (availabilityFor(resolved).available) return resolved
+  if (availabilityFor(DEFAULT_HOME_VIEW).available) return DEFAULT_HOME_VIEW
+  return 'Month' as const
 }
 
-function stageTitleFor(mode: ReturnType<typeof useWorkspaceMode>['mode'], activeView: string) {
-  if (mode === 'recovery') return 'Recovery review'
+function stageTitleFor(mode: string, activeView: CalendarView) {
+  if (mode === 'calendar-setup') return 'School calendar'
   if (mode === 'terms') return 'Terms'
-  if (mode === 'classes') return 'Courses & Sections'
+  if (mode === 'classes') return 'Courses & sections'
   if (mode === 'units') return 'Units'
   if (mode === 'lessons') return 'Lessons'
-  if (mode === 'calendar-setup') return 'Calendar'
+  if (mode === 'recovery') return 'Recovery'
   return activeView
 }
