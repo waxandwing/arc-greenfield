@@ -4,6 +4,12 @@ Status: **current implementation authority**
 
 These rules are explicit product direction. They outrank older prototypes, archived build notes, and generic application conventions until Kelly explicitly changes them.
 
+## 0. Deployment law
+- **Do not deploy Arc to Vercel.**
+- No Vercel production deployment, preview deployment, release automation, or accidental publish step is authorized.
+- Development may continue in isolated Git branches, draft pull requests, Figma, local/file previews, and canonical Drive documents.
+- Deployment remains blocked until Kelly explicitly reverses this rule.
+
 ## 1. Calendar is the center
 - Arc is a calendar-centered teaching workspace.
 - The calendar must remain visually and geometrically true while supporting furniture opens and closes.
