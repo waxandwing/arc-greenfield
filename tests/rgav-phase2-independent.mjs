@@ -6,10 +6,6 @@ function assert(condition, message) {
   if (!condition) throw new Error(message)
 }
 
-function headerAction(page, text) {
-  return page.locator('.calendar-context-actions button').filter({ hasText: text })
-}
-
 function trackRuntimeErrors(page) {
   const errors = []
   page.on('console', (message) => {
@@ -25,6 +21,22 @@ async function press(locator, key = 'Enter') {
   await locator.press(key)
 }
 
+async function openSettings(page) {
+  const drawer = page.getByRole('complementary', { name: 'Settings and setup' })
+  if (!(await drawer.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  }
+  await drawer.waitFor({ state: 'visible' })
+  return drawer
+}
+
+async function settingsAction(page, text) {
+  const drawer = await openSettings(page)
+  const button = drawer.getByRole('button').filter({ hasText: text })
+  assert(await button.count() === 1, `RGAV B: Settings did not expose exactly one ${text} action.`)
+  return button
+}
+
 async function configure(page) {
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-02')
@@ -32,13 +44,15 @@ async function configure(page) {
   await page.getByRole('button', { name: 'Use this calendar', exact: true }).click()
   await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
 
-  await page.getByText('View options', { exact: true }).click()
-  const weekends = page.getByRole('checkbox', { name: /weekends/i })
+  const drawer = await openSettings(page)
+  await drawer.getByText('View options', { exact: true }).click()
+  const weekends = drawer.getByRole('checkbox', { name: /weekends/i })
   if (await weekends.count()) await weekends.check()
+  await drawer.getByRole('button', { name: 'Close Settings', exact: true }).click()
 }
 
 async function makeClasses(page) {
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('Studio Art')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
@@ -49,14 +63,14 @@ async function makeClasses(page) {
 }
 
 async function makePlan(page) {
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('Color Unit')
   await page.getByRole('textbox', { name: 'Start', exact: true }).fill('2026-09-14')
   await page.getByRole('textbox', { name: 'End', exact: true }).fill('2026-09-25')
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   const add = page.getByRole('button', { name: 'Add Lesson', exact: true })
   await add.click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('Color intro')
@@ -106,13 +120,13 @@ try {
   assert(await page.getByRole('heading', { level: 1, name: 'Day', exact: true }).count() === 1, 'RGAV B: Day projection did not open.')
 
   // Mutate the shared plan by keyboard, then prove reload persistence.
-  await press(headerAction(page, 'Edit Lessons'))
+  await press(await settingsAction(page, 'Edit Lessons'))
   await press(page.getByRole('button', { name: /^Mixing lab/ }))
   const plannedDate = page.getByRole('textbox', { name: 'Planned date', exact: true })
   await plannedDate.fill('2026-09-17')
   await press(page.getByRole('button', { name: 'Save Lessons', exact: true }))
   await page.reload({ waitUntil: 'networkidle' })
-  await press(headerAction(page, 'Edit Lessons'))
+  await press(await settingsAction(page, 'Edit Lessons'))
   await press(page.getByRole('button', { name: /^Mixing lab/ }))
   assert(await page.getByRole('textbox', { name: 'Planned date', exact: true }).inputValue() === '2026-09-17', 'RGAV B: shared Lesson move did not survive reload.')
 
@@ -127,8 +141,9 @@ try {
   await press(page.getByRole('button', { name: 'Save Lessons', exact: true }))
 
   await page.reload({ waitUntil: 'networkidle' })
-  assert(await headerAction(page, 'Review recovery').count() === 1, 'RGAV B: reload lost recovery trigger for Period 4 divergence.')
-  await press(headerAction(page, 'Review recovery'))
+  const recoveryAction = await settingsAction(page, 'Review recovery')
+  assert(await recoveryAction.count() === 1, 'RGAV B: reload lost recovery trigger for Period 4 divergence.')
+  await press(recoveryAction)
   const recovery = page.locator('.recovery-card').filter({ hasText: 'Period 4' }).filter({ hasText: 'Color intro' })
   assert(await recovery.count() === 1, 'RGAV B: recovery review did not isolate Period 4.')
   assert((await recovery.innerText()).includes('Stopped before independent practice.'), 'RGAV B: recovery lost exact resume note.')
@@ -139,19 +154,24 @@ try {
   assert(Boolean(safeDestination), 'RGAV B: no safe Recovery destination was offered.')
   await moveSelect.selectOption(safeDestination)
   await press(recovery.getByRole('button', { name: 'Apply Shift', exact: true }))
-  assert(await headerAction(page, 'Undo last Shift').count() === 1, 'RGAV B: Apply Shift did not expose Undo.')
+  assert(await (await settingsAction(page, 'Undo last Shift')).count() === 1, 'RGAV B: Apply Shift did not expose Undo.')
 
   // Check Section isolation after recovery, then consume Undo and prove it stays consumed.
+  const settingsAfterApply = page.getByRole('complementary', { name: 'Settings and setup' })
+  if (await settingsAfterApply.isVisible().catch(() => false)) {
+    await settingsAfterApply.getByRole('button', { name: 'Close Settings', exact: true }).click()
+  }
   await moveToTargetWeek(page)
   const p1Titles = await titlesInRow(page, 'Period 1')
   const p4Titles = await titlesInRow(page, 'Period 4')
   assert(p1Titles.includes('Color intro'), 'RGAV B: Section recovery mutated Period 1 shared plan.')
   assert(p4Titles.includes('Color intro'), 'RGAV B: Period 4 recovery lost the interrupted Lesson instead of moving it.')
 
-  await press(headerAction(page, 'Undo last Shift'))
-  assert(await headerAction(page, 'Undo last Shift').count() === 0, 'RGAV B: Undo token was not consumed.')
+  await press(await settingsAction(page, 'Undo last Shift'))
   await page.reload({ waitUntil: 'networkidle' })
-  assert(await headerAction(page, 'Undo last Shift').count() === 0, 'RGAV B: consumed Undo token returned after reload.')
+  const reloadedDrawer = await openSettings(page)
+  assert(await reloadedDrawer.getByRole('button').filter({ hasText: 'Undo last Shift' }).count() === 0, 'RGAV B: consumed Undo token returned after reload.')
+  await reloadedDrawer.getByRole('button', { name: 'Close Settings', exact: true }).click()
 
   // No drag-only mutation route and no page overflow/runtime breakage.
   assert(await page.locator('[draggable="true"]').count() === 0, 'RGAV B: a drag-required planning mutation route appeared.')
@@ -160,7 +180,7 @@ try {
   assert(runtimeErrors.length === 0, `RGAV B runtime errors: ${runtimeErrors.join(' | ')}`)
 
   await context.close()
-  console.log('Independent Phase 2 RGAV B passed: alternate teacher story/viewport verified cross-view truth, keyboard move + reload, Section divergence, recovery/fixed-anchor context, Section isolation, Apply/Undo persistence, no drag-only route, overflow, and runtime cleanliness.')
+  console.log('Independent Phase 2 RGAV B passed: edge Settings + alternate teacher story/viewport verified cross-view truth, keyboard move + reload, Section divergence, recovery/fixed-anchor context, Section isolation, Apply/Undo persistence, no drag-only route, overflow, and runtime cleanliness.')
 } finally {
   await browser.close()
 }
