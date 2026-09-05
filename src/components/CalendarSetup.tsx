@@ -13,6 +13,7 @@ import {
   type SchoolCalendar,
   type Weekday,
 } from '../calendar'
+import { SchoolIdentitySearch } from './SchoolIdentitySearch'
 import { SourceCalendarReview } from './SourceCalendarReview'
 
 const WEEKDAYS: Array<{ value: Weekday; label: string }> = [
@@ -149,12 +150,21 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
       <div className="calendar-setup-intro">
         <p className="section-label">Calendar setup</p>
         <h2 id="calendar-setup-title">Tell Arc which days are actually yours.</h2>
-        <p>Start with the normal week. Add the dates that break the pattern. Arc will not move plans until this calendar is confirmed.</p>
+        <p>Start with your school. Arc will look for an official identity before you enter dates yourself.</p>
       </div>
 
+      {!initialValue && <SchoolIdentitySearch />}
       {isSourceBackedEdit && initialValue && <SourceCalendarReview input={initialValue} />}
 
       <form className="calendar-setup-form" onSubmit={submit} noValidate>
+        {!initialValue && (
+          <div className="manual-calendar-divider">
+            <p className="section-label">Manual calendar</p>
+            <h3>Enter dates yourself if Arc does not have them yet.</h3>
+            <p>Manual entry remains available, but an official school identity does not become calendar truth until Arc has a calendar source for you to review.</p>
+          </div>
+        )}
+
         {errors.length > 0 && (
           <div
             ref={errorSummaryRef}
