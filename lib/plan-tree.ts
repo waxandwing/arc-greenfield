@@ -56,14 +56,19 @@ export function shiftPlanTree(plans: Plan[], rootId: string, deltaDays: number, 
       courseId: courseId === undefined ? plan.courseId : courseId,
       date: shiftDate(plan.date, deltaDays),
       endDate: shiftDate(plan.endDate, deltaDays),
-      location: "calendar" as const
+      location: "calendar" as const,
+      arcLocation: "calendar" as const
     };
   });
 }
 
 export function movePlanTreeToIdeas(plans: Plan[], rootId: string): Plan[] {
   const treeIds = new Set(collectPlanTree(plans, rootId).map((plan) => plan.id));
-  return plans.map((plan) => treeIds.has(plan.id) ? { ...plan, location: "ideas" as const } : plan);
+  return plans.map((plan) => treeIds.has(plan.id) ? {
+    ...plan,
+    location: "ideas" as const,
+    arcLocation: "fridge" as const
+  } : plan);
 }
 
 export function deletePlanTree(plans: Plan[], rootId: string): Plan[] {
@@ -89,7 +94,8 @@ export function clonePlanTree(plans: Plan[], rootId: string, targetDate?: string
     courseId: targetCourseId === undefined ? plan.courseId : targetCourseId,
     date: targetDate === null ? plan.date : shiftDate(plan.date, deltaDays),
     endDate: targetDate === null ? plan.endDate : shiftDate(plan.endDate, deltaDays),
-    location: targetDate === null ? "ideas" : "calendar"
+    location: targetDate === null ? "ideas" : "calendar",
+    arcLocation: targetDate === null ? "fridge" : "calendar"
   }));
 }
 
