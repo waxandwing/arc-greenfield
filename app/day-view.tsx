@@ -10,7 +10,7 @@ type Props = {
   date: string;
   selectedPlanId: string | null;
   onSelectPlan: (plan: Plan) => void;
-  onAddPlan: (title: string, type: "lesson" | "note", courseId: string | null, date: string, details?: Record<string, string>) => void;
+  onAddPlan: (title: string, type: "lesson" | "note", courseId: string | null, date: string, sectionId?: string | null, details?: Record<string, string>) => void;
   onLaunchLive: (plan: Plan, section: Section) => void;
 };
 
@@ -79,12 +79,12 @@ export function DayView({ workspace, date, selectedPlanId, onSelectPlan, onAddPl
                 <div className="dayComposer">
                   <input autoFocus value={draft.title} onChange={(event) => setDraft({ sectionId: section.id, title: event.target.value })} onKeyDown={(event) => {
                     if (event.key === "Enter" && draft.title.trim()) {
-                      onAddPlan(draft.title.trim(), "lesson", section.courseId, date, { sectionId: section.id });
+                      onAddPlan(draft.title.trim(), "lesson", section.courseId, date, section.id);
                       setDraft(null);
                     }
                     if (event.key === "Escape") setDraft(null);
                   }} placeholder="Lesson title" />
-                  <button type="button" onClick={() => { if (draft.title.trim()) { onAddPlan(draft.title.trim(), "lesson", section.courseId, date, { sectionId: section.id }); setDraft(null); } }}>Add</button>
+                  <button type="button" onClick={() => { if (draft.title.trim()) { onAddPlan(draft.title.trim(), "lesson", section.courseId, date, section.id); setDraft(null); } }}>Add</button>
                 </div>
               ) : <button type="button" className="dayAdd" onClick={() => setDraft({ sectionId: section.id, title: "" })}>＋ Lesson</button>}
             </section>
@@ -100,11 +100,11 @@ export function DayView({ workspace, date, selectedPlanId, onSelectPlan, onAddPl
         <div className="afterSchoolComposer">
           <input value={afterSchoolDraft} onChange={(event) => setAfterSchoolDraft(event.target.value)} placeholder="Meeting, reminder, note…" onKeyDown={(event) => {
             if (event.key === "Enter" && afterSchoolDraft.trim()) {
-              onAddPlan(afterSchoolDraft.trim(), "note", null, date, { surface: "after-school" });
+              onAddPlan(afterSchoolDraft.trim(), "note", null, date, null, { surface: "after-school" });
               setAfterSchoolDraft("");
             }
           }} />
-          <button type="button" onClick={() => { if (afterSchoolDraft.trim()) { onAddPlan(afterSchoolDraft.trim(), "note", null, date, { surface: "after-school" }); setAfterSchoolDraft(""); } }}>Add</button>
+          <button type="button" onClick={() => { if (afterSchoolDraft.trim()) { onAddPlan(afterSchoolDraft.trim(), "note", null, date, null, { surface: "after-school" }); setAfterSchoolDraft(""); } }}>Add</button>
         </div>
       </section>
     </div>
