@@ -98,9 +98,10 @@ assert(payload.input.patternSource === 'district-source', 'OCPS payload must ret
 assert(payload.input.patternConfidence === 'mixed', 'Weekday baseline must remain mixed because it is inferred from the district calendar.')
 assert(payload.input.quarters?.length === 4, 'OCPS payload must derive four complete marking periods.')
 assert(payload.input.semesters?.length === 2, 'OCPS payload must derive two complete semesters.')
-assert(payload.input.exceptions.some((day) => day.date === '2027-02-15' && day.kind === 'holiday'), 'Feb. 15 schools-closed evidence must become a holiday exception.')
-assert(payload.input.exceptions.some((day) => day.date === '2027-04-23' && day.kind === 'teacher-workday'), 'Apr. 23 Teacher Professional Day must become a teacher-workday exception.')
-assert(!payload.input.exceptions.some((day) => day.date === '2027-05-31'), 'Post-school-year Memorial Day must not become an in-year exception.')
+const exceptions = payload.input.exceptions ?? []
+assert(exceptions.some((day) => day.date === '2027-02-15' && day.kind === 'holiday'), 'Feb. 15 schools-closed evidence must become a holiday exception.')
+assert(exceptions.some((day) => day.date === '2027-04-23' && day.kind === 'teacher-workday'), 'Apr. 23 Teacher Professional Day must become a teacher-workday exception.')
+assert(!exceptions.some((day) => day.date === '2027-05-31'), 'Post-school-year Memorial Day must not become an in-year exception.')
 
 let missingFirstDayFailed = false
 try {
