@@ -95,6 +95,29 @@ async function auditShellHierarchyAndZoom(browser) {
   await context.close()
 }
 
+async function auditCalendarEditPreservesContext(browser) {
+  const context = await browser.newContext({ viewport: { width: 1024, height: 900 } })
+  const page = await context.newPage()
+  const runtimeErrors = trackRuntimeErrors(page)
+  await page.goto(baseUrl, { waitUntil: 'networkidle' })
+  await configureCalendar(page)
+
+  await page.getByRole('button', { name: 'Week' }).click()
+  await page.getByRole('button', { name: 'Next Week' }).click()
+  const beforeRange = await page.locator('.projection-section').first().getAttribute('aria-label')
+  assert(Boolean(beforeRange), 'Calendar edit continuity: Week range did not expose its current anchored range.')
+
+  await page.getByRole('button', { name: 'Edit dates' }).click()
+  await page.locator('#last-school-day').fill('2027-06-01')
+  await page.getByRole('button', { name: 'Use this calendar' }).click()
+
+  assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'Calendar edit continuity: saving calendar dates reset the active view instead of preserving Week.')
+  const afterRange = await page.locator('.projection-section').first().getAttribute('aria-label')
+  assert(afterRange === beforeRange, `Calendar edit continuity: saving calendar dates moved the current Week anchor (${beforeRange} → ${afterRange}).`)
+  assert(runtimeErrors.length === 0, `Calendar edit continuity runtime errors: ${runtimeErrors.join(' | ')}`)
+  await context.close()
+}
+
 async function auditMondayFirstAlignment(browser) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
   const page = await context.newPage()
@@ -174,11 +197,12 @@ const browser = await chromium.launch({ headless: true })
 try {
   await auditDesktop(browser)
   await auditShellHierarchyAndZoom(browser)
+  await auditCalendarEditPreservesContext(browser)
   await auditMondayFirstAlignment(browser)
   await auditTouchAndReflow(browser)
   await auditMinimumWidth(browser)
   await auditReducedMotion(browser)
-  console.log('Arc browser accessibility smoke gate passed: landmarks, shell hierarchy/semantics, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
+  console.log('Arc browser accessibility smoke gate passed: landmarks, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
 } finally {
   await browser.close()
 }
