@@ -1,0 +1,7 @@
+/* Week is five instructional columns by default. When seven days are present, Sunday leads. */
+.weekHeader:has(> div:nth-of-type(7)) {
+  grid-template-columns: 150px repeat(7,minmax(0,1fr));
+}
+.dayCells:has(> .dayCell:nth-child(7)) {
+  grid-template-columns: repeat(7,minmax(0,1fr));
+}
