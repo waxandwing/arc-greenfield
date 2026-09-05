@@ -8,6 +8,7 @@ import "./onboarding-screen.css";
 import "./week-planner.css";
 import "./weekend-week.css";
 import "./reconciled-shell.css";
+import "./fridge-actions.css";
 
 export const metadata: Metadata = {
   title: "Arc",
