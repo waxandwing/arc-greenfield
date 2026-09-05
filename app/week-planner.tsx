@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Course, Plan, Workspace } from "../lib/domain";
 import { orderedUnitChildren } from "../lib/plan-tree";
+import { CalendarObjectDetails } from "./calendar-object-details";
 
 export type WeekDay = { label: string; key: string; number: number; month: string };
 
@@ -16,6 +17,7 @@ type Props = {
   onSelectDate: (courseId: string, date: string) => void;
   onMovePlan: (id: string, date: string, courseId: string) => void;
   onRenamePlan: (id: string, title: string) => void;
+  onPatchPlan: (id: string, patch: Partial<Plan>) => void;
   onAddPlan: (title: string, type: "lesson" | "unit", courseId: string, date: string) => void;
   onAddChildLesson: (unit: Plan, title: string) => void;
   onToggleUnit: (unitId: string) => void;
@@ -30,11 +32,12 @@ function ownerUnit(workspace: Workspace, lesson: Plan) {
   return workspace.plans.find((plan) => plan.id === lesson.parentUnitId && plan.type === "unit") ?? null;
 }
 
-export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteTarget, onSelectPlan, onSelectDate, onMovePlan, onRenamePlan, onAddPlan, onAddChildLesson, onToggleUnit, onDeletePlan, onReturnToIdeas }: Props) {
+export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteTarget, onSelectPlan, onSelectDate, onMovePlan, onRenamePlan, onPatchPlan, onAddPlan, onAddChildLesson, onToggleUnit, onDeletePlan, onReturnToIdeas }: Props) {
   const [cellDraft, setCellDraft] = useState<{ courseId: string; date: string; mode: "lesson" | "unit"; title: string } | null>(null);
   const [unitDraft, setUnitDraft] = useState<UnitDraft | null>(null);
   const [childDraft, setChildDraft] = useState<{ unitId: string; title: string } | null>(null);
   const [editDraft, setEditDraft] = useState<{ id: string; title: string } | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   function submitCell() {
     if (!cellDraft?.title.trim()) return;
@@ -65,23 +68,29 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
   function actionRow(plan: Plan) {
     const dayIndex = plan.date ? days.findIndex((day) => day.key === plan.date) : -1;
     return <div className="magnetActions" role="toolbar" aria-label={`Actions for ${plan.title}`}>
-      <button type="button" onClick={(e) => { e.stopPropagation(); setEditDraft({ id: plan.id, title: plan.title }); }}>Edit</button>
+      <button type="button" onClick={(e) => { e.stopPropagation(); setEditDraft({ id: plan.id, title: plan.title }); }}>Rename</button>
+      <button type="button" onClick={(e) => { e.stopPropagation(); setDetailId(detailId === plan.id ? null : plan.id); }}>More…</button>
       <button type="button" title="Move earlier" aria-label={`Move ${plan.title} earlier`} disabled={dayIndex <= 0} onClick={(e) => { e.stopPropagation(); moveOneDay(plan, -1); }}>Move ←</button>
       <button type="button" title="Move later" aria-label={`Move ${plan.title} later`} disabled={dayIndex < 0 || dayIndex >= days.length - 1} onClick={(e) => { e.stopPropagation(); moveOneDay(plan, 1); }}>Move →</button>
-      <button type="button" onClick={(e) => { e.stopPropagation(); onReturnToIdeas(plan.id); }}>Put in Fridge</button>
-      <button type="button" className="dangerAction" onClick={(e) => { e.stopPropagation(); onDeletePlan(plan.id); }}>Delete</button>
+      <button type="button" onClick={(e) => { e.stopPropagation(); setDetailId(null); onReturnToIdeas(plan.id); }}>Put in Fridge</button>
+      <button type="button" className="dangerAction" onClick={(e) => { e.stopPropagation(); setDetailId(null); onDeletePlan(plan.id); }}>Delete</button>
     </div>;
   }
 
   function editableTitle(plan: Plan, prefix?: React.ReactNode) {
     if (editDraft?.id === plan.id) {
       return <div className="weekInlineEdit" onClick={(e) => e.stopPropagation()}>
-        <input autoFocus value={editDraft.title} onChange={(e) => setEditDraft({ id: plan.id, title: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") submitEdit(); if (e.key === "Escape") setEditDraft(null); }} aria-label={`Edit ${plan.title}`} />
+        <input autoFocus value={editDraft.title} onChange={(e) => setEditDraft({ id: plan.id, title: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") submitEdit(); if (e.key === "Escape") setEditDraft(null); }} aria-label={`Rename ${plan.title}`} />
         <button type="button" onClick={submitEdit}>Save</button>
         <button type="button" onClick={() => setEditDraft(null)}>Cancel</button>
       </div>;
     }
     return <div className="magnetTitleRow">{prefix}<strong>{plan.title}</strong></div>;
+  }
+
+  function detailPopover(plan: Plan) {
+    if (detailId !== plan.id || selectedPlanId !== plan.id) return null;
+    return <CalendarObjectDetails plan={plan} courses={workspace.courses} onRename={onRenamePlan} onMove={onMovePlan} onPatch={onPatchPlan} onClose={() => setDetailId(null)} />;
   }
 
   return <>
@@ -108,10 +117,11 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
                 const collapsed = workspace.preferences.collapsedUnitIds.includes(plan.id);
                 const children = plan.type === "unit" ? orderedUnitChildren(workspace.plans, plan.id) : [];
                 const prefix = plan.type === "unit" ? <><button type="button" className="disclosureButton" aria-label={collapsed ? "Expand unit" : "Collapse unit"} aria-expanded={!collapsed} onClick={(e) => { e.stopPropagation(); onToggleUnit(plan.id); }}>{collapsed ? "▸" : "▾"}</button></> : undefined;
-                return <article key={plan.id} className={`${plan.type === "unit" ? "lessonMagnet unitMagnet" : "lessonMagnet"}${selected ? " selected" : ""}`} draggable={editDraft?.id !== plan.id} onDragStart={(e) => { e.dataTransfer.setData("text/arc-plan", plan.id); e.dataTransfer.effectAllowed = "move"; }} onClick={(e) => { e.stopPropagation(); onSelectPlan(plan); }} tabIndex={0} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && editDraft?.id !== plan.id) { e.preventDefault(); onSelectPlan(plan); } }}>
+                return <article key={plan.id} className={`${plan.type === "unit" ? "lessonMagnet unitMagnet" : "lessonMagnet"}${selected ? " selected" : ""}`} draggable={editDraft?.id !== plan.id && detailId !== plan.id} onDragStart={(e) => { e.dataTransfer.setData("text/arc-plan", plan.id); e.dataTransfer.effectAllowed = "move"; }} onClick={(e) => { e.stopPropagation(); onSelectPlan(plan); }} tabIndex={0} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && editDraft?.id !== plan.id) { e.preventDefault(); onSelectPlan(plan); } }}>
                   {editDraft?.id === plan.id ? editableTitle(plan) : <div className="magnetTitleRow">{prefix}<strong>{plan.title}</strong>{plan.type === "unit" && <span className="unitCount">{children.length} lesson{children.length === 1 ? "" : "s"}</span>}</div>}
                   {plan.type === "unit" && !collapsed && <div className="unitChildren unitChildrenSummary"><div className="unitSequenceSummary">{children.length ? children.map((child) => <span key={child.id}>{child.date ? `${child.date.slice(5)} · ` : ""}{child.title}</span>) : <span>No lessons yet</span>}</div>{childDraft?.unitId === plan.id ? <div className="childComposer"><input autoFocus value={childDraft.title} onChange={(e) => setChildDraft({ unitId: plan.id, title: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter" && childDraft.title.trim()) { onAddChildLesson(plan, childDraft.title.trim()); setChildDraft(null); } if (e.key === "Escape") setChildDraft(null); }} placeholder="Lesson title" /><button type="button" onClick={() => { if (!childDraft.title.trim()) return; onAddChildLesson(plan, childDraft.title.trim()); setChildDraft(null); }}>Add</button></div> : <button type="button" className="addChild" onClick={(e) => { e.stopPropagation(); setChildDraft({ unitId: plan.id, title: "" }); }}>＋ Lesson</button>}</div>}
                   {editDraft?.id !== plan.id && actionRow(plan)}
+                  {detailPopover(plan)}
                 </article>;
               })}
 
@@ -119,10 +129,11 @@ export function WeekPlanner({ workspace, days, weekLabel, selectedPlanId, pasteT
                 const unit = ownerUnit(workspace, lesson);
                 const unitCollapsed = unit ? workspace.preferences.collapsedUnitIds.includes(unit.id) : false;
                 if (unitCollapsed) return null;
-                return <article key={lesson.id} className={`lessonMagnet nestedLessonMagnet${selectedPlanId === lesson.id ? " selected" : ""}`} draggable={editDraft?.id !== lesson.id} onDragStart={(e) => { e.dataTransfer.setData("text/arc-plan", lesson.id); e.dataTransfer.effectAllowed = "move"; }} onClick={(e) => { e.stopPropagation(); onSelectPlan(lesson); }} tabIndex={0} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && editDraft?.id !== lesson.id) { e.preventDefault(); onSelectPlan(lesson); } }}>
+                return <article key={lesson.id} className={`lessonMagnet nestedLessonMagnet${selectedPlanId === lesson.id ? " selected" : ""}`} draggable={editDraft?.id !== lesson.id && detailId !== lesson.id} onDragStart={(e) => { e.dataTransfer.setData("text/arc-plan", lesson.id); e.dataTransfer.effectAllowed = "move"; }} onClick={(e) => { e.stopPropagation(); onSelectPlan(lesson); }} tabIndex={0} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && editDraft?.id !== lesson.id) { e.preventDefault(); onSelectPlan(lesson); } }}>
                   {unit && <small className="lessonUnitLabel">{unit.title}</small>}
                   {editableTitle(lesson)}
                   {editDraft?.id !== lesson.id && actionRow(lesson)}
+                  {detailPopover(lesson)}
                 </article>;
               })}
             </div>
