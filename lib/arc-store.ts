@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { emptyWorkspace, type PriorityTier, type Workspace } from "./domain";
+import { emptyWorkspace, type PriorityTier, type TaskContext, type Workspace } from "./domain";
 import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "./workspace-history";
 import { loadWorkspace, saveWorkspace } from "./workspace-store";
-import { moveObjectToCalendar, moveObjectToFridge, moveObjectToTaskBar, updateTaskContext, type ArcPlanningObject, type TaskContext } from "./object-lifecycle";
+import { moveObjectToCalendar, moveObjectToFridge, moveObjectToTaskBar, updateTaskContext, type ArcPlanningObject } from "./object-lifecycle";
 
 export type ArcStore = {
   history: WorkspaceHistory;
