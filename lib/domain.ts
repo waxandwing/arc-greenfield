@@ -4,6 +4,7 @@ export type PlanType = "unit" | "lesson" | "note";
 export type PlanLocation = "calendar" | "ideas";
 export type PriorityTier = "must" | "should" | "could";
 export type ArcObjectLocation = "fridge" | "taskbar" | "calendar";
+export type TeachingState = "not-started" | "in-progress" | "completed" | "skipped";
 
 export type TaskContext = {
   tier: PriorityTier;
@@ -21,6 +22,22 @@ export type Course = {
   color: string;
 };
 
+/** A Section is the actual teaching instance of a shared Course. */
+export type Section = {
+  id: string;
+  courseId: string;
+  name: string;
+  periodLabel: string;
+  color?: string;
+};
+
+export type SectionDeliveryState = {
+  state: TeachingState;
+  actualTaughtDate?: string;
+  resumeNote?: string;
+  updatedAt?: string;
+};
+
 export type SchoolCalendar = {
   firstStudentDay: string | null;
   lastStudentDay: string | null;
@@ -34,6 +51,8 @@ export type Plan = {
   type: PlanType;
   title: string;
   courseId: string | null;
+  /** Optional Section-specific placement/ownership. Shared Course lessons can leave this null. */
+  sectionId?: string | null;
   date: string | null;
   endDate: string | null;
   location: PlanLocation;
@@ -41,6 +60,8 @@ export type Plan = {
   arcLocation?: ArcObjectLocation;
   /** Task Bar metadata belongs to the same object and survives movement to/from calendar and Fridge. */
   taskContext?: TaskContext | null;
+  /** Sparse Section-specific delivery state. Planning truth stays shared; teaching divergence lives here. */
+  sectionDelivery?: Record<string, SectionDeliveryState>;
   parentUnitId: string | null;
   childOrder: number | null;
   fixedDate: boolean;
@@ -84,6 +105,8 @@ export type Workspace = {
   teacherName: string;
   roles: string[];
   courses: Course[];
+  /** Optional while older workspaces migrate. New setup should persist explicit Sections. */
+  sections?: Section[];
   calendar: SchoolCalendar;
   plans: Plan[];
   /** Legacy only. Reconciled UI migrates these into plans and stops creating new Priority records. */
@@ -101,6 +124,7 @@ export function emptyWorkspace(): Workspace {
     teacherName: "",
     roles: [],
     courses: [],
+    sections: [],
     calendar: {
       firstStudentDay: null,
       lastStudentDay: null,
