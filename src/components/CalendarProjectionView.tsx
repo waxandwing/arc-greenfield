@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { CalendarView } from '../navigation/calendarViews'
-import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
+import { projectDay, projectMonth, projectQuarter, projectSemester, projectSundayFirstWeek, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import { projectDayContinuity } from '../planning/dayContinuityProjection'
 import { projectPlanningRange } from '../planning/planningProjection'
@@ -54,7 +54,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
       )
     }
     case 'Week': {
-      const projection = projectWeek(calendar, anchorDate)
+      const projection = showWeekends ? projectSundayFirstWeek(calendar, anchorDate) : projectWeek(calendar, anchorDate)
       const visibleDays = showWeekends ? projection.days : projection.days.filter((day) => !day.isWeekend)
       return (
         <PlanningWeekStrip
