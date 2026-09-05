@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { emptyWorkspace, type PriorityTier, type TaskContext, type Workspace } from "./domain";
-import { migrateLegacyPriorities, moveObjectToTaskBar, updateTaskContext } from "./object-lifecycle";
+import { migrateLegacyPriorities, movePlanToTaskBarSafely, updateTaskContext } from "./object-lifecycle";
 import { movePlanToCalendarDate } from "./plan-operations";
-import { movePlanTreeToIdeas, unitUnplaceBlocker } from "./plan-tree";
+import { movePlanTreeToIdeas } from "./plan-tree";
 import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "./workspace-history";
 import { loadWorkspaceResult, saveWorkspace } from "./workspace-store";
 
@@ -41,8 +41,6 @@ export const useArcStore = create<ArcStore>((set, get) => ({
     const workspace = migrateLegacyPriorities(loaded.workspace);
     const history = createWorkspaceHistory(workspace);
 
-    // If the active payload is unreadable, workspace-store has quarantined the
-    // original raw data. Do NOT auto-save the empty fallback over the active key.
     const recoveryAvailable = loaded.status === "recovery-needed";
     const lastSavedAt = recoveryAvailable ? null : persist(history);
     set({ history, hydrated: true, recoveryAvailable, lastSavedAt });
@@ -79,20 +77,13 @@ export const useArcStore = create<ArcStore>((set, get) => ({
   },
 
   sendToTaskBar(id, tier) {
-    get().commit((workspace) => {
-      if (unitUnplaceBlocker(workspace.plans, id)) return workspace;
-      return {
-        ...workspace,
-        // Location belongs to each stable object. Moving a Unit into the Task
-        // Bar must not silently move its child Lessons with it.
-        plans: workspace.plans.map((plan) => plan.id === id ? moveObjectToTaskBar(plan, tier) : plan)
-      };
-    });
+    get().commit((workspace) => ({
+      ...workspace,
+      plans: movePlanToTaskBarSafely(workspace.plans, id, tier)
+    }));
   },
 
   scheduleObject(id, date, courseId) {
-    // Scheduling without a class is not a valid calendar placement. More
-    // importantly, the guarded movement engine owns fixed-date protection.
     if (!courseId) return;
     get().commit((workspace) => ({
       ...workspace,
