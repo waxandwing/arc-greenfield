@@ -15,10 +15,9 @@ input,select,.quiet-button,.primary-button,.weekday-option span{
 }
 
 .view-nav-item[aria-disabled='true']{
-  opacity:.48;
+  opacity:.42;
   cursor:not-allowed;
-  text-decoration:line-through;
-  text-decoration-thickness:1px;
+  text-decoration:none;
 }
 
 .projection-heading-row{
