@@ -1,0 +1,40 @@
+.interactionNotice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--coral, #c96845);
+  background: rgba(201, 104, 69, .075);
+  color: var(--ink, #2c2e2e);
+  font-size: .72rem;
+  line-height: 1.45;
+}
+
+.interactionNotice span {
+  max-width: 90ch;
+}
+
+.interactionNotice button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  border: 1px solid rgba(44, 46, 46, .18);
+  border-radius: 7px;
+  background: rgba(255, 253, 248, .76);
+  color: inherit;
+  padding: 6px 9px;
+  font: inherit;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.interactionNotice button:focus-visible {
+  outline: 3px solid rgba(201, 104, 69, .42);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  .interactionNotice { display: grid; }
+  .interactionNotice button { justify-self: start; }
+}
