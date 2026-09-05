@@ -32,10 +32,10 @@ export function createOcpsCalendarServerExtractionAdapter(
   return {
     id: 'ocps-official-calendar-server-text-v1',
     supports(source: OfficialCalendarSourceCandidate): boolean {
-      return source.sourceType === 'pdf' && isSupportedOcpsCalendarLocator(source.locator)
+      return source.kind === 'district-calendar-document' && isSupportedOcpsCalendarLocator(source.locator)
     },
     async extract(source: OfficialCalendarSourceCandidate): Promise<OfficialCalendarStructuredExtraction> {
-      if (source.sourceType !== 'pdf' || !isSupportedOcpsCalendarLocator(source.locator)) {
+      if (source.kind !== 'district-calendar-document' || !isSupportedOcpsCalendarLocator(source.locator)) {
         throw new Error('OCPS server extractor does not support this calendar source.')
       }
 
