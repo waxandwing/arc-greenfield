@@ -82,7 +82,4 @@ async function run() {
   console.log('NCES school identity provider contract passed')
 }
 
-run().catch((error) => {
-  console.error(error)
-  process.exitCode = 1
-})
+void run()
