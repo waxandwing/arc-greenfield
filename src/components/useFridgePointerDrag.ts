@@ -83,14 +83,12 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
     if (!payload) return
 
     const target = document.elementFromPoint(clientX, clientY) as HTMLElement | null
-    if (!target) return
-
-    const drawerTarget = target.closest<HTMLElement>('[data-fridge-drop-drawer="true"]')
-    const doorTarget = target.closest<HTMLElement>('[data-fridge-drop-door="true"]')
-    const cellTarget = target.closest<HTMLElement>('[data-fridge-drop-cell="true"]')
+    const liveCellTarget = findLiveCellAtPoint(clientX, clientY)
+    const drawerTarget = target?.closest<HTMLElement>('[data-fridge-drop-drawer="true"]') ?? null
+    const doorTarget = target?.closest<HTMLElement>('[data-fridge-drop-door="true"]') ?? null
+    const cellTarget = liveCellTarget ?? target?.closest<HTMLElement>('[data-fridge-drop-cell="true"]') ?? null
 
     if (payload.kind === 'entity' && payload.source === 'drawer') {
-      if (!doorTarget) return
       if (cellTarget) {
         const coordinates = readCellCoordinates(cellTarget)
         if (!coordinates) {
@@ -101,6 +99,7 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
         if (result) handlers.onReject(result)
         return
       }
+      if (!doorTarget) return
       const result = handlers.onBringBack(payload.entityRef)
       if (result) handlers.onReject(result)
       return
@@ -144,6 +143,14 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
     startEntity: (event: ReactPointerEvent<HTMLElement>, entityRef: FridgeEntityRef, source: 'door' | 'drawer') => start(event, { kind: 'entity', entityRef, source }),
     startStack: (event: ReactPointerEvent<HTMLElement>, stackId: string) => start(event, { kind: 'stack', stackId, source: 'door' }),
   }
+}
+
+function findLiveCellAtPoint(clientX: number, clientY: number): HTMLElement | null {
+  const cells = [...document.querySelectorAll<HTMLElement>('[data-fridge-drop-cell="true"]')]
+  return cells.find((cell) => {
+    const rect = cell.getBoundingClientRect()
+    return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom
+  }) ?? null
 }
 
 function readCellCoordinates(cell: HTMLElement): { row: number; column: number } | null {
