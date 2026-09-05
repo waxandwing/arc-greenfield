@@ -93,3 +93,17 @@ A planning object keeps the same identity while its visible capability increases
 
 ## 13. Conflict rule
 If a requested implementation conflicts with one of these laws, stop and flag the conflict before changing the product. A founder instruction can explicitly replace a law; old Figma frames or old code cannot.
+
+## 14. Current reconciliation implementation status
+The branch `codex/reconcile-founder-laws` is an isolated working branch, not a release branch.
+
+Already implemented there:
+- Fridge is outer-edge drawer furniture rather than a permanent right-side workbench.
+- Settings is outer-edge drawer furniture rather than a left rail.
+- Task Bar is horizontal and separate from Fridge.
+- Week reads the persisted weekend preference: Mon–Fri by default, Sun–Sat/Sunday-first when enabled.
+- Stable planning objects retain the same identity across Fridge, Task Bar, and Calendar.
+- Legacy Priority records are migrated into stable Task Bar objects rather than silently disappearing.
+- Calendar objects use contextual selection actions rather than permanent action rows.
+- Unit, Lesson, and Idea/Note receive distinct physical-language treatment.
+- CI/typecheck/test/build remain mandatory before any merge decision.
