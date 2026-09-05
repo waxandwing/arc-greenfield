@@ -74,20 +74,23 @@ async function selectLesson(page, title) {
   await page.getByRole('button', { name: new RegExp(`^${title}`) }).click()
 }
 
-function unitRow(page, title) {
-  return page.locator('.unit-editor-row').filter({ hasText: title })
-}
-
-async function inputValues(locator) {
-  return locator.evaluateAll((nodes) => nodes.map((node) => node.value))
+async function unitRow(page, title) {
+  const rows = page.locator('.unit-editor-row')
+  for (let index = 0; index < await rows.count(); index += 1) {
+    const row = rows.nth(index)
+    const value = await row.getByRole('textbox', { name: 'Unit', exact: true }).inputValue()
+    if (value === title) return row
+  }
+  return null
 }
 
 async function describeUnitRow(row) {
+  if (!row) return { count: 0, text: [], starts: [], ends: [], buttons: [] }
   return {
     count: await row.count(),
     text: await row.allInnerTexts(),
-    starts: await inputValues(row.getByRole('textbox', { name: 'Start', exact: true })),
-    ends: await inputValues(row.getByRole('textbox', { name: 'End', exact: true })),
+    starts: [await row.getByRole('textbox', { name: 'Start', exact: true }).inputValue()],
+    ends: [await row.getByRole('textbox', { name: 'End', exact: true }).inputValue()],
     buttons: await row.getByRole('button').allTextContents(),
   }
 }
@@ -104,7 +107,7 @@ try {
   await createLessons(page)
 
   await headerAction(page, 'Edit Units').click()
-  let actionUnit = unitRow(page, 'Action Unit')
+  let actionUnit = await unitRow(page, 'Action Unit')
   const initialActionUnit = await describeUnitRow(actionUnit)
   assert(initialActionUnit.count === 1, `Phase 2 object actions: expected one Action Unit row, found ${JSON.stringify(initialActionUnit)}.`)
   assert(initialActionUnit.starts[0] === '2026-09-14' && initialActionUnit.ends[0] === '2026-09-18', `Phase 2 object actions: Action Unit placement was not preserved before guard test: ${JSON.stringify(initialActionUnit)}.`)
@@ -156,7 +159,8 @@ try {
   await page.getByRole('button', { name: 'Cancel', exact: true }).click()
 
   await headerAction(page, 'Edit Units').click()
-  actionUnit = unitRow(page, 'Action Unit')
+  actionUnit = await unitRow(page, 'Action Unit')
+  assert(actionUnit, 'Phase 2 object actions: Action Unit disappeared before safe Unplace.')
   await actionUnit.getByRole('button', { name: 'Unplace', exact: true }).click()
   assert(await actionUnit.getByRole('textbox', { name: 'Start', exact: true }).inputValue() === '', 'Phase 2 object actions: Unit Unplace did not clear start placement.')
   assert(await actionUnit.getByRole('textbox', { name: 'End', exact: true }).inputValue() === '', 'Phase 2 object actions: Unit Unplace did not clear end placement.')
@@ -164,16 +168,16 @@ try {
 
   await page.reload({ waitUntil: 'networkidle' })
   await headerAction(page, 'Edit Units').click()
-  actionUnit = unitRow(page, 'Action Unit')
-  assert(await actionUnit.count() === 1, 'Phase 2 object actions: unplaced Unit did not survive reload.')
+  actionUnit = await unitRow(page, 'Action Unit')
+  assert(actionUnit, 'Phase 2 object actions: unplaced Unit did not survive reload.')
   assert(await actionUnit.getByRole('textbox', { name: 'Start', exact: true }).inputValue() === '', 'Phase 2 object actions: unplaced Unit start date returned after reload.')
   await actionUnit.getByRole('button', { name: 'Delete', exact: true }).click()
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 
   await page.reload({ waitUntil: 'networkidle' })
   await headerAction(page, 'Edit Units').click()
-  assert(await page.locator('.unit-editor-row').filter({ hasText: 'Action Unit' }).count() === 0, 'Phase 2 object actions: deleted Unit returned after reload.')
-  assert(await page.locator('.unit-editor-row').filter({ hasText: 'Progress Unit' }).count() === 1, 'Phase 2 object actions: deleting Action Unit disturbed Progress Unit.')
+  assert(!(await unitRow(page, 'Action Unit')), 'Phase 2 object actions: deleted Unit returned after reload.')
+  assert(await unitRow(page, 'Progress Unit'), 'Phase 2 object actions: deleting Action Unit disturbed Progress Unit.')
 
   assert(runtimeErrors.length === 0, `Phase 2 object-action runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
