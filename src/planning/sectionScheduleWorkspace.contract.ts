@@ -32,6 +32,13 @@ const lesson18 = createLesson({ id: 'lesson-18', calendarId: calendar.id, course
 const test = createLesson({ id: 'lesson-test', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Egypt test', sequence: 19, plannedDate: '2026-09-18', datePolicy: 'fixed' })
 const lessons = { calendarId: calendar.id, lessons: [lesson17, lesson18, test], deliveryStates: [] }
 
+const sameDayShared = createLesson({ id: 'lesson-shared-same-day', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Shared same-day follow-up', sequence: 20, plannedDate: '2026-09-16' })
+const sharedSameDayLessons = { ...lessons, lessons: [...lessons.lessons, sameDayShared] }
+assert(
+  validateSectionScheduleWorkspace({ calendarId: calendar.id, overrides: [] }, calendar, planning, units, sharedSameDayLessons).length === 0,
+  'Shared curriculum may intentionally place multiple Lessons on the same day without fabricating a Section schedule collision.',
+)
+
 const valid: SectionScheduleWorkspace = {
   calendarId: calendar.id,
   overrides: [
