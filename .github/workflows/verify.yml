@@ -275,3 +275,11 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/phase2-nondrag-keyboard-parity.mjs
+      - name: Publish exact Phase 2 behavior screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-phase2-behavior-1366
+          path: artifacts/phase2-behavior/*.png
+          if-no-files-found: warn
+          retention-days: 7
