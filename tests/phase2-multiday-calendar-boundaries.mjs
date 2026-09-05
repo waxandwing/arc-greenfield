@@ -59,7 +59,7 @@ try {
   // A Unit may span weekend days as long as the range contains confirmed instructional truth.
   await page.reload({ waitUntil: 'networkidle' })
   await headerAction(page, 'Edit Units').click()
-  const unitName = page.getByRole('textbox', { name: 'Unit', exact: true }).filter({ hasValue: 'Weekend span' })
+  const unitName = page.getByDisplayValue('Weekend span')
   const unitRow = unitName.locator('xpath=ancestor::*[contains(@class,"unit-editor-row")]')
   assert(await unitRow.count() === 1, 'Phase 2 calendar boundaries: multi-day Unit did not survive reload.')
   assert(await unitRow.getByRole('textbox', { name: 'Start', exact: true }).inputValue() === '2026-09-11', 'Phase 2 calendar boundaries: Unit start changed after reload.')
