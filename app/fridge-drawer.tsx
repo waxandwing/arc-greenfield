@@ -3,11 +3,12 @@
 import { useState } from "react";
 import type { Plan, PriorityTier } from "../lib/domain";
 import { objectLocation } from "../lib/object-lifecycle";
+import { ScheduleObjectPopover } from "./schedule-object-popover";
 
 type Props = {
   open: boolean;
   plans: Plan[];
-  courses: Array<{ id: string; name: string; color: string }>;
+  courses: Array<{ id: string; name: string; color: string; periodLabel?: string }>;
   selectedPlanId: string | null;
   onClose: () => void;
   onCreate: (title: string, type: "note" | "lesson" | "unit") => void;
@@ -15,11 +16,13 @@ type Props = {
   onDelete: (id: string) => void;
   onMoveToTaskBar: (id: string, tier: PriorityTier) => void;
   onDropObject: (id: string) => void;
+  onSchedule: (id: string, date: string, courseId: string) => void;
 };
 
-export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, onCreate, onSelect, onDelete, onMoveToTaskBar, onDropObject }: Props) {
+export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, onCreate, onSelect, onDelete, onMoveToTaskBar, onDropObject, onSchedule }: Props) {
   const [draft, setDraft] = useState("");
   const [type, setType] = useState<"note" | "lesson" | "unit">("note");
+  const [schedulingId, setSchedulingId] = useState<string | null>(null);
   const fridgePlans = plans.filter((plan) => objectLocation(plan) === "fridge" && !plan.parentUnitId);
 
   function add() {
@@ -63,10 +66,11 @@ export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, on
         {fridgePlans.map((plan) => {
           const course = courses.find((item) => item.id === plan.courseId);
           const selected = selectedPlanId === plan.id;
+          const scheduling = schedulingId === plan.id;
           return (
             <article
               key={plan.id}
-              draggable
+              draggable={!scheduling}
               className={`fridgeObject fridgeObject-${plan.type}${selected ? " selected" : ""}`}
               onDragStart={(event) => {
                 event.dataTransfer.setData("text/arc-plan", plan.id);
@@ -81,12 +85,29 @@ export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, on
               {course && <small><span style={{ background: course.color }} />{course.name}</small>}
               {(plan.notes || plan.resources.length > 0 || Object.keys(plan.details).length > 0 || plan.taskContext) && <span className="retainedDataFlag">More info retained</span>}
 
-              {selected && (
+              {selected && !scheduling && (
                 <div className="fridgeObjectActions" role="toolbar" aria-label={`Move ${plan.title}`}>
+                  <button type="button" onClick={(event) => { event.stopPropagation(); setSchedulingId(plan.id); }}>Schedule…</button>
                   <button type="button" onClick={(event) => { event.stopPropagation(); onMoveToTaskBar(plan.id, "must"); }}>Must</button>
                   <button type="button" onClick={(event) => { event.stopPropagation(); onMoveToTaskBar(plan.id, "should"); }}>Should</button>
                   <button type="button" onClick={(event) => { event.stopPropagation(); onMoveToTaskBar(plan.id, "could"); }}>Could</button>
                   <button type="button" className="dangerAction" onClick={(event) => { event.stopPropagation(); onDelete(plan.id); }}>Delete</button>
+                </div>
+              )}
+
+              {scheduling && (
+                <div onClick={(event) => event.stopPropagation()}>
+                  <ScheduleObjectPopover
+                    title={plan.title}
+                    courses={courses}
+                    initialCourseId={plan.courseId}
+                    initialDate={plan.date}
+                    onCancel={() => setSchedulingId(null)}
+                    onSchedule={(date, courseId) => {
+                      onSchedule(plan.id, date, courseId);
+                      setSchedulingId(null);
+                    }}
+                  />
                 </div>
               )}
             </article>
