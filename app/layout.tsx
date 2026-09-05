@@ -13,6 +13,7 @@ import "./reconciled-shell.css";
 import "./fridge-actions.css";
 import "./schedule-popover.css";
 import "./calendar-object-details.css";
+import "./day-live.css";
 
 export const metadata: Metadata = {
   title: "Arc",
