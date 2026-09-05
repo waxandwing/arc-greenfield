@@ -14,21 +14,23 @@ const payload = await response.json()
 if (payload?.error) throw new Error(`NCES live smoke provider error: ${payload.error.message ?? 'unknown error'}`)
 if (!Array.isArray(payload?.features)) throw new Error('NCES live smoke response omitted features')
 
-const match = payload.features
-  .map((feature) => feature?.attributes)
-  .find((attributes) => {
-    const school = String(attributes?.SCH_NAME ?? '').toUpperCase()
-    const city = String(attributes?.LCITY ?? '').toUpperCase()
-    const state = String(attributes?.LSTATE ?? '').toUpperCase()
-    const district = String(attributes?.LEA_NAME ?? '').toUpperCase()
-    return school === 'OAK RIDGE HIGH'
-      && city === 'ORLANDO'
-      && state === 'FL'
-      && district === 'ORANGE'
-  })
+const candidates = payload.features.map((feature) => feature?.attributes)
+const match = candidates.find((attributes) => {
+  const school = String(attributes?.SCH_NAME ?? '').trim().toUpperCase()
+  const city = String(attributes?.LCITY ?? '').trim().toUpperCase()
+  const state = String(attributes?.LSTATE ?? '').trim().toUpperCase()
+  const district = String(attributes?.LEA_NAME ?? '').trim().toUpperCase()
+  return school === 'OAK RIDGE HIGH'
+    && city === 'ORLANDO'
+    && state === 'FL'
+    && district === 'ORANGE'
+})
 
-if (!match) throw new Error('NCES live smoke did not return the expected Orlando Oak Ridge public-school identity')
-if (String(match.NCESSCH ?? '') !== '120144001406') throw new Error(`NCES live smoke returned unexpected Oak Ridge school ID: ${match.NCESSCH ?? 'missing'}`)
-if (String(match.LEAID ?? '') !== '1201440') throw new Error(`NCES live smoke returned unexpected Orange agency ID: ${match.LEAID ?? 'missing'}`)
+if (!match) {
+  console.error('NCES live smoke candidates:', JSON.stringify(candidates, null, 2))
+  throw new Error('NCES live smoke did not return the expected Orlando Oak Ridge public-school identity')
+}
+if (String(match.NCESSCH ?? '').trim() !== '120144001406') throw new Error(`NCES live smoke returned unexpected Oak Ridge school ID: ${match.NCESSCH ?? 'missing'}`)
+if (String(match.LEAID ?? '').trim() !== '1201440') throw new Error(`NCES live smoke returned unexpected Orange agency ID: ${match.LEAID ?? 'missing'}`)
 
 console.log(`NCES live smoke passed: ${match.SCH_NAME} · ${match.LEA_NAME} · ${match.NCESSCH}`)
