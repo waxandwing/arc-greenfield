@@ -25,6 +25,25 @@
 .school-identity-selection{max-width:720px;padding:var(--space-4) 0 0;border-top:1px solid var(--line-strong)}
 .school-identity-selection>strong{display:block;margin:3px 0;font:600 20px/1.2 var(--font-editorial)}
 .school-identity-selection p{margin:3px 0;color:var(--soft-charcoal)}
+
+.official-calendar-source{display:grid;gap:var(--space-4);max-width:820px;padding:var(--space-5) 0 0;border-top:1px solid var(--line-subtle)}
+.official-calendar-source-heading{max-width:720px}
+.official-calendar-source-heading h4{margin:5px 0 7px;font:600 20px/1.2 var(--font-editorial);letter-spacing:-.012em}
+.official-calendar-source-heading>p:last-child{margin:0;color:var(--soft-charcoal)}
+.official-calendar-source-form{display:grid;gap:var(--space-4)}
+.official-calendar-source-fields{display:grid;grid-template-columns:1.35fr 1fr;gap:var(--space-3)}
+.official-calendar-source-fields label{display:grid;gap:6px;font-weight:650}
+.official-calendar-source-fields label>span{font-size:14px;color:var(--soft-charcoal)}
+.official-calendar-source-confirm{display:flex;align-items:flex-start;gap:10px;max-width:680px;font-size:14px;font-weight:650}
+.official-calendar-source-confirm input{flex:0 0 auto;min-height:0;margin-top:3px}
+.official-calendar-source-actions{display:flex;align-items:center;gap:var(--space-4)}
+.official-calendar-source-actions p{max-width:520px;margin:0;font-size:14px;color:var(--soft-charcoal)}
+.official-calendar-source-error{max-width:720px;border-left:4px solid var(--terracotta);padding:var(--space-3) var(--space-4)}
+.official-calendar-source-error p{margin:4px 0 0;color:var(--soft-charcoal)}
+.official-calendar-source-held{max-width:720px;padding:var(--space-4) 0 0;border-top:1px solid var(--line-strong)}
+.official-calendar-source-held>strong{display:block;margin:3px 0;font:600 19px/1.2 var(--font-editorial)}
+.official-calendar-source-held p{margin:4px 0;color:var(--soft-charcoal)}
+.official-calendar-source-held a{display:inline-block;margin-top:4px;color:var(--ink);font-weight:750;text-underline-offset:3px}
 .manual-calendar-divider{max-width:720px;padding-top:var(--space-2)}
 
 @media (max-width:800px){
@@ -34,8 +53,8 @@
 
 @media (max-width:520px){
   .school-identity-search{padding-block:var(--space-4) var(--space-6)}
-  .school-identity-fields{grid-template-columns:1fr}
+  .school-identity-fields,.official-calendar-source-fields{grid-template-columns:1fr}
   .school-identity-fields label:first-child,.school-identity-fields label:last-child{grid-column:auto}
-  .school-identity-search-action,.school-identity-candidate{display:flex;align-items:stretch;flex-direction:column}
-  .school-identity-search-action .primary-button,.school-identity-candidate button{width:100%}
+  .school-identity-search-action,.school-identity-candidate,.official-calendar-source-actions{display:flex;align-items:stretch;flex-direction:column}
+  .school-identity-search-action .primary-button,.school-identity-candidate button,.official-calendar-source-actions .primary-button{width:100%}
 }

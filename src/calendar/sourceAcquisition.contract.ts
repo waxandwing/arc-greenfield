@@ -1,5 +1,6 @@
 import {
   buildProposalFromOfficialPayload,
+  buildTeacherConfirmedCalendarSourceCandidate,
   normalizeOfficialCalendarSourceSearchResult,
   normalizeOfficialSourceSearchResult,
   normalizeSchoolIdentityQuery,
@@ -88,6 +89,47 @@ assert(malformedCalendarSource.status === 'invalid', 'Calendar source without a 
 
 const duplicateCalendarSource = normalizeOfficialCalendarSourceSearchResult({ candidates: [calendarSourceA, { ...calendarSourceA }] })
 assert(duplicateCalendarSource.status === 'invalid', 'Duplicate calendar source identity must fail closed.')
+
+let unconfirmedSourceRejected = false
+try {
+  buildTeacherConfirmedCalendarSourceCandidate(candidateA, {
+    label: '2026–27 district calendar',
+    publisher: 'Orange County Public Schools',
+    locator: 'https://www.ocps.net/calendar#school-year',
+    kind: 'district-calendar-page',
+    confirmedOfficial: false,
+  })
+} catch {
+  unconfirmedSourceRejected = true
+}
+assert(unconfirmedSourceRejected, 'Teacher URL handoff must not create an official source without explicit confirmation.')
+
+let invalidSourceUrlRejected = false
+try {
+  buildTeacherConfirmedCalendarSourceCandidate(candidateA, {
+    label: '2026–27 district calendar',
+    publisher: 'Orange County Public Schools',
+    locator: 'javascript:alert(1)',
+    kind: 'district-calendar-page',
+    confirmedOfficial: true,
+  })
+} catch {
+  invalidSourceUrlRejected = true
+}
+assert(invalidSourceUrlRejected, 'Teacher-confirmed source must reject non-HTTP(S) locators.')
+
+const teacherConfirmedSource = buildTeacherConfirmedCalendarSourceCandidate(candidateA, {
+  label: '  2026–27 district calendar  ',
+  publisher: '  Orange County Public Schools ',
+  locator: 'https://www.ocps.net/calendar#school-year',
+  kind: 'district-calendar-page',
+  confirmedOfficial: true,
+})
+assert(teacherConfirmedSource.schoolCandidateId === candidateA.id, 'Teacher-confirmed source must remain tied to the selected school identity.')
+assert(teacherConfirmedSource.label === '2026–27 district calendar', 'Teacher-confirmed source label should be normalized.')
+assert(teacherConfirmedSource.publisher === 'Orange County Public Schools', 'Teacher-confirmed source publisher should be normalized.')
+assert(teacherConfirmedSource.locator === 'https://www.ocps.net/calendar', 'Teacher-confirmed source locator should normalize and drop non-provenance fragments.')
+assert(teacherConfirmedSource.confidence === 'confirmed', 'Explicit teacher confirmation should create confirmed source identity, not inferred source identity.')
 
 const proposal = buildProposalFromOfficialPayload(candidateA, calendarSourceA, {
   candidateId: candidateA.id,

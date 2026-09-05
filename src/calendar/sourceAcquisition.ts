@@ -45,6 +45,14 @@ export type OfficialCalendarSourceSearchResult =
   | { status: 'candidates'; candidates: OfficialCalendarSourceCandidate[] }
   | { status: 'invalid'; candidates: []; message: string }
 
+export type TeacherConfirmedCalendarSourceDraft = {
+  label: string
+  publisher: string
+  locator: string
+  kind: OfficialCalendarSourceKind
+  confirmedOfficial: boolean
+}
+
 export type OfficialCalendarPayload = {
   candidateId: string
   calendarSourceId: string
@@ -126,6 +134,33 @@ export function normalizeOfficialCalendarSourceSearchResult(value: unknown): Off
   }
 
   return { status: 'candidates', candidates }
+}
+
+export function buildTeacherConfirmedCalendarSourceCandidate(
+  schoolCandidate: OfficialSourceCandidate,
+  draft: TeacherConfirmedCalendarSourceDraft,
+): OfficialCalendarSourceCandidate {
+  if (!draft.confirmedOfficial) {
+    throw new Error('Confirm that this link comes from the official school or district before Arc uses it as a calendar source.')
+  }
+
+  const label = draft.label.trim()
+  const publisher = draft.publisher.trim()
+  const locator = normalizeTrustedHttpLocator(draft.locator)
+  if (!label) throw new Error('Give the official calendar source a label.')
+  if (!publisher) throw new Error('Name the school or district that publishes this calendar source.')
+  if (!locator) throw new Error('Use a valid public HTTP(S) link for the official calendar source.')
+  if (!isCalendarSourceKind(draft.kind)) throw new Error('Choose what kind of official calendar source this is.')
+
+  return {
+    id: `teacher-confirmed:${schoolCandidate.id}:${locator}`,
+    schoolCandidateId: schoolCandidate.id,
+    label,
+    publisher,
+    locator,
+    kind: draft.kind,
+    confidence: 'confirmed',
+  }
 }
 
 export function buildProposalFromOfficialPayload(
@@ -226,11 +261,18 @@ function isConfidence(value: unknown): value is OfficialSourceCandidate['confide
 }
 
 function isTrustedHttpLocator(value: string): boolean {
+  return normalizeTrustedHttpLocator(value) !== null
+}
+
+function normalizeTrustedHttpLocator(value: string): string | null {
   try {
     const url = new URL(value.trim())
-    return url.protocol === 'https:' || url.protocol === 'http:'
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
+    if (url.username || url.password) return null
+    url.hash = ''
+    return url.href
   } catch {
-    return false
+    return null
   }
 }
 

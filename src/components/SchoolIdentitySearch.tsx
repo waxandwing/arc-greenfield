@@ -4,6 +4,7 @@ import {
   type OfficialSourceCandidate,
   type OfficialSourceSearchResult,
 } from '../calendar'
+import { OfficialCalendarSourceInput } from './OfficialCalendarSourceInput'
 
 type SearchState =
   | { status: 'idle' }
@@ -137,12 +138,15 @@ export function SchoolIdentitySearch() {
       )}
 
       {selected && (
-        <div className="school-identity-selection" role="status" aria-label="Selected official school identity">
-          <p className="section-label">School identity selected</p>
-          <strong>{selected.schoolName}</strong>
-          <p>{selected.districtName ?? 'District not listed'}{selected.locality ? ` · ${selected.locality}` : ''}</p>
-          <p>Nothing has been added to your calendar. Next, Arc needs the school or district’s official calendar before it can propose dates for review.</p>
-        </div>
+        <>
+          <div className="school-identity-selection" role="status" aria-label="Selected official school identity">
+            <p className="section-label">School identity selected</p>
+            <strong>{selected.schoolName}</strong>
+            <p>{selected.districtName ?? 'District not listed'}{selected.locality ? ` · ${selected.locality}` : ''}</p>
+            <p>Nothing has been added to your calendar. Next, Arc needs the school or district’s official calendar before it can propose dates for review.</p>
+          </div>
+          <OfficialCalendarSourceInput key={selected.id} school={selected} />
+        </>
       )}
     </section>
   )
