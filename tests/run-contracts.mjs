@@ -9,6 +9,7 @@ const contracts = [
   'tests/generated/src/calendar/persistence.contract.js',
   'tests/generated/src/calendar/navigation.contract.js',
   'tests/generated/src/calendar/manualSetup.contract.js',
+  'tests/generated/src/calendar/calendarProposal.contract.js',
   'tests/generated/src/calendar/terms.contract.js',
   'tests/generated/src/planning/courses.contract.js',
   'tests/generated/src/planning/units.contract.js',
