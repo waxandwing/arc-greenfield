@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import {
+  compareISODate,
   currentLocalISODate,
   findContainingBoundary,
   hydrateSchoolCalendar,
@@ -93,12 +94,21 @@ export function useArcWorkspace(onCloseMode: () => void) {
       return
     }
 
+    const nextAnchor = anchorDate
+      && compareISODate(anchorDate, nextCalendar.firstDay) >= 0
+      && compareISODate(anchorDate, nextCalendar.lastDay) <= 0
+      ? anchorDate
+      : nextCalendar.firstDay
+    let nextView = activeView
+    if (nextView === 'Quarter' && !findContainingBoundary(nextCalendar.quarters, nextAnchor)) nextView = DEFAULT_HOME_VIEW
+    if (nextView === 'Semester' && !findContainingBoundary(nextCalendar.semesters, nextAnchor)) nextView = DEFAULT_HOME_VIEW
+
     const calendarPersisted = saveCalendarToBrowser(input)
     const shiftPersisted = persistReconciledShift(shift.next)
     setCalendar(nextCalendar)
     setCalendarInput(input)
-    setAnchorDate(nextCalendar.firstDay)
-    setActiveView(DEFAULT_HOME_VIEW)
+    setAnchorDate(nextAnchor)
+    setActiveView(nextView)
     onCloseMode()
     if (!calendarPersisted || !shiftPersisted) setStorageNotice('This change is active for this session, but Arc could not save all related planning state in this browser.')
     else if (shift.undoDropped) setStorageNotice('Calendar updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
