@@ -44,6 +44,7 @@ type WorkspaceStageProps = {
   onApplyRecoveryShift: (operation: ShiftOperation) => string | null
   onCloseMode: () => void
   onLaunchLive?: (sectionId: string, lessonId: string) => void
+  dayFocusSectionId?: string | null
 }
 
 export function WorkspaceStage(props: WorkspaceStageProps) {
@@ -72,6 +73,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onApplyRecoveryShift,
     onCloseMode,
     onLaunchLive,
+    dayFocusSectionId,
   } = props
 
   const needsCalendarSetup = !calendar || !anchorDate || mode === 'calendar-setup'
@@ -163,6 +165,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       anchorDate={anchorDate}
       planningContext={planningContext}
       onLaunchLive={onLaunchLive}
+      dayFocusSectionId={dayFocusSectionId}
     />
   )
 }
