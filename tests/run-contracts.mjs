@@ -4,6 +4,7 @@ import { spawnSync } from 'node:child_process'
 
 const contracts = [
   'tests/generated/tests/calendar.contract.js',
+  'tests/generated/tests/homeViewPreference.contract.js',
   'tests/generated/src/calendar/projections.contract.js',
   'tests/generated/src/calendar/hydration.contract.js',
   'tests/generated/src/calendar/persistence.contract.js',
