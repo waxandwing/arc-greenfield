@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { emptyWorkspace, type PriorityTier, type TaskContext, type Workspace } from "./domain";
-import { migrateLegacyPriorities, moveObjectToCalendar, moveObjectToFridge, moveObjectToTaskBar, updateTaskContext, type ArcPlanningObject } from "./object-lifecycle";
+import { migrateLegacyPriorities, moveObjectToTaskBar, updateTaskContext } from "./object-lifecycle";
+import { movePlanToCalendarDate } from "./plan-operations";
+import { collectPlanTree, movePlanTreeToIdeas } from "./plan-tree";
 import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "./workspace-history";
 import { loadWorkspace, saveWorkspace } from "./workspace-store";
 
@@ -20,13 +22,6 @@ export type ArcStore = {
   undo: () => void;
   redo: () => void;
 };
-
-function replacePlan(workspace: Workspace, id: string, updater: (plan: ArcPlanningObject) => ArcPlanningObject): Workspace {
-  return {
-    ...workspace,
-    plans: workspace.plans.map((plan) => plan.id === id ? updater(plan as ArcPlanningObject) : plan)
-  };
-}
 
 function persist(history: WorkspaceHistory): string | null {
   if (typeof window === "undefined") return null;
@@ -70,19 +65,37 @@ export const useArcStore = create<ArcStore>((set, get) => ({
   },
 
   sendToFridge(id) {
-    get().commit((workspace) => replacePlan(workspace, id, moveObjectToFridge));
+    get().commit((workspace) => ({
+      ...workspace,
+      plans: movePlanTreeToIdeas(workspace.plans, id)
+    }));
   },
 
   sendToTaskBar(id, tier) {
-    get().commit((workspace) => replacePlan(workspace, id, (plan) => moveObjectToTaskBar(plan, tier)));
+    get().commit((workspace) => {
+      const treeIds = new Set(collectPlanTree(workspace.plans, id).map((plan) => plan.id));
+      return {
+        ...workspace,
+        plans: workspace.plans.map((plan) => treeIds.has(plan.id) ? moveObjectToTaskBar(plan, tier) : plan)
+      };
+    });
   },
 
   scheduleObject(id, date, courseId) {
-    get().commit((workspace) => replacePlan(workspace, id, (plan) => moveObjectToCalendar(plan, { date, courseId })));
+    // Scheduling without a class is not a valid calendar placement. More
+    // importantly, the guarded movement engine owns fixed-date protection.
+    if (!courseId) return;
+    get().commit((workspace) => ({
+      ...workspace,
+      plans: movePlanToCalendarDate(workspace.plans, id, date, courseId)
+    }));
   },
 
   patchTaskContext(id, patch) {
-    get().commit((workspace) => replacePlan(workspace, id, (plan) => updateTaskContext(plan, patch)));
+    get().commit((workspace) => ({
+      ...workspace,
+      plans: workspace.plans.map((plan) => plan.id === id ? updateTaskContext(plan, patch) : plan)
+    }));
   },
 
   undo() {
