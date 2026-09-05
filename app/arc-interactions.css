@@ -113,7 +113,6 @@
   border: 1px solid rgba(38,51,58,.12);
 }
 
-/* v23.4 recovery: Unit creation is a class-level planning action. */
 .classUnitAdd {
   margin-top: 7px;
   min-height: 28px;
