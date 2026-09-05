@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { type Plan, type PlanType, type PriorityTier, type TaskContext } from "../lib/domain";
 import { applyCut, createClipboard, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
 import { dateKey, weekDisplayDates } from "../lib/calendar-display";
@@ -60,6 +60,8 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   const [pasteTarget, setPasteTarget] = useState<PasteTarget | null>(null);
   const [fridgeOpen, setFridgeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const fridgePullRef = useRef<HTMLButtonElement | null>(null);
+  const settingsPullRef = useRef<HTMLButtonElement | null>(null);
 
   const days = useMemo(() => weekDisplayDates(weekAnchor, workspace.calendar.weekendsVisible), [weekAnchor, workspace.calendar.weekendsVisible]);
   const weekLabel = days.length ? `${days[0].month} ${days[0].number} – ${days[days.length - 1].month} ${days[days.length - 1].number}` : "Week";
@@ -147,6 +149,14 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   }
 
   function deletePlan(id: string) {
+    const tree = collectPlanTree(workspace.plans, id);
+    const root = tree.find((plan) => plan.id === id);
+    if (!root) return;
+    const attachedCount = Math.max(0, tree.length - 1);
+    const consequence = attachedCount
+      ? `Delete “${root.title}” and ${attachedCount} attached ${attachedCount === 1 ? "item" : "items"}? This cannot be undone after the Undo history is cleared.`
+      : `Delete “${root.title}”? This removes the object rather than putting it back in the Fridge.`;
+    if (typeof window !== "undefined" && !window.confirm(consequence)) return;
     updateWorkspace((current) => ({ ...current, plans: deletePlanTree(current.plans, id) }));
     if (selectedPlanId === id) selectObject(null);
   }
@@ -236,13 +246,23 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     if (currentQuarterIndex >= 0) setQuarterIndex(currentQuarterIndex);
   }
 
-  function openFridge() {
+  function closeFridge() {
+    setFridgeOpen(false);
+    window.requestAnimationFrame(() => fridgePullRef.current?.focus());
+  }
+
+  function closeSettings() {
     setSettingsOpen(false);
+    window.requestAnimationFrame(() => settingsPullRef.current?.focus());
+  }
+
+  function openFridge() {
+    if (settingsOpen) setSettingsOpen(false);
     setFridgeOpen(true);
   }
 
   function openSettings() {
-    setFridgeOpen(false);
+    if (fridgeOpen) setFridgeOpen(false);
     setSettingsOpen(true);
   }
 
@@ -252,9 +272,9 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
       if (!action) return;
       if (isTypingTarget(event.target) && action !== "escape") return;
       if (action === "escape") {
+        if (fridgeOpen) { closeFridge(); return; }
+        if (settingsOpen) { closeSettings(); return; }
         selectObject(null);
-        setFridgeOpen(false);
-        setSettingsOpen(false);
         return;
       }
       if (action === "undo") { event.preventDefault(); undo(); return; }
@@ -290,8 +310,8 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
         </div>
 
         <div className="plannerStage">
-          <button type="button" className="edgePullTab settingsPullTab" onClick={openSettings} aria-expanded={settingsOpen}>Settings</button>
-          <SettingsDrawer open={settingsOpen} weekendsVisible={workspace.calendar.weekendsVisible} onClose={() => setSettingsOpen(false)} onToggleWeekends={toggleWeekends} onOpenSetup={onOpenSetup} />
+          <button ref={settingsPullRef} type="button" className="edgePullTab settingsPullTab" onClick={openSettings} aria-expanded={settingsOpen}>Settings</button>
+          <SettingsDrawer open={settingsOpen} weekendsVisible={workspace.calendar.weekendsVisible} onClose={closeSettings} onToggleWeekends={toggleWeekends} onOpenSetup={onOpenSetup} />
 
           <section className="calendarDesk canonicalCalendarDesk" aria-label={`${activeView} planning workspace`}>
             {activeView === "week" && <WeekPlanner workspace={workspace} days={days} weekLabel={weekLabel} selectedPlanId={selectedPlanId} pasteTarget={pasteTarget} onSelectPlan={selectPlan} onSelectDate={(courseId, date) => setPasteTarget({ courseId, date, location: "calendar" })} onMovePlan={movePlanToDate} onRenamePlan={renamePlan} onPatchPlan={patchPlan} onAddPlan={(title, type, courseId, date) => addPlan(title, type, courseId, date, "calendar")} onAddChildLesson={addChildLesson} onToggleUnit={toggleUnit} onDeletePlan={deletePlan} onReturnToIdeas={putPlanInFridge} />}
@@ -299,8 +319,8 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
             {activeView === "quarter" && activeQuarter && selectedCourseId && <QuarterView workspace={workspace} range={activeQuarter} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} onAddPlan={(title, type, date) => addPlan(title, type, selectedCourseId, date, "calendar")} />}
           </section>
 
-          <button type="button" className="edgePullTab fridgePullTab" onClick={openFridge} aria-expanded={fridgeOpen}>Fridge</button>
-          <FridgeDrawer open={fridgeOpen} plans={workspace.plans} courses={workspace.courses} selectedPlanId={selectedPlanId} onClose={() => setFridgeOpen(false)} onCreate={addFridgeObject} onSelect={selectPlan} onDelete={deletePlan} onMoveToTaskBar={movePlanToTaskTier} onDropObject={putPlanInFridge} onSchedule={movePlanToDate} />
+          <button ref={fridgePullRef} type="button" className="edgePullTab fridgePullTab" onClick={openFridge} aria-expanded={fridgeOpen}>Fridge</button>
+          <FridgeDrawer open={fridgeOpen} plans={workspace.plans} courses={workspace.courses} selectedPlanId={selectedPlanId} onClose={closeFridge} onCreate={addFridgeObject} onSelect={selectPlan} onDelete={deletePlan} onMoveToTaskBar={movePlanToTaskTier} onDropObject={putPlanInFridge} onSchedule={movePlanToDate} />
         </div>
 
         <TaskBar plans={workspace.plans} courses={workspace.courses} onCreate={addTaskObject} onMoveTier={movePlanToTaskTier} onUpdateTask={patchTaskContext} onPutInFridge={putPlanInFridge} onSchedule={movePlanToDate} onSelect={selectPlan} />
