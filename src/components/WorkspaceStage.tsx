@@ -43,6 +43,7 @@ type WorkspaceStageProps = {
   onUseLessons: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => void
   onApplyRecoveryShift: (operation: ShiftOperation) => string | null
   onCloseMode: () => void
+  onLaunchLive?: (sectionId: string, lessonId: string) => void
 }
 
 export function WorkspaceStage(props: WorkspaceStageProps) {
@@ -70,6 +71,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onUseLessons,
     onApplyRecoveryShift,
     onCloseMode,
+    onLaunchLive,
   } = props
 
   const needsCalendarSetup = !calendar || !anchorDate || mode === 'calendar-setup'
@@ -160,6 +162,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       calendar={calendar}
       anchorDate={anchorDate}
       planningContext={planningContext}
+      onLaunchLive={onLaunchLive}
     />
   )
 }
