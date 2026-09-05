@@ -28,9 +28,9 @@ async function run() {
     features: [
       {
         attributes: {
-          NCESSCH: '120144001429',
+          NCESSCH: '120144001406',
           LEAID: '1201440',
-          LEA_NAME: 'Orange County Public Schools',
+          LEA_NAME: 'Orange',
           SCH_NAME: 'Oak Ridge High',
           LSTREET1: '700 W Oak Ridge Rd',
           LCITY: 'Orlando',
@@ -50,11 +50,11 @@ async function run() {
   assert(found.status === 'candidates' && found.candidates.length === 1, 'Valid NCES response must return a candidate.')
   if (found.status === 'candidates') {
     const candidate = found.candidates[0]
-    assert(candidate.id === 'nces:120144001429', 'Candidate identity must use stable NCES school ID.')
+    assert(candidate.id === 'nces:120144001406', 'Candidate identity must use stable NCES school ID.')
     assert(candidate.schoolName === 'Oak Ridge High', 'Candidate must retain NCES school name.')
-    assert(candidate.districtName === 'Orange County Public Schools', 'Candidate must retain NCES district identity.')
+    assert(candidate.districtName === 'Orange', 'Candidate must retain the NCES agency identity exactly as supplied.')
     assert(candidate.locality === 'Orlando, FL, 32809', 'Candidate must retain locality for teacher disambiguation.')
-    assert(candidate.sourceLocator.endsWith('ID=120144001429'), 'Candidate must expose a stable official NCES detail locator.')
+    assert(candidate.sourceLocator.endsWith('ID=120144001406'), 'Candidate must expose a stable official NCES detail locator.')
     assert(candidate.confidence === 'confirmed', 'NCES directory identity should be treated as confirmed identity evidence, not calendar-date evidence.')
   }
 
