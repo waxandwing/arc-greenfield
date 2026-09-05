@@ -19,6 +19,10 @@ type Props = {
   onSchedule: (id: string, date: string, courseId: string) => void;
 };
 
+function restoreFridgeObjectFocus(id: string) {
+  window.requestAnimationFrame(() => document.getElementById(`fridge-object-${id}`)?.focus());
+}
+
 export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, onCreate, onSelect, onDelete, onMoveToTaskBar, onDropObject, onSchedule }: Props) {
   const [draft, setDraft] = useState("");
   const [type, setType] = useState<"note" | "lesson" | "unit">("note");
@@ -29,6 +33,11 @@ export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, on
     if (!draft.trim()) return;
     onCreate(draft.trim(), type);
     setDraft("");
+  }
+
+  function closeScheduling(id: string) {
+    setSchedulingId(null);
+    restoreFridgeObjectFocus(id);
   }
 
   return (
@@ -69,6 +78,7 @@ export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, on
           const scheduling = schedulingId === plan.id;
           return (
             <article
+              id={`fridge-object-${plan.id}`}
               key={plan.id}
               draggable={!scheduling}
               className={`fridgeObject fridgeObject-${plan.type}${selected ? " selected" : ""}`}
@@ -78,7 +88,7 @@ export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, on
               }}
               onClick={() => onSelect(plan)}
               tabIndex={0}
-              onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(plan); } }}
+              onKeyDown={(event) => { if ((event.key === "Enter" || event.key === " ") && !scheduling) { event.preventDefault(); onSelect(plan); } }}
             >
               <div className="fridgeObjectType">{plan.type === "note" ? "Idea / Note" : plan.type === "lesson" ? "Lesson" : "Unit"}</div>
               <strong>{plan.title}</strong>
@@ -102,7 +112,7 @@ export function FridgeDrawer({ open, plans, courses, selectedPlanId, onClose, on
                     courses={courses}
                     initialCourseId={plan.courseId}
                     initialDate={plan.date}
-                    onCancel={() => setSchedulingId(null)}
+                    onCancel={() => closeScheduling(plan.id)}
                     onSchedule={(date, courseId) => {
                       onSchedule(plan.id, date, courseId);
                       setSchedulingId(null);
