@@ -188,7 +188,7 @@ async function auditReducedMotion(browser) {
   const page = await context.newPage()
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   assert(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches), 'Reduced motion preference was not exposed to Arc.')
-  const timing = await page.locator('.primary-button').evaluate((node) => {
+  const timing = await page.getByRole('button', { name: 'Use this calendar' }).evaluate((node) => {
     const style = getComputedStyle(node)
     const max = (value) => Math.max(...value.split(',').map((item) => parseFloat(item) || 0))
     return { animation: max(style.animationDuration), transition: max(style.transitionDuration) }
