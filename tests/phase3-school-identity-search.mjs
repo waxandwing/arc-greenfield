@@ -32,12 +32,16 @@ let interceptedSearches = 0
 
 await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWith('/MapServer/1/query'), async (route) => {
   interceptedSearches += 1
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+  }
   if (responseMode === 'error') {
-    await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'fixture outage' }) })
+    await route.fulfill({ status: 503, headers, body: JSON.stringify({ error: 'fixture outage' }) })
     return
   }
   const payload = responseMode === 'none' ? { features: [] } : candidatesPayload
-  await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(payload) })
+  await route.fulfill({ status: 200, headers, body: JSON.stringify(payload) })
 })
 
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
