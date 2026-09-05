@@ -22,6 +22,7 @@ import type {
 type WorkspaceStageProps = {
   mode: WorkspaceMode
   activeView: CalendarView
+  showWeekends: boolean
   calendar: SchoolCalendar | null
   calendarInput: CalendarHydrationInput | null
   anchorDate: ISODate | null
@@ -48,6 +49,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
   const {
     mode,
     activeView,
+    showWeekends,
     calendar,
     calendarInput,
     anchorDate,
@@ -154,6 +156,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
   return (
     <CalendarProjectionView
       view={activeView}
+      showWeekends={showWeekends}
       calendar={calendar}
       anchorDate={anchorDate}
       planningContext={planningContext}
