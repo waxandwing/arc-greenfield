@@ -39,7 +39,7 @@ export function SourceCalendarReview({ input }: Props) {
       </dl>
 
       {evidence.length > 0 && (
-        <div className="source-calendar-evidence" aria-label="Calendar source evidence">
+        <section className="source-calendar-evidence" aria-label="Calendar source evidence">
           <p className="source-calendar-kicker">Evidence</p>
           <ul>
             {evidence.map((item) => (
@@ -49,10 +49,10 @@ export function SourceCalendarReview({ input }: Props) {
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
 
-      <div className="source-calendar-miniature" aria-label="Miniature school calendar preview">
+      <section className="source-calendar-miniature" aria-label="Miniature school calendar preview">
         <div className="source-calendar-miniature-heading">
           <div>
             <p className="source-calendar-kicker">Mini calendar</p>
@@ -63,9 +63,9 @@ export function SourceCalendarReview({ input }: Props) {
         <div className="source-calendar-weekdays" aria-hidden="true">
           {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
         </div>
-        <div className="source-calendar-grid">
+        <div className="source-calendar-grid" role="grid" aria-label="First five school-calendar weeks">
           {previewCells.map((date, index) => {
-            if (!date) return <span key={`blank-${index}`} className="source-calendar-day is-blank" aria-hidden="true" />
+            if (!date) return <span key={`blank-${index}`} className="source-calendar-day is-blank" role="presentation" />
             const day = calendar.days[date]
             const dateNumber = Number(date.slice(-2))
             const label = `${date}: ${day.kind}${day.label ? `, ${day.label}` : ''}${day.confidence ? `, ${day.confidence}` : ''}`
@@ -73,6 +73,7 @@ export function SourceCalendarReview({ input }: Props) {
               <span
                 key={date}
                 className={`source-calendar-day is-${day.kind}${day.confidence && day.confidence !== 'confirmed' ? ' is-uncertain' : ''}`}
+                role="gridcell"
                 aria-label={label}
                 title={label}
               >
@@ -81,7 +82,7 @@ export function SourceCalendarReview({ input }: Props) {
             )
           })}
         </div>
-      </div>
+      </section>
     </section>
   )
 }
