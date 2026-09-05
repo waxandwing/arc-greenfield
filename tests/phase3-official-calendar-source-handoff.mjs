@@ -84,7 +84,7 @@ await sourceAlert.waitFor({ state: 'visible' })
 assert((await sourceAlert.textContent())?.includes('valid public HTTP(S) link'), 'Non-HTTP(S) calendar source did not fail closed.')
 
 await page.getByLabel('Official calendar link', { exact: true }).fill('https://district.example.invalid/2026-27-calendar.pdf#page=1')
-await page.getByLabel('Source type', { exact: true }).selectOption('district-calendar-document')
+await page.locator('#official-calendar-source-kind').selectOption('district-calendar-document')
 await page.getByRole('button', { name: 'Hold this source' }).focus()
 await page.keyboard.press('Enter')
 const held = page.getByRole('status', { name: 'Teacher-confirmed official calendar source' })
