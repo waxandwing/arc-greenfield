@@ -1,0 +1,144 @@
+.workspaceRecoveryShell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
+  background: var(--paper, #f3ebdd);
+  color: var(--ink, #2c2e2e);
+}
+
+.workspaceRecoveryPaper {
+  width: min(680px, 100%);
+  padding: 36px 40px;
+  border: 1px solid rgba(44, 46, 46, .16);
+  border-radius: 12px;
+  background: rgba(255, 253, 248, .92);
+  box-shadow: 0 18px 44px rgba(44, 46, 46, .08);
+}
+
+.workspaceRecoveryPaper .eyebrow {
+  margin: 0 0 8px;
+  color: #c96845;
+  font-size: .68rem;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.workspaceRecoveryPaper h1 {
+  max-width: 15ch;
+  margin: 0;
+  font: 500 clamp(1.8rem, 4vw, 3rem)/1.05 Georgia, serif;
+}
+
+.workspaceRecoveryLead {
+  max-width: 58ch;
+  margin: 18px 0 0;
+  font-size: .94rem;
+  line-height: 1.6;
+}
+
+.workspaceRecoveryRule {
+  width: 72px;
+  height: 3px;
+  margin: 24px 0;
+  background: #e4b33d;
+}
+
+.workspaceRecoveryActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.workspaceRecoveryActions button,
+.workspaceRecoveryConfirm button {
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid rgba(44, 46, 46, .2);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.workspaceRecoveryActions .recoveryPrimary,
+.workspaceRecoveryConfirm > button:first-of-type {
+  border-color: #2c2e2e;
+  background: #2c2e2e;
+  color: white;
+}
+
+.workspaceRecoveryActions button:focus-visible,
+.workspaceRecoveryFresh button:focus-visible {
+  outline: 3px solid rgba(201, 104, 69, .45);
+  outline-offset: 3px;
+}
+
+.workspaceRecoveryNote {
+  margin: 12px 0 0;
+  color: #4a4945;
+  font-size: .72rem;
+  line-height: 1.5;
+}
+
+.workspaceRecoveryMessage {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #c96845;
+  background: rgba(201, 104, 69, .08);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.workspaceRecoveryFresh {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(44, 46, 46, .14);
+}
+
+.quietRecoveryAction {
+  min-height: 40px;
+  padding: 6px 0;
+  border: 0 !important;
+  background: transparent !important;
+  color: #4a4945 !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.workspaceRecoveryConfirm {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.workspaceRecoveryConfirm p {
+  flex: 1 1 100%;
+  margin: 0 0 4px;
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .workspaceRecoveryShell { padding: 20px 14px; }
+  .workspaceRecoveryPaper { padding: 28px 22px; }
+  .workspaceRecoveryActions { display: grid; }
+  .workspaceRecoveryActions button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspaceRecoveryShell *,
+  .workspaceRecoveryShell *::before,
+  .workspaceRecoveryShell *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
