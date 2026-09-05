@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import type { Plan, Workspace } from "../lib/domain";
 import { applyCut, createClipboard, cutBlocker, pasteClipboard } from "../lib/clipboard";
 import { shiftPlanTree } from "../lib/plan-tree";
+import { commitWorkspace, createWorkspaceHistory } from "../lib/workspace-history";
 
 function plan(overrides: Partial<Plan> & Pick<Plan, "id" | "title" | "type">): Plan {
   const { id, title, type, ...rest } = overrides;
@@ -121,4 +122,30 @@ test("Copy → Paste still creates new IDs because Copy is duplication, not move
   assert.notEqual(pasted.pastedRootId, lesson.id);
   assert.equal(pasted.nextClipboard, clipboard);
   assert.equal(pasted.workspace.plans.length, 2);
+});
+
+test("semantic no-op does not create a fake Undo step", () => {
+  const source = workspace([plan({ id: "lesson", title: "Narmer", type: "lesson" })]);
+  const history = createWorkspaceHistory(source);
+  const timestampOnly = { ...history.present, updatedAt: "2026-09-05T09:30:00.000Z" };
+  const next = commitWorkspace(history, timestampOnly);
+
+  assert.equal(next, history, "a timestamp-only save is not a planning mutation");
+  assert.equal(next.past.length, 0);
+  assert.equal(next.future.length, 0);
+});
+
+test("a real planning mutation still creates exactly one Undo step", () => {
+  const source = workspace([plan({ id: "lesson", title: "Narmer", type: "lesson" })]);
+  const history = createWorkspaceHistory(source);
+  const changed = {
+    ...history.present,
+    plans: history.present.plans.map((item) => item.id === "lesson" ? { ...item, title: "Palette of Narmer" } : item),
+    updatedAt: "2026-09-05T09:31:00.000Z"
+  };
+  const next = commitWorkspace(history, changed);
+
+  assert.notEqual(next, history);
+  assert.equal(next.past.length, 1);
+  assert.equal(next.present.plans[0].title, "Palette of Narmer");
 });
