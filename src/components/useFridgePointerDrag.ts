@@ -56,6 +56,16 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
 
     if (payload.kind === 'entity' && payload.source === 'drawer') {
       if (!doorTarget) return
+      if (cellTarget) {
+        const coordinates = readCellCoordinates(cellTarget)
+        if (!coordinates) {
+          handlers.onReject('Arc could not identify that Fridge Door position. Nothing changed.')
+          return
+        }
+        const result = handlers.onRepositionEntity(payload.entityRef, coordinates.row, coordinates.column)
+        if (result) handlers.onReject(result)
+        return
+      }
       const result = handlers.onBringBack(payload.entityRef)
       if (result) handlers.onReject(result)
       return
@@ -72,16 +82,15 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
     }
 
     if (!cellTarget) return
-    const row = Number(cellTarget.dataset.fridgeRow)
-    const column = Number(cellTarget.dataset.fridgeColumn)
-    if (!Number.isInteger(row) || !Number.isInteger(column)) {
+    const coordinates = readCellCoordinates(cellTarget)
+    if (!coordinates) {
       handlers.onReject('Arc could not identify that Fridge Door position. Nothing changed.')
       return
     }
 
     const result = payload.kind === 'stack'
-      ? handlers.onRepositionStack(payload.stackId, row, column)
-      : handlers.onRepositionEntity(payload.entityRef, row, column)
+      ? handlers.onRepositionStack(payload.stackId, coordinates.row, coordinates.column)
+      : handlers.onRepositionEntity(payload.entityRef, coordinates.row, coordinates.column)
     if (result) handlers.onReject(result)
   }
 
@@ -95,4 +104,10 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
     startEntity: (event: ReactPointerEvent<HTMLElement>, entityRef: FridgeEntityRef, source: 'door' | 'drawer') => start(event, { kind: 'entity', entityRef, source }),
     startStack: (event: ReactPointerEvent<HTMLElement>, stackId: string) => start(event, { kind: 'stack', stackId, source: 'door' }),
   }
+}
+
+function readCellCoordinates(cell: HTMLElement): { row: number; column: number } | null {
+  const row = Number(cell.dataset.fridgeRow)
+  const column = Number(cell.dataset.fridgeColumn)
+  return Number.isInteger(row) && Number.isInteger(column) ? { row, column } : null
 }
