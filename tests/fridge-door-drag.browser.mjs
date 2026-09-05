@@ -81,6 +81,32 @@ async function dragBetween(page, handle, target, label) {
   await page.waitForTimeout(40)
 }
 
+async function dragWithVerticalAutoScroll(page, handle, target, direction, label) {
+  const handleBox = await handle.boundingBox()
+  assert(handleBox, `${label}: drag handle has no rendered bounds.`)
+  const viewportHeight = await page.evaluate(() => window.innerHeight)
+  await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(handleBox.x + handleBox.width / 2, direction === 'down' ? viewportHeight - 8 : 8, { steps: 5 })
+
+  let visibleTarget = null
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    await page.waitForTimeout(50)
+    const box = await target.boundingBox()
+    if (box && box.y >= 0 && box.y + box.height <= viewportHeight) {
+      visibleTarget = box
+      break
+    }
+  }
+  if (!visibleTarget) {
+    await page.mouse.up()
+    throw new Error(`${label}: edge auto-scroll never brought the drop target into the viewport.`)
+  }
+  await page.mouse.move(visibleTarget.x + visibleTarget.width / 2, visibleTarget.y + visibleTarget.height / 2, { steps: 4 })
+  await page.mouse.up()
+  await page.waitForTimeout(40)
+}
+
 function placement(state, ref) {
   return state.placements.find((item) => item.entityRef === ref)
 }
@@ -133,7 +159,7 @@ async function auditDesktop(browser) {
   assert(await fridge.getByRole('status').getByText(/already occupied/i).isVisible(), 'desktop: occupied-cell rejection was not explained visibly.')
 
   const drawerSummary = page.locator('.fridge-drawer > summary')
-  await dragBetween(page, dragHandle(page.locator('[data-fridge-ref="magnet:move"]')), drawerSummary, 'desktop put away')
+  await dragWithVerticalAutoScroll(page, dragHandle(page.locator('[data-fridge-ref="magnet:move"]')), drawerSummary, 'down', 'desktop put away with auto-scroll')
   state = await storedFridge(page)
   move = placement(state, 'magnet:move')
   assert(move?.surface === 'drawer', 'desktop: Door-to-Drawer drag did not invoke Put Away.')
@@ -141,7 +167,7 @@ async function auditDesktop(browser) {
 
   const drawerMove = page.locator('.fridge-drawer-item[data-fridge-ref="magnet:move"]')
   const exactReturnCell = page.locator('.fridge-door-cell[data-fridge-row="2"][data-fridge-column="3"]')
-  await dragBetween(page, dragHandle(drawerMove), exactReturnCell, 'desktop exact drawer return')
+  await dragWithVerticalAutoScroll(page, dragHandle(drawerMove), exactReturnCell, 'up', 'desktop exact drawer return with auto-scroll')
   state = await storedFridge(page)
   move = placement(state, 'magnet:move')
   assert(move?.surface === 'door' && move.row === 2 && move.column === 3, 'desktop: Drawer-to-specific-cell drag ignored the teacher-selected coordinate.')
@@ -161,11 +187,12 @@ async function auditDesktop(browser) {
   assert(stackA.priority === 'could' && stackB.priority === 'must', 'desktop: stack drag changed member priority.')
 
   const beforeStackDrawer = await rawFridge(page)
-  await dragBetween(page, dragHandle(page.locator('[data-fridge-stack="stack-audit"]')), drawerSummary, 'desktop stack drawer rejection')
+  await dragWithVerticalAutoScroll(page, dragHandle(page.locator('[data-fridge-stack="stack-audit"]')), drawerSummary, 'down', 'desktop stack drawer rejection with auto-scroll')
   const afterStackDrawer = await rawFridge(page)
   assert(afterStackDrawer === beforeStackDrawer, 'desktop: rejected stack-to-Drawer drag mutated persisted state.')
   assert(await fridge.getByRole('status').getByText(/Stacks stay together/i).isVisible(), 'desktop: rejected stack-to-Drawer drag was not explained.')
 
+  await page.evaluate(() => window.scrollTo(0, 0))
   const beforeCancel = await rawFridge(page)
   const headerTarget = page.locator('.arc-header')
   await dragBetween(page, dragHandle(page.locator('[data-fridge-ref="magnet:blocker"]')), headerTarget, 'desktop outside cancel')
@@ -236,7 +263,7 @@ const browser = await chromium.launch({ headless: true })
 try {
   await auditDesktop(browser)
   await auditScrolledMobile(browser)
-  console.log('Fridge drag hostile audit passed: explicit non-drag routes preserved, exact Door reposition, atomic occupied-target rejection, Put Away, exact Drawer return, whole-stack movement, stack-to-Drawer rejection, outside cancel, reload persistence, and live post-scroll hit testing.')
+  console.log('Fridge drag hostile audit passed: explicit non-drag routes preserved, exact Door reposition, atomic occupied-target rejection, vertical edge auto-scroll for Drawer access, Put Away, exact Drawer return, whole-stack movement, stack-to-Drawer rejection, outside cancel, reload persistence, and live post-scroll hit testing.')
 } finally {
   await browser.close()
 }
