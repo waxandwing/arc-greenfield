@@ -40,7 +40,7 @@ try {
   const weekRegion = page.locator('.projection-section').first()
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: Week did not become the active workspace view.')
   const weekdayLabels = await weekRegion.locator('.calendar-day-weekday').allTextContents()
-  assert(weekdayLabels.includes('Saturday') && weekdayLabels.includes('Sunday'), `RGAV-B: enabled weekends were not visible in Week (${weekdayLabels.join(', ')}).`)
+  assert(weekdayLabels.includes('Sat') && weekdayLabels.includes('Sun'), `RGAV-B: enabled weekends were not visible in Week (${weekdayLabels.join(', ')}).`)
 
   await page.getByRole('button', { name: 'Next Week' }).click()
   const nextRange = await weekRegion.getAttribute('aria-label')
