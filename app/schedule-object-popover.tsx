@@ -29,14 +29,24 @@ export function ScheduleObjectPopover({ title, courses, initialCourseId, initial
   const [date, setDate] = useState(initialDate ?? localDateKey());
 
   return (
-    <div className="schedulePopover" role="dialog" aria-label={`Schedule ${title}`}>
+    <div
+      className="schedulePopover"
+      role="dialog"
+      aria-label={`Schedule ${title}`}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          onCancel();
+        }
+      }}
+    >
       <div className="schedulePopoverHeading">
         <strong>Put it on the calendar</strong>
         <button type="button" onClick={onCancel} aria-label="Close scheduling chooser">×</button>
       </div>
       <label>
         Date
-        <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+        <input autoFocus type="date" value={date} onChange={(event) => setDate(event.target.value)} />
       </label>
       <label>
         Class
