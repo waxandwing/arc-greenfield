@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Plan, PriorityTier, TaskContext } from "../lib/domain";
 import { objectLocation } from "../lib/object-lifecycle";
 import { ScheduleObjectPopover } from "./schedule-object-popover";
+import { TaskDetailPopover } from "./task-detail-popover";
 
 const TIERS: Array<{ id: PriorityTier; label: string }> = [
   { id: "must", label: "Must Do" },
@@ -75,6 +76,13 @@ export function TaskBar({ plans, courses, onCreate, onMoveTier, onUpdateTask, on
                         event.dataTransfer.effectAllowed = "move";
                       }}
                       onClick={() => onSelect(plan)}
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if ((event.key === "Enter" || event.key === " ") && !expanded && !scheduling) {
+                          event.preventDefault();
+                          onSelect(plan);
+                        }
+                      }}
                     >
                       <button
                         type="button"
@@ -107,21 +115,20 @@ export function TaskBar({ plans, courses, onCreate, onMoveTier, onUpdateTask, on
                       >•••</button>
 
                       {expanded && !scheduling && (
-                        <div className="taskDetailPopover" onClick={(event) => event.stopPropagation()}>
-                          <label>Notes<textarea value={plan.taskContext?.notes ?? ""} onChange={(event) => onUpdateTask(plan.id, { notes: event.target.value })} /></label>
-                          <div className="taskDetailPair">
-                            <label>Time<input type="time" value={plan.taskContext?.startTime ?? ""} onChange={(event) => onUpdateTask(plan.id, { startTime: event.target.value || undefined })} /></label>
-                            <label>Minutes<input type="number" min="0" step="5" value={plan.taskContext?.durationMinutes ?? ""} onChange={(event) => onUpdateTask(plan.id, { durationMinutes: event.target.value ? Number(event.target.value) : undefined })} /></label>
-                          </div>
-                          <div className="taskDetailActions">
-                            <select value={plan.taskContext?.tier ?? "should"} onChange={(event) => onMoveTier(plan.id, event.target.value as PriorityTier)} aria-label={`Move ${plan.title} to task tier`}>
-                              {TIERS.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
-                            </select>
-                            <button type="button" onClick={() => { setExpandedId(null); setSchedulingId(plan.id); }}>Schedule…</button>
-                            <button type="button" onClick={() => { onPutInFridge(plan.id); setExpandedId(null); }}>Put in Fridge</button>
-                            <button type="button" onClick={() => setExpandedId(null)}>Done</button>
-                          </div>
-                        </div>
+                        <TaskDetailPopover
+                          plan={plan}
+                          onUpdateTask={onUpdateTask}
+                          onMoveTier={onMoveTier}
+                          onSchedule={() => {
+                            setExpandedId(null);
+                            setSchedulingId(plan.id);
+                          }}
+                          onPutInFridge={() => {
+                            onPutInFridge(plan.id);
+                            setExpandedId(null);
+                          }}
+                          onClose={() => setExpandedId(null)}
+                        />
                       )}
 
                       {scheduling && (
