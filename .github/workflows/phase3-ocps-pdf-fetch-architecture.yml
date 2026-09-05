@@ -31,15 +31,16 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Build browser target
         run: npm run build
-      - name: Prove runner can reach official OCPS PDF outside browser CORS
+      - name: Prove runner can reach current official OCPS source outside browser CORS
         run: |
-          PDF_URL='https://www.ocps.net/UserFiles/Servers/Server_54619/File/Frequently%20Updated%20Documents/2026-2027%20School%20Calendar.pdf'
+          PDF_URL='https://www.ocps.net/110680_3'
           curl -L --fail --silent --show-error "$PDF_URL" -o /tmp/ocps-calendar.pdf
           echo "server_byte_length=$(wc -c < /tmp/ocps-calendar.pdf)"
           printf 'server_prefix='
           head -c 5 /tmp/ocps-calendar.pdf
           printf '\n'
-      - name: Probe browser-origin access to official OCPS PDF
+          file /tmp/ocps-calendar.pdf
+      - name: Probe browser-origin access to current official OCPS source
         run: |
           npm run preview -- --host 127.0.0.1 > /tmp/arc-preview-phase3-ocps-pdf-fetch.log 2>&1 &
           PREVIEW_PID=$!
