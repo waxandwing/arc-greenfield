@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { type Plan, type PlanType, type PriorityTier, type TaskContext } from "../lib/domain";
-import { applyCut, createClipboard, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
+import { applyCut, createClipboard, cutBlocker, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
 import { dateKey, weekDisplayDates } from "../lib/calendar-display";
 import { moveObjectToTaskBar, updateTaskContext } from "../lib/object-lifecycle";
-import { movePlanToCalendarDate } from "../lib/plan-operations";
-import { collectPlanTree, deletePlanTree, movePlanTreeToIdeas, orderedUnitChildren } from "../lib/plan-tree";
+import { calendarMoveBlocker, movePlanToCalendarDate } from "../lib/plan-operations";
+import { collectPlanTree, deletePlanTree, movePlanTreeToIdeas, orderedUnitChildren, unitUnplaceBlocker } from "../lib/plan-tree";
 import { resolveArcShortcut } from "../lib/shortcuts";
 import { useArcStore } from "../lib/arc-store";
 import { availableQuarterRanges } from "../lib/view-ranges";
@@ -38,6 +38,10 @@ function isTypingTarget(target: EventTarget | null) {
   return Boolean(element?.closest("input, textarea, select, [contenteditable='true']"));
 }
 
+function planList(plans: Array<{ title: string; date: string | null }>) {
+  return plans.map((plan) => plan.date ? `${plan.title} (${plan.date})` : plan.title).join(", ");
+}
+
 export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gitSha: string; onOpenSetup: () => void }) {
   const history = useArcStore((state) => state.history);
   const workspace = history.present;
@@ -60,8 +64,10 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   const [pasteTarget, setPasteTarget] = useState<PasteTarget | null>(null);
   const [fridgeOpen, setFridgeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [interactionNotice, setInteractionNotice] = useState<string | null>(null);
   const fridgePullRef = useRef<HTMLButtonElement | null>(null);
   const settingsPullRef = useRef<HTMLButtonElement | null>(null);
+  const noticeReturnRef = useRef<HTMLElement | null>(null);
 
   const days = useMemo(() => weekDisplayDates(weekAnchor, workspace.calendar.weekendsVisible), [weekAnchor, workspace.calendar.weekendsVisible]);
   const weekLabel = days.length ? `${days[0].month} ${days[0].number} – ${days[days.length - 1].month} ${days[days.length - 1].number}` : "Week";
@@ -77,6 +83,20 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   useEffect(() => {
     if (ready && !activeCourseId && workspace.courses[0]) setActiveCourseId(workspace.courses[0].id);
   }, [ready, activeCourseId, workspace.courses]);
+
+  function showInteractionNotice(message: string) {
+    if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      noticeReturnRef.current = document.activeElement;
+    }
+    setInteractionNotice(message);
+  }
+
+  function dismissInteractionNotice() {
+    setInteractionNotice(null);
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => noticeReturnRef.current?.focus());
+    }
+  }
 
   function undo() {
     storeUndo();
@@ -135,7 +155,15 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   }
 
   function movePlanToDate(id: string, date: string, courseId: string) {
+    const blocker = calendarMoveBlocker(workspace.plans, id, date);
+    if (blocker) {
+      showInteractionNotice(`Arc kept this placement fixed. Move blocked by: ${planList(blocker.fixedPlans)}. Change the fixed-date setting explicitly before moving it.`);
+      selectObject(id);
+      return;
+    }
+
     updateWorkspace((current) => ({ ...current, plans: movePlanToCalendarDate(current.plans, id, date, courseId) }));
+    setInteractionNotice(null);
     setPasteTarget({ courseId, date, location: "calendar" });
   }
 
@@ -152,29 +180,53 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     const tree = collectPlanTree(workspace.plans, id);
     const root = tree.find((plan) => plan.id === id);
     if (!root) return;
+
+    const dependencyBlocker = unitUnplaceBlocker(workspace.plans, id);
+    if (dependencyBlocker) {
+      showInteractionNotice(`Arc did not delete “${root.title}.” Scheduled child Lessons still depend on this Unit: ${planList(dependencyBlocker.scheduledChildren)}. Reconcile those Lessons first.`);
+      selectObject(id);
+      return;
+    }
+
     const attachedCount = Math.max(0, tree.length - 1);
     const consequence = attachedCount
       ? `Delete “${root.title}” and ${attachedCount} attached ${attachedCount === 1 ? "item" : "items"}? This cannot be undone after the Undo history is cleared.`
       : `Delete “${root.title}”? This removes the object rather than putting it back in the Fridge.`;
     if (typeof window !== "undefined" && !window.confirm(consequence)) return;
     updateWorkspace((current) => ({ ...current, plans: deletePlanTree(current.plans, id) }));
+    setInteractionNotice(null);
     if (selectedPlanId === id) selectObject(null);
   }
 
   function putPlanInFridge(id: string) {
+    const blocker = unitUnplaceBlocker(workspace.plans, id);
+    if (blocker) {
+      const unit = workspace.plans.find((plan) => plan.id === id);
+      showInteractionNotice(`Arc kept “${unit?.title ?? "this Unit"}” on the calendar because these child Lessons are still scheduled: ${planList(blocker.scheduledChildren)}. Unplace or move the Lessons first.`);
+      selectObject(id);
+      return;
+    }
+
     updateWorkspace((current) => ({ ...current, plans: movePlanTreeToIdeas(current.plans, id) }));
     const plan = workspace.plans.find((item) => item.id === id);
+    setInteractionNotice(null);
     setPasteTarget({ courseId: plan?.courseId ?? null, date: null, location: "ideas" });
   }
 
   function movePlanToTaskTier(id: string, tier: PriorityTier) {
-    updateWorkspace((current) => {
-      const treeIds = new Set(collectPlanTree(current.plans, id).map((plan) => plan.id));
-      return {
-        ...current,
-        plans: current.plans.map((plan) => treeIds.has(plan.id) ? moveObjectToTaskBar(plan, tier) : plan)
-      };
-    });
+    const blocker = unitUnplaceBlocker(workspace.plans, id);
+    if (blocker) {
+      const unit = workspace.plans.find((plan) => plan.id === id);
+      showInteractionNotice(`Arc did not move “${unit?.title ?? "this Unit"}” into the Task Bar. Its scheduled child Lessons keep their calendar placement: ${planList(blocker.scheduledChildren)}.`);
+      selectObject(id);
+      return;
+    }
+
+    updateWorkspace((current) => ({
+      ...current,
+      plans: current.plans.map((plan) => plan.id === id ? moveObjectToTaskBar(plan, tier) : plan)
+    }));
+    setInteractionNotice(null);
   }
 
   function patchTaskContext(id: string, patch: Partial<TaskContext>) {
@@ -198,9 +250,22 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
 
   function copySelection(mode: "copy" | "cut") {
     if (!selectedPlanId) return;
+
+    if (mode === "cut") {
+      const blocker = cutBlocker(workspace, selectedPlanId);
+      if (blocker) {
+        showInteractionNotice(`Arc did not Cut this object because its fixed placement must stay anchored: ${planList(blocker.fixedPlans)}. Copy is still available.`);
+        return;
+      }
+    }
+
     const nextClipboard = createClipboard(workspace, selectedPlanId, mode);
-    if (!nextClipboard) return;
+    if (!nextClipboard) {
+      showInteractionNotice(`Arc could not ${mode === "cut" ? "Cut" : "Copy"} that selection without risking its canonical record.`);
+      return;
+    }
     setClipboard(nextClipboard);
+    setInteractionNotice(null);
     if (mode === "cut") {
       replaceWorkspace(applyCut(workspace, nextClipboard));
       selectObject(null);
@@ -210,10 +275,14 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   function pasteSelection() {
     if (!clipboard || !pasteTarget) return;
     const result = pasteClipboard(workspace, clipboard, pasteTarget);
-    if (!result.pastedRootId) return;
+    if (!result.pastedRootId) {
+      showInteractionNotice("Arc did not Paste because the destination would make object identity ambiguous or the clipboard is no longer safe to apply. The current plan was left unchanged.");
+      return;
+    }
     replaceWorkspace(result.workspace);
     selectObject(result.pastedRootId);
     setClipboard(result.nextClipboard);
+    setInteractionNotice(null);
   }
 
   function selectPlan(plan: Plan) {
@@ -272,6 +341,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
       if (!action) return;
       if (isTypingTarget(event.target) && action !== "escape") return;
       if (action === "escape") {
+        if (interactionNotice) { dismissInteractionNotice(); return; }
         if (fridgeOpen) { closeFridge(); return; }
         if (settingsOpen) { closeSettings(); return; }
         selectObject(null);
@@ -302,6 +372,13 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
           <div><p className="eyebrow">Planning desk</p><h1>{workspace.teacherName ? `${workspace.teacherName}’s ${activeView}` : `Your ${activeView}`}</h1></div>
           <div className="deskActions" aria-label="Planner actions"><button type="button" onClick={undo} disabled={!canUndo(history)}>Undo</button><button type="button" onClick={redo} disabled={!canRedo(history)}>Redo</button><span className="actionDivider" /><button type="button" onClick={() => copySelection("copy")} disabled={!selectedPlanId}>Copy</button><button type="button" onClick={() => copySelection("cut")} disabled={!selectedPlanId}>Cut</button><button type="button" onClick={pasteSelection} disabled={!clipboard || !pasteTarget}>Paste</button><span className="actionDivider" /><button type="button" onClick={goPrevious}>←</button><button type="button" className="todayButton" onClick={goToday}>Today</button><button type="button" onClick={goNext}>→</button></div>
         </div>
+
+        {interactionNotice && (
+          <div className="interactionNotice" role="alert">
+            <span>{interactionNotice}</span>
+            <button type="button" onClick={dismissInteractionNotice}>Dismiss</button>
+          </div>
+        )}
 
         <div className="viewControlBar">
           <div className="viewSwitcher" aria-label="Planner view"><button type="button" className={activeView === "week" ? "active" : ""} onClick={() => setActiveView("week")}>Week</button><button type="button" className={activeView === "month" ? "active" : ""} onClick={() => setActiveView("month")}>Month</button><button type="button" className={activeView === "quarter" ? "active" : ""} disabled={quarterRanges.length === 0} title={quarterRanges.length === 0 ? "Add quarter dates in Setup first" : undefined} onClick={() => setActiveView("quarter")}>Quarter</button></div>
