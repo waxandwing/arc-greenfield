@@ -1,14 +1,23 @@
 "use client";
 
+import type { WorkspacePreferences } from "../lib/domain";
+import { currentLandingChoices } from "../lib/navigation-preferences";
+
 type Props = {
   open: boolean;
   weekendsVisible: boolean;
+  landingView: WorkspacePreferences["landingView"];
+  quarterAvailable: boolean;
   onClose: () => void;
   onToggleWeekends: () => void;
+  onLandingViewChange: (view: WorkspacePreferences["landingView"]) => void;
   onOpenSetup: () => void;
 };
 
-export function SettingsDrawer({ open, weekendsVisible, onClose, onToggleWeekends, onOpenSetup }: Props) {
+export function SettingsDrawer({ open, weekendsVisible, landingView, quarterAvailable, onClose, onToggleWeekends, onLandingViewChange, onOpenSetup }: Props) {
+  const choices = currentLandingChoices(quarterAvailable);
+  const visibleLandingValue = choices.some((choice) => choice.value === landingView) ? landingView : "last-used";
+
   return (
     <aside className={open ? "edgeDrawer settingsDrawer open" : "edgeDrawer settingsDrawer"} aria-hidden={!open} aria-label="Settings and utilities">
       <div className="edgeDrawerHeader">
@@ -21,6 +30,13 @@ export function SettingsDrawer({ open, weekendsVisible, onClose, onToggleWeekend
       </div>
 
       <div className="settingsList">
+        <label className="settingsRow settingsSelectRow">
+          <span><strong>Arc home</strong><small>Where the Arc wordmark and a fresh session return.</small></span>
+          <select value={visibleLandingValue} onChange={(event) => onLandingViewChange(event.target.value as WorkspacePreferences["landingView"])} aria-label="Arc home view">
+            {choices.map((choice) => <option key={choice.value} value={choice.value}>{choice.label}</option>)}
+          </select>
+          {visibleLandingValue !== landingView && <small className="settingsFallbackNote">Your saved {landingView} home is not available in this build. Arc will fall back safely without replacing that preference.</small>}
+        </label>
         <button type="button" className="settingsRow" onClick={onToggleWeekends}>
           <span><strong>Show weekends in Week</strong><small>{weekendsVisible ? "Sunday through Saturday" : "Monday through Friday"}</small></span>
           <span className={weekendsVisible ? "settingsToggle on" : "settingsToggle"} aria-hidden="true"><i /></span>
