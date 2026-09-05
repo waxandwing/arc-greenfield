@@ -1,0 +1,87 @@
+import { mkdirSync } from 'node:fs'
+import { chromium } from 'playwright'
+
+const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message)
+}
+
+function trackRuntimeErrors(page) {
+  const errors = []
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(`console: ${message.text()}`)
+  })
+  page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`))
+  return errors
+}
+
+const candidatesPayload = {
+  features: [
+    { attributes: { NCESSCH: '120144001406', LEAID: '1201440', LEA_NAME: 'Orange', SCH_NAME: 'Oak Ridge High', LSTREET1: '700 W Oak Ridge Rd', LCITY: 'Orlando', LSTATE: 'FL', LZIP: '32809', SY_STATUS_TEXT: 'Open' } },
+    { attributes: { NCESSCH: '999999999999', LEAID: '9999999', LEA_NAME: 'Fixture Agency', SCH_NAME: 'Oak Ridge High School', LSTREET1: '1 Fixture Way', LCITY: 'Orlando', LSTATE: 'FL', LZIP: '32801', SY_STATUS_TEXT: 'Open' } },
+  ],
+}
+
+const browser = await chromium.launch({ headless: true })
+const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+const page = await context.newPage()
+const runtimeErrors = trackRuntimeErrors(page)
+let responseMode = 'candidates'
+
+await page.route('**/EDGE_ADMINDATA_PUBLICSCH_2425/MapServer/1/query?*', async (route) => {
+  if (responseMode === 'error') {
+    await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'fixture outage' }) })
+    return
+  }
+  const payload = responseMode === 'none' ? { features: [] } : candidatesPayload
+  await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(payload) })
+})
+
+await page.goto(baseUrl, { waitUntil: 'networkidle' })
+assert(await page.getByRole('heading', { name: 'Let Arc look for the official school record first.' }).count() === 1, 'School identity search is missing from first-time calendar setup.')
+assert(await page.getByText('This step does not add school-calendar dates.').count() >= 1, 'Identity/date truth separation is not visible.')
+
+await page.getByRole('button', { name: 'Find my school' }).click()
+assert(await page.getByRole('alert').count() === 1, 'Invalid identity search did not surface an accessible error.')
+
+await page.getByLabel('School name').fill('Oak Ridge')
+await page.getByLabel('City').fill('Orlando')
+await page.getByLabel('State').fill('FL')
+await page.getByRole('button', { name: 'Find my school' }).click()
+assert(await page.getByText('2 official records found.').count() === 1, 'Multiple official candidates were not kept explicit.')
+assert(await page.getByText('Choose the school yourself. Arc will not guess.').count() === 1, 'Candidate chooser does not state the no-guess rule.')
+assert(await page.getByText('Source: NCES Common Core of Data / EDGE').count() === 2, 'NCES source labeling is missing from candidates.')
+
+const firstChoice = page.getByRole('button', { name: 'This is my school' }).first()
+await firstChoice.focus()
+await page.keyboard.press('Enter')
+const selected = page.getByRole('status', { name: 'Selected official school identity' })
+assert(await selected.count() === 1, 'Keyboard candidate selection did not surface the selected identity status.')
+assert((await selected.textContent())?.includes('Nothing has been added to your calendar.'), 'Selected identity does not explicitly preserve calendar non-mutation truth.')
+
+const persistedAfterSelection = await page.evaluate(() => localStorage.getItem('arc.calendar.v1'))
+assert(persistedAfterSelection === null, 'Selecting an NCES school identity incorrectly persisted canonical calendar state.')
+
+mkdirSync('artifacts/phase3-school-identity-search', { recursive: true })
+await page.screenshot({ path: 'artifacts/phase3-school-identity-search/school-identity-search-1280.png', fullPage: true })
+
+responseMode = 'none'
+await page.getByLabel('School name').fill('Definitely Missing School')
+await page.getByRole('button', { name: 'Find my school' }).click()
+assert(await page.getByText('No official NCES match yet.').count() === 1, 'Zero-result state is not explicit.')
+
+responseMode = 'error'
+await page.getByLabel('School name').fill('Provider Failure School')
+await page.getByRole('button', { name: 'Find my school' }).click()
+assert(await page.getByRole('alert').count() === 1, 'Provider failure did not surface an accessible error.')
+assert((await page.getByRole('alert').textContent())?.includes('Nothing was selected or saved'), 'Provider failure does not state non-mutation behavior.')
+
+await page.setViewportSize({ width: 390, height: 844 })
+const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
+assert(geometry.scroll <= geometry.width + 1, `School identity search overflowed at 390px (${geometry.scroll} > ${geometry.width}).`)
+assert(runtimeErrors.length === 0, `School identity search runtime errors: ${runtimeErrors.join(' | ')}`)
+
+await context.close()
+await browser.close()
+console.log('phase3 school identity search gate passed')
