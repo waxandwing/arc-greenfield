@@ -142,6 +142,10 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     updateWorkspace((current) => ({ ...current, plans: current.plans.map((plan) => plan.id === id ? { ...plan, title: title.trim() } : plan) }));
   }
 
+  function patchPlan(id: string, patch: Partial<Plan>) {
+    updateWorkspace((current) => ({ ...current, plans: current.plans.map((plan) => plan.id === id ? { ...plan, ...patch } : plan) }));
+  }
+
   function deletePlan(id: string) {
     updateWorkspace((current) => ({ ...current, plans: deletePlanTree(current.plans, id) }));
     if (selectedPlanId === id) selectObject(null);
@@ -290,7 +294,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
           <SettingsDrawer open={settingsOpen} weekendsVisible={workspace.calendar.weekendsVisible} onClose={() => setSettingsOpen(false)} onToggleWeekends={toggleWeekends} onOpenSetup={onOpenSetup} />
 
           <section className="calendarDesk canonicalCalendarDesk" aria-label={`${activeView} planning workspace`}>
-            {activeView === "week" && <WeekPlanner workspace={workspace} days={days} weekLabel={weekLabel} selectedPlanId={selectedPlanId} pasteTarget={pasteTarget} onSelectPlan={selectPlan} onSelectDate={(courseId, date) => setPasteTarget({ courseId, date, location: "calendar" })} onMovePlan={movePlanToDate} onRenamePlan={renamePlan} onAddPlan={(title, type, courseId, date) => addPlan(title, type, courseId, date, "calendar")} onAddChildLesson={addChildLesson} onToggleUnit={toggleUnit} onDeletePlan={deletePlan} onReturnToIdeas={putPlanInFridge} />}
+            {activeView === "week" && <WeekPlanner workspace={workspace} days={days} weekLabel={weekLabel} selectedPlanId={selectedPlanId} pasteTarget={pasteTarget} onSelectPlan={selectPlan} onSelectDate={(courseId, date) => setPasteTarget({ courseId, date, location: "calendar" })} onMovePlan={movePlanToDate} onRenamePlan={renamePlan} onPatchPlan={patchPlan} onAddPlan={(title, type, courseId, date) => addPlan(title, type, courseId, date, "calendar")} onAddChildLesson={addChildLesson} onToggleUnit={toggleUnit} onDeletePlan={deletePlan} onReturnToIdeas={putPlanInFridge} />}
             {activeView === "month" && selectedCourseId && <MonthView workspace={workspace} anchor={monthAnchor} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} onAddPlan={(title, type, date) => addPlan(title, type, selectedCourseId, date, "calendar")} />}
             {activeView === "quarter" && activeQuarter && selectedCourseId && <QuarterView workspace={workspace} range={activeQuarter} courseId={selectedCourseId} selectedPlanId={selectedPlanId} pasteTargetDate={pasteTarget?.location === "calendar" && pasteTarget.courseId === selectedCourseId ? pasteTarget.date : null} onSelectPlan={selectPlan} onSelectDate={selectRangeDate} onMovePlan={movePlanToDate} onAddPlan={(title, type, date) => addPlan(title, type, selectedCourseId, date, "calendar")} />}
           </section>
