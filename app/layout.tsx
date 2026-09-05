@@ -9,6 +9,7 @@ import "./week-planner.css";
 import "./weekend-week.css";
 import "./reconciled-shell.css";
 import "./fridge-actions.css";
+import "./schedule-popover.css";
 
 export const metadata: Metadata = {
   title: "Arc",
