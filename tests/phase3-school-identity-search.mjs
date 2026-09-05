@@ -37,7 +37,11 @@ await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWit
     'Access-Control-Allow-Origin': '*',
   }
   if (responseMode === 'error') {
-    await route.fulfill({ status: 503, headers, body: JSON.stringify({ error: 'fixture outage' }) })
+    await route.fulfill({
+      status: 200,
+      headers,
+      body: JSON.stringify({ error: { message: 'fixture provider rejection' } }),
+    })
     return
   }
   const payload = responseMode === 'none' ? { features: [] } : candidatesPayload
