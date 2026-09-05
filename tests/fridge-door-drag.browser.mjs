@@ -85,8 +85,14 @@ async function dragWithVerticalAutoScroll(page, handle, target, direction, label
   const handleBox = await handle.boundingBox()
   assert(handleBox, `${label}: drag handle has no rendered bounds.`)
   const viewport = await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }))
+  const targetIdentity = await target.evaluate((node) => ({
+    row: node.getAttribute('data-fridge-row'),
+    column: node.getAttribute('data-fridge-column'),
+  }))
+
   await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
   await page.mouse.down()
+  assert(await page.locator('.fridge-door-grid--dragging').count() === 1, `${label}: pointer down did not enter active Fridge drag state.`)
   await page.mouse.move(handleBox.x + handleBox.width / 2, direction === 'down' ? viewport.height - 8 : 8, { steps: 5 })
 
   let targetBecameVisible = false
@@ -103,9 +109,6 @@ async function dragWithVerticalAutoScroll(page, handle, target, direction, label
     throw new Error(`${label}: edge auto-scroll never brought the drop target into the viewport.`)
   }
 
-  // Leave the edge first so the product's auto-scroll loop has stopped before
-  // this audit samples the final target geometry. Otherwise the test itself can
-  // chase a stale rectangle and manufacture a wrong-cell result.
   await page.mouse.move(viewport.width / 2, viewport.height / 2, { steps: 3 })
   await page.waitForTimeout(100)
   const settledTarget = await target.boundingBox()
@@ -115,9 +118,36 @@ async function dragWithVerticalAutoScroll(page, handle, target, direction, label
   await page.waitForTimeout(40)
   const finalTarget = await target.boundingBox()
   assert(finalTarget, `${label}: final live target bounds disappeared before release.`)
-  await page.mouse.move(finalTarget.x + finalTarget.width / 2, finalTarget.y + finalTarget.height / 2)
+  const releaseX = finalTarget.x + finalTarget.width / 2
+  const releaseY = finalTarget.y + finalTarget.height / 2
+  await page.mouse.move(releaseX, releaseY)
+  await page.waitForTimeout(40)
+
+  assert(await page.locator('.fridge-door-grid--dragging').count() === 1, `${label}: active Fridge drag state ended before pointer release.`)
+  if (targetIdentity.row !== null && targetIdentity.column !== null) {
+    const live = await page.evaluate(({ x, y }) => {
+      const underPoint = document.elementFromPoint(x, y)
+      const cells = [...document.querySelectorAll('[data-fridge-drop-cell="true"]')]
+      const matching = cells.find((cell) => {
+        const rect = cell.getBoundingClientRect()
+        return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+      })
+      return {
+        elementRow: underPoint?.closest?.('[data-fridge-drop-cell="true"]')?.getAttribute('data-fridge-row') ?? null,
+        elementColumn: underPoint?.closest?.('[data-fridge-drop-cell="true"]')?.getAttribute('data-fridge-column') ?? null,
+        liveRow: matching?.getAttribute('data-fridge-row') ?? null,
+        liveColumn: matching?.getAttribute('data-fridge-column') ?? null,
+      }
+    }, { x: releaseX, y: releaseY })
+    assert(
+      live.liveRow === targetIdentity.row && live.liveColumn === targetIdentity.column,
+      `${label}: immediately before release, live geometry resolved ${live.liveRow ?? 'none'}:${live.liveColumn ?? 'none'} instead of intended ${targetIdentity.row}:${targetIdentity.column}; elementFromPoint=${live.elementRow ?? 'none'}:${live.elementColumn ?? 'none'}.`,
+    )
+  }
+
   await page.mouse.up()
   await page.waitForTimeout(40)
+  assert(await page.locator('.fridge-door-grid--dragging').count() === 0, `${label}: pointer release did not end active Fridge drag state.`)
 }
 
 function placement(state, ref) {
