@@ -25,11 +25,12 @@ type Props = {
   anchorDate: ISODate | null
   planningContext?: PlanningContext | null
   showWeekends?: boolean
+  onLaunchLive?: (sectionId: string, lessonId: string) => void
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false, onLaunchLive }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -47,6 +48,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           title={formatLongDate(projection.date)}
           day={projection.day}
           planningContext={planningContext}
+          onLaunchLive={onLaunchLive}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
         />
       )
@@ -120,7 +122,19 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, termContext }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
+function PlanningDayStrip({
+  title,
+  day,
+  planningContext,
+  termContext,
+  onLaunchLive,
+}: {
+  title: string
+  day: ProjectedDay
+  planningContext?: PlanningContext | null
+  termContext?: ReactNode
+  onLaunchLive?: (sectionId: string, lessonId: string) => void
+}) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
@@ -134,6 +148,7 @@ function PlanningDayStrip({ title, day, planningContext, termContext }: { title:
             lessons: planningContext.lessons,
             overrides: planningContext.shiftState?.overrides ?? [],
           })}
+          onLaunchLive={onLaunchLive}
         />
       ) : (
         <div className="projection-day-strip projection-day-strip--single">
