@@ -15,6 +15,13 @@ function trackRuntimeErrors(page) {
   return errors
 }
 
+async function configureCalendar(page, { label = '2026–27', first = '2026-09-02', last = '2027-05-28' } = {}) {
+  await page.locator('#school-year-label').fill(label)
+  await page.locator('#first-school-day').fill(first)
+  await page.locator('#last-school-day').fill(last)
+  await page.getByRole('button', { name: 'Use this calendar' }).click()
+}
+
 async function auditDesktop(browser) {
   const context = await browser.newContext({ viewport: { width: 1024, height: 900 } })
   const page = await context.newPage()
@@ -57,16 +64,44 @@ async function auditDesktop(browser) {
   await context.close()
 }
 
+async function auditShellHierarchyAndZoom(browser) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 720 } })
+  const page = await context.newPage()
+  const runtimeErrors = trackRuntimeErrors(page)
+  await page.goto(baseUrl, { waitUntil: 'networkidle' })
+  await configureCalendar(page)
+
+  assert(await page.getByRole('heading', { level: 1, name: 'Month' }).count() === 1, 'Shell hierarchy: Month must be the single level-one workspace heading.')
+  assert(await page.locator('h1').count() === 1, 'Shell hierarchy: expected exactly one h1 after calendar setup.')
+  assert(await page.getByRole('group', { name: 'Month date navigation' }).count() === 1, 'Shell semantics: date navigation must be an explicit named control group.')
+  assert(await page.getByRole('region', { name: /calendar grid$/ }).count() === 1, 'Shell semantics: Month grid must expose a named region.')
+  assert(await page.locator('div[aria-label]:not([role])').count() === 0, 'Shell semantics: generic divs must not rely on aria-label without a semantic role.')
+
+  const options = page.getByText('View options', { exact: true })
+  assert(await options.count() === 1, 'Shell hierarchy: View options disclosure is missing or duplicated.')
+
+  await page.evaluate(() => { document.documentElement.style.zoom = '2' })
+  const zoom200 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
+  assert(zoom200.scroll <= zoom200.width + 1, `200% zoom: document overflowed horizontally (${zoom200.scroll} > ${zoom200.width}).`)
+  assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '200% zoom: primary workspace heading became unavailable.')
+  assert(await page.getByRole('navigation', { name: 'Calendar views' }).isVisible(), '200% zoom: calendar-view navigation became unavailable.')
+
+  await page.evaluate(() => { document.documentElement.style.zoom = '4' })
+  const zoom400 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
+  assert(zoom400.scroll <= zoom400.width + 1, `400% zoom: document overflowed horizontally (${zoom400.scroll} > ${zoom400.width}).`)
+  assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '400% zoom: primary workspace heading became unavailable.')
+
+  assert(runtimeErrors.length === 0, `Shell hierarchy/zoom runtime errors: ${runtimeErrors.join(' | ')}`)
+  await context.close()
+}
+
 async function auditMondayFirstAlignment(browser) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
   const page = await context.newPage()
   const runtimeErrors = trackRuntimeErrors(page)
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
 
-  await page.locator('#school-year-label').fill('2026–27')
-  await page.locator('#first-school-day').fill('2026-09-02')
-  await page.locator('#last-school-day').fill('2026-09-13')
-  await page.getByRole('button', { name: 'Use this calendar' }).click()
+  await configureCalendar(page, { first: '2026-09-02', last: '2026-09-13' })
 
   await page.getByRole('button', { name: 'Year Map' }).click()
   const yearMap = page.getByRole('region', { name: '2026–27 year map' })
@@ -138,11 +173,12 @@ async function auditReducedMotion(browser) {
 const browser = await chromium.launch({ headless: true })
 try {
   await auditDesktop(browser)
+  await auditShellHierarchyAndZoom(browser)
   await auditMondayFirstAlignment(browser)
   await auditTouchAndReflow(browser)
   await auditMinimumWidth(browser)
   await auditReducedMotion(browser)
-  console.log('Arc browser accessibility smoke gate passed: landmarks, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
+  console.log('Arc browser accessibility smoke gate passed: landmarks, shell hierarchy/semantics, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
 } finally {
   await browser.close()
 }
