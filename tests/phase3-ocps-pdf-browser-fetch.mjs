@@ -10,6 +10,17 @@ function assert(condition, message) {
 const browser = await chromium.launch({ headless: true })
 const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
 const page = await context.newPage()
+const consoleErrors = []
+const failedRequests = []
+
+page.on('console', (message) => {
+  if (message.type() === 'error') consoleErrors.push(message.text())
+})
+page.on('requestfailed', (request) => {
+  if (request.url() === pdfUrl) {
+    failedRequests.push({ url: request.url(), failure: request.failure()?.errorText ?? 'unknown' })
+  }
+})
 
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
 
@@ -46,10 +57,9 @@ const result = await page.evaluate(async (url) => {
   }
 }, pdfUrl)
 
-console.log(JSON.stringify({ pdfUrl, ...result }, null, 2))
+console.log(JSON.stringify({ pdfUrl, ...result, consoleErrors, failedRequests }, null, 2))
 
-// This audit is intentionally observational. A blocked CORS request is an architectural result,
-// not a failing Arc product test. The only hard assertion is that the app page itself loaded.
+// Observational architecture probe: browser blocking is a valid result, not an Arc product failure.
 assert(await page.locator('body').count() === 1, 'Arc preview did not load before the PDF fetch probe.')
 
 await context.close()
