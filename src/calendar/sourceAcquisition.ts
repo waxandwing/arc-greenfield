@@ -28,7 +28,6 @@ export type OfficialCalendarPayload = {
   candidateId: string
   input: CalendarHydrationInput
   evidence: CalendarEvidence[]
-  warnings?: string[]
 }
 
 export function normalizeSchoolIdentityQuery(query: SchoolIdentityQuery): SchoolIdentityQuery {
@@ -97,10 +96,9 @@ export function buildProposalFromOfficialPayload(
   }
 
   return buildCalendarProposal({
-    id: `official-${candidate.id}-${payload.input.id}`,
+    proposalId: `official-${candidate.id}-${payload.input.id}`,
     input: payload.input,
     evidence: payload.evidence,
-    warnings: payload.warnings,
   })
 }
 
