@@ -7,12 +7,14 @@ export function PlanningDayContinuityView({
   day,
   continuity,
   onLaunchLive,
+  initialFocusedSectionId = null,
 }: {
   day: ProjectedDay
   continuity: DayContinuityProjection
   onLaunchLive?: (sectionId: string, lessonId: string) => void
+  initialFocusedSectionId?: string | null
 }) {
-  const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null)
+  const [focusedSectionId, setFocusedSectionId] = useState<string | null>(initialFocusedSectionId)
   const sections = useMemo(() => continuity.courses.flatMap((course) => course.sections.map((section) => ({
     courseId: course.courseId,
     courseTitle: course.courseTitle,
