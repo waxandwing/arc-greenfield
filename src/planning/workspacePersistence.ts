@@ -27,7 +27,7 @@ export function deserializePlanningWorkspace(raw: string): PlanningWorkspaceInpu
       calendarId: workspace.calendarId,
       courses: workspace.courses.map((course) => ({ ...course })),
       sections: workspace.sections.map((section) => ({ ...section })),
-      dayNotes: workspace.dayNotes.map((note) => ({ ...note })),
+      dayNotes: (workspace.dayNotes ?? []).map((note) => ({ ...note })),
     }
   } catch {
     return null
