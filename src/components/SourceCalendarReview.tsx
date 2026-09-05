@@ -19,7 +19,12 @@ export function SourceCalendarReview({ input }: Props) {
 
   const sourceLabel = input.patternSource === 'district-source' ? 'District source' : 'Imported source'
   const evidence = input.provenance ?? []
-  const uncertainCount = Object.values(calendar.days).filter((day) => day.confidence && day.confidence !== 'confirmed').length
+  const explicitUncertainExceptions = new Set(
+    (input.exceptions ?? [])
+      .filter((day) => day.confidence && day.confidence !== 'confirmed')
+      .map((day) => day.date),
+  )
+  const confidenceSummary = confidenceReviewSummary(input.patternConfidence, explicitUncertainExceptions.size)
 
   return (
     <section className="source-calendar-review" aria-labelledby="source-calendar-review-title">
@@ -58,7 +63,7 @@ export function SourceCalendarReview({ input }: Props) {
             <p className="source-calendar-kicker">Mini calendar</p>
             <strong>First five weeks</strong>
           </div>
-          <p>{uncertainCount > 0 ? `${uncertainCount} date${uncertainCount === 1 ? '' : 's'} still carry mixed or inferred confidence.` : 'All previewed calendar truth is confirmed.'}</p>
+          <p>{confidenceSummary}</p>
         </div>
         <div className="source-calendar-weekdays" aria-hidden="true">
           {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
@@ -68,11 +73,12 @@ export function SourceCalendarReview({ input }: Props) {
             if (!date) return <span key={`blank-${index}`} className="source-calendar-day is-blank" role="presentation" />
             const day = calendar.days[date]
             const dateNumber = Number(date.slice(-2))
+            const isExplicitlyUncertain = explicitUncertainExceptions.has(date)
             const label = `${date}: ${day.kind}${day.label ? `, ${day.label}` : ''}${day.confidence ? `, ${day.confidence}` : ''}`
             return (
               <span
                 key={date}
-                className={`source-calendar-day is-${day.kind}${day.confidence && day.confidence !== 'confirmed' ? ' is-uncertain' : ''}`}
+                className={`source-calendar-day is-${day.kind}${isExplicitlyUncertain ? ' is-uncertain' : ''}`}
                 role="gridcell"
                 aria-label={label}
                 title={label}
@@ -94,4 +100,18 @@ function mondayColumn(date: ISODate) {
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function confidenceReviewSummary(confidence: CalendarHydrationInput['patternConfidence'], explicitUncertainCount: number) {
+  const exceptionText = explicitUncertainCount > 0
+    ? `${explicitUncertainCount} exception${explicitUncertainCount === 1 ? '' : 's'} also need${explicitUncertainCount === 1 ? 's' : ''} a closer look.`
+    : 'No individual exception is separately flagged.'
+
+  if (confidence === 'confirmed') {
+    return explicitUncertainCount > 0
+      ? `The calendar pattern is confirmed. ${exceptionText}`
+      : 'The calendar pattern and listed exceptions are confirmed.'
+  }
+
+  return `The overall calendar pattern is ${confidence}. ${exceptionText}`
 }
