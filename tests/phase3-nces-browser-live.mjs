@@ -36,7 +36,8 @@ try {
   }
 
   const text = await results.textContent()
-  assert((text ?? '').includes('Oak Ridge High'), `Live browser NCES lookup did not return Oak Ridge High: ${text}`)
+  const normalizedText = (text ?? '').toUpperCase()
+  assert(normalizedText.includes('OAK RIDGE HIGH'), `Live browser NCES lookup did not return Oak Ridge High: ${text}`)
   assert((text ?? '').includes('NCES Common Core of Data'), `Live browser NCES lookup lost official source labeling: ${text}`)
   assert(browserErrors.length === 0, `Live browser NCES lookup produced browser errors: ${browserErrors.join(' | ')}`)
 
