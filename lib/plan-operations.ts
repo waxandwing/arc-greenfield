@@ -27,6 +27,7 @@ export function movePlanToCalendarDate(plans: Plan[], id: string, date: string, 
       courseId,
       date,
       location: "calendar",
+      arcLocation: "calendar",
       parentUnitId: detachFromUnit ? null : item.parentUnitId,
       childOrder: detachFromUnit ? null : item.childOrder
     };
