@@ -53,9 +53,18 @@ await page.getByLabel('City').fill('Orlando')
 await page.getByLabel('State').fill('FL')
 await page.getByRole('button', { name: 'Find my school' }).click()
 assert(interceptedSearches === 1, `Candidate search did not use the deterministic NCES fixture (${interceptedSearches} interceptions).`)
-assert(await page.getByText('2 official records found.').count() === 1, 'Multiple official candidates were not kept explicit.')
-assert(await page.getByText('Choose the school yourself. Arc will not guess.').count() === 1, 'Candidate chooser does not state the no-guess rule.')
-assert(await page.getByText('Source: NCES Common Core of Data / EDGE').count() === 2, 'NCES source labeling is missing from candidates.')
+
+const renderedResults = page.locator('.school-identity-results')
+const renderedCandidates = page.locator('.school-identity-candidate')
+const renderedResultText = await renderedResults.count() ? await renderedResults.textContent() : '(no results region)'
+const renderedCandidateCount = await renderedCandidates.count()
+assert(
+  renderedCandidateCount === 2,
+  `Multiple official candidates were not kept explicit. Rendered candidates=${renderedCandidateCount}; results=${renderedResultText}`,
+)
+assert((renderedResultText ?? '').includes('2 official records found.'), `Candidate summary is incorrect: ${renderedResultText}`)
+assert((renderedResultText ?? '').includes('Choose the school yourself. Arc will not guess.'), 'Candidate chooser does not state the no-guess rule.')
+assert(await page.getByText('Source: NCES Common Core of Data — Public School Administrative Data 2024–25').count() === 2, 'NCES source labeling is missing from candidates.')
 
 const firstChoice = page.getByRole('button', { name: 'This is my school' }).first()
 await firstChoice.focus()
