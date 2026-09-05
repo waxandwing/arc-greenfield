@@ -19,6 +19,10 @@ function shiftDate(value: string | null, deltaDays: number): string | null {
   return formatDate(date);
 }
 
+function isCalendarPlaced(plan: Plan) {
+  return plan.arcLocation ? plan.arcLocation === "calendar" : plan.location === "calendar";
+}
+
 export function collectPlanTree(plans: Plan[], rootId: string): Plan[] {
   const ids = new Set<string>([rootId]);
   let added = true;
@@ -69,9 +73,36 @@ export function shiftPlanTree(plans: Plan[], rootId: string, deltaDays: number, 
   });
 }
 
+export type UnitUnplaceBlocker = {
+  code: "scheduled-children";
+  unitId: string;
+  scheduledChildren: Array<Pick<Plan, "id" | "title" | "date">>;
+};
+
+export function unitUnplaceBlocker(plans: Plan[], rootId: string): UnitUnplaceBlocker | null {
+  const root = plans.find((plan) => plan.id === rootId);
+  if (!root || root.type !== "unit") return null;
+
+  const scheduledChildren = collectPlanTree(plans, rootId)
+    .filter((plan) => plan.id !== rootId && isCalendarPlaced(plan))
+    .map((plan) => ({ id: plan.id, title: plan.title, date: plan.date }));
+
+  return scheduledChildren.length
+    ? { code: "scheduled-children", unitId: rootId, scheduledChildren }
+    : null;
+}
+
 export function movePlanTreeToIdeas(plans: Plan[], rootId: string): Plan[] {
-  const treeIds = new Set(collectPlanTree(plans, rootId).map((plan) => plan.id));
-  return plans.map((plan) => treeIds.has(plan.id) ? {
+  const root = plans.find((plan) => plan.id === rootId);
+  if (!root) return plans;
+
+  // "Put in Fridge" is UNPLACE, not "unschedule this whole teaching tree".
+  // A Unit must first reconcile its scheduled child Lessons. Once it has no
+  // scheduled children, only the selected Unit changes surface; descendants
+  // keep their own canonical placement/state.
+  if (unitUnplaceBlocker(plans, rootId)) return plans;
+
+  return plans.map((plan) => plan.id === rootId ? {
     ...plan,
     location: "ideas" as const,
     arcLocation: "fridge" as const
