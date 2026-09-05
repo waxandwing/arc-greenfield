@@ -28,8 +28,10 @@ const context = await browser.newContext({ viewport: { width: 1280, height: 900 
 const page = await context.newPage()
 const runtimeErrors = trackRuntimeErrors(page)
 let responseMode = 'candidates'
+let interceptedSearches = 0
 
-await page.route('**/EDGE_ADMINDATA_PUBLICSCH_2425/MapServer/1/query?*', async (route) => {
+await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWith('/MapServer/1/query'), async (route) => {
+  interceptedSearches += 1
   if (responseMode === 'error') {
     await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'fixture outage' }) })
     return
@@ -44,11 +46,13 @@ assert(await page.getByText('This step does not add school-calendar dates.').cou
 
 await page.getByRole('button', { name: 'Find my school' }).click()
 assert(await page.getByRole('alert').count() === 1, 'Invalid identity search did not surface an accessible error.')
+assert(interceptedSearches === 0, 'Invalid identity query unexpectedly reached NCES.')
 
 await page.getByLabel('School name').fill('Oak Ridge')
 await page.getByLabel('City').fill('Orlando')
 await page.getByLabel('State').fill('FL')
 await page.getByRole('button', { name: 'Find my school' }).click()
+assert(interceptedSearches === 1, `Candidate search did not use the deterministic NCES fixture (${interceptedSearches} interceptions).`)
 assert(await page.getByText('2 official records found.').count() === 1, 'Multiple official candidates were not kept explicit.')
 assert(await page.getByText('Choose the school yourself. Arc will not guess.').count() === 1, 'Candidate chooser does not state the no-guess rule.')
 assert(await page.getByText('Source: NCES Common Core of Data / EDGE').count() === 2, 'NCES source labeling is missing from candidates.')
@@ -69,11 +73,13 @@ await page.screenshot({ path: 'artifacts/phase3-school-identity-search/school-id
 responseMode = 'none'
 await page.getByLabel('School name').fill('Definitely Missing School')
 await page.getByRole('button', { name: 'Find my school' }).click()
+assert(interceptedSearches === 2, 'Zero-result search did not use the deterministic NCES fixture.')
 assert(await page.getByText('No official NCES match yet.').count() === 1, 'Zero-result state is not explicit.')
 
 responseMode = 'error'
 await page.getByLabel('School name').fill('Provider Failure School')
 await page.getByRole('button', { name: 'Find my school' }).click()
+assert(interceptedSearches === 3, 'Provider-error search did not use the deterministic NCES fixture.')
 assert(await page.getByRole('alert').count() === 1, 'Provider failure did not surface an accessible error.')
 assert((await page.getByRole('alert').textContent())?.includes('Nothing was selected or saved'), 'Provider failure does not state non-mutation behavior.')
 
