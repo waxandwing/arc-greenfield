@@ -48,7 +48,14 @@ export function resolveTreeRootId(plans: Plan[], planId: string): string | null 
 }
 
 export function shiftPlanTree(plans: Plan[], rootId: string, deltaDays: number, courseId?: string | null): Plan[] {
-  const treeIds = new Set(collectPlanTree(plans, rootId).map((plan) => plan.id));
+  const tree = collectPlanTree(plans, rootId);
+
+  // Fixed dates are anchors. Tree-level movement must fail closed rather than
+  // shifting around them or silently breaking them. A future explicit override
+  // must be a separate, auditable operation rather than a flag hidden here.
+  if (deltaDays !== 0 && tree.some((plan) => plan.fixedDate && Boolean(plan.date))) return plans;
+
+  const treeIds = new Set(tree.map((plan) => plan.id));
   return plans.map((plan) => {
     if (!treeIds.has(plan.id)) return plan;
     return {
