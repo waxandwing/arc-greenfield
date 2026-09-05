@@ -1,6 +1,6 @@
 import { hydrateSchoolCalendar, validateHydrationInput, type CalendarHydrationInput } from './hydration'
 import { validateSchoolCalendar } from './schoolCalendar'
-import type { CalendarDay, CalendarSource, Confidence, DayKind, ISODate, SchoolCalendar, TermBoundary } from './types'
+import type { CalendarDay, CalendarProvenance, CalendarSource, Confidence, DayKind, ISODate, SchoolCalendar, TermBoundary } from './types'
 
 const STORAGE_KEY = 'arc.calendar.v1'
 const SCHEMA_VERSION = 1
@@ -123,6 +123,8 @@ function parseHydrationInput(value: Record<string, unknown>): CalendarHydrationI
   if (quarters === null) return null
   const semesters = parseBoundaries(value.semesters)
   if (semesters === null) return null
+  const provenance = parseProvenance(value.provenance)
+  if (provenance === null) return null
 
   return {
     id: value.id,
@@ -135,6 +137,7 @@ function parseHydrationInput(value: Record<string, unknown>): CalendarHydrationI
     exceptions,
     quarters,
     semesters,
+    provenance,
   }
 }
 
@@ -180,6 +183,31 @@ function parseBoundaries(value: unknown): TermBoundary[] | null {
     })
   }
   return boundaries
+}
+
+function parseProvenance(value: unknown): CalendarProvenance[] | null {
+  if (value === undefined) return []
+  if (!Array.isArray(value)) return null
+
+  const provenance: CalendarProvenance[] = []
+  for (const item of value) {
+    if (
+      !isRecord(item) ||
+      typeof item.id !== 'string' ||
+      (item.source !== 'import' && item.source !== 'district-source') ||
+      typeof item.label !== 'string'
+    ) return null
+    if (item.locator !== undefined && typeof item.locator !== 'string') return null
+    if (item.capturedAt !== undefined && typeof item.capturedAt !== 'string') return null
+    provenance.push({
+      id: item.id,
+      source: item.source,
+      label: item.label,
+      locator: item.locator as string | undefined,
+      capturedAt: item.capturedAt as string | undefined,
+    })
+  }
+  return provenance
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -6,6 +6,14 @@ export type Confidence = 'confirmed' | 'mixed' | 'inferred'
 
 export type DayKind = 'instructional' | 'no-school' | 'teacher-workday' | 'holiday' | 'break' | 'unknown'
 
+export type CalendarProvenance = {
+  id: string
+  source: Exclude<CalendarSource, 'manual'>
+  label: string
+  locator?: string
+  capturedAt?: string
+}
+
 export type CalendarDay = {
   date: ISODate
   kind: DayKind

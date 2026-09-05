@@ -6,6 +6,8 @@ import {
   validateHydrationInput,
   type CalendarDay,
   type CalendarHydrationInput,
+  type CalendarSource,
+  type Confidence,
   type DayKind,
   type ISODate,
   type SchoolCalendar,
@@ -35,7 +37,11 @@ type DraftException = {
   date: string
   kind: Exclude<DayKind, 'unknown'>
   label: string
+  source?: CalendarSource
+  confidence?: Confidence
 }
+
+type ExceptionPatch = Pick<Partial<DraftException>, 'date' | 'kind' | 'label'>
 
 type Props = {
   initialValue?: CalendarHydrationInput | null
@@ -54,9 +60,12 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
     date: day.date,
     kind: day.kind === 'unknown' ? 'no-school' : day.kind,
     label: day.label ?? '',
+    source: day.source,
+    confidence: day.confidence,
   })))
   const [errors, setErrors] = useState<string[]>([])
   const errorSummaryRef = useRef<HTMLDivElement | null>(null)
+  const isSourceBackedEdit = Boolean(initialValue && initialValue.patternSource !== 'manual')
 
   const input = useMemo<CalendarHydrationInput>(() => buildManualCalendarInput({
     calendarId,
@@ -70,11 +79,16 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
         date: item.date as ISODate,
         kind: item.kind,
         label: item.label.trim() || undefined,
-        source: 'manual',
-        confidence: 'confirmed',
+        source: item.source ?? 'manual',
+        confidence: item.confidence ?? 'confirmed',
       })),
     quarters: initialValue?.quarters,
     semesters: initialValue?.semesters,
+    existingTruth: initialValue ? {
+      patternSource: initialValue.patternSource,
+      patternConfidence: initialValue.patternConfidence,
+      provenance: initialValue.provenance,
+    } : undefined,
   }), [calendarId, schoolYearLabel, firstDay, lastDay, weekdays, exceptions, initialValue])
 
   const validationVisible = errors.length > 0
@@ -94,11 +108,18 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
       date: '',
       kind: 'no-school',
       label: '',
+      source: 'manual',
+      confidence: 'confirmed',
     }])
   }
 
-  function updateException(id: string, patch: Partial<DraftException>) {
-    setExceptions((current) => current.map((item) => item.id === id ? { ...item, ...patch } : item))
+  function updateException(id: string, patch: ExceptionPatch) {
+    setExceptions((current) => current.map((item) => item.id === id ? {
+      ...item,
+      ...patch,
+      source: 'manual',
+      confidence: 'confirmed',
+    } : item))
   }
 
   function removeException(id: string) {
@@ -242,7 +263,9 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
         </div>
 
         <div className="setup-actions">
-          <p>Manual setup is treated as confirmed only because you are explicitly declaring the pattern and exceptions here.</p>
+          <p>{isSourceBackedEdit
+            ? 'This edit keeps the reviewed source and confidence history. Dates you change here are recorded as your confirmed manual corrections.'
+            : 'Manual setup is treated as confirmed only because you are explicitly declaring the pattern and exceptions here.'}</p>
           <div className="setup-action-buttons">
             {onCancel && <button type="button" className="quiet-button" onClick={onCancel}>Cancel</button>}
             <button type="submit" className="primary-button">Use this calendar</button>
