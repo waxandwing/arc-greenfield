@@ -14,10 +14,20 @@ type Props = {
   onClose: () => void;
 };
 
+function safeResourceUrl(value: string): string | null {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch, onClose }: Props) {
   const [title, setTitle] = useState(plan.title);
   const [resourceLabel, setResourceLabel] = useState("");
   const [resourceUrl, setResourceUrl] = useState("");
+  const [resourceError, setResourceError] = useState<string | null>(null);
 
   function commitTitle() {
     const next = title.trim();
@@ -32,15 +42,32 @@ export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch
 
   function addResource() {
     if (!resourceLabel.trim() || !resourceUrl.trim()) return;
+    const safeUrl = safeResourceUrl(resourceUrl);
+    if (!safeUrl) {
+      setResourceError("Use a valid http:// or https:// link.");
+      return;
+    }
     onPatch(plan.id, {
-      resources: [...plan.resources, { id: crypto.randomUUID(), label: resourceLabel.trim(), url: resourceUrl.trim() }]
+      resources: [...plan.resources, { id: crypto.randomUUID(), label: resourceLabel.trim(), url: safeUrl }]
     });
     setResourceLabel("");
     setResourceUrl("");
+    setResourceError(null);
   }
 
   return (
-    <section className="calendarObjectDetails" role="dialog" aria-label={`Full details for ${plan.title}`} onClick={(event) => event.stopPropagation()}>
+    <section
+      className="calendarObjectDetails"
+      role="dialog"
+      aria-label={`Full details for ${plan.title}`}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          onClose();
+        }
+      }}
+    >
       <header className="calendarObjectDetailsHeader">
         <div>
           <span>{plan.type === "unit" ? "Unit" : plan.type === "lesson" ? "Lesson" : "Note"}</span>
@@ -93,9 +120,10 @@ export function CalendarObjectDetails({ plan, courses, onRename, onMove, onPatch
         ))}
         <div className="calendarResourceAdder">
           <input value={resourceLabel} onChange={(event) => setResourceLabel(event.target.value)} placeholder="Resource name" />
-          <input value={resourceUrl} onChange={(event) => setResourceUrl(event.target.value)} placeholder="https://…" />
+          <input value={resourceUrl} onChange={(event) => { setResourceUrl(event.target.value); setResourceError(null); }} placeholder="https://…" aria-invalid={Boolean(resourceError)} aria-describedby={resourceError ? `resource-error-${plan.id}` : undefined} />
           <button type="button" onClick={addResource}>Add</button>
         </div>
+        {resourceError && <p className="calendarResourceError" id={`resource-error-${plan.id}`} role="alert">{resourceError}</p>}
       </div>
 
       {plan.taskContext && (
