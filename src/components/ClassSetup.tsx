@@ -58,6 +58,7 @@ export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new 
         calendarId,
         courses: courses.map((course) => ({ ...course, title: course.title.trim() })),
         sections: sections.map((section) => ({ ...section, name: section.name.trim(), calendarId })),
+        dayNotes: initialValue?.dayNotes?.map((note) => ({ ...note })) ?? [],
       }
       const workspace = hydratePlanningWorkspace(input)
       setErrors([])
