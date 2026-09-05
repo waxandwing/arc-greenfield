@@ -1,7 +1,7 @@
 import { chromium } from 'playwright'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
-const pdfUrl = 'https://www.ocps.net/UserFiles/Servers/Server_54619/File/Frequently%20Updated%20Documents/2026-2027%20School%20Calendar.pdf'
+const pdfUrl = 'https://www.ocps.net/110680_3'
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
