@@ -25,16 +25,16 @@ async function configureCalendar(page) {
 async function createClasses(page) {
   await page.getByRole('button', { name: 'Set classes' }).click()
   await page.getByRole('button', { name: 'Add a course' }).click()
-  await page.getByLabel('Course').fill('AP Art History')
+  await page.getByRole('textbox', { name: 'Course' }).fill('AP Art History')
   await page.getByRole('button', { name: 'Add a period or section' }).click()
-  await page.getByLabel('Period or section').fill('Period 2')
+  await page.getByRole('textbox', { name: 'Period or section' }).fill('Period 2')
   await page.getByRole('button', { name: 'Save classes' }).click()
 }
 
 async function createUnit(page) {
   await page.getByRole('button', { name: 'Add Units' }).click()
   await page.getByRole('button', { name: 'Add Unit' }).click()
-  await page.getByLabel('Unit').fill('Ancient Egypt')
+  await page.getByRole('textbox', { name: 'Unit' }).fill('Ancient Egypt')
   await page.getByLabel('Start').fill('2026-09-14')
   await page.getByLabel('End').fill('2026-09-25')
   await page.getByRole('button', { name: 'Save Units' }).click()
@@ -42,7 +42,7 @@ async function createUnit(page) {
 
 async function addLesson(page, title, date) {
   await page.getByRole('button', { name: 'Add Lesson' }).click()
-  await page.getByLabel('Lesson title').fill(title)
+  await page.getByRole('textbox', { name: 'Lesson title' }).fill(title)
   await page.getByLabel('Planned date').fill(date)
 }
 
