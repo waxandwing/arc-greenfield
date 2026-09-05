@@ -16,10 +16,13 @@ type DropHandlers = {
 type ActiveDrag = FridgeDragPayload & { pointerId: number }
 type PointerPosition = { x: number; y: number }
 
+type LogicalDropTarget =
+  | { kind: 'cell'; row: number; column: number }
+  | { kind: 'drawer' }
+  | { kind: 'door' }
+
 type ResolvedDropTarget = {
-  drawerTarget: HTMLElement | null
-  doorTarget: HTMLElement | null
-  cellTarget: HTMLElement | null
+  target: LogicalDropTarget | null
 }
 
 const AUTO_SCROLL_EDGE = 56
@@ -28,6 +31,7 @@ const AUTO_SCROLL_STEP = 14
 export function useFridgePointerDrag(handlers: DropHandlers) {
   const activeRef = useRef<ActiveDrag | null>(null)
   const pointerRef = useRef<PointerPosition | null>(null)
+  const lastValidTargetRef = useRef<LogicalDropTarget | null>(null)
   const autoScrollFrameRef = useRef<number | null>(null)
   const [active, setActive] = useState<FridgeDragPayload | null>(null)
 
@@ -36,12 +40,14 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
     event.preventDefault()
     activeRef.current = { ...payload, pointerId: event.pointerId }
     pointerRef.current = { x: event.clientX, y: event.clientY }
+    lastValidTargetRef.current = null
     setActive(payload)
     beginAutoScroll()
 
     const move = (pointerEvent: PointerEvent) => {
       if (activeRef.current?.pointerId !== pointerEvent.pointerId) return
       pointerRef.current = { x: pointerEvent.clientX, y: pointerEvent.clientY }
+      rememberLiveTarget(pointerEvent.clientX, pointerEvent.clientY)
     }
     const finish = (pointerEvent: PointerEvent) => {
       if (activeRef.current?.pointerId !== pointerEvent.pointerId) return
@@ -76,11 +82,21 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
         let deltaY = 0
         if (pointer.y < AUTO_SCROLL_EDGE) deltaY = -AUTO_SCROLL_STEP
         else if (pointer.y > window.innerHeight - AUTO_SCROLL_EDGE) deltaY = AUTO_SCROLL_STEP
-        if (deltaY !== 0) window.scrollBy(0, deltaY)
+        if (deltaY !== 0) {
+          window.scrollBy(0, deltaY)
+          // Re-resolve after every scroll step so the remembered target always
+          // reflects current geometry, never a coordinate captured before scroll.
+          rememberLiveTarget(pointer.x, pointer.y)
+        }
       }
       autoScrollFrameRef.current = window.requestAnimationFrame(tick)
     }
     autoScrollFrameRef.current = window.requestAnimationFrame(tick)
+  }
+
+  function rememberLiveTarget(clientX: number, clientY: number) {
+    const resolved = resolveDropTarget(clientX, clientY).target
+    if (resolved) lastValidTargetRef.current = resolved
   }
 
   function complete(clientX: number, clientY: number) {
@@ -90,31 +106,24 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
       return
     }
 
-    // Resolve against the live drag-state DOM before clearing visual drag state.
-    // Clearing first can rerender the surface and invalidate the exact release target.
-    const resolved = resolveDropTarget(clientX, clientY)
+    const current = resolveDropTarget(clientX, clientY).target
+    const target = current ?? lastValidTargetRef.current
     clear()
-
-    const { drawerTarget, doorTarget, cellTarget } = resolved
+    if (!target) return
 
     if (payload.kind === 'entity' && payload.source === 'drawer') {
-      if (cellTarget) {
-        const coordinates = readCellCoordinates(cellTarget)
-        if (!coordinates) {
-          handlers.onReject('Arc could not identify that Fridge Door position. Nothing changed.')
-          return
-        }
-        const result = handlers.onRepositionEntity(payload.entityRef, coordinates.row, coordinates.column)
+      if (target.kind === 'cell') {
+        const result = handlers.onRepositionEntity(payload.entityRef, target.row, target.column)
         if (result) handlers.onReject(result)
         return
       }
-      if (!doorTarget) return
+      if (target.kind !== 'door') return
       const result = handlers.onBringBack(payload.entityRef)
       if (result) handlers.onReject(result)
       return
     }
 
-    if (drawerTarget) {
+    if (target.kind === 'drawer') {
       if (payload.kind === 'stack') {
         handlers.onReject('Stacks stay together on the Fridge Door. Open the stack to put away an individual item.')
         return
@@ -124,22 +133,17 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
       return
     }
 
-    if (!cellTarget) return
-    const coordinates = readCellCoordinates(cellTarget)
-    if (!coordinates) {
-      handlers.onReject('Arc could not identify that Fridge Door position. Nothing changed.')
-      return
-    }
-
+    if (target.kind !== 'cell') return
     const result = payload.kind === 'stack'
-      ? handlers.onRepositionStack(payload.stackId, coordinates.row, coordinates.column)
-      : handlers.onRepositionEntity(payload.entityRef, coordinates.row, coordinates.column)
+      ? handlers.onRepositionStack(payload.stackId, target.row, target.column)
+      : handlers.onRepositionEntity(payload.entityRef, target.row, target.column)
     if (result) handlers.onReject(result)
   }
 
   function clear() {
     activeRef.current = null
     pointerRef.current = null
+    lastValidTargetRef.current = null
     if (autoScrollFrameRef.current !== null) {
       window.cancelAnimationFrame(autoScrollFrameRef.current)
       autoScrollFrameRef.current = null
@@ -155,13 +159,17 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
 }
 
 function resolveDropTarget(clientX: number, clientY: number): ResolvedDropTarget {
-  const target = document.elementFromPoint(clientX, clientY) as HTMLElement | null
-  const liveCellTarget = findLiveCellAtPoint(clientX, clientY)
-  return {
-    drawerTarget: target?.closest<HTMLElement>('[data-fridge-drop-drawer="true"]') ?? null,
-    doorTarget: target?.closest<HTMLElement>('[data-fridge-drop-door="true"]') ?? null,
-    cellTarget: liveCellTarget ?? target?.closest<HTMLElement>('[data-fridge-drop-cell="true"]') ?? null,
+  const liveCell = findLiveCellAtPoint(clientX, clientY)
+  if (liveCell) {
+    const coordinates = readCellCoordinates(liveCell)
+    if (coordinates) return { target: { kind: 'cell', ...coordinates } }
   }
+
+  const target = document.elementFromPoint(clientX, clientY) as HTMLElement | null
+  if (!target) return { target: null }
+  if (target.closest<HTMLElement>('[data-fridge-drop-drawer="true"]')) return { target: { kind: 'drawer' } }
+  if (target.closest<HTMLElement>('[data-fridge-drop-door="true"]')) return { target: { kind: 'door' } }
+  return { target: null }
 }
 
 function findLiveCellAtPoint(clientX: number, clientY: number): HTMLElement | null {
