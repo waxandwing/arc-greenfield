@@ -309,10 +309,10 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
           </section>
 
           <button type="button" className="edgePullTab fridgePullTab" onClick={openFridge} aria-expanded={fridgeOpen}>Fridge</button>
-          <FridgeDrawer open={fridgeOpen} plans={workspace.plans} courses={workspace.courses} selectedPlanId={selectedPlanId} onClose={() => setFridgeOpen(false)} onCreate={addFridgeObject} onSelect={selectPlan} onDelete={deletePlan} onMoveToTaskBar={movePlanToTaskTier} onDropObject={putPlanInFridge} />
+          <FridgeDrawer open={fridgeOpen} plans={workspace.plans} courses={workspace.courses} selectedPlanId={selectedPlanId} onClose={() => setFridgeOpen(false)} onCreate={addFridgeObject} onSelect={selectPlan} onDelete={deletePlan} onMoveToTaskBar={movePlanToTaskTier} onDropObject={putPlanInFridge} onSchedule={movePlanToDate} />
         </div>
 
-        <TaskBar plans={workspace.plans} onCreate={addTaskObject} onMoveTier={movePlanToTaskTier} onUpdateTask={patchTaskContext} onPutInFridge={putPlanInFridge} onSelect={selectPlan} />
+        <TaskBar plans={workspace.plans} courses={workspace.courses} onCreate={addTaskObject} onMoveTier={movePlanToTaskTier} onUpdateTask={patchTaskContext} onPutInFridge={putPlanInFridge} onSchedule={movePlanToDate} onSelect={selectPlan} />
       </section>
     </main>
   );
