@@ -53,14 +53,37 @@ export function applyCut(workspace: Workspace, clipboard: ArcClipboard): Workspa
   return { ...workspace, plans: deletePlanTree(workspace.plans, clipboard.sourceRootId) };
 }
 
+export function canPasteClipboardToTarget(clipboard: ArcClipboard, target: PasteTarget): boolean {
+  const sourceRoot = clipboard.tree.find((plan) => plan.id === clipboard.sourceRootId);
+  if (!sourceRoot) return false;
+
+  if (target.location === "ideas") return true;
+  if (!target.date) return false;
+
+  // Day Notes are represented by a calendar target with no course. Only free-standing
+  // note/magnet objects may use that lane.
+  if (target.courseId === null) return sourceRoot.type === "note";
+
+  // Class calendar lanes schedule Units and Lessons only.
+  return sourceRoot.type === "unit" || sourceRoot.type === "lesson";
+}
+
 export function pasteClipboard(workspace: Workspace, clipboard: ArcClipboard, target: PasteTarget): PasteResult {
   const sourceRoot = clipboard.tree.find((plan) => plan.id === clipboard.sourceRootId);
-  if (!sourceRoot) return { workspace, pastedRootId: null, nextClipboard: clipboard };
+  if (!sourceRoot || !canPasteClipboardToTarget(clipboard, target)) {
+    return { workspace, pastedRootId: null, nextClipboard: clipboard };
+  }
 
   const targetDate = target.location === "ideas" ? null : target.date;
   const clones = clonePlanTree(clipboard.tree, clipboard.sourceRootId, targetDate, target.courseId);
   const pastedRoot = clones.find((plan) => plan.parentUnitId === null) ?? clones[0] ?? null;
-  const normalized = clones.map((plan) => ({ ...plan, location: target.location, courseId: target.courseId }));
+  const normalized = clones.map((plan) => ({
+    ...plan,
+    location: target.location,
+    courseId: sourceRoot.type === "note" && target.location === "calendar" ? null : target.courseId,
+    parentUnitId: sourceRoot.type === "note" ? null : plan.parentUnitId,
+    childOrder: sourceRoot.type === "note" ? null : plan.childOrder
+  }));
   const nextWorkspace = { ...workspace, plans: [...workspace.plans, ...normalized] };
 
   return {
