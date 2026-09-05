@@ -23,6 +23,14 @@ async function configureCalendar(page, { label = '2026–27', first = '2026-09-0
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 }
 
+async function openSettings(page) {
+  const drawer = page.getByRole('complementary', { name: 'Settings and setup' })
+  if (!(await drawer.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  }
+  return page.getByRole('complementary', { name: 'Settings and setup' })
+}
+
 async function auditDesktop(browser) {
   const context = await browser.newContext({ viewport: { width: 1024, height: 900 } })
   const page = await context.newPage()
@@ -30,7 +38,6 @@ async function auditDesktop(browser) {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
 
   assert(await page.getByRole('main').count() === 1, 'Desktop: expected exactly one main landmark.')
-  assert(await page.getByRole('navigation', { name: 'Calendar views' }).count() === 1, 'Desktop: Calendar views navigation lost its accessible name.')
   assert(await page.getByRole('heading', { name: 'Tell Arc which days are actually yours.' }).count() === 1, 'Desktop: calendar setup heading is missing or duplicated.')
 
   await page.keyboard.press('Tab')
@@ -77,9 +84,11 @@ async function auditShellHierarchyAndZoom(browser) {
   assert(await page.getByRole('group', { name: 'Month date navigation' }).count() === 1, 'Shell semantics: date navigation must be an explicit named control group.')
   assert(await page.getByRole('region', { name: /calendar grid$/ }).count() === 1, 'Shell semantics: Month grid must expose a named region.')
   assert(await page.locator('div[aria-label]:not([role])').count() === 0, 'Shell semantics: generic divs must not rely on aria-label without a semantic role.')
+  assert(await page.getByRole('navigation', { name: 'Calendar views' }).count() === 1, 'Shell semantics: in-planner view switching must keep an accessible Calendar views navigation landmark.')
 
-  const options = page.getByText('View options', { exact: true })
-  assert(await options.count() === 1, 'Shell hierarchy: View options disclosure is missing or duplicated.')
+  const drawer = await openSettings(page)
+  assert(await drawer.getByText('View options', { exact: true }).count() === 1, 'Shell hierarchy: View options is missing from Settings.')
+  await drawer.getByRole('button', { name: 'Close Settings', exact: true }).click()
 
   mkdirSync('artifacts', { recursive: true })
   await page.screenshot({ path: 'artifacts/phase1-shell-1280.png', fullPage: true })
@@ -111,7 +120,8 @@ async function auditCalendarEditPreservesContext(browser) {
   const beforeRange = await page.locator('.projection-section').first().getAttribute('aria-label')
   assert(Boolean(beforeRange), 'Calendar edit continuity: Week range did not expose its current anchored range.')
 
-  await page.getByRole('button', { name: 'Edit dates' }).click()
+  const drawer = await openSettings(page)
+  await drawer.getByRole('button', { name: 'School calendar', exact: true }).click()
   await page.locator('#last-school-day').fill('2027-06-01')
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 
@@ -206,7 +216,7 @@ try {
   await auditTouchAndReflow(browser)
   await auditMinimumWidth(browser)
   await auditReducedMotion(browser)
-  console.log('Arc browser accessibility smoke gate passed: landmarks, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
+  console.log('Arc browser accessibility smoke gate passed: landmarks, shell hierarchy/semantics, Settings edge workflow, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
 } finally {
   await browser.close()
 }
