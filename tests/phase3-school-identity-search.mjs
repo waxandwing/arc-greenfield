@@ -56,11 +56,12 @@ await page.getByLabel('School name').fill('Oak Ridge')
 await page.getByLabel('City').fill('Orlando')
 await page.getByLabel('State').fill('FL')
 await page.getByRole('button', { name: 'Find my school' }).click()
+await page.getByText('2 official records found.').waitFor({ state: 'visible' })
 assert(interceptedSearches === 1, `Candidate search did not use the deterministic NCES fixture (${interceptedSearches} interceptions).`)
 
 const renderedResults = page.locator('.school-identity-results')
 const renderedCandidates = page.locator('.school-identity-candidate')
-const renderedResultText = await renderedResults.count() ? await renderedResults.textContent() : '(no results region)'
+const renderedResultText = await renderedResults.textContent()
 const renderedCandidateCount = await renderedCandidates.count()
 assert(
   renderedCandidateCount === 2,
@@ -74,7 +75,7 @@ const firstChoice = page.getByRole('button', { name: 'This is my school' }).firs
 await firstChoice.focus()
 await page.keyboard.press('Enter')
 const selected = page.getByRole('status', { name: 'Selected official school identity' })
-assert(await selected.count() === 1, 'Keyboard candidate selection did not surface the selected identity status.')
+await selected.waitFor({ state: 'visible' })
 assert((await selected.textContent())?.includes('Nothing has been added to your calendar.'), 'Selected identity does not explicitly preserve calendar non-mutation truth.')
 
 const persistedAfterSelection = await page.evaluate(() => localStorage.getItem('arc.calendar.v1'))
@@ -86,15 +87,16 @@ await page.screenshot({ path: 'artifacts/phase3-school-identity-search/school-id
 responseMode = 'none'
 await page.getByLabel('School name').fill('Definitely Missing School')
 await page.getByRole('button', { name: 'Find my school' }).click()
+await page.getByText('No official NCES match yet.').waitFor({ state: 'visible' })
 assert(interceptedSearches === 2, 'Zero-result search did not use the deterministic NCES fixture.')
-assert(await page.getByText('No official NCES match yet.').count() === 1, 'Zero-result state is not explicit.')
 
 responseMode = 'error'
 await page.getByLabel('School name').fill('Provider Failure School')
 await page.getByRole('button', { name: 'Find my school' }).click()
+const providerAlert = page.getByRole('alert')
+await providerAlert.waitFor({ state: 'visible' })
 assert(interceptedSearches === 3, 'Provider-error search did not use the deterministic NCES fixture.')
-assert(await page.getByRole('alert').count() === 1, 'Provider failure did not surface an accessible error.')
-assert((await page.getByRole('alert').textContent())?.includes('Nothing was selected or saved'), 'Provider failure does not state non-mutation behavior.')
+assert((await providerAlert.textContent())?.includes('Nothing was selected or saved'), 'Provider failure does not state non-mutation behavior.')
 
 await page.setViewportSize({ width: 390, height: 844 })
 const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
