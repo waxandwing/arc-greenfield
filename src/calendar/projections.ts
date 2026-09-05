@@ -1,4 +1,4 @@
-import { addCalendarDays, compareISODate, eachCalendarDay } from './dateMath'
+import { addCalendarDays, compareISODate, eachCalendarDay, mondayFirstWeekdayIndex } from './dateMath'
 import { findContainingBoundary, getCalendarDay } from './schoolCalendar'
 import type { CalendarDay, ISODate, SchoolCalendar, TermBoundary } from './types'
 
@@ -168,15 +168,12 @@ function boundariesIntersectingRange(boundaries: TermBoundary[], startDate: ISOD
 }
 
 function startOfMondayWeek(date: ISODate): ISODate {
-  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay()
-  const mondayIndex = weekday === 0 ? 6 : weekday - 1
-  return addCalendarDays(date, -mondayIndex)
+  return addCalendarDays(date, -mondayFirstWeekdayIndex(date))
 }
 
 function endOfSundayWeek(date: ISODate): ISODate {
-  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay()
-  const distance = weekday === 0 ? 0 : 7 - weekday
-  return addCalendarDays(date, distance)
+  const mondayIndex = mondayFirstWeekdayIndex(date)
+  return addCalendarDays(date, 6 - mondayIndex)
 }
 
 function parseISODate(date: ISODate): { year: number; month: number; day: number } {
