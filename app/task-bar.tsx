@@ -23,6 +23,10 @@ type Props = {
   onSelect: (plan: Plan) => void;
 };
 
+function restoreTaskTrigger(id: string) {
+  window.requestAnimationFrame(() => document.getElementById(`task-more-${id}`)?.focus());
+}
+
 export function TaskBar({ plans, courses, onCreate, onMoveTier, onUpdateTask, onPutInFridge, onSchedule, onSelect }: Props) {
   const [draft, setDraft] = useState<{ tier: PriorityTier; title: string } | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -34,6 +38,16 @@ export function TaskBar({ plans, courses, onCreate, onMoveTier, onUpdateTask, on
     if (!draft?.title.trim()) return;
     onCreate(draft.tier, draft.title.trim());
     setDraft(null);
+  }
+
+  function closeDetails(id: string) {
+    setExpandedId(null);
+    restoreTaskTrigger(id);
+  }
+
+  function closeScheduling(id: string) {
+    setSchedulingId(null);
+    restoreTaskTrigger(id);
   }
 
   return (
@@ -103,6 +117,7 @@ export function TaskBar({ plans, courses, onCreate, onMoveTier, onUpdateTask, on
                         )}
                       </div>
                       <button
+                        id={`task-more-${plan.id}`}
                         type="button"
                         className="taskMore"
                         aria-expanded={expanded || scheduling}
@@ -127,7 +142,7 @@ export function TaskBar({ plans, courses, onCreate, onMoveTier, onUpdateTask, on
                             onPutInFridge(plan.id);
                             setExpandedId(null);
                           }}
-                          onClose={() => setExpandedId(null)}
+                          onClose={() => closeDetails(plan.id)}
                         />
                       )}
 
@@ -138,7 +153,7 @@ export function TaskBar({ plans, courses, onCreate, onMoveTier, onUpdateTask, on
                             courses={courses}
                             initialCourseId={plan.courseId}
                             initialDate={plan.date ?? plan.taskContext?.targetDate}
-                            onCancel={() => setSchedulingId(null)}
+                            onCancel={() => closeScheduling(plan.id)}
                             onSchedule={(date, courseId) => {
                               onSchedule(plan.id, date, courseId);
                               setSchedulingId(null);
