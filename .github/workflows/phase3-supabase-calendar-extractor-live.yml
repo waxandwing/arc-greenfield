@@ -1,0 +1,61 @@
+name: Phase 3 Supabase calendar extractor live
+
+on:
+  push:
+    branches:
+      - feature/phase3-server-calendar-extractor-boundary
+
+permissions:
+  contents: read
+
+jobs:
+  live-calendar-extractor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      FUNCTION_URL: https://jnbppgjkzzuquhenaqtq.supabase.co/functions/v1/official-calendar-source-text
+      # Legacy anon JWT is a public client credential, never a service-role secret.
+      SUPABASE_ANON_JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpuYnBwZ2prenp1cXVoZW5hcXRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyMDQ0MzksImV4cCI6MjEwMTc4MDQzOX0.rNUYEa0UKKrMh6Bfg4J0FikP9ZsbwZABAYgIB9P_P9M
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Reject unauthenticated extraction
+        run: |
+          code=$(curl --silent --show-error -o /tmp/unauth.json -w '%{http_code}' \
+            -X POST "$FUNCTION_URL" \
+            -H 'Content-Type: application/json' \
+            --data '{"sourceLocator":"https://www.ocps.net/110680_3"}')
+          echo "unauth_status=$code"
+          test "$code" = "401"
+      - name: Extract current official OCPS calendar
+        run: |
+          code=$(curl --silent --show-error -o /tmp/success.json -w '%{http_code}' \
+            -X POST "$FUNCTION_URL" \
+            -H "Authorization: Bearer $SUPABASE_ANON_JWT" \
+            -H "apikey: $SUPABASE_ANON_JWT" \
+            -H 'Content-Type: application/json' \
+            --data '{"sourceLocator":"https://www.ocps.net/110680_3"}')
+          echo "auth_status=$code"
+          test "$code" = "200"
+          node - <<'NODE'
+          const fs = require('fs')
+          const body = JSON.parse(fs.readFileSync('/tmp/success.json', 'utf8'))
+          if (body.sourceLocator !== 'https://www.ocps.net/110680_3') throw new Error('Live extractor lost exact source locator.')
+          if (body.publisher !== 'Orange County Public Schools') throw new Error('Live extractor lost publisher identity.')
+          if (body.totalPages !== 2) throw new Error(`Expected 2 pages, got ${body.totalPages}.`)
+          if (!(body.byteLength > 0 && body.byteLength <= 2000000)) throw new Error(`Invalid PDF byte length ${body.byteLength}.`)
+          if (typeof body.text !== 'string' || !body.text.includes('Orange County Public Schools') || !body.text.includes('First Day of School') || !body.text.includes('Last Day of School')) throw new Error('Live extractor text is missing required calendar identity/bounds.')
+          if (body.text.startsWith('%PDF-')) throw new Error('Function returned raw PDF instead of extracted text.')
+          console.log(JSON.stringify({ sourceLocator: body.sourceLocator, totalPages: body.totalPages, byteLength: body.byteLength, hasFirstDay: body.text.includes('First Day of School'), hasLastDay: body.text.includes('Last Day of School') }))
+          NODE
+      - name: Reject arbitrary external source
+        run: |
+          code=$(curl --silent --show-error -o /tmp/rejected.json -w '%{http_code}' \
+            -X POST "$FUNCTION_URL" \
+            -H "Authorization: Bearer $SUPABASE_ANON_JWT" \
+            -H "apikey: $SUPABASE_ANON_JWT" \
+            -H 'Content-Type: application/json' \
+            --data '{"sourceLocator":"https://example.com/calendar.pdf"}')
+          echo "wrong_source_status=$code"
+          test "$code" = "400"
+          grep -q 'supports only the confirmed OCPS' /tmp/rejected.json
