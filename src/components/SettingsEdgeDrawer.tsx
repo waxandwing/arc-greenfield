@@ -43,7 +43,11 @@ export function SettingsEdgeDrawer(props: Props) {
   } = props
 
   return (
-    <aside className={`settings-edge-drawer${open ? ' settings-edge-drawer--open' : ''}`} aria-hidden={!open} aria-label="Settings and setup">
+    <aside
+      className={`settings-edge-drawer${open ? ' settings-edge-drawer--open' : ''}`}
+      hidden={!open}
+      aria-label="Settings and setup"
+    >
       <header className="settings-edge-drawer__header">
         <div>
           <p className="section-label">Settings</p>
