@@ -15,8 +15,14 @@ function trackRuntimeErrors(page) {
   return errors
 }
 
-function headerAction(page, text) {
-  return page.locator('.calendar-context-actions button').filter({ hasText: text })
+async function settingsAction(page, text) {
+  const drawer = page.getByRole('complementary', { name: 'Settings and setup' })
+  if (!(await drawer.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  }
+  const button = page.getByRole('complementary', { name: 'Settings and setup' }).getByRole('button', { name: text, exact: true })
+  assert(await button.count() === 1, `Object-action gate: Settings did not expose exactly one ${text} action.`)
+  return button
 }
 
 async function configureCalendar(page) {
@@ -28,7 +34,7 @@ async function configureCalendar(page) {
 }
 
 async function createClasses(page) {
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('AP Art History')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
@@ -40,7 +46,7 @@ async function createClasses(page) {
 }
 
 async function createUnits(page) {
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   const unitFields = page.getByRole('textbox', { name: 'Unit', exact: true })
   const startFields = page.getByRole('textbox', { name: 'Start', exact: true })
@@ -64,7 +70,7 @@ async function addLesson(page, title, unitName, date) {
 }
 
 async function createLessons(page) {
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   await addLesson(page, 'Action lesson', 'Action Unit', '2026-09-16')
   await addLesson(page, 'Progress lesson', 'Progress Unit', '2026-09-21')
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
@@ -106,7 +112,7 @@ try {
   await createUnits(page)
   await createLessons(page)
 
-  await headerAction(page, 'Edit Units').click()
+  await (await settingsAction(page, 'Edit Units')).click()
   let actionUnit = await unitRow(page, 'Action Unit')
   const initialActionUnit = await describeUnitRow(actionUnit)
   assert(initialActionUnit.count === 1, `Phase 2 object actions: expected one Action Unit row, found ${JSON.stringify(initialActionUnit)}.`)
@@ -118,7 +124,7 @@ try {
   assert((await page.getByRole('alert').innerText()).includes('Lessons first'), 'Phase 2 object actions: Unit Delete did not fail closed while a child Lesson existed.')
   await page.getByRole('button', { name: 'Cancel', exact: true }).click()
 
-  await headerAction(page, 'Edit Lessons').click()
+  await (await settingsAction(page, 'Edit Lessons')).click()
   await selectLesson(page, 'Progress lesson')
   const p2 = page.locator('.delivery-row').filter({ hasText: 'Period 2' })
   const p5 = page.locator('.delivery-row').filter({ hasText: 'Period 5' })
@@ -129,7 +135,7 @@ try {
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
 
   await page.reload({ waitUntil: 'networkidle' })
-  await headerAction(page, 'Edit Lessons').click()
+  await (await settingsAction(page, 'Edit Lessons')).click()
   await selectLesson(page, 'Progress lesson')
   const reloadedP2 = page.locator('.delivery-row').filter({ hasText: 'Period 2' })
   const reloadedP5 = page.locator('.delivery-row').filter({ hasText: 'Period 5' })
@@ -144,7 +150,7 @@ try {
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
 
   await page.reload({ waitUntil: 'networkidle' })
-  await headerAction(page, 'Edit Lessons').click()
+  await (await settingsAction(page, 'Edit Lessons')).click()
   await selectLesson(page, 'Action lesson')
   assert(await page.getByRole('textbox', { name: 'Planned date', exact: true }).inputValue() === '', 'Phase 2 object actions: unplaced Lesson regained a date after reload.')
 
@@ -153,12 +159,12 @@ try {
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
 
   await page.reload({ waitUntil: 'networkidle' })
-  await headerAction(page, 'Edit Lessons').click()
+  await (await settingsAction(page, 'Edit Lessons')).click()
   assert(await page.getByRole('button', { name: /^Action lesson/ }).count() === 0, 'Phase 2 object actions: deleted Lesson returned after reload.')
   assert(await page.getByRole('button', { name: /^Progress lesson/ }).count() === 1, 'Phase 2 object actions: deleting Action lesson disturbed Progress lesson.')
   await page.getByRole('button', { name: 'Cancel', exact: true }).click()
 
-  await headerAction(page, 'Edit Units').click()
+  await (await settingsAction(page, 'Edit Units')).click()
   actionUnit = await unitRow(page, 'Action Unit')
   assert(actionUnit, 'Phase 2 object actions: Action Unit disappeared before safe Unplace.')
   await actionUnit.getByRole('button', { name: 'Unplace', exact: true }).click()
@@ -167,7 +173,7 @@ try {
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 
   await page.reload({ waitUntil: 'networkidle' })
-  await headerAction(page, 'Edit Units').click()
+  await (await settingsAction(page, 'Edit Units')).click()
   actionUnit = await unitRow(page, 'Action Unit')
   assert(actionUnit, 'Phase 2 object actions: unplaced Unit did not survive reload.')
   assert(await actionUnit.getByRole('textbox', { name: 'Start', exact: true }).inputValue() === '', 'Phase 2 object actions: unplaced Unit start date returned after reload.')
@@ -175,7 +181,7 @@ try {
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 
   await page.reload({ waitUntil: 'networkidle' })
-  await headerAction(page, 'Edit Units').click()
+  await (await settingsAction(page, 'Edit Units')).click()
   assert(!(await unitRow(page, 'Action Unit')), 'Phase 2 object actions: deleted Unit returned after reload.')
   assert(await unitRow(page, 'Progress Unit'), 'Phase 2 object actions: deleting Action Unit disturbed Progress Unit.')
 
