@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { type Plan, type PlanType, type PriorityTier, type TaskContext } from "../lib/domain";
+import { type Plan, type PlanType, type PriorityTier, type TaskContext, type WorkspacePreferences } from "../lib/domain";
 import { applyCut, createClipboard, cutBlocker, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
 import { dateKey, weekDisplayDates } from "../lib/calendar-display";
 import { moveObjectToTaskBar, updateTaskContext } from "../lib/object-lifecycle";
 import { calendarMoveBlocker, movePlanToCalendarDate } from "../lib/plan-operations";
 import { collectPlanTree, deletePlanTree, movePlanTreeToIdeas, orderedUnitChildren, unitUnplaceBlocker } from "../lib/plan-tree";
+import { resolveCurrentPlannerView, resolvePlannerHome } from "../lib/navigation-preferences";
 import { resolveArcShortcut } from "../lib/shortcuts";
 import { useArcStore } from "../lib/arc-store";
 import { availableQuarterRanges } from "../lib/view-ranges";
@@ -68,10 +69,12 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   const fridgePullRef = useRef<HTMLButtonElement | null>(null);
   const settingsPullRef = useRef<HTMLButtonElement | null>(null);
   const noticeReturnRef = useRef<HTMLElement | null>(null);
+  const initialHomeAppliedRef = useRef(false);
 
   const days = useMemo(() => weekDisplayDates(weekAnchor, workspace.calendar.weekendsVisible), [weekAnchor, workspace.calendar.weekendsVisible]);
   const weekLabel = days.length ? `${days[0].month} ${days[0].number} – ${days[days.length - 1].month} ${days[days.length - 1].number}` : "Week";
   const quarterRanges = useMemo(() => availableQuarterRanges(workspace.calendar), [workspace.calendar]);
+  const quarterAvailable = quarterRanges.length > 0;
   const activeQuarter = quarterRanges[Math.min(quarterIndex, Math.max(0, quarterRanges.length - 1))] ?? null;
   const selectedCourseId = activeCourseId || workspace.courses[0]?.id || "";
   const saveLabel = lastSavedAt ? `Saved here · ${new Date(lastSavedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : "Not saved yet";
@@ -83,6 +86,12 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   useEffect(() => {
     if (ready && !activeCourseId && workspace.courses[0]) setActiveCourseId(workspace.courses[0].id);
   }, [ready, activeCourseId, workspace.courses]);
+
+  useEffect(() => {
+    if (!ready || initialHomeAppliedRef.current) return;
+    setActiveView(resolvePlannerHome(workspace.preferences, quarterAvailable));
+    initialHomeAppliedRef.current = true;
+  }, [ready, workspace.preferences, quarterAvailable]);
 
   function showInteractionNotice(message: string) {
     if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
@@ -96,6 +105,26 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     if (typeof window !== "undefined") {
       window.requestAnimationFrame(() => noticeReturnRef.current?.focus());
     }
+  }
+
+  function setPlannerView(view: PlannerView) {
+    const safeView = resolveCurrentPlannerView(view, quarterAvailable);
+    setActiveView(safeView);
+    updateWorkspace((current) => ({
+      ...current,
+      preferences: { ...current.preferences, lastUsedView: safeView }
+    }));
+  }
+
+  function changeLandingView(view: WorkspacePreferences["landingView"]) {
+    updateWorkspace((current) => ({
+      ...current,
+      preferences: { ...current.preferences, landingView: view }
+    }));
+  }
+
+  function goArcHome() {
+    setPlannerView(resolvePlannerHome(workspace.preferences, quarterAvailable));
   }
 
   function undo() {
@@ -363,7 +392,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   return (
     <main className="arcApp">
       <header className="arcTopbar">
-        <button className="arcBrand" type="button" onClick={() => setActiveView("week")} aria-label="Arc home"><span className="arcBrandEyebrow">Wax &amp; Wing</span><span className="arcBrandWord">Arc</span></button>
+        <button className="arcBrand" type="button" onClick={goArcHome} aria-label="Arc home"><span className="arcBrandEyebrow">Wax &amp; Wing</span><span className="arcBrandWord">Arc</span></button>
         <div className="arcMeta"><span>{saveLabel}</span><code>{buildId} · {gitSha.slice(0, 7)}</code></div>
       </header>
 
@@ -381,14 +410,14 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
         )}
 
         <div className="viewControlBar">
-          <div className="viewSwitcher" aria-label="Planner view"><button type="button" className={activeView === "week" ? "active" : ""} onClick={() => setActiveView("week")}>Week</button><button type="button" className={activeView === "month" ? "active" : ""} onClick={() => setActiveView("month")}>Month</button><button type="button" className={activeView === "quarter" ? "active" : ""} disabled={quarterRanges.length === 0} title={quarterRanges.length === 0 ? "Add quarter dates in Setup first" : undefined} onClick={() => setActiveView("quarter")}>Quarter</button></div>
+          <div className="viewSwitcher" aria-label="Planner view"><button type="button" className={activeView === "week" ? "active" : ""} onClick={() => setPlannerView("week")}>Week</button><button type="button" className={activeView === "month" ? "active" : ""} onClick={() => setPlannerView("month")}>Month</button><button type="button" className={activeView === "quarter" ? "active" : ""} disabled={!quarterAvailable} title={!quarterAvailable ? "Add quarter dates in Setup first" : undefined} onClick={() => setPlannerView("quarter")}>Quarter</button></div>
           {activeView !== "week" && <label className="rangeCoursePicker"><span>Class</span><select value={selectedCourseId} onChange={(event) => setActiveCourseId(event.target.value)}>{workspace.courses.map((course) => <option key={course.id} value={course.id}>{course.name}{course.periodLabel ? ` · ${course.periodLabel}` : ""}</option>)}</select></label>}
           {activeView === "quarter" && quarterRanges.length > 1 && <label className="rangeCoursePicker"><span>Quarter</span><select value={Math.min(quarterIndex, quarterRanges.length - 1)} onChange={(event) => setQuarterIndex(Number(event.target.value))}>{quarterRanges.map((quarter, index) => <option value={index} key={quarter.id}>{quarter.label}</option>)}</select></label>}
         </div>
 
         <div className="plannerStage">
           <button ref={settingsPullRef} type="button" className="edgePullTab settingsPullTab" onClick={openSettings} aria-expanded={settingsOpen}>Settings</button>
-          <SettingsDrawer open={settingsOpen} weekendsVisible={workspace.calendar.weekendsVisible} onClose={closeSettings} onToggleWeekends={toggleWeekends} onOpenSetup={onOpenSetup} />
+          <SettingsDrawer open={settingsOpen} weekendsVisible={workspace.calendar.weekendsVisible} landingView={workspace.preferences.landingView} quarterAvailable={quarterAvailable} onClose={closeSettings} onToggleWeekends={toggleWeekends} onLandingViewChange={changeLandingView} onOpenSetup={onOpenSetup} />
 
           <section className="calendarDesk canonicalCalendarDesk" aria-label={`${activeView} planning workspace`}>
             {activeView === "week" && <WeekPlanner workspace={workspace} days={days} weekLabel={weekLabel} selectedPlanId={selectedPlanId} pasteTarget={pasteTarget} onSelectPlan={selectPlan} onSelectDate={(courseId, date) => setPasteTarget({ courseId, date, location: "calendar" })} onMovePlan={movePlanToDate} onRenamePlan={renamePlan} onPatchPlan={patchPlan} onAddPlan={(title, type, courseId, date) => addPlan(title, type, courseId, date, "calendar")} onAddChildLesson={addChildLesson} onToggleUnit={toggleUnit} onDeletePlan={deletePlan} onReturnToIdeas={putPlanInFridge} />}
