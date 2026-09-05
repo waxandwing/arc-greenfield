@@ -4,11 +4,12 @@ import { migrateLegacyPriorities, moveObjectToTaskBar, updateTaskContext } from 
 import { movePlanToCalendarDate } from "./plan-operations";
 import { collectPlanTree, movePlanTreeToIdeas } from "./plan-tree";
 import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "./workspace-history";
-import { loadWorkspace, saveWorkspace } from "./workspace-store";
+import { loadWorkspaceResult, saveWorkspace } from "./workspace-store";
 
 export type ArcStore = {
   history: WorkspaceHistory;
   hydrated: boolean;
+  recoveryAvailable: boolean;
   selectedObjectId: string | null;
   lastSavedAt: string | null;
   hydrate: () => void;
@@ -31,14 +32,20 @@ function persist(history: WorkspaceHistory): string | null {
 export const useArcStore = create<ArcStore>((set, get) => ({
   history: createWorkspaceHistory(emptyWorkspace()),
   hydrated: false,
+  recoveryAvailable: false,
   selectedObjectId: null,
   lastSavedAt: null,
 
   hydrate() {
-    const workspace = migrateLegacyPriorities(loadWorkspace());
+    const loaded = loadWorkspaceResult();
+    const workspace = migrateLegacyPriorities(loaded.workspace);
     const history = createWorkspaceHistory(workspace);
-    const lastSavedAt = workspace.priorities.length === 0 ? persist(history) : workspace.updatedAt;
-    set({ history, hydrated: true, lastSavedAt });
+
+    // If the active payload is unreadable, workspace-store has quarantined the
+    // original raw data. Do NOT auto-save the empty fallback over the active key.
+    const recoveryAvailable = loaded.status === "recovery-needed";
+    const lastSavedAt = recoveryAvailable ? null : persist(history);
+    set({ history, hydrated: true, recoveryAvailable, lastSavedAt });
   },
 
   commit(updater) {
