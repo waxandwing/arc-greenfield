@@ -74,6 +74,7 @@ async function makePlan(page) {
 }
 
 async function moveToTargetWeek(page) {
+  await page.getByRole('button', { name: 'Month', exact: true }).click()
   await page.getByRole('button', { name: 'Week', exact: true }).click()
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
@@ -141,7 +142,7 @@ try {
   assert(await headerAction(page, 'Undo last Shift').count() === 1, 'RGAV B: Apply Shift did not expose Undo.')
 
   // Check Section isolation after recovery, then consume Undo and prove it stays consumed.
-  await page.getByRole('button', { name: 'Week', exact: true }).click()
+  await moveToTargetWeek(page)
   const p1Titles = await titlesInRow(page, 'Period 1')
   const p4Titles = await titlesInRow(page, 'Period 4')
   assert(p1Titles.includes('Color intro'), 'RGAV B: Section recovery mutated Period 1 shared plan.')
