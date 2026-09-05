@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { emptyWorkspace, type Plan, type PlanType, type PriorityTier, type TaskContext, type Workspace } from "../lib/domain";
+import { type Plan, type PlanType, type PriorityTier, type TaskContext } from "../lib/domain";
 import { applyCut, createClipboard, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
 import { dateKey, weekDisplayDates } from "../lib/calendar-display";
-import { migrateLegacyPriorities, moveObjectToTaskBar, updateTaskContext } from "../lib/object-lifecycle";
+import { moveObjectToTaskBar, updateTaskContext } from "../lib/object-lifecycle";
 import { movePlanToCalendarDate } from "../lib/plan-operations";
 import { collectPlanTree, deletePlanTree, movePlanTreeToIdeas, orderedUnitChildren } from "../lib/plan-tree";
 import { resolveArcShortcut } from "../lib/shortcuts";
+import { useArcStore } from "../lib/arc-store";
 import { availableQuarterRanges } from "../lib/view-ranges";
-import { canRedo, canUndo, commitWorkspace, createWorkspaceHistory, redoWorkspace, undoWorkspace, type WorkspaceHistory } from "../lib/workspace-history";
-import { loadWorkspace, saveWorkspace } from "../lib/workspace-store";
+import { canRedo, canUndo } from "../lib/workspace-history";
 import { FridgeDrawer } from "./fridge-drawer";
 import { MonthView } from "./month-view";
 import { QuarterView } from "./quarter-view";
@@ -39,16 +39,23 @@ function isTypingTarget(target: EventTarget | null) {
 }
 
 export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gitSha: string; onOpenSetup: () => void }) {
-  const [history, setHistory] = useState<WorkspaceHistory>(() => createWorkspaceHistory(emptyWorkspace()));
+  const history = useArcStore((state) => state.history);
   const workspace = history.present;
-  const [ready, setReady] = useState(false);
+  const ready = useArcStore((state) => state.hydrated);
+  const selectedPlanId = useArcStore((state) => state.selectedObjectId);
+  const lastSavedAt = useArcStore((state) => state.lastSavedAt);
+  const hydrate = useArcStore((state) => state.hydrate);
+  const updateWorkspace = useArcStore((state) => state.commit);
+  const replaceWorkspace = useArcStore((state) => state.replace);
+  const selectObject = useArcStore((state) => state.selectObject);
+  const storeUndo = useArcStore((state) => state.undo);
+  const storeRedo = useArcStore((state) => state.redo);
+
   const [activeView, setActiveView] = useState<PlannerView>("week");
   const [activeCourseId, setActiveCourseId] = useState("");
-  const [saveLabel, setSaveLabel] = useState("Not saved yet");
   const [weekAnchor, setWeekAnchor] = useState(() => new Date());
   const [monthAnchor, setMonthAnchor] = useState(() => new Date());
   const [quarterIndex, setQuarterIndex] = useState(0);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [clipboard, setClipboard] = useState<ArcClipboard | null>(null);
   const [pasteTarget, setPasteTarget] = useState<PasteTarget | null>(null);
   const [fridgeOpen, setFridgeOpen] = useState(false);
@@ -59,42 +66,22 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   const quarterRanges = useMemo(() => availableQuarterRanges(workspace.calendar), [workspace.calendar]);
   const activeQuarter = quarterRanges[Math.min(quarterIndex, Math.max(0, quarterRanges.length - 1))] ?? null;
   const selectedCourseId = activeCourseId || workspace.courses[0]?.id || "";
+  const saveLabel = lastSavedAt ? `Saved here · ${new Date(lastSavedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : "Not saved yet";
 
   useEffect(() => {
-    const loaded = migrateLegacyPriorities(loadWorkspace());
-    setHistory(createWorkspaceHistory(loaded));
-    if (loaded.courses[0]) setActiveCourseId(loaded.courses[0].id);
-    setReady(true);
-  }, []);
+    hydrate();
+  }, [hydrate]);
 
   useEffect(() => {
-    if (!ready) return;
-    const timer = window.setTimeout(() => {
-      const state = saveWorkspace(workspace);
-      setSaveLabel(`Saved here · ${new Date(state.savedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
-    }, 300);
-    return () => window.clearTimeout(timer);
-  }, [workspace, ready]);
-
-  function updateWorkspace(updater: (current: Workspace) => Workspace) {
-    setHistory((currentHistory) => {
-      const next = { ...updater(currentHistory.present), updatedAt: new Date().toISOString() };
-      return commitWorkspace(currentHistory, next);
-    });
-  }
-
-  function replaceWorkspace(next: Workspace) {
-    setHistory((currentHistory) => commitWorkspace(currentHistory, { ...next, updatedAt: new Date().toISOString() }));
-  }
+    if (ready && !activeCourseId && workspace.courses[0]) setActiveCourseId(workspace.courses[0].id);
+  }, [ready, activeCourseId, workspace.courses]);
 
   function undo() {
-    setHistory((current) => undoWorkspace(current));
-    setSelectedPlanId(null);
+    storeUndo();
   }
 
   function redo() {
-    setHistory((current) => redoWorkspace(current));
-    setSelectedPlanId(null);
+    storeRedo();
   }
 
   function makePlan(title: string, type: PlanType, courseId: string | null, date: string | null, location: "calendar" | "ideas", parentUnitId: string | null = null, childOrder: number | null = null): Plan {
@@ -122,7 +109,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     if (!title.trim()) return;
     const plan = makePlan(title, type, courseId, date, location);
     updateWorkspace((current) => ({ ...current, plans: [...current.plans, plan] }));
-    setSelectedPlanId(plan.id);
+    selectObject(plan.id);
   }
 
   function addFridgeObject(title: string, type: "note" | "lesson" | "unit") {
@@ -133,7 +120,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     if (!title.trim()) return;
     const plan = moveObjectToTaskBar(makePlan(title, "note", null, null, "ideas"), tier);
     updateWorkspace((current) => ({ ...current, plans: [...current.plans, plan] }));
-    setSelectedPlanId(plan.id);
+    selectObject(plan.id);
   }
 
   function addChildLesson(unit: Plan, title: string) {
@@ -142,7 +129,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     const lesson = makePlan(title, "lesson", unit.courseId, unit.date, unit.location, unit.id, existing.length);
     lesson.arcLocation = unit.arcLocation ?? (unit.location === "calendar" ? "calendar" : "fridge");
     updateWorkspace((current) => ({ ...current, plans: [...current.plans, lesson] }));
-    setSelectedPlanId(lesson.id);
+    selectObject(lesson.id);
   }
 
   function movePlanToDate(id: string, date: string, courseId: string) {
@@ -157,7 +144,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
 
   function deletePlan(id: string) {
     updateWorkspace((current) => ({ ...current, plans: deletePlanTree(current.plans, id) }));
-    if (selectedPlanId === id) setSelectedPlanId(null);
+    if (selectedPlanId === id) selectObject(null);
   }
 
   function putPlanInFridge(id: string) {
@@ -202,7 +189,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     setClipboard(nextClipboard);
     if (mode === "cut") {
       replaceWorkspace(applyCut(workspace, nextClipboard));
-      setSelectedPlanId(null);
+      selectObject(null);
     }
   }
 
@@ -211,12 +198,12 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     const result = pasteClipboard(workspace, clipboard, pasteTarget);
     if (!result.pastedRootId) return;
     replaceWorkspace(result.workspace);
-    setSelectedPlanId(result.pastedRootId);
+    selectObject(result.pastedRootId);
     setClipboard(result.nextClipboard);
   }
 
   function selectPlan(plan: Plan) {
-    setSelectedPlanId(plan.id);
+    selectObject(plan.id);
     setPasteTarget({ courseId: plan.courseId, date: plan.date, location: plan.location });
   }
 
@@ -261,7 +248,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
       if (!action) return;
       if (isTypingTarget(event.target) && action !== "escape") return;
       if (action === "escape") {
-        setSelectedPlanId(null);
+        selectObject(null);
         setFridgeOpen(false);
         setSettingsOpen(false);
         return;
