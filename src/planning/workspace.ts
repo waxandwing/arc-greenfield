@@ -13,7 +13,7 @@ export type PlanningWorkspace = {
   calendarId: string
   courses: Course[]
   sections: Section[]
-  dayNotes: DayNote[]
+  dayNotes?: DayNote[]
 }
 
 export type PlanningWorkspaceInput = {
@@ -71,7 +71,7 @@ export function validatePlanningWorkspace(workspace: PlanningWorkspace): string[
   }
 
   const noteIds = new Set<string>()
-  for (const note of workspace.dayNotes) {
+  for (const note of workspace.dayNotes ?? []) {
     if (!note.id) errors.push('Day note ID is required.')
     if (noteIds.has(note.id)) errors.push(`Duplicate Day note ID: ${note.id}.`)
     noteIds.add(note.id)
@@ -96,13 +96,14 @@ export function sectionsForWorkspaceCourse(workspace: Pick<PlanningWorkspace, 'c
 }
 
 export function notesForWorkspaceDate(workspace: PlanningWorkspace, date: string): DayNote[] {
-  return workspace.dayNotes.filter((note) => note.date === date)
+  return (workspace.dayNotes ?? []).filter((note) => note.date === date)
 }
 
 export function upsertDayNote(workspace: PlanningWorkspace, note: DayNote): PlanningWorkspace {
-  const dayNotes = workspace.dayNotes.some((item) => item.id === note.id)
-    ? workspace.dayNotes.map((item) => item.id === note.id ? { ...note } : item)
-    : [...workspace.dayNotes, { ...note }]
+  const current = workspace.dayNotes ?? []
+  const dayNotes = current.some((item) => item.id === note.id)
+    ? current.map((item) => item.id === note.id ? { ...note } : item)
+    : [...current, { ...note }]
   const next = { ...workspace, dayNotes }
   const errors = validatePlanningWorkspace(next)
   if (errors.length > 0) throw new Error(`Cannot save Day note. ${errors.join(' ')}`)
@@ -110,7 +111,7 @@ export function upsertDayNote(workspace: PlanningWorkspace, note: DayNote): Plan
 }
 
 export function removeDayNote(workspace: PlanningWorkspace, noteId: string): PlanningWorkspace {
-  return { ...workspace, dayNotes: workspace.dayNotes.filter((note) => note.id !== noteId) }
+  return { ...workspace, dayNotes: (workspace.dayNotes ?? []).filter((note) => note.id !== noteId) }
 }
 
 function unique(values: string[]): string[] {
