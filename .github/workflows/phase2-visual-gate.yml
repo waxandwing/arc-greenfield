@@ -1,0 +1,51 @@
+name: Phase 2 visual gate
+
+on:
+  push:
+    branches:
+      - 'design/**'
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  capture-phase2-planning-surfaces:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Chromium audit runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Build browser target
+        run: npm run build
+      - name: Capture exact Phase 2 planning surfaces
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/arc-preview-phase2-visual.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/phase2-visual-gate.mjs
+      - name: Publish Phase 2 visual gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-phase2-planning-visual-gate
+          path: artifacts/phase2-visual/*.png
+          if-no-files-found: error
+          retention-days: 7
