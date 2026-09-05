@@ -87,3 +87,11 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
           ARC_BASE_URL=http://127.0.0.1:4173 npm run test:browser-a11y
+      - name: Publish exact tested shell screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-phase1-shell-1280
+          path: artifacts/phase1-shell-1280.png
+          if-no-files-found: warn
+          retention-days: 7
