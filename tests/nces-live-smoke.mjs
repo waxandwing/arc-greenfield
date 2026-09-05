@@ -21,14 +21,14 @@ const match = payload.features
     const city = String(attributes?.LCITY ?? '').toUpperCase()
     const state = String(attributes?.LSTATE ?? '').toUpperCase()
     const district = String(attributes?.LEA_NAME ?? '').toUpperCase()
-    return school.includes('OAK RIDGE')
+    return school === 'OAK RIDGE HIGH'
       && city === 'ORLANDO'
       && state === 'FL'
-      && district.includes('ORANGE COUNTY')
+      && district === 'ORANGE'
   })
 
 if (!match) throw new Error('NCES live smoke did not return the expected Orlando Oak Ridge public-school identity')
-if (!String(match.NCESSCH ?? '').trim()) throw new Error('NCES live smoke match omitted stable NCESSCH identity')
-if (!String(match.LEAID ?? '').trim()) throw new Error('NCES live smoke match omitted stable LEAID identity')
+if (String(match.NCESSCH ?? '') !== '120144001406') throw new Error(`NCES live smoke returned unexpected Oak Ridge school ID: ${match.NCESSCH ?? 'missing'}`)
+if (String(match.LEAID ?? '') !== '1201440') throw new Error(`NCES live smoke returned unexpected Orange agency ID: ${match.LEAID ?? 'missing'}`)
 
 console.log(`NCES live smoke passed: ${match.SCH_NAME} · ${match.LEA_NAME} · ${match.NCESSCH}`)
