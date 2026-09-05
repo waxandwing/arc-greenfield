@@ -77,13 +77,18 @@ export function pasteClipboard(workspace: Workspace, clipboard: ArcClipboard, ta
   const targetDate = target.location === "ideas" ? null : target.date;
   const clones = clonePlanTree(clipboard.tree, clipboard.sourceRootId, targetDate, target.courseId);
   const pastedRoot = clones.find((plan) => plan.parentUnitId === null) ?? clones[0] ?? null;
-  const normalized = clones.map((plan) => ({
-    ...plan,
-    location: target.location,
-    courseId: sourceRoot.type === "note" && target.location === "calendar" ? null : target.courseId,
-    parentUnitId: sourceRoot.type === "note" ? null : plan.parentUnitId,
-    childOrder: sourceRoot.type === "note" ? null : plan.childOrder
-  }));
+  const normalized = clones.map((plan) => {
+    const isDayNote = sourceRoot.type === "note" && target.location === "calendar";
+    return {
+      ...plan,
+      location: target.location,
+      courseId: isDayNote ? null : target.courseId,
+      date: isDayNote ? target.date : plan.date,
+      endDate: isDayNote ? null : plan.endDate,
+      parentUnitId: sourceRoot.type === "note" ? null : plan.parentUnitId,
+      childOrder: sourceRoot.type === "note" ? null : plan.childOrder
+    };
+  });
   const nextWorkspace = { ...workspace, plans: [...workspace.plans, ...normalized] };
 
   return {
