@@ -6,6 +6,13 @@
 .calendar-context-group{display:flex;align-items:center;gap:var(--space-2);min-width:0}
 .calendar-context-group .calendar-context{margin:0;white-space:nowrap}
 .storage-notice{margin:0 0 var(--space-3);padding:10px 12px;border-left:3px solid var(--dusty-blue);background:rgba(124,156,173,.08);font-size:14px;color:var(--soft-charcoal)}
+.view-preferences{margin:0 0 var(--space-3);font-size:14px;color:var(--soft-charcoal)}
+.view-preferences>summary{cursor:pointer;display:inline-block;padding:6px 0;font-weight:700}
+.view-preferences-panel{display:flex;align-items:end;flex-wrap:wrap;gap:var(--space-3);padding:var(--space-2) 0 var(--space-1);border-top:1px solid rgba(44,46,46,.14)}
+.view-preferences-panel label{display:grid;gap:6px;min-width:180px}
+.view-preferences-panel select{min-height:44px;background:var(--paper-raised);color:var(--ink);border:1px solid rgba(44,46,46,.28);border-radius:var(--radius-small);padding:8px 10px}
+.view-preferences-panel .view-preferences-check{display:flex;align-items:center;gap:8px;min-height:44px;min-width:0}
+.view-preferences-check input{width:18px;height:18px}
 
 @media (max-width:800px){
   .calendar-stage-header{align-items:flex-start}
@@ -17,4 +24,6 @@
   .calendar-header-tools{align-items:stretch}
   .period-controls{justify-content:flex-start}
   .calendar-context-group{justify-content:space-between}
+  .view-preferences-panel{align-items:stretch;flex-direction:column}
+  .view-preferences-panel label{min-width:0}
 }
