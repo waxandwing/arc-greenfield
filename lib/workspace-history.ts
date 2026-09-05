@@ -13,13 +13,25 @@ function snapshot(workspace: Workspace): Workspace {
   return structuredClone(workspace);
 }
 
+function semanticWorkspace(workspace: Workspace): Workspace {
+  // updatedAt is persistence metadata, not a user-visible planning mutation.
+  // Ignoring it here prevents rejected/no-op actions from polluting Undo.
+  return { ...workspace, updatedAt: "" };
+}
+
+export function workspacesSemanticallyEqual(a: Workspace, b: Workspace): boolean {
+  return JSON.stringify(semanticWorkspace(a)) === JSON.stringify(semanticWorkspace(b));
+}
+
 export function createWorkspaceHistory(workspace: Workspace): WorkspaceHistory {
   return { past: [], present: snapshot(repairOrphanedCoursePlans(workspace)), future: [] };
 }
 
 export function commitWorkspace(history: WorkspaceHistory, next: Workspace): WorkspaceHistory {
-  const past = [...history.past, snapshot(history.present)].slice(-HISTORY_LIMIT);
   const repaired = repairOrphanedCoursePlans(next);
+  if (workspacesSemanticallyEqual(history.present, repaired)) return history;
+
+  const past = [...history.past, snapshot(history.present)].slice(-HISTORY_LIMIT);
   return { past, present: snapshot(repaired), future: [] };
 }
 
