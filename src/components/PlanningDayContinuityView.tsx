@@ -46,15 +46,15 @@ export function PlanningDayContinuityView({
 
                   <div className="day-continuity-work">
                     {section.carryovers.length > 0 ? (
-                      <div className="day-continuity-held" aria-label={`${section.sectionName} unfinished teaching`}>
+                      <section className="day-continuity-held" aria-label={`${section.sectionName} unfinished teaching`}>
                         <p className="day-continuity-kicker">Arc is holding your place</p>
                         {section.carryovers.map((lesson) => (
                           <ContinuityLesson key={lesson.lessonId} lesson={lesson} carryover />
                         ))}
-                      </div>
+                      </section>
                     ) : null}
 
-                    <div className="day-continuity-planned" aria-label={`${section.sectionName} plan for today`}>
+                    <section className="day-continuity-planned" aria-label={`${section.sectionName} plan for today`}>
                       <p className="day-continuity-kicker">Today’s plan</p>
                       {section.scheduledLessons.length > 0 ? (
                         section.scheduledLessons.map((lesson) => (
@@ -63,7 +63,7 @@ export function PlanningDayContinuityView({
                       ) : (
                         <p className="day-continuity-empty">No Lesson placed for this class.</p>
                       )}
-                    </div>
+                    </section>
                   </div>
                 </article>
               ))}
@@ -90,7 +90,7 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
   ].filter(Boolean).join('. ')
 
   return (
-    <div className={`day-continuity-lesson${carryover ? ' day-continuity-lesson--held' : ''}`} aria-label={accessible}>
+    <article className={`day-continuity-lesson${carryover ? ' day-continuity-lesson--held' : ''}`} aria-label={accessible}>
       <div className="day-continuity-lesson-heading">
         <strong>{lesson.title}</strong>
         {lesson.datePolicy === 'fixed' ? <span className="day-continuity-fixed">Fixed</span> : null}
@@ -109,7 +109,7 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</p>
       ) : null}
-    </div>
+    </article>
   )
 }
 

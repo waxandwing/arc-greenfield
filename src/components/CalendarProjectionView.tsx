@@ -167,7 +167,7 @@ function CalendarOnlyMonth({ projection, label }: { projection: ReturnType<typeo
       <div className="month-weekday-row" aria-hidden="true">
         {WEEKDAY_LABELS.map((weekday) => <span key={weekday}>{weekday}</span>)}
       </div>
-      <div className="month-projection" aria-label={`${label} calendar`}>
+      <div className="month-projection" role="region" aria-label={`${label} calendar grid`}>
         {projection.weeks.map((week) => (
           <div className="month-week" key={week.startDate}>
             {week.days.map((day) => <CalendarDayCell key={day.date} day={day} />)}
