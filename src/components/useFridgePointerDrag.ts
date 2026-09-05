@@ -16,6 +16,12 @@ type DropHandlers = {
 type ActiveDrag = FridgeDragPayload & { pointerId: number }
 type PointerPosition = { x: number; y: number }
 
+type ResolvedDropTarget = {
+  drawerTarget: HTMLElement | null
+  doorTarget: HTMLElement | null
+  cellTarget: HTMLElement | null
+}
+
 const AUTO_SCROLL_EDGE = 56
 const AUTO_SCROLL_STEP = 14
 
@@ -79,14 +85,17 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
 
   function complete(clientX: number, clientY: number) {
     const payload = activeRef.current
-    clear()
-    if (!payload) return
+    if (!payload) {
+      clear()
+      return
+    }
 
-    const target = document.elementFromPoint(clientX, clientY) as HTMLElement | null
-    const liveCellTarget = findLiveCellAtPoint(clientX, clientY)
-    const drawerTarget = target?.closest<HTMLElement>('[data-fridge-drop-drawer="true"]') ?? null
-    const doorTarget = target?.closest<HTMLElement>('[data-fridge-drop-door="true"]') ?? null
-    const cellTarget = liveCellTarget ?? target?.closest<HTMLElement>('[data-fridge-drop-cell="true"]') ?? null
+    // Resolve against the live drag-state DOM before clearing visual drag state.
+    // Clearing first can rerender the surface and invalidate the exact release target.
+    const resolved = resolveDropTarget(clientX, clientY)
+    clear()
+
+    const { drawerTarget, doorTarget, cellTarget } = resolved
 
     if (payload.kind === 'entity' && payload.source === 'drawer') {
       if (cellTarget) {
@@ -142,6 +151,16 @@ export function useFridgePointerDrag(handlers: DropHandlers) {
     active,
     startEntity: (event: ReactPointerEvent<HTMLElement>, entityRef: FridgeEntityRef, source: 'door' | 'drawer') => start(event, { kind: 'entity', entityRef, source }),
     startStack: (event: ReactPointerEvent<HTMLElement>, stackId: string) => start(event, { kind: 'stack', stackId, source: 'door' }),
+  }
+}
+
+function resolveDropTarget(clientX: number, clientY: number): ResolvedDropTarget {
+  const target = document.elementFromPoint(clientX, clientY) as HTMLElement | null
+  const liveCellTarget = findLiveCellAtPoint(clientX, clientY)
+  return {
+    drawerTarget: target?.closest<HTMLElement>('[data-fridge-drop-drawer="true"]') ?? null,
+    doorTarget: target?.closest<HTMLElement>('[data-fridge-drop-door="true"]') ?? null,
+    cellTarget: liveCellTarget ?? target?.closest<HTMLElement>('[data-fridge-drop-cell="true"]') ?? null,
   }
 }
 
