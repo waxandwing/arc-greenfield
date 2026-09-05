@@ -65,10 +65,11 @@ const school: OfficialSourceCandidate = {
 const source: OfficialCalendarSourceCandidate = {
   id: 'official-calendar-source:ocps-2026-27',
   schoolCandidateId: school.id,
-  sourceLabel: 'OCPS 2026–27 School Calendar',
+  label: 'OCPS 2026–27 School Calendar',
   locator: OCPS_2026_27_CALENDAR_LOCATOR,
   publisher: 'Orange County Public Schools',
-  sourceType: 'pdf',
+  kind: 'district-calendar-document',
+  confidence: 'confirmed',
 }
 
 assert(isSupportedOcpsCalendarLocator(OCPS_2026_27_CALENDAR_LOCATOR), 'Current OCPS calendar locator must be supported.')
@@ -78,7 +79,7 @@ assert(!isSupportedOcpsCalendarLocator('https://www.ocps.net/another-calendar'),
 
 const extraction = parseOcpsCalendarText({
   sourceLocator: source.locator,
-  sourceLabel: source.sourceLabel,
+  sourceLabel: source.label,
   publisher: source.publisher,
   capturedAt: '2026-09-05T23:08:57Z',
   text: exactExtractedText,
@@ -105,7 +106,7 @@ let missingFirstDayFailed = false
 try {
   parseOcpsCalendarText({
     sourceLocator: source.locator,
-    sourceLabel: source.sourceLabel,
+    sourceLabel: source.label,
     publisher: source.publisher,
     text: exactExtractedText.replace('Tuesday August 11 First Day of School', 'Tuesday August 11 Students Arrive'),
   })
@@ -118,7 +119,7 @@ let wrongIdentityFailed = false
 try {
   parseOcpsCalendarText({
     sourceLocator: source.locator,
-    sourceLabel: source.sourceLabel,
+    sourceLabel: source.label,
     publisher: source.publisher,
     text: exactExtractedText.replace('Orange County Public Schools\n2026-2027 School Calendar', 'Example Schools\n2026-2027 School Calendar'),
   })
