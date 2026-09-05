@@ -19,6 +19,17 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function waitForCalendarAfterLessonSave(page, context) {
+  try {
+    await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible', timeout: 5000 })
+  } catch {
+    const alerts = await page.locator('[role="alert"]').allTextContents()
+    const notices = await page.locator('.storage-notice').allTextContents()
+    const body = (await page.locator('body').innerText()).slice(0, 3200)
+    throw new Error(`Phase 2: ${context} did not return to calendar. Alerts: ${alerts.join(' | ') || 'none'}. Notices: ${notices.join(' | ') || 'none'}. Rendered text: ${body}`)
+  }
+}
+
 async function configureCalendar(page) {
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-02')
@@ -80,6 +91,7 @@ try {
   await addLesson(page, 'Temple lesson', '2026-09-16')
   await addLesson(page, 'Image comparison', '2026-09-16')
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
+  await waitForCalendarAfterLessonSave(page, 'saving two same-day Lessons')
 
   assert(await page.getByText('Temple lesson', { exact: true }).count() > 0, 'Phase 2: Month lost the first saved Lesson.')
   assert(await page.getByText('Image comparison', { exact: true }).count() > 0, 'Phase 2: Month lost the second same-day Lesson.')
@@ -102,6 +114,7 @@ try {
   await page.getByRole('button', { name: /Temple lesson/ }).click()
   await page.getByRole('textbox', { name: 'Planned date', exact: true }).fill('2026-09-17')
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
+  await waitForCalendarAfterLessonSave(page, 'moving Temple lesson to September 17')
 
   await goToWeekContainingLessons(page)
   const movedSlot = page.locator('.planning-day-slot').filter({ hasText: 'Temple lesson' })
