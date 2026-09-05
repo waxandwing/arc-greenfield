@@ -64,7 +64,7 @@ test("the same object can gain Task Bar context without becoming a second record
     notes: "Call home before 4",
     startTime: "15:20",
     durationMinutes: 10,
-    targetDate: "2026-09-11"
+    targetDate: "2026-09-09"
   });
 
   assert.equal(task.id, "stable-object");
@@ -77,16 +77,16 @@ test("the same object can gain Task Bar context without becoming a second record
   assert.deepEqual(task.details, fridge.details);
 });
 
-test("moving the same Task Bar object back to Calendar keeps retained task and planning data", () => {
+test("a fixed Task Bar object can return to Calendar at its anchor without losing retained data", () => {
   const original = samplePlan();
   const fridge = movePlanTreeToIdeas([original], original.id)[0];
   const task = updateTaskContext(moveObjectToTaskBar(fridge, "should"), { startTime: "15:10", durationMinutes: 20 });
-  const [scheduled] = movePlanToCalendarDate([task], task.id, "2026-09-15", "apah");
+  const [scheduled] = movePlanToCalendarDate([task], task.id, original.date!, "apah");
 
   assert.equal(scheduled.id, original.id);
   assert.equal(scheduled.location, "calendar");
   assert.equal(objectLocation(scheduled), "calendar");
-  assert.equal(scheduled.date, "2026-09-15");
+  assert.equal(scheduled.date, original.date);
   assert.equal(scheduled.fixedDate, true);
   assert.equal(scheduled.notes, original.notes);
   assert.deepEqual(scheduled.resources, original.resources);
@@ -95,25 +95,26 @@ test("moving the same Task Bar object back to Calendar keeps retained task and p
   assert.equal(scheduled.taskContext?.durationMinutes, 20);
 });
 
-test("a full Fridge → Task Bar → Calendar → Fridge circuit preserves advanced Calendar fields", () => {
+test("a full fixed-object Fridge → Task Bar → Calendar → Fridge circuit preserves advanced Calendar fields", () => {
   const original = samplePlan();
   const firstFridge = movePlanTreeToIdeas([original], original.id)[0];
   const task = updateTaskContext(moveObjectToTaskBar(firstFridge, "could"), {
     notes: "Prep after school",
-    targetDate: "2026-09-16"
+    targetDate: original.date ?? undefined
   });
-  const [calendar] = movePlanToCalendarDate([task], task.id, "2026-09-16", "apah");
+  const [calendar] = movePlanToCalendarDate([task], task.id, original.date!, "apah");
   const [returned] = movePlanTreeToIdeas([calendar], calendar.id);
 
   assert.equal(returned.id, original.id);
   assert.equal(objectLocation(returned), "fridge");
+  assert.equal(returned.date, original.date);
   assert.equal(returned.fixedDate, true);
   assert.equal(returned.details.standards, "VA.912.C.1.4");
   assert.equal(returned.details.advancedField, "retain-me");
   assert.deepEqual(returned.resources, original.resources);
   assert.equal(returned.taskContext?.tier, "could");
   assert.equal(returned.taskContext?.notes, "Prep after school");
-  assert.equal(returned.taskContext?.targetDate, "2026-09-16");
+  assert.equal(returned.taskContext?.targetDate, original.date);
 });
 
 test("legacy priorities migrate into Task Bar objects without disappearing", () => {
