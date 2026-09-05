@@ -192,7 +192,7 @@ export function FridgeDoorPanel(props: Props) {
           </label>
           <label>
             <span>Add loose item</span>
-            <select value={stackMemberRef} onChange={(event) => setStackMemberRef(event.target.value as FridgeEntityRef | '')} disabled={!stackAnchorRef}>
+            <select value={stackMemberRef} onChange={(event) => { setStackMemberRef(event.target.value as FridgeEntityRef | '') }} disabled={!stackAnchorRef}>
               <option value="">Choose…</option>
               {availableMembers.map((placement) => {
                 const item = resolveItem(placement.entityRef, props.units, props.lessons, props.state)
@@ -282,7 +282,7 @@ export function FridgeDoorPanel(props: Props) {
               if (!item) return null
               return (
                 <div className="fridge-drawer-item" key={placement.entityRef} data-fridge-ref={placement.entityRef}>
-                  <DragHandle label={`Drag ${item.title}`} onPointerDown={(event) => drag.startEntity(event, item.ref, 'drawer')} />
+                  <DragHandle kind="item" onPointerDown={(event) => drag.startEntity(event, item.ref, 'drawer')} />
                   <div>
                     <span>{item.kind}</span>
                     {item.kind === 'Magnet' ? <strong>{item.title}</strong> : (
@@ -330,7 +330,7 @@ function FridgeItem({
       data-fridge-row={placement.row}
       data-fridge-column={placement.column}
     >
-      <DragHandle label={`Drag ${item.title}`} onPointerDown={onDragStart} />
+      <DragHandle kind="item" onPointerDown={onDragStart} />
       <div className="fridge-item-copy">
         <span>{item.kind}</span>
         {item.kind === 'Magnet' ? <strong>{item.title}</strong> : <button type="button" className="fridge-item-title" onClick={onOpen}>{item.title}</button>}
@@ -393,7 +393,7 @@ function FridgeStack({
       data-fridge-row={anchor.row}
       data-fridge-column={anchor.column}
     >
-      <DragHandle label={`Drag stack with ${ordered.length} items`} onPointerDown={onDragStart} />
+      <DragHandle kind="stack" onPointerDown={onDragStart} />
       <div className="fridge-stack-heading">
         <div>
           <span>Stack</span>
@@ -453,12 +453,12 @@ function FridgeStack({
   )
 }
 
-function DragHandle({ label, onPointerDown }: { label: string; onPointerDown: PointerEventHandler<HTMLButtonElement> }) {
+function DragHandle({ kind, onPointerDown }: { kind: 'item' | 'stack'; onPointerDown: PointerEventHandler<HTMLButtonElement> }) {
   return (
     <button
       type="button"
       className="fridge-drag-handle"
-      aria-label={`${label}. Use the Position control for keyboard movement.`}
+      aria-label={kind === 'stack' ? 'Drag Fridge stack' : 'Drag Fridge item'}
       tabIndex={-1}
       onPointerDown={onPointerDown}
       onClick={(event) => event.preventDefault()}
