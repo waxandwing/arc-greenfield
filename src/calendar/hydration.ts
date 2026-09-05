@@ -1,5 +1,5 @@
 import { assertISODate, compareISODate, eachCalendarDay } from './dateMath'
-import type { CalendarDay, CalendarSource, Confidence, ISODate, SchoolCalendar, TermBoundary } from './types'
+import type { CalendarDay, CalendarProvenance, CalendarSource, Confidence, ISODate, SchoolCalendar, TermBoundary } from './types'
 
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
@@ -14,6 +14,7 @@ export type CalendarHydrationInput = {
   exceptions?: CalendarDay[]
   quarters?: TermBoundary[]
   semesters?: TermBoundary[]
+  provenance?: CalendarProvenance[]
 }
 
 export function validateHydrationInput(input: CalendarHydrationInput): string[] {
