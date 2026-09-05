@@ -84,25 +84,38 @@ async function dragBetween(page, handle, target, label) {
 async function dragWithVerticalAutoScroll(page, handle, target, direction, label) {
   const handleBox = await handle.boundingBox()
   assert(handleBox, `${label}: drag handle has no rendered bounds.`)
-  const viewportHeight = await page.evaluate(() => window.innerHeight)
+  const viewport = await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }))
   await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
   await page.mouse.down()
-  await page.mouse.move(handleBox.x + handleBox.width / 2, direction === 'down' ? viewportHeight - 8 : 8, { steps: 5 })
+  await page.mouse.move(handleBox.x + handleBox.width / 2, direction === 'down' ? viewport.height - 8 : 8, { steps: 5 })
 
-  let visibleTarget = null
+  let targetBecameVisible = false
   for (let attempt = 0; attempt < 40; attempt += 1) {
     await page.waitForTimeout(50)
     const box = await target.boundingBox()
-    if (box && box.y >= 0 && box.y + box.height <= viewportHeight) {
-      visibleTarget = box
+    if (box && box.y >= 0 && box.y + box.height <= viewport.height) {
+      targetBecameVisible = true
       break
     }
   }
-  if (!visibleTarget) {
+  if (!targetBecameVisible) {
     await page.mouse.up()
     throw new Error(`${label}: edge auto-scroll never brought the drop target into the viewport.`)
   }
-  await page.mouse.move(visibleTarget.x + visibleTarget.width / 2, visibleTarget.y + visibleTarget.height / 2, { steps: 4 })
+
+  // Leave the edge first so the product's auto-scroll loop has stopped before
+  // this audit samples the final target geometry. Otherwise the test itself can
+  // chase a stale rectangle and manufacture a wrong-cell result.
+  await page.mouse.move(viewport.width / 2, viewport.height / 2, { steps: 3 })
+  await page.waitForTimeout(100)
+  const settledTarget = await target.boundingBox()
+  assert(settledTarget, `${label}: drop target lost rendered bounds after auto-scroll settled.`)
+  assert(settledTarget.y >= 0 && settledTarget.y + settledTarget.height <= viewport.height, `${label}: target left the viewport after auto-scroll settled.`)
+  await page.mouse.move(settledTarget.x + settledTarget.width / 2, settledTarget.y + settledTarget.height / 2, { steps: 3 })
+  await page.waitForTimeout(40)
+  const finalTarget = await target.boundingBox()
+  assert(finalTarget, `${label}: final live target bounds disappeared before release.`)
+  await page.mouse.move(finalTarget.x + finalTarget.width / 2, finalTarget.y + finalTarget.height / 2)
   await page.mouse.up()
   await page.waitForTimeout(40)
 }
@@ -170,7 +183,10 @@ async function auditDesktop(browser) {
   await dragWithVerticalAutoScroll(page, dragHandle(drawerMove), exactReturnCell, 'up', 'desktop exact drawer return with auto-scroll')
   state = await storedFridge(page)
   move = placement(state, 'magnet:move')
-  assert(move?.surface === 'door' && move.row === 2 && move.column === 3, 'desktop: Drawer-to-specific-cell drag ignored the teacher-selected coordinate.')
+  assert(
+    move?.surface === 'door' && move.row === 2 && move.column === 3,
+    `desktop: Drawer-to-specific-cell drag ignored the teacher-selected coordinate; persisted ${move?.surface ?? 'missing'} ${move?.row ?? 'n/a'}:${move?.column ?? 'n/a'}.`,
+  )
   assert(move.priority === 'must', 'desktop: exact Drawer return lost Must priority.')
 
   const stack = page.locator('[data-fridge-stack="stack-audit"]')
