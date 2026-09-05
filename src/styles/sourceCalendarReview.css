@@ -1,8 +1,8 @@
 .source-calendar-review {
   display: grid;
-  gap: 24px;
-  padding: 24px 0 28px;
-  border-bottom: 1px solid color-mix(in srgb, var(--arc-ink) 16%, transparent);
+  gap: var(--space-6);
+  padding: var(--space-6) 0 28px;
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .source-calendar-review-copy {
@@ -10,8 +10,8 @@
 }
 
 .source-calendar-review-copy h3 {
-  margin: 4px 0 8px;
-  font-family: var(--arc-serif);
+  margin: var(--space-1) 0 var(--space-2);
+  font-family: var(--font-editorial);
   font-size: clamp(1.35rem, 2vw, 1.8rem);
   font-weight: 500;
   line-height: 1.2;
@@ -25,11 +25,11 @@
 .source-calendar-facts {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px 24px;
+  gap: var(--space-3) var(--space-6);
   margin: 0;
-  padding: 16px 0;
-  border-top: 1px solid color-mix(in srgb, var(--arc-ink) 12%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--arc-ink) 12%, transparent);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .source-calendar-facts div {
@@ -38,7 +38,7 @@
 
 .source-calendar-facts dt,
 .source-calendar-kicker {
-  margin: 0 0 4px;
+  margin: 0 0 var(--space-1);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -52,7 +52,7 @@
 
 .source-calendar-evidence ul {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -61,14 +61,14 @@
 .source-calendar-evidence li {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 10px;
+  gap: var(--space-1) 10px;
   align-items: baseline;
-  padding-bottom: 8px;
-  border-bottom: 1px solid color-mix(in srgb, var(--arc-ink) 10%, transparent);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .source-calendar-evidence li span {
-  color: color-mix(in srgb, var(--arc-ink) 72%, transparent);
+  color: var(--soft-charcoal);
   font-size: 0.875rem;
   overflow-wrap: anywhere;
 }
@@ -82,7 +82,7 @@
 .source-calendar-miniature-heading {
   display: flex;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--space-6);
   align-items: end;
 }
 
@@ -97,11 +97,11 @@
 .source-calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .source-calendar-weekdays span {
-  padding: 2px 4px;
+  padding: 2px var(--space-1);
   font-size: 0.72rem;
   font-weight: 700;
   text-align: center;
@@ -111,19 +111,19 @@
   position: relative;
   min-height: 42px;
   padding: 6px;
-  border: 1px solid color-mix(in srgb, var(--arc-ink) 14%, transparent);
-  background: color-mix(in srgb, var(--arc-paper) 94%, white);
+  border: 1px solid var(--line-subtle);
+  background: var(--paper-raised);
   font-size: 0.78rem;
 }
 
 .source-calendar-day.is-no-school,
 .source-calendar-day.is-break,
 .source-calendar-day.is-holiday {
-  background: color-mix(in srgb, var(--arc-kraft) 18%, var(--arc-paper));
+  background: color-mix(in srgb, var(--kraft) 18%, var(--paper));
 }
 
 .source-calendar-day.is-teacher-workday {
-  background: color-mix(in srgb, var(--arc-dusty-blue) 16%, var(--arc-paper));
+  background: color-mix(in srgb, var(--dusty-blue) 16%, var(--paper));
 }
 
 .source-calendar-day.is-uncertain::after {
@@ -147,7 +147,7 @@
 
   .source-calendar-miniature-heading {
     display: grid;
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .source-calendar-miniature-heading p:last-child {
@@ -156,6 +156,6 @@
 
   .source-calendar-day {
     min-height: 36px;
-    padding: 4px;
+    padding: var(--space-1);
   }
 }
