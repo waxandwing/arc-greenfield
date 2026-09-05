@@ -132,7 +132,7 @@ async function auditViewport(browser, width, height) {
   for (const label of ['Move', 'Edit', 'Unplace', 'Delete']) {
     assert(await selectedActions.getByRole('button', { name: label, exact: true }).isVisible(), `${width}px: selected Lesson is missing ${label}.`)
   }
-  assert(await page.locator('[draggable="true"]').count() === 0, `${width}px: drag semantics appeared before the approved drag milestone.`)
+  assert(await page.locator('[draggable="true"]').count() === 0, `${width}px: native HTML drag semantics appeared; Arc drag must remain an accelerator with non-drag controls intact.`)
 
   await selectedActions.getByRole('button', { name: 'Unplace', exact: true }).click()
   const unplaceReview = selected.getByRole('region', { name: 'Unplace Lesson' })
@@ -143,7 +143,7 @@ async function auditViewport(browser, width, height) {
 
   await unplaceReview.getByRole('button', { name: 'Unplace Lesson', exact: true }).click()
   await page.locator('[data-fridge-ref="lesson:lesson-movable"]').waitFor()
-  assert(await page.getByRole('button', { name: new RegExp(movableTitle) }).isVisible(), `${width}px: Unplaced Lesson is not immediately findable on the Fridge Door.`)
+  assert(await page.getByRole('button', { name: movableTitle, exact: true }).isVisible(), `${width}px: Unplaced Lesson is not immediately findable on the Fridge Door.`)
   assert(await focus.getByText('Lesson', { exact: true }).first().isVisible(), `${width}px: Unplaced Lesson did not resolve to the lightweight Lesson editor.`)
   assert(await focus.getByRole('button', { name: 'Close', exact: true }).evaluate((node) => document.activeElement === node), `${width}px: switching to the lightweight Lesson editor did not establish an operable focus point.`)
 
@@ -156,7 +156,7 @@ async function auditViewport(browser, width, height) {
   assert(afterUnplaceLessons?.lessons?.filter((lesson) => lesson.id === 'lesson-movable').length === 1, `${width}px: Unplace duplicated the canonical Lesson.`)
 
   await focus.getByRole('button', { name: 'Close', exact: true }).click()
-  await page.getByRole('button', { name: new RegExp(movableTitle) }).click()
+  await page.getByRole('button', { name: movableTitle, exact: true }).click()
   await focus.waitFor()
   assert(await focus.getByText('Lesson', { exact: true }).first().isVisible(), `${width}px: Fridge Door did not reopen the lightweight Lesson editor.`)
 
