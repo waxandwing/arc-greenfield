@@ -1,4 +1,5 @@
 import type { Plan, Section, SectionDeliveryState, Workspace } from "./domain";
+import { effectiveSections } from "./day-context";
 import { isInstructionalDay } from "./school-calendar";
 
 export type LiveEligibility =
@@ -46,7 +47,7 @@ export function applyLiveOutcome(plan: Plan, sectionId: string, date: string, ou
 /** Revalidate exact canonical context immediately before writeback. */
 export function canWriteLiveOutcome(workspace: Workspace, planId: string, sectionId: string, date: string): boolean {
   const plan = workspace.plans.find((item) => item.id === planId);
-  const section = (workspace.sections ?? []).find((item) => item.id === sectionId);
+  const section = effectiveSections(workspace).find((item) => item.id === sectionId);
   if (!plan || !section) return false;
   return liveEligibility(workspace, plan, section, date).ok;
 }
