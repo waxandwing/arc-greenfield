@@ -1,5 +1,6 @@
 import type { Workspace } from "./domain";
 import { repairOrphanedCoursePlans } from "./course-operations";
+import { hasUniquePlanIds, repairPlanRelationships } from "./workspace-integrity";
 
 export type WorkspaceHistory = {
   past: Workspace[];
@@ -19,16 +20,25 @@ function semanticWorkspace(workspace: Workspace): Workspace {
   return { ...workspace, updatedAt: "" };
 }
 
+function repairWorkspace(workspace: Workspace): Workspace {
+  return repairPlanRelationships(repairOrphanedCoursePlans(workspace));
+}
+
 export function workspacesSemanticallyEqual(a: Workspace, b: Workspace): boolean {
   return JSON.stringify(semanticWorkspace(a)) === JSON.stringify(semanticWorkspace(b));
 }
 
 export function createWorkspaceHistory(workspace: Workspace): WorkspaceHistory {
-  return { past: [], present: snapshot(repairOrphanedCoursePlans(workspace)), future: [] };
+  const repaired = repairWorkspace(workspace);
+  return { past: [], present: snapshot(repaired), future: [] };
 }
 
 export function commitWorkspace(history: WorkspaceHistory, next: Workspace): WorkspaceHistory {
-  const repaired = repairOrphanedCoursePlans(next);
+  // Duplicate stable IDs make canonical identity ambiguous. Never commit that
+  // state. The caller keeps the last trustworthy present instead.
+  if (!hasUniquePlanIds(next)) return history;
+
+  const repaired = repairWorkspace(next);
   if (workspacesSemanticallyEqual(history.present, repaired)) return history;
 
   const past = [...history.past, snapshot(history.present)].slice(-HISTORY_LIMIT);
