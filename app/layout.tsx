@@ -6,6 +6,7 @@ import "./range-interactions.css";
 import "./arc-visual-language.css";
 import "./onboarding-screen.css";
 import "./workspace-recovery-screen.css";
+import "./interaction-notice.css";
 import "./week-planner.css";
 import "./weekend-week.css";
 import "./reconciled-shell.css";
