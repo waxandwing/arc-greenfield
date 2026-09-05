@@ -18,15 +18,23 @@ Deployment: **blocked; no Vercel deployment or preview deployment authorized**
 - Unit/Lesson/Idea-Note Fridge objects have distinct physical grammar.
 - Calendar object actions are contextual on selection.
 - Fridge supports drag-in and explicit Must/Should/Could movement paths.
+- Fridge now has an explicit non-drag Schedule path into Calendar.
+- Task Bar now has an explicit non-drag Schedule path into Calendar.
+- Scheduling preserves the same stable object and retained rich data.
 - Regression tests cover stable ID/rich-data retention across Fridge → Task Bar → Calendar.
 
-## Current gate
-Do not merge until GitHub Verify Arc Greenfield passes typecheck, tests, and build on the current head.
+## Verification history
+A full GitHub verification run passed typecheck, tests, production build, and canonical-build-contract checks before the latest scheduling UI commits.
 
-## Next after green CI
-1. Add a non-drag Fridge → Calendar scheduling chooser.
-2. Complete Task Bar → Calendar non-drag scheduling path.
-3. Migrate ArcShell workspace ownership from component-local history to the prepared Zustand Arc store in a controlled pass.
-4. Add progressive full-detail Calendar editing while keeping Fridge/Task surfaces simplified.
-5. Audit focus return, Escape, keyboard movement, reduced motion, reload, Undo/Redo, and object identity.
-6. Reconcile the resulting shell back into the canonical Figma desktop frame.
+The newest scheduling commits must receive their own green verification before any merge decision.
+
+## Current gate
+- Keep PR #48 draft and unmerged.
+- Do not deploy to Vercel under any circumstance.
+- Do not treat a successful GitHub build as deployment permission.
+
+## Next after current green CI
+1. Migrate ArcShell workspace ownership from component-local history to the prepared Zustand Arc store in a controlled pass.
+2. Add progressive full-detail Calendar editing while keeping Fridge/Task surfaces simplified.
+3. Audit focus return, Escape, keyboard movement, reduced motion, reload, Undo/Redo, and object identity.
+4. Reconcile the resulting shell back into the canonical Figma desktop frame.
