@@ -70,8 +70,19 @@ export function projectDay(calendar: SchoolCalendar, date: ISODate): DayProjecti
   }
 }
 
+/** Default teacher Week: Monday through Sunday internally; callers may hide weekends. */
 export function projectWeek(calendar: SchoolCalendar, anchorDate: ISODate): WeekProjection {
-  const startDate = startOfMondayWeek(anchorDate)
+  return projectWeekRange(calendar, startOfMondayWeek(anchorDate))
+}
+
+/** Founder law: when Week weekends are intentionally enabled, the visible week is Sunday through Saturday. */
+export function projectSundayFirstWeek(calendar: SchoolCalendar, anchorDate: ISODate): WeekProjection {
+  const monday = startOfMondayWeek(anchorDate)
+  const startDate = addCalendarDays(monday, -1)
+  return projectWeekRange(calendar, startDate)
+}
+
+function projectWeekRange(calendar: SchoolCalendar, startDate: ISODate): WeekProjection {
   const endDate = addCalendarDays(startDate, 6)
   return {
     kind: 'week',
@@ -94,11 +105,7 @@ export function projectMonth(calendar: SchoolCalendar, anchorDate: ISODate): Mon
 
   for (let i = 0; i < allDays.length; i += 7) {
     const days = allDays.slice(i, i + 7)
-    weeks.push({
-      startDate: days[0].date,
-      endDate: days[days.length - 1].date,
-      days,
-    })
+    weeks.push({ startDate: days[0].date, endDate: days[days.length - 1].date, days })
   }
 
   return {
@@ -135,11 +142,7 @@ export function projectYearMap(calendar: SchoolCalendar): YearMapProjection {
 
 function projectBoundary(calendar: SchoolCalendar, boundary: TermBoundary, kind: 'quarter'): QuarterProjection
 function projectBoundary(calendar: SchoolCalendar, boundary: TermBoundary, kind: 'semester'): SemesterProjection
-function projectBoundary(
-  calendar: SchoolCalendar,
-  boundary: TermBoundary,
-  kind: 'quarter' | 'semester',
-): QuarterProjection | SemesterProjection {
+function projectBoundary(calendar: SchoolCalendar, boundary: TermBoundary, kind: 'quarter' | 'semester'): QuarterProjection | SemesterProjection {
   const base = {
     id: boundary.id,
     label: boundary.label,
@@ -147,7 +150,6 @@ function projectBoundary(
     endDate: boundary.endDate,
     days: eachCalendarDay(boundary.startDate, boundary.endDate).map((date) => projectCalendarDay(calendar, date)),
   }
-
   return kind === 'quarter' ? { kind, ...base } : { kind, ...base }
 }
 
@@ -161,19 +163,16 @@ function projectCalendarDay(calendar: SchoolCalendar, date: ISODate): ProjectedD
   }
 }
 
-function boundariesIntersectingRange(boundaries: TermBoundary[], startDate: ISODate, endDate: ISODate): TermBoundary[] {
-  return boundaries.filter((boundary) =>
-    compareISODate(boundary.endDate, startDate) >= 0 && compareISODate(boundary.startDate, endDate) <= 0,
-  )
-}
-
 function startOfMondayWeek(date: ISODate): ISODate {
   return addCalendarDays(date, -mondayFirstWeekdayIndex(date))
 }
 
 function endOfSundayWeek(date: ISODate): ISODate {
-  const mondayIndex = mondayFirstWeekdayIndex(date)
-  return addCalendarDays(date, 6 - mondayIndex)
+  return addCalendarDays(date, 6 - mondayFirstWeekdayIndex(date))
+}
+
+function boundariesIntersectingRange(boundaries: TermBoundary[], startDate: ISODate, endDate: ISODate): TermBoundary[] {
+  return boundaries.filter((boundary) => compareISODate(boundary.endDate, startDate) >= 0 && compareISODate(boundary.startDate, endDate) <= 0)
 }
 
 function parseISODate(date: ISODate): { year: number; month: number; day: number } {
@@ -182,7 +181,7 @@ function parseISODate(date: ISODate): { year: number; month: number; day: number
 }
 
 function formatISODate(year: number, month: number, day: number): ISODate {
-  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}` as ISODate
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}` as ISODate
 }
 
 function lastDayOfMonth(year: number, month: number): ISODate {
