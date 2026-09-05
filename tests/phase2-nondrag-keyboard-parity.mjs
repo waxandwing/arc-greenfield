@@ -1,3 +1,4 @@
+import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
@@ -86,12 +87,15 @@ try {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await configureCalendar(page)
   await seedPlanningState(page)
+  mkdirSync('artifacts/phase2-behavior', { recursive: true })
 
   // Current Phase 2 planner does not expose drag as a required mutation route.
   assert(await page.locator('[draggable="true"]').count() === 0, 'Keyboard parity: current planning surface unexpectedly exposes a draggable-only planning control.')
 
   // From this point onward, core mutation actions use focus/typing/keyboard activation only.
   await keyboardActivate(headerAction(page, 'Edit Lessons'))
+  await selectLessonByKeyboard(page, 'Recovery lesson')
+  await page.screenshot({ path: 'artifacts/phase2-behavior/lesson-editor-1366.png', fullPage: true })
   await selectLessonByKeyboard(page, 'Move me')
   const plannedDate = page.getByRole('textbox', { name: 'Planned date', exact: true })
   await plannedDate.focus()
@@ -130,6 +134,7 @@ try {
   await keyboardActivate(headerAction(page, 'Review recovery'))
   const recoveryCard = page.locator('.recovery-card').filter({ hasText: 'Recovery lesson' })
   assert(await recoveryCard.count() === 1, 'Keyboard parity: keyboard Recovery review did not expose the interrupted Lesson.')
+  await page.screenshot({ path: 'artifacts/phase2-behavior/recovery-review-1366.png', fullPage: true })
   const moveSelect = recoveryCard.getByRole('combobox', { name: 'Move to', exact: true })
   await moveSelect.focus()
   const destination = await moveSelect.locator('option:not([disabled])').evaluateAll((nodes) => nodes.map((node) => node.value).find(Boolean) ?? '')
@@ -144,7 +149,7 @@ try {
   assert(await headerAction(page, 'Undo last Shift').count() === 0, 'Keyboard parity: consumed keyboard Undo returned after reload.')
   assert(runtimeErrors.length === 0, `Phase 2 keyboard/non-drag runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
-  console.log('Phase 2 non-drag keyboard parity gate passed: current planner has no drag-required mutation route; keyboard focus/activation supports Lesson move, Unplace, Delete, Recovery Apply, Undo, and reload persistence.')
+  console.log('Phase 2 non-drag keyboard parity gate passed: current planner has no drag-required mutation route; keyboard focus/activation supports Lesson move, Unplace, Delete, Recovery Apply, Undo, reload persistence, and exact behavior-surface screenshots.')
 } finally {
   await browser.close()
 }
