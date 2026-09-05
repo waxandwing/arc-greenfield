@@ -68,14 +68,14 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
 
       {calendar && isCalendarMode && anchorDate && (
         <div className="calendar-header-tools">
-          <div className="period-controls" aria-label={`${activeView} date navigation`}>
+          <div className="period-controls" role="group" aria-label={`${activeView} date navigation`}>
             <button type="button" className="quiet-button period-button" disabled={!previousTarget} onClick={onMovePrevious} aria-label={`Previous ${activeView}`}>←</button>
             <button type="button" className="quiet-button today-button" disabled={!todayTarget} onClick={onToday}>Today</button>
             <button type="button" className="quiet-button period-button" disabled={!nextTarget} onClick={onMoveNext} aria-label={`Next ${activeView}`}>→</button>
           </div>
 
           <div className="calendar-context-group">
-            <p className="calendar-context" aria-label="Current school calendar">{calendar.schoolYearLabel}</p>
+            <p className="calendar-context">{calendar.schoolYearLabel}</p>
             <div className="calendar-context-actions">
               <button type="button" className="text-button" onClick={onOpenCalendarSetup}>Edit dates</button>
               <button type="button" className="text-button" onClick={onOpenTerms}>{hasTerms ? 'Edit terms' : 'Set terms'}</button>
