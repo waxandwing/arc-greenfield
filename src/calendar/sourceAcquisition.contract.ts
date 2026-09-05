@@ -1,8 +1,10 @@
 import {
   buildProposalFromOfficialPayload,
+  normalizeOfficialCalendarSourceSearchResult,
   normalizeOfficialSourceSearchResult,
   normalizeSchoolIdentityQuery,
   validateSchoolIdentityQuery,
+  type OfficialCalendarSourceCandidate,
   type OfficialSourceCandidate,
 } from './sourceAcquisition'
 
@@ -25,15 +27,15 @@ assert(validateSchoolIdentityQuery({ schoolName: 'Central High School' }).length
 assert(validateSchoolIdentityQuery({ schoolName: 'Central High School', city: 'Orlando' }).length === 0, 'School plus locality should be searchable.')
 
 const none = normalizeOfficialSourceSearchResult({ candidates: [] })
-assert(none.status === 'none', 'Zero official candidates must remain an explicit no-result state.')
+assert(none.status === 'none', 'Zero official school candidates must remain an explicit no-result state.')
 
 const candidateA: OfficialSourceCandidate = {
   id: 'candidate-a',
   schoolName: 'Oak Ridge High School',
   districtName: 'Orange County Public Schools',
   locality: 'Orlando, FL',
-  sourceLabel: 'District calendar page fixture',
-  sourceLocator: 'fixture://official-source/a',
+  sourceLabel: 'NCES school identity fixture',
+  sourceLocator: 'https://nces.example.invalid/school/candidate-a',
   confidence: 'confirmed',
 }
 const candidateB: OfficialSourceCandidate = {
@@ -41,22 +43,55 @@ const candidateB: OfficialSourceCandidate = {
   schoolName: 'Oak Ridge High School',
   districtName: 'Example District',
   locality: 'Example City, FL',
-  sourceLabel: 'Second fixture source',
-  sourceLocator: 'fixture://official-source/b',
+  sourceLabel: 'Second NCES identity fixture',
+  sourceLocator: 'https://nces.example.invalid/school/candidate-b',
   confidence: 'mixed',
 }
 
 const multiple = normalizeOfficialSourceSearchResult({ candidates: [candidateA, candidateB] })
-assert(multiple.status === 'candidates' && multiple.candidates.length === 2, 'Multiple candidates must survive for explicit teacher selection.')
+assert(multiple.status === 'candidates' && multiple.candidates.length === 2, 'Multiple school candidates must survive for explicit teacher selection.')
 
 const malformed = normalizeOfficialSourceSearchResult({ candidates: [{ id: 'bad' }] })
-assert(malformed.status === 'invalid' && malformed.candidates.length === 0, 'Malformed provider result must fail closed.')
+assert(malformed.status === 'invalid' && malformed.candidates.length === 0, 'Malformed school provider result must fail closed.')
 
 const duplicate = normalizeOfficialSourceSearchResult({ candidates: [candidateA, { ...candidateA }] })
-assert(duplicate.status === 'invalid', 'Duplicate candidate identity must fail closed.')
+assert(duplicate.status === 'invalid', 'Duplicate school candidate identity must fail closed.')
 
-const proposal = buildProposalFromOfficialPayload(candidateA, {
+const calendarSourceA: OfficialCalendarSourceCandidate = {
+  id: 'calendar-source-a',
+  schoolCandidateId: candidateA.id,
+  label: '2026–27 district calendar',
+  publisher: 'Orange County Public Schools',
+  locator: 'https://calendar.example.invalid/ocps/2026-27',
+  kind: 'district-calendar-page',
+  confidence: 'confirmed',
+}
+const calendarSourceB: OfficialCalendarSourceCandidate = {
+  id: 'calendar-source-b',
+  schoolCandidateId: candidateA.id,
+  label: '2026–27 school calendar PDF',
+  publisher: 'Oak Ridge High School',
+  locator: 'https://calendar.example.invalid/oak-ridge/2026-27.pdf',
+  kind: 'school-calendar-document',
+  confidence: 'mixed',
+}
+
+const noCalendarSource = normalizeOfficialCalendarSourceSearchResult({ candidates: [] })
+assert(noCalendarSource.status === 'none', 'Missing trustworthy calendar source must remain an explicit no-result state.')
+assert((noCalendarSource.message ?? '').includes('No dates were created'), 'No-source state must explicitly preserve non-mutation truth.')
+
+const calendarSources = normalizeOfficialCalendarSourceSearchResult({ candidates: [calendarSourceA, calendarSourceB] })
+assert(calendarSources.status === 'candidates' && calendarSources.candidates.length === 2, 'Multiple trustworthy calendar sources must remain explicit.')
+
+const malformedCalendarSource = normalizeOfficialCalendarSourceSearchResult({ candidates: [{ ...calendarSourceA, locator: 'fixture://not-teacher-facing' }] })
+assert(malformedCalendarSource.status === 'invalid', 'Calendar source without a trustworthy HTTP(S) locator must fail closed.')
+
+const duplicateCalendarSource = normalizeOfficialCalendarSourceSearchResult({ candidates: [calendarSourceA, { ...calendarSourceA }] })
+assert(duplicateCalendarSource.status === 'invalid', 'Duplicate calendar source identity must fail closed.')
+
+const proposal = buildProposalFromOfficialPayload(candidateA, calendarSourceA, {
   candidateId: candidateA.id,
+  calendarSourceId: calendarSourceA.id,
   input: {
     id: 'official-calendar-fixture',
     schoolYearLabel: '2026–27 fixture',
@@ -70,38 +105,80 @@ const proposal = buildProposalFromOfficialPayload(candidateA, {
     semesters: [],
   },
   evidence: [{
-    id: 'evidence-a',
+    id: 'calendar-evidence-a',
     source: 'district-source',
-    label: 'Automated fixture only',
-    locator: candidateA.sourceLocator,
+    label: 'Official district calendar fixture',
+    locator: calendarSourceA.locator,
   }],
 })
-assert(proposal.reviewedAt === null, 'Selecting an official candidate must produce an unreviewed proposal, not committed calendar truth.')
-assert(proposal.input.patternSource === 'district-source', 'Official payload must retain district-source truth.')
-assert(proposal.evidence[0]?.locator === candidateA.sourceLocator, 'Official payload must retain selected source locator.')
+assert(proposal.reviewedAt === null, 'Acquiring official calendar dates must produce an unreviewed proposal, not committed calendar truth.')
+assert(proposal.input.patternSource === 'district-source', 'Official calendar payload must retain district-source truth.')
+assert(proposal.evidence[0]?.locator === calendarSourceA.locator, 'Calendar proposal must retain selected calendar-source locator rather than using school identity as date evidence.')
+assert(proposal.evidence[0]?.locator !== candidateA.sourceLocator, 'School identity locator must not masquerade as calendar-date evidence.')
 
-let mismatchRejected = false
+let sourceOwnershipRejected = false
 try {
-  buildProposalFromOfficialPayload(candidateA, {
+  buildProposalFromOfficialPayload(candidateB, calendarSourceA, {
     candidateId: candidateB.id,
+    calendarSourceId: calendarSourceA.id,
     input: proposal.input,
     evidence: proposal.evidence,
   })
 } catch {
-  mismatchRejected = true
+  sourceOwnershipRejected = true
 }
-assert(mismatchRejected, 'Payload for a different candidate must fail closed.')
+assert(sourceOwnershipRejected, 'Calendar source tied to a different school candidate must fail closed.')
 
-let locatorRejected = false
+let schoolMismatchRejected = false
 try {
-  buildProposalFromOfficialPayload(candidateA, {
-    candidateId: candidateA.id,
+  buildProposalFromOfficialPayload(candidateA, calendarSourceA, {
+    candidateId: candidateB.id,
+    calendarSourceId: calendarSourceA.id,
     input: proposal.input,
-    evidence: [{ id: 'wrong', source: 'district-source', label: 'Wrong fixture', locator: 'fixture://other' }],
+    evidence: proposal.evidence,
   })
 } catch {
-  locatorRejected = true
+  schoolMismatchRejected = true
 }
-assert(locatorRejected, 'Payload without selected official source locator must fail closed.')
+assert(schoolMismatchRejected, 'Calendar payload for a different school candidate must fail closed.')
+
+let calendarSourceMismatchRejected = false
+try {
+  buildProposalFromOfficialPayload(candidateA, calendarSourceA, {
+    candidateId: candidateA.id,
+    calendarSourceId: calendarSourceB.id,
+    input: proposal.input,
+    evidence: proposal.evidence,
+  })
+} catch {
+  calendarSourceMismatchRejected = true
+}
+assert(calendarSourceMismatchRejected, 'Calendar payload for a different source candidate must fail closed.')
+
+let calendarLocatorRejected = false
+try {
+  buildProposalFromOfficialPayload(candidateA, calendarSourceA, {
+    candidateId: candidateA.id,
+    calendarSourceId: calendarSourceA.id,
+    input: proposal.input,
+    evidence: [{ id: 'wrong', source: 'district-source', label: 'Wrong fixture', locator: 'https://calendar.example.invalid/other' }],
+  })
+} catch {
+  calendarLocatorRejected = true
+}
+assert(calendarLocatorRejected, 'Payload without selected calendar-source locator must fail closed.')
+
+let manualTruthRejected = false
+try {
+  buildProposalFromOfficialPayload(candidateA, calendarSourceA, {
+    candidateId: candidateA.id,
+    calendarSourceId: calendarSourceA.id,
+    input: { ...proposal.input, patternSource: 'manual' },
+    evidence: proposal.evidence,
+  })
+} catch {
+  manualTruthRejected = true
+}
+assert(manualTruthRejected, 'Official calendar acquisition must not silently create manual truth.')
 
 console.log('official source acquisition contract passed')
