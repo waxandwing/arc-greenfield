@@ -24,11 +24,12 @@ type Props = {
   calendar: SchoolCalendar | null
   anchorDate: ISODate | null
   planningContext?: PlanningContext | null
+  showWeekends?: boolean
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -52,11 +53,11 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
     }
     case 'Week': {
       const projection = projectWeek(calendar, anchorDate)
-      const weekdays = projection.days.filter((day) => !day.isWeekend)
+      const visibleDays = showWeekends ? projection.days : projection.days.filter((day) => !day.isWeekend)
       return (
         <PlanningWeekStrip
-          title={formatDateRange(weekdays[0]?.date ?? projection.startDate, weekdays[weekdays.length - 1]?.date ?? projection.endDate)}
-          days={weekdays}
+          title={formatDateRange(visibleDays[0]?.date ?? projection.startDate, visibleDays[visibleDays.length - 1]?.date ?? projection.endDate)}
+          days={visibleDays}
           planningContext={planningContext}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
         />
