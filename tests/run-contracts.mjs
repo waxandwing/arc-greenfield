@@ -22,6 +22,7 @@ const contracts = [
   'tests/generated/src/planning/monthPlanningProjection.contract.js',
   'tests/generated/src/planning/planningCrossView.contract.js',
   'tests/generated/src/planning/dayContinuityProjection.contract.js',
+  'tests/generated/src/planning/liveClassroom.contract.js',
   'tests/generated/src/planning/easelSessionProjection.contract.js',
   'tests/generated/src/planning/easelTeachingOutcome.contract.js',
   'tests/generated/src/planning/easelCoreLoop.hostile.contract.js',
