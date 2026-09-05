@@ -13,6 +13,7 @@ import './styles/classSetup.css'
 import './styles/unitSetup.css'
 import './styles/lessonSetup.css'
 import './styles/recoveryReview.css'
+import './styles/sourceCalendarReview.css'
 import './styles/buildFingerprint.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
