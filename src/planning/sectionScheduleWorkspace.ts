@@ -72,20 +72,27 @@ export function validateSectionScheduleWorkspace(
   }
 
   for (const section of planning.sections) {
-    const byDate = new Map<ISODate, Array<{ id: string; title: string }>>()
+    const byDate = new Map<ISODate, Array<{ id: string; title: string; hasSectionOverride: boolean }>>()
     const sectionLessons = lessons.lessons.filter((candidate) => candidate.courseId === section.courseId && candidate.calendarId === section.calendarId)
     for (const lesson of sectionLessons) {
       const delivery = effectiveLessonDeliveryState(lessons.deliveryStates, lesson, section)
       if (delivery.status === 'completed' || delivery.status === 'skipped') continue
 
+      const hasSectionOverride = workspace.overrides.some((override) => override.sectionId === section.id && override.lessonId === lesson.id)
       const date = effectiveLessonDate(lesson, section.id, workspace.overrides)
       if (!date) continue
       const sameDate = byDate.get(date) ?? []
-      sameDate.push({ id: lesson.id, title: lesson.title })
+      sameDate.push({ id: lesson.id, title: lesson.title, hasSectionOverride })
       byDate.set(date, sameDate)
     }
     for (const [date, sameDate] of byDate) {
       if (sameDate.length <= 1) continue
+
+      // Shared curriculum may intentionally place multiple Lessons on one day.
+      // Same-day approval is a Section-schedule safeguard only when at least one
+      // Lesson's effective date is being changed by an explicit Section override.
+      if (!sameDate.some((lesson) => lesson.hasSectionOverride)) continue
+
       const approved = approvals.some((approval) => sameDayApprovalCovers(approval, section.id, date, sameDate.map((lesson) => lesson.id)))
       if (!approved) errors.push(`${section.name} has multiple live Lessons on ${date}: ${sameDate.map((lesson) => lesson.title).join(', ')}.`)
     }
