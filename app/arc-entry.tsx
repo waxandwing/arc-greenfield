@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { emptyWorkspace, type Workspace } from "../lib/domain";
 import { loadWorkspaceResult, saveWorkspace } from "../lib/workspace-store";
-import { ArcShell } from "./arc-shell";
+import { ArcShellCanonical } from "./arc-shell-canonical";
 import { OnboardingScreen } from "./onboarding-screen";
 import { WorkspaceRecoveryScreen } from "./workspace-recovery-screen";
 
@@ -67,7 +67,7 @@ export function ArcEntry({ buildId, gitSha }: { buildId: string; gitSha: string 
   if (recoveryRaw) {
     return <WorkspaceRecoveryScreen recoveryRaw={recoveryRaw} onRestore={restoreWorkspace} onStartFresh={startFresh} />;
   }
-  if (complete) return <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} />;
+  if (complete) return <ArcShellCanonical buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} />;
 
   return <OnboardingScreen workspace={workspace} onUpdate={updateWorkspace} onComplete={() => { saveWorkspace(workspace); setComplete(true); }} />;
 }
