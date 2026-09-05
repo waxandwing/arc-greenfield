@@ -1,4 +1,4 @@
-import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap } from './projections'
+import { projectDay, projectMonth, projectQuarter, projectSemester, projectSundayFirstWeek, projectWeek, projectYearMap } from './projections'
 import type { SchoolCalendar } from './types'
 
 const calendar: SchoolCalendar = {
@@ -30,12 +30,18 @@ assert(day.quarter?.id === 'q1', 'Day projection must resolve containing quarter
 assert(day.semester?.id === 's1', 'Day projection must resolve containing semester.')
 
 const week = projectWeek(calendar, '2026-08-12')
-assert(week.startDate === '2026-08-10', 'Week projection must begin Monday.')
-assert(week.endDate === '2026-08-16', 'Week projection must end Sunday.')
-assert(week.days.length === 7, 'Week projection must expose seven calendar days.')
+assert(week.startDate === '2026-08-10', 'Default Week projection must begin Monday.')
+assert(week.endDate === '2026-08-16', 'Default Week projection must end Sunday internally.')
+assert(week.days.length === 7, 'Week projection must expose seven calendar days internally.')
 assert(week.days[2].kind === 'no-school', 'Week projection must preserve no-school truth.')
 assert(week.days[5].isWeekend, 'Week projection must identify Saturday as weekend.')
 assert(week.days[6].isWeekend, 'Week projection must identify Sunday as weekend.')
+
+const weekendWeek = projectSundayFirstWeek(calendar, '2026-08-12')
+assert(weekendWeek.startDate === '2026-08-09', 'Weekend-enabled Week must start on the Sunday preceding the Monday-first teaching week.')
+assert(weekendWeek.endDate === '2026-08-15', 'Weekend-enabled Week must end Saturday.')
+assert(new Date(`${weekendWeek.days[0].date}T00:00:00Z`).getUTCDay() === 0, 'Weekend-enabled Week first visible day must be Sunday.')
+assert(new Date(`${weekendWeek.days[6].date}T00:00:00Z`).getUTCDay() === 6, 'Weekend-enabled Week last visible day must be Saturday.')
 assert(week.quarters.map((term) => term.id).join(',') === 'q1', 'Week projection must expose intersecting quarter context.')
 assert(week.semesters.map((term) => term.id).join(',') === 's1', 'Week projection must expose intersecting semester context.')
 
@@ -62,5 +68,6 @@ assert(year.quarters === calendar.quarters || year.quarters.length === calendar.
 assert(year.semesters.length === 1, 'Year Map must expose semester boundaries.')
 assert(year.days[0].date === calendar.firstDay, 'Year Map first day must equal canonical first day.')
 assert(year.days[year.days.length - 1].date === calendar.lastDay, 'Year Map last day must equal canonical last day.')
+assert(new Date(`${year.startDate}T00:00:00Z`).getUTCDay() === 1, 'This attendance-year fixture begins Monday and Year Map must not rotate it to Sunday-first Week behavior.')
 
 console.log('calendar projection contract passed')
