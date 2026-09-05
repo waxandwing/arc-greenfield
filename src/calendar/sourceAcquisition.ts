@@ -24,8 +24,30 @@ export type OfficialSourceSearchResult =
   | { status: 'candidates'; candidates: OfficialSourceCandidate[] }
   | { status: 'invalid'; candidates: []; message: string }
 
+export type OfficialCalendarSourceKind =
+  | 'district-calendar-page'
+  | 'district-calendar-document'
+  | 'school-calendar-page'
+  | 'school-calendar-document'
+
+export type OfficialCalendarSourceCandidate = {
+  id: string
+  schoolCandidateId: string
+  label: string
+  publisher: string
+  locator: string
+  kind: OfficialCalendarSourceKind
+  confidence: 'confirmed' | 'mixed' | 'inferred'
+}
+
+export type OfficialCalendarSourceSearchResult =
+  | { status: 'none'; candidates: []; message?: string }
+  | { status: 'candidates'; candidates: OfficialCalendarSourceCandidate[] }
+  | { status: 'invalid'; candidates: []; message: string }
+
 export type OfficialCalendarPayload = {
   candidateId: string
+  calendarSourceId: string
   input: CalendarHydrationInput
   evidence: CalendarEvidence[]
 }
@@ -63,12 +85,9 @@ export function normalizeOfficialSourceSearchResult(value: unknown): OfficialSou
     return { status: 'invalid', candidates: [], message: 'The official-source provider returned incomplete school identity data.' }
   }
 
-  const ids = new Set<string>()
-  for (const candidate of candidates) {
-    if (ids.has(candidate.id)) {
-      return { status: 'invalid', candidates: [], message: 'The official-source provider returned duplicate school candidates.' }
-    }
-    ids.add(candidate.id)
+  const duplicate = firstDuplicateId(candidates)
+  if (duplicate) {
+    return { status: 'invalid', candidates: [], message: 'The official-source provider returned duplicate school candidates.' }
   }
 
   if (candidates.length === 0) {
@@ -78,12 +97,50 @@ export function normalizeOfficialSourceSearchResult(value: unknown): OfficialSou
   return { status: 'candidates', candidates }
 }
 
+export function normalizeOfficialCalendarSourceSearchResult(value: unknown): OfficialCalendarSourceSearchResult {
+  if (!isRecord(value) || !Array.isArray(value.candidates)) {
+    return { status: 'invalid', candidates: [], message: 'The calendar-source provider returned an unreadable result.' }
+  }
+
+  const candidates = value.candidates
+    .map(parseCalendarSourceCandidate)
+    .filter((candidate): candidate is OfficialCalendarSourceCandidate => Boolean(candidate))
+
+  if (candidates.length !== value.candidates.length) {
+    return { status: 'invalid', candidates: [], message: 'The calendar-source provider returned incomplete or untrusted source data.' }
+  }
+
+  const duplicate = firstDuplicateId(candidates)
+  if (duplicate) {
+    return { status: 'invalid', candidates: [], message: 'The calendar-source provider returned duplicate calendar sources.' }
+  }
+
+  if (candidates.length === 0) {
+    return {
+      status: 'none',
+      candidates: [],
+      message: typeof value.message === 'string'
+        ? value.message
+        : 'Arc did not find a trustworthy official calendar source. No dates were created.',
+    }
+  }
+
+  return { status: 'candidates', candidates }
+}
+
 export function buildProposalFromOfficialPayload(
-  candidate: OfficialSourceCandidate,
+  schoolCandidate: OfficialSourceCandidate,
+  calendarSource: OfficialCalendarSourceCandidate,
   payload: OfficialCalendarPayload,
 ): CalendarProposal {
-  if (payload.candidateId !== candidate.id) {
+  if (calendarSource.schoolCandidateId !== schoolCandidate.id) {
+    throw new Error('Official calendar source does not belong to the selected school candidate.')
+  }
+  if (payload.candidateId !== schoolCandidate.id) {
     throw new Error('Official calendar payload does not match the selected school candidate.')
+  }
+  if (payload.calendarSourceId !== calendarSource.id) {
+    throw new Error('Official calendar payload does not match the selected calendar source.')
   }
   if (payload.input.patternSource !== 'district-source') {
     throw new Error('Official-source acquisition must produce district-source calendar truth.')
@@ -91,12 +148,12 @@ export function buildProposalFromOfficialPayload(
   if (payload.evidence.length === 0) {
     throw new Error('Official calendar payload is missing provenance evidence.')
   }
-  if (!payload.evidence.some((item) => item.locator === candidate.sourceLocator)) {
-    throw new Error('Official calendar payload does not retain the selected source locator.')
+  if (!payload.evidence.some((item) => item.locator === calendarSource.locator)) {
+    throw new Error('Official calendar payload does not retain the selected calendar-source locator.')
   }
 
   return buildCalendarProposal({
-    proposalId: `official-${candidate.id}-${payload.input.id}`,
+    proposalId: `official-${schoolCandidate.id}-${calendarSource.id}-${payload.input.id}`,
     input: payload.input,
     evidence: payload.evidence,
   })
@@ -108,7 +165,7 @@ function parseCandidate(value: unknown): OfficialSourceCandidate | null {
     typeof value.id !== 'string' || !value.id.trim()
     || typeof value.schoolName !== 'string' || !value.schoolName.trim()
     || typeof value.sourceLabel !== 'string' || !value.sourceLabel.trim()
-    || typeof value.sourceLocator !== 'string' || !value.sourceLocator.trim()
+    || typeof value.sourceLocator !== 'string' || !isTrustedHttpLocator(value.sourceLocator)
     || !isConfidence(value.confidence)
   ) return null
   if (value.districtName !== undefined && typeof value.districtName !== 'string') return null
@@ -125,8 +182,56 @@ function parseCandidate(value: unknown): OfficialSourceCandidate | null {
   }
 }
 
+function parseCalendarSourceCandidate(value: unknown): OfficialCalendarSourceCandidate | null {
+  if (!isRecord(value)) return null
+  if (
+    typeof value.id !== 'string' || !value.id.trim()
+    || typeof value.schoolCandidateId !== 'string' || !value.schoolCandidateId.trim()
+    || typeof value.label !== 'string' || !value.label.trim()
+    || typeof value.publisher !== 'string' || !value.publisher.trim()
+    || typeof value.locator !== 'string' || !isTrustedHttpLocator(value.locator)
+    || !isCalendarSourceKind(value.kind)
+    || !isConfidence(value.confidence)
+  ) return null
+
+  return {
+    id: value.id.trim(),
+    schoolCandidateId: value.schoolCandidateId.trim(),
+    label: value.label.trim(),
+    publisher: value.publisher.trim(),
+    locator: value.locator.trim(),
+    kind: value.kind,
+    confidence: value.confidence,
+  }
+}
+
+function firstDuplicateId<T extends { id: string }>(items: T[]): string | null {
+  const ids = new Set<string>()
+  for (const item of items) {
+    if (ids.has(item.id)) return item.id
+    ids.add(item.id)
+  }
+  return null
+}
+
+function isCalendarSourceKind(value: unknown): value is OfficialCalendarSourceKind {
+  return value === 'district-calendar-page'
+    || value === 'district-calendar-document'
+    || value === 'school-calendar-page'
+    || value === 'school-calendar-document'
+}
+
 function isConfidence(value: unknown): value is OfficialSourceCandidate['confidence'] {
   return value === 'confirmed' || value === 'mixed' || value === 'inferred'
+}
+
+function isTrustedHttpLocator(value: string): boolean {
+  try {
+    const url = new URL(value.trim())
+    return url.protocol === 'https:' || url.protocol === 'http:'
+  } catch {
+    return false
+  }
 }
 
 function cleanOptional(value: unknown): string | undefined {
