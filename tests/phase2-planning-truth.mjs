@@ -15,8 +15,14 @@ function trackRuntimeErrors(page) {
   return errors
 }
 
-function headerAction(page, text) {
-  return page.locator('.calendar-context-actions button').filter({ hasText: text })
+async function settingsAction(page, text) {
+  const drawer = page.getByRole('complementary', { name: 'Settings and setup' })
+  if (!(await drawer.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  }
+  const button = page.getByRole('complementary', { name: 'Settings and setup' }).getByRole('button', { name: text, exact: true })
+  assert(await button.count() === 1, `Phase 2: Settings did not expose exactly one ${text} action.`)
+  return button
 }
 
 async function waitForCalendarAfterLessonSave(page, context) {
@@ -46,8 +52,7 @@ async function configureCalendar(page) {
 }
 
 async function createClasses(page) {
-  const setClasses = headerAction(page, 'Set classes')
-  assert(await setClasses.count() === 1, 'Phase 2: configured calendar did not expose exactly one visible Set classes action.')
+  const setClasses = await settingsAction(page, 'Set courses & sections')
   await setClasses.click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('AP Art History')
@@ -57,7 +62,7 @@ async function createClasses(page) {
 }
 
 async function createUnit(page) {
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('Ancient Egypt')
   await page.getByRole('textbox', { name: 'Start', exact: true }).fill('2026-09-14')
@@ -87,7 +92,7 @@ try {
   await createClasses(page)
   await createUnit(page)
 
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   await addLesson(page, 'Temple lesson', '2026-09-16')
   await addLesson(page, 'Image comparison', '2026-09-16')
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
@@ -110,7 +115,7 @@ try {
   assert(await page.getByText('Ancient Egypt', { exact: true }).count() > 0, 'Phase 2: Unit placement did not survive reload.')
   assert(await page.getByText('Period 2', { exact: true }).count() > 0, 'Phase 2: Section did not survive reload.')
 
-  await headerAction(page, 'Edit Lessons').click()
+  await (await settingsAction(page, 'Edit Lessons')).click()
   await page.getByRole('button', { name: /Temple lesson/ }).click()
   await page.getByRole('textbox', { name: 'Planned date', exact: true }).fill('2026-09-17')
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
