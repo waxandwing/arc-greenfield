@@ -13,6 +13,7 @@ import {
   type SchoolCalendar,
   type Weekday,
 } from '../calendar'
+import { SourceCalendarReview } from './SourceCalendarReview'
 
 const WEEKDAYS: Array<{ value: Weekday; label: string }> = [
   { value: 1, label: 'Mon' },
@@ -150,6 +151,8 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
         <h2 id="calendar-setup-title">Tell Arc which days are actually yours.</h2>
         <p>Start with the normal week. Add the dates that break the pattern. Arc will not move plans until this calendar is confirmed.</p>
       </div>
+
+      {isSourceBackedEdit && initialValue && <SourceCalendarReview input={initialValue} />}
 
       <form className="calendar-setup-form" onSubmit={submit} noValidate>
         {errors.length > 0 && (
