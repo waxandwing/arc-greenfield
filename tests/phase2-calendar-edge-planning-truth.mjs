@@ -60,15 +60,13 @@ async function createAndProbeUnits(page) {
   assert(await startFields.nth(0).inputValue() === '2026-09-14', 'Phase 2 calendar edge: multi-day Unit start was not accepted.')
   assert(await endFields.nth(0).inputValue() === '2026-09-21', 'Phase 2 calendar edge: multi-day Unit end was not accepted across no-school/weekend dates.')
 
-  // A Unit interval made entirely of a non-instructional Sunday must fail closed.
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await unitFields.nth(1).fill('Weekend-only Unit')
   await startFields.nth(1).fill('2026-09-20')
   const unitError = await page.getByRole('alert').innerText()
   assert(unitError.includes('at least one confirmed instructional day'), `Phase 2 calendar edge: non-instructional-only Unit placement did not fail closed. Alert: ${unitError}`)
   assert(await startFields.nth(1).inputValue() === '', 'Phase 2 calendar edge: rejected non-instructional Unit placement leaked into draft state.')
-  const secondRow = page.locator('.unit-editor-row').nth(1)
-  await secondRow.getByRole('button', { name: 'Delete', exact: true }).click()
+  await page.locator('.unit-editor-row').nth(1).getByRole('button', { name: 'Delete', exact: true }).click()
 
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 }
@@ -76,7 +74,6 @@ async function createAndProbeUnits(page) {
 async function createAndProbeLessons(page) {
   await headerAction(page, 'Add Lessons').click()
 
-  // A no-school exception may sit inside the Unit span, but a Lesson cannot be placed on it.
   await page.getByRole('button', { name: 'Add Lesson', exact: true }).click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('No-school lesson')
   await page.getByRole('textbox', { name: 'Planned date', exact: true }).fill('2026-09-16')
@@ -85,7 +82,6 @@ async function createAndProbeLessons(page) {
   assert(await page.getByRole('textbox', { name: 'Planned date', exact: true }).inputValue() === '', 'Phase 2 calendar edge: rejected no-school Lesson date leaked into draft state.')
   await page.getByRole('button', { name: 'Delete', exact: true }).click()
 
-  // An explicitly confirmed instructional Saturday is legal planning truth.
   await page.getByRole('button', { name: 'Add Lesson', exact: true }).click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('Saturday studio lesson')
   await page.getByRole('textbox', { name: 'Planned date', exact: true }).fill('2026-09-19')
@@ -115,21 +111,19 @@ try {
   await createAndProbeUnits(page)
   await createAndProbeLessons(page)
 
-  // Month must show the Unit as a multi-day span and preserve explicit calendar exceptions.
   assert(await page.locator('.planning-month-unit-band').filter({ hasText: 'Span Unit' }).count() >= 1, 'Phase 2 calendar edge: multi-day Unit did not project into Month.')
   assert(await page.locator('.planning-month-day').filter({ hasText: 'Faculty meeting' }).count() === 1, 'Phase 2 calendar edge: no-school exception did not remain visible in Month.')
   assert(await page.locator('.planning-month-signal').filter({ hasText: 'Saturday studio lesson' }).count() === 1, 'Phase 2 calendar edge: instructional Saturday Lesson did not project into Month.')
 
   await moveToWeekOfSeptember14(page)
 
-  // Default Week hides weekends without deleting weekend planning truth.
-  assert(await page.locator('.planning-week-day').count() === 5, 'Phase 2 calendar edge: default Week did not remain Monday–Friday.')
+  assert(await page.locator('.planning-date-heading').count() === 5, 'Phase 2 calendar edge: default Week did not remain Monday–Friday.')
   assert(await page.getByText('Saturday studio lesson', { exact: true }).count() === 0, 'Phase 2 calendar edge: Saturday Lesson leaked into Week while weekends were hidden.')
 
   await page.getByText('View options', { exact: true }).click()
   const weekendToggle = page.getByRole('checkbox', { name: 'Show weekends in Week view', exact: true })
   await weekendToggle.check()
-  assert(await page.locator('.planning-week-day').count() === 7, 'Phase 2 calendar edge: Week did not expand to seven days when weekends were enabled.')
+  assert(await page.locator('.planning-date-heading').count() === 7, 'Phase 2 calendar edge: Week did not expand to seven days when weekends were enabled.')
   assert(await page.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: confirmed Saturday Lesson was not restored when weekends were shown.')
 
   await weekendToggle.uncheck()
@@ -137,7 +131,6 @@ try {
   await weekendToggle.check()
   assert(await page.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: hiding weekends mutated/deleted Saturday planning data.')
 
-  // Reload proves calendar exceptions, multi-day Unit, and Saturday Lesson survive persistence.
   await page.reload({ waitUntil: 'networkidle' })
   await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
   assert(await page.locator('.planning-month-unit-band').filter({ hasText: 'Span Unit' }).count() >= 1, 'Phase 2 calendar edge: multi-day Unit did not survive reload.')
