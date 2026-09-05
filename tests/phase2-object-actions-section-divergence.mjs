@@ -74,8 +74,18 @@ async function selectLesson(page, title) {
   await page.getByRole('button', { name: new RegExp(`^${title}`) }).click()
 }
 
-async function unitRow(page, title) {
+function unitRow(page, title) {
   return page.locator('.unit-editor-row').filter({ hasText: title })
+}
+
+async function describeUnitRow(row) {
+  return {
+    count: await row.count(),
+    text: await row.allInnerTexts(),
+    starts: await row.getByRole('textbox', { name: 'Start', exact: true }).allInputValues(),
+    ends: await row.getByRole('textbox', { name: 'End', exact: true }).allInputValues(),
+    buttons: await row.getByRole('button').allTextContents(),
+  }
 }
 
 const browser = await chromium.launch({ headless: true })
@@ -91,7 +101,11 @@ try {
 
   // Destructive Unit actions must fail closed while a scheduled child Lesson exists.
   await headerAction(page, 'Edit Units').click()
-  let actionUnit = await unitRow(page, 'Action Unit')
+  let actionUnit = unitRow(page, 'Action Unit')
+  const initialActionUnit = await describeUnitRow(actionUnit)
+  assert(initialActionUnit.count === 1, `Phase 2 object actions: expected one Action Unit row, found ${JSON.stringify(initialActionUnit)}.`)
+  assert(initialActionUnit.starts[0] === '2026-09-14' && initialActionUnit.ends[0] === '2026-09-18', `Phase 2 object actions: Action Unit placement was not preserved before guard test: ${JSON.stringify(initialActionUnit)}.`)
+  assert(initialActionUnit.buttons.includes('Unplace'), `Phase 2 object actions: placed Action Unit did not expose Unplace: ${JSON.stringify(initialActionUnit)}.`)
   await actionUnit.getByRole('button', { name: 'Unplace', exact: true }).click()
   assert((await page.getByRole('alert').innerText()).includes('scheduled Lessons'), 'Phase 2 object actions: Unit Unplace did not fail closed while a scheduled child Lesson existed.')
   await actionUnit.getByRole('button', { name: 'Delete', exact: true }).click()
@@ -143,7 +157,7 @@ try {
 
   // With dependencies gone, Unit Unplace preserves the Unit, and Delete can then destroy it explicitly.
   await headerAction(page, 'Edit Units').click()
-  actionUnit = await unitRow(page, 'Action Unit')
+  actionUnit = unitRow(page, 'Action Unit')
   await actionUnit.getByRole('button', { name: 'Unplace', exact: true }).click()
   assert(await actionUnit.getByRole('textbox', { name: 'Start', exact: true }).inputValue() === '', 'Phase 2 object actions: Unit Unplace did not clear start placement.')
   assert(await actionUnit.getByRole('textbox', { name: 'End', exact: true }).inputValue() === '', 'Phase 2 object actions: Unit Unplace did not clear end placement.')
@@ -151,7 +165,7 @@ try {
 
   await page.reload({ waitUntil: 'networkidle' })
   await headerAction(page, 'Edit Units').click()
-  actionUnit = await unitRow(page, 'Action Unit')
+  actionUnit = unitRow(page, 'Action Unit')
   assert(await actionUnit.count() === 1, 'Phase 2 object actions: unplaced Unit did not survive reload.')
   assert(await actionUnit.getByRole('textbox', { name: 'Start', exact: true }).inputValue() === '', 'Phase 2 object actions: unplaced Unit start date returned after reload.')
   await actionUnit.getByRole('button', { name: 'Delete', exact: true }).click()
