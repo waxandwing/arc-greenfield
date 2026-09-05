@@ -6,10 +6,11 @@ import "./range-interactions.css";
 import "./arc-visual-language.css";
 import "./onboarding-screen.css";
 import "./week-planner.css";
+import "./reconciled-shell.css";
 
 export const metadata: Metadata = {
-  title: "Arc Greenfield",
-  description: "Arc by Wax & Wing — greenfield rebuild"
+  title: "Arc",
+  description: "Arc by Wax & Wing"
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
