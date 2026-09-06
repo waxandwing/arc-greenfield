@@ -39,8 +39,8 @@ assert(await page.getByText('School-day status not added yet.').count() === 0, '
 
 const quarter = page.getByRole('button', { name: 'Quarter. Add school dates before using this school-year view.' })
 assert(await quarter.getAttribute('aria-disabled') === 'true', 'Quarter did not remain unavailable before school dates exist.')
-await quarter.click()
-assert(await page.getByRole('grid', { name: /neutral calendar week/ }).count() === 1, 'Unavailable Quarter changed the safe pre-calendar view.')
+assert(await quarter.isDisabled(), 'Quarter remained natively actionable before school dates exist.')
+assert(await page.getByRole('grid', { name: /neutral calendar week/ }).count() === 1, 'Unavailable school-year views displaced the safe Week context.')
 
 const addDates = page.getByRole('button', { name: 'Add my school dates' })
 await addDates.focus()
