@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { removeCourseSafely } from "../lib/course-operations";
 import type { Course, Workspace } from "../lib/domain";
 import { onboardingCompletedCount, onboardingReady, onboardingStepComplete, type OnboardingStep } from "../lib/onboarding-state";
 
@@ -102,7 +103,7 @@ export function OnboardingScreen({ workspace, onUpdate, onComplete }: Props) {
 
             {step === "classes" && <div className="setupPreviewSection">
               <div className="courseSetupRow"><input autoFocus value={draftCourse} onChange={(e) => setDraftCourse(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCourse(); }} placeholder="Course name" /><input value={draftPeriod} onChange={(e) => setDraftPeriod(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") addCourse(); }} placeholder="Period / block" /><button type="button" onClick={addCourse}>Add class</button></div>
-              <div className="classPreviewList">{workspace.courses.map((course) => <div key={course.id} className="classPreviewRow"><i style={{ background: course.color }} /><span><strong>{course.name}</strong><small>{course.periodLabel || "No period set"}</small></span><button type="button" aria-label={`Remove ${course.name}`} onClick={() => onUpdate((current) => ({ ...current, courses: current.courses.filter((item) => item.id !== course.id) }))}>×</button></div>)}</div>
+              <div className="classPreviewList">{workspace.courses.map((course) => <div key={course.id} className="classPreviewRow"><i style={{ background: course.color }} /><span><strong>{course.name}</strong><small>{course.periodLabel || "No period set"}</small></span><button type="button" aria-label={`Remove ${course.name}`} onClick={() => onUpdate((current) => removeCourseSafely(current, course.id))}>×</button></div>)}</div>
               {!workspace.courses.length && <p className="setupEmptyState">Your class rows will appear here as you add them.</p>}
             </div>}
 
