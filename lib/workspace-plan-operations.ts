@@ -1,6 +1,6 @@
 import type { Plan, Workspace } from "./domain";
 import { movePlanToCalendarDate } from "./plan-operations";
-import { movePlanTreeToIdeas } from "./plan-tree";
+import { collectPlanTree, movePlanTreeToIdeas } from "./plan-tree";
 
 export type PlanDestination =
   | { location: "ideas" }
@@ -8,10 +8,8 @@ export type PlanDestination =
 
 /**
  * Canonical plan relocation seam for Arc.
- *
- * UI surfaces do not mutate Plan fields directly. They request a destination;
- * this operation applies the domain mutation and returns the next Workspace.
- * History/persistence remain separate owners around this pure mutation.
+ * Location determines whether a plan is scheduled; date values on parked Unit trees
+ * remain internal anchors so relative Lesson offsets can be restored on reschedule.
  */
 export function relocatePlan(
   workspace: Workspace,
@@ -22,27 +20,23 @@ export function relocatePlan(
   if (!plan) return workspace;
 
   if (destination.location === "calendar") {
-    const plans = movePlanToCalendarDate(
-      workspace.plans,
-      planId,
-      destination.date,
-      destination.courseId
-    );
+    const plans = movePlanToCalendarDate(workspace.plans, planId, destination.date, destination.courseId);
     return plans === workspace.plans ? workspace : { ...workspace, plans };
   }
 
-  let plans = movePlanTreeToIdeas(workspace.plans, planId);
-
-  // A lesson/note removed from a Unit becomes an independent Ideas object.
-  // Units retain their own tree so the grouped plan can be parked/restored as one object.
-  if (plan.type !== "unit" && plan.parentUnitId) {
-    plans = plans.map((item) =>
-      item.id === planId
-        ? { ...item, parentUnitId: null, childOrder: null }
-        : item
-    );
+  if (plan.type === "unit") {
+    const tree = collectPlanTree(workspace.plans, planId);
+    if (tree.length > 0 && tree.every((item) => item.location === "ideas")) return workspace;
+    return { ...workspace, plans: movePlanTreeToIdeas(workspace.plans, planId) };
   }
 
+  if (plan.location === "ideas" && !plan.parentUnitId) return workspace;
+
+  const plans = movePlanTreeToIdeas(workspace.plans, planId).map((item) =>
+    item.id === planId && item.parentUnitId
+      ? { ...item, parentUnitId: null, childOrder: null }
+      : item
+  );
   return { ...workspace, plans };
 }
 
