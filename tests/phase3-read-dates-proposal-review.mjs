@@ -198,7 +198,8 @@ const geometry = await page.evaluate(() => ({ width: document.documentElement.cl
 assert(geometry.scroll <= geometry.width + 1, `Read-dates proposal review overflowed at 390px (${geometry.scroll} > ${geometry.width}).`)
 
 await useCalendar.click()
-await page.getByRole('heading', { name: 'September 2026' }).waitFor({ state: 'visible' })
+await page.getByRole('heading', { name: 'Month', exact: true }).waitFor({ state: 'visible' })
+await page.getByText('2026–27', { exact: true }).waitFor({ state: 'visible' })
 const persisted = await page.evaluate(() => JSON.parse(localStorage.getItem('arc.calendar.v1') ?? 'null'))
 assert(persisted?.firstDay === '2026-08-11', 'Explicit commit did not persist the source-backed first day.')
 assert(persisted?.lastDay === '2027-05-26', 'Explicit commit did not persist the source-backed last day.')
@@ -207,7 +208,8 @@ assert(persisted?.patternConfidence === 'mixed', 'Explicit commit silently promo
 assert(Array.isArray(persisted?.provenance) && persisted.provenance.some((item) => item.locator === 'https://www.ocps.net/110680_3'), 'Explicit commit lost official calendar provenance.')
 
 await page.reload({ waitUntil: 'networkidle' })
-assert(await page.getByRole('heading', { name: 'September 2026' }).count() === 1, 'Committed source-backed calendar did not survive reload.')
+assert(await page.getByRole('heading', { name: 'Month', exact: true }).count() === 1, 'Committed source-backed calendar did not restore the canonical Month workspace after reload.')
+assert(await page.getByText('2026–27', { exact: true }).count() >= 1, 'Committed source-backed school-year context did not survive reload.')
 assert(runtimeErrors.length === 0, `Read-dates proposal review runtime errors: ${runtimeErrors.join(' | ')}`)
 
 await context.close()
