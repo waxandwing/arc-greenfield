@@ -18,11 +18,12 @@ function trackRuntimeErrors(page) {
 
 const browser = await chromium.launch({ headless: true })
 const context = await browser.newContext({ viewport: { width: 1280, height: 1000 } })
-await context.addInitScript(() => localStorage.clear())
 const page = await context.newPage()
 const runtimeErrors = trackRuntimeErrors(page)
 
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
+await page.evaluate(() => localStorage.clear())
+await page.reload({ waitUntil: 'networkidle' })
 
 const explorer = page.getByRole('region', { name: 'Month workspace' }).getByText('You’re in Arc')
 await explorer.waitFor({ state: 'visible' })
