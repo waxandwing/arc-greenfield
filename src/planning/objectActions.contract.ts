@@ -7,7 +7,6 @@ import type { LessonWorkspace } from './lessonWorkspace'
 import type { SectionLessonDateOverride } from './sectionSchedule'
 import { createUnit, placeUnit } from './units'
 import type { UnitWorkspace } from './unitWorkspace'
-import type { PlanningWorkspace } from './workspace'
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -25,7 +24,6 @@ const calendar = hydrateSchoolCalendar({
 })
 const course = createCourse({ id: 'course-apah', title: 'AP Art History' })
 const p2 = createSection({ id: 'section-p2', courseId: course.id, calendarId: calendar.id, name: 'Period 2' })
-const planning: PlanningWorkspace = { calendarId: calendar.id, courses: [course], sections: [p2] }
 const unit = placeUnit(createUnit({ id: 'unit-egypt', calendarId: calendar.id, courseId: course.id, title: 'Egypt' }), calendar, { startDate: '2026-09-14', endDate: '2026-09-25' })
 const emptyUnit = placeUnit(createUnit({ id: 'unit-empty', calendarId: calendar.id, courseId: course.id, title: 'Empty Unit' }), calendar, { startDate: '2026-10-05', endDate: '2026-10-09' })
 const lesson = createLesson({ id: 'lesson-1', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Temple lesson', sequence: 1, plannedDate: '2026-09-16', datePolicy: 'flexible' })
