@@ -4,7 +4,6 @@ import {
   buildProposalFromOfficialPayload,
   buildTeacherConfirmedCalendarSourceCandidate,
   commitCalendarProposal,
-  configuredOfficialCalendarExtractionAdapter,
   hydrateSchoolCalendar,
   reviewCalendarProposal,
   type CalendarHydrationInput,
@@ -14,6 +13,7 @@ import {
   type OfficialSourceCandidate,
   type SchoolCalendar,
 } from '../calendar'
+import { configuredOfficialCalendarExtractionAdapter } from '../app/officialCalendarExtractionRuntime'
 import { SourceCalendarReview } from './SourceCalendarReview'
 
 type Props = {
@@ -119,7 +119,7 @@ export function OfficialCalendarSourceInput({ school, onUseCalendar }: Props) {
       <div className="official-calendar-source-heading">
         <p className="section-label">Official calendar source</p>
         <h4 id="official-calendar-source-title">Have the district or school calendar link?</h4>
-        <p>Paste the official calendar page or document. Arc will hold the source first, then read only supported official calendars into a proposal you review before anything is saved.</p>
+        <p>Paste the official calendar page or document. Arc can hold the source now, but it will not invent, read, or save any dates from the link in this step. Read dates is a separate supported-source step that prepares a proposal for you to review.</p>
       </div>
 
       <form className="official-calendar-source-form" onSubmit={submit} noValidate>
