@@ -1,12 +1,8 @@
 import type { SchoolCalendar } from "./domain";
+import { formatDateKey, parseDateKey, shiftDateKey } from "./date-utils";
 
-export function toDateKey(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
-export function fromDateKey(dateKey: string): Date {
-  return new Date(`${dateKey}T12:00:00`);
-}
+export const toDateKey = formatDateKey;
+export const fromDateKey = parseDateKey;
 
 export function isWeekend(dateKey: string): boolean {
   const day = fromDateKey(dateKey).getDay();
@@ -30,15 +26,14 @@ export function moveInstructionalDays(
 
   const direction = delta > 0 ? 1 : -1;
   let remaining = Math.abs(delta);
-  const cursor = fromDateKey(startDate);
+  let cursor = startDate;
 
   while (remaining > 0) {
-    cursor.setDate(cursor.getDate() + direction);
-    const candidate = toDateKey(cursor);
-    if (isInstructionalDay(calendar, candidate)) remaining -= 1;
+    cursor = shiftDateKey(cursor, direction)!;
+    if (isInstructionalDay(calendar, cursor)) remaining -= 1;
   }
 
-  return toDateKey(cursor);
+  return cursor;
 }
 
 export function instructionalSpan(
@@ -52,14 +47,8 @@ export function instructionalSpan(
 
   while (result.length < instructionalDays) {
     if (isInstructionalDay(calendar, cursor)) result.push(cursor);
-    cursor = moveCalendarDay(cursor, 1);
+    cursor = shiftDateKey(cursor, 1)!;
   }
 
   return result;
-}
-
-function moveCalendarDay(dateKey: string, delta: number): string {
-  const date = fromDateKey(dateKey);
-  date.setDate(date.getDate() + delta);
-  return toDateKey(date);
 }
