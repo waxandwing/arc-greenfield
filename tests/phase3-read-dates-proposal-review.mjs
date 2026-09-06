@@ -84,6 +84,7 @@ const page = await context.newPage()
 const runtimeErrors = trackRuntimeErrors(page)
 let ncesRequests = 0
 let extractorRequests = 0
+let extractorPreflights = 0
 let extractorRouteError = ''
 
 await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWith('/MapServer/1/query'), async (route) => {
@@ -96,10 +97,24 @@ await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWit
 })
 
 await page.route((url) => url.hostname === 'calendar-text.example.invalid', async (route) => {
+  const request = route.request()
+  if (request.method() === 'OPTIONS') {
+    extractorPreflights += 1
+    await route.fulfill({
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'authorization, apikey, content-type',
+      },
+    })
+    return
+  }
+
   extractorRequests += 1
   try {
-    const request = route.request()
     const headers = request.headers()
+    assert(request.method() === 'POST', `Unexpected extraction method: ${request.method()}`)
     assert(request.url() === 'https://calendar-text.example.invalid/functions/v1/official-calendar-source-text', `Unexpected extraction endpoint: ${request.url()}`)
     assert(headers.authorization === 'Bearer test-public-client-jwt', 'Read dates did not send configured bearer authorization.')
     assert(headers.apikey === 'test-public-client-jwt', 'Read dates did not send configured public API key.')
@@ -143,6 +158,7 @@ let sourceAlert = page.getByRole('alert')
 await sourceAlert.waitFor({ state: 'visible' })
 assert((await sourceAlert.textContent())?.includes('does not yet have a safe extractor'), 'Unsupported official source did not fail closed with an explicit no-dates message.')
 assert(extractorRequests === 0, `Unsupported source unexpectedly called the extraction service ${extractorRequests} time(s).`)
+assert(extractorPreflights === 0, `Unsupported source unexpectedly preflighted the extraction service ${extractorPreflights} time(s).`)
 assert(await page.evaluate(() => localStorage.getItem('arc.calendar.v1')) === null, 'Unsupported source unexpectedly persisted a calendar.')
 
 await page.getByLabel('Official calendar link', { exact: true }).fill('https://www.ocps.net/110680_3')
@@ -158,8 +174,9 @@ const readOutcome = await Promise.race([
 ]).catch(() => 'timeout')
 if (readOutcome !== 'proposal') {
   const alertText = await page.getByRole('alert').textContent().catch(() => '')
-  throw new Error(`Read dates did not produce a proposal. outcome=${readOutcome}; extractorRequests=${extractorRequests}; routeError=${extractorRouteError || 'none'}; alert=${alertText || 'none'}`)
+  throw new Error(`Read dates did not produce a proposal. outcome=${readOutcome}; preflights=${extractorPreflights}; extractorRequests=${extractorRequests}; routeError=${extractorRouteError || 'none'}; alert=${alertText || 'none'}`)
 }
+assert(extractorPreflights === 1, `Supported source used ${extractorPreflights} CORS preflights, expected exactly 1.`)
 assert(extractorRequests === 1, `Supported source used ${extractorRequests} extraction requests, expected exactly 1.`)
 assert((await proposal.textContent())?.includes('2026–27'), 'Calendar proposal lost the school-year label.')
 assert((await proposal.textContent())?.includes('2026-08-11 → 2027-05-26'), 'Calendar proposal lost explicit first/last school-day truth.')
