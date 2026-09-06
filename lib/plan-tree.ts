@@ -1,25 +1,9 @@
 import type { Plan } from "./domain";
-
-function parseDate(value: string): Date {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year, month - 1, day, 12, 0, 0, 0);
-}
-
-function formatDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function shiftDate(value: string | null, deltaDays: number): string | null {
-  if (!value) return null;
-  const date = parseDate(value);
-  date.setDate(date.getDate() + deltaDays);
-  return formatDate(date);
-}
+import { calendarDayDelta, shiftDateKey } from "./date-utils";
 
 export function collectPlanTree(plans: Plan[], rootId: string): Plan[] {
+  if (!plans.some((plan) => plan.id === rootId)) return [];
+
   const ids = new Set<string>([rootId]);
   let added = true;
   while (added) {
@@ -37,6 +21,7 @@ export function collectPlanTree(plans: Plan[], rootId: string): Plan[] {
 export function resolveTreeRootId(plans: Plan[], planId: string): string | null {
   let current = plans.find((plan) => plan.id === planId);
   if (!current) return null;
+
   const visited = new Set<string>();
   while (current.parentUnitId && !visited.has(current.id)) {
     visited.add(current.id);
@@ -47,39 +32,63 @@ export function resolveTreeRootId(plans: Plan[], planId: string): string | null 
   return current.id;
 }
 
-export function shiftPlanTree(plans: Plan[], rootId: string, deltaDays: number, courseId?: string | null): Plan[] {
-  const treeIds = new Set(collectPlanTree(plans, rootId).map((plan) => plan.id));
+export function shiftPlanTree(
+  plans: Plan[],
+  rootId: string,
+  deltaDays: number,
+  courseId?: string | null
+): Plan[] {
+  const tree = collectPlanTree(plans, rootId);
+  if (tree.length === 0) return plans;
+
+  const targetCourseId = courseId === undefined ? null : courseId;
+  const isNoOp = deltaDays === 0 && tree.every((plan) =>
+    plan.location === "calendar" &&
+    (courseId === undefined || plan.courseId === targetCourseId)
+  );
+  if (isNoOp) return plans;
+
+  const treeIds = new Set(tree.map((plan) => plan.id));
   return plans.map((plan) => {
     if (!treeIds.has(plan.id)) return plan;
     return {
       ...plan,
       courseId: courseId === undefined ? plan.courseId : courseId,
-      date: shiftDate(plan.date, deltaDays),
-      endDate: shiftDate(plan.endDate, deltaDays),
+      date: shiftDateKey(plan.date, deltaDays),
+      endDate: shiftDateKey(plan.endDate, deltaDays),
       location: "calendar" as const
     };
   });
 }
 
 export function movePlanTreeToIdeas(plans: Plan[], rootId: string): Plan[] {
-  const treeIds = new Set(collectPlanTree(plans, rootId).map((plan) => plan.id));
+  const tree = collectPlanTree(plans, rootId);
+  if (tree.length === 0 || tree.every((plan) => plan.location === "ideas")) return plans;
+
+  const treeIds = new Set(tree.map((plan) => plan.id));
   return plans.map((plan) => treeIds.has(plan.id) ? { ...plan, location: "ideas" as const } : plan);
 }
 
 export function deletePlanTree(plans: Plan[], rootId: string): Plan[] {
-  const treeIds = new Set(collectPlanTree(plans, rootId).map((plan) => plan.id));
+  const tree = collectPlanTree(plans, rootId);
+  if (tree.length === 0) return plans;
+
+  const treeIds = new Set(tree.map((plan) => plan.id));
   return plans.filter((plan) => !treeIds.has(plan.id));
 }
 
-export function clonePlanTree(plans: Plan[], rootId: string, targetDate?: string | null, targetCourseId?: string | null): Plan[] {
+export function clonePlanTree(
+  plans: Plan[],
+  rootId: string,
+  targetDate?: string | null,
+  targetCourseId?: string | null
+): Plan[] {
   const tree = collectPlanTree(plans, rootId);
   const root = tree.find((plan) => plan.id === rootId);
   if (!root) return [];
 
   const idMap = new Map(tree.map((plan) => [plan.id, crypto.randomUUID()]));
-  const deltaDays = targetDate && root.date
-    ? Math.round((parseDate(targetDate).getTime() - parseDate(root.date).getTime()) / 86400000)
-    : 0;
+  const deltaDays = targetDate && root.date ? calendarDayDelta(root.date, targetDate) : 0;
 
   return tree.map((plan) => ({
     ...plan,
@@ -87,8 +96,8 @@ export function clonePlanTree(plans: Plan[], rootId: string, targetDate?: string
     parentUnitId: plan.parentUnitId ? idMap.get(plan.parentUnitId) ?? plan.parentUnitId : null,
     continuationOfId: plan.continuationOfId ? idMap.get(plan.continuationOfId) ?? plan.continuationOfId : null,
     courseId: targetCourseId === undefined ? plan.courseId : targetCourseId,
-    date: targetDate === null ? plan.date : shiftDate(plan.date, deltaDays),
-    endDate: targetDate === null ? plan.endDate : shiftDate(plan.endDate, deltaDays),
+    date: targetDate === null ? plan.date : shiftDateKey(plan.date, deltaDays),
+    endDate: targetDate === null ? plan.endDate : shiftDateKey(plan.endDate, deltaDays),
     location: targetDate === null ? "ideas" : "calendar"
   }));
 }
