@@ -15,20 +15,26 @@ export function movePlanToCalendarDate(plans: Plan[], id: string, date: string, 
   if (!plan) return plans;
 
   if (plan.type === "unit" && plan.date) {
-    return shiftPlanTree(plans, id, dayDelta(plan.date, date), courseId);
+    const delta = dayDelta(plan.date, date);
+    if (delta === 0 && plan.courseId === courseId && plan.location === "calendar") return plans;
+    return shiftPlanTree(plans, id, delta, courseId);
   }
 
-  return plans.map((item) => {
-    if (item.id !== id) return item;
-    const changingCourse = item.courseId !== courseId;
-    const detachFromUnit = Boolean(item.parentUnitId && changingCourse);
-    return {
-      ...item,
-      courseId,
-      date,
-      location: "calendar",
-      parentUnitId: detachFromUnit ? null : item.parentUnitId,
-      childOrder: detachFromUnit ? null : item.childOrder
-    };
-  });
+  const changingCourse = plan.courseId !== courseId;
+  const detachFromUnit = Boolean(plan.parentUnitId && changingCourse);
+  if (
+    plan.date === date &&
+    plan.courseId === courseId &&
+    plan.location === "calendar" &&
+    !detachFromUnit
+  ) return plans;
+
+  return plans.map((item) => item.id === id ? {
+    ...item,
+    courseId,
+    date,
+    location: "calendar",
+    parentUnitId: detachFromUnit ? null : item.parentUnitId,
+    childOrder: detachFromUnit ? null : item.childOrder
+  } : item);
 }
