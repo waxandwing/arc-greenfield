@@ -37,21 +37,6 @@
   pointer-events: none;
 }
 
-.priorityTier:nth-of-type(2) .priorityHeading::before,
-.priorityTier:nth-of-type(3) .priorityHeading::before,
-.priorityTier:nth-of-type(4) .priorityHeading::before {
-  content: "";
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-right: 8px;
-  vertical-align: 1px;
-  border-radius: 2px 7px 7px 7px;
-}
-.priorityTier:nth-of-type(2) .priorityHeading::before { background: #f0df3a; }
-.priorityTier:nth-of-type(3) .priorityHeading::before { background: #f4ae5f; }
-.priorityTier:nth-of-type(4) .priorityHeading::before { background: #8eb5c6; }
-
 .unitMagnet::after,
 .monthPlan.unit::after,
 .quarterPlan.unit::after {
