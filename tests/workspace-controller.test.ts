@@ -1,8 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { Plan, Workspace } from "../lib/domain";
+import {
+  dispatchWorkspaceCommand,
+  setLastUsedView,
+  undoWorkspaceCommand
+} from "../lib/workspace-controller";
 import { createWorkspaceHistory } from "../lib/workspace-history";
-import { dispatchWorkspaceCommand, undoWorkspaceCommand } from "../lib/workspace-controller";
 
 function plan(overrides: Partial<Plan> & Pick<Plan, "id" | "title" | "type">): Plan {
   const { id, title, type, ...rest } = overrides;
@@ -62,4 +66,16 @@ test("controller no-op commands do not create empty history entries", () => {
   const next = dispatchWorkspaceCommand(history, { type: "plan.move-to-ideas", planId: "missing" });
   assert.equal(next, history);
   assert.equal(next.past.length, 0);
+});
+
+test("last-used view persists without becoming an Undo event", () => {
+  let history = createWorkspaceHistory(workspace());
+  history = setLastUsedView(history, "month");
+  assert.equal(history.past.length, 0);
+  assert.equal(history.present.preferences.lastUsedView, "month");
+
+  history = dispatchWorkspaceCommand(history, { type: "plan.move-to-ideas", planId: "unit-1" });
+  assert.equal(history.past.length, 1);
+  history = undoWorkspaceCommand(history);
+  assert.equal(history.present.preferences.lastUsedView, "month");
 });
