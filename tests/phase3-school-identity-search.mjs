@@ -49,6 +49,7 @@ await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWit
 })
 
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: 'Add my school dates' }).click()
 assert(await page.getByRole('heading', { name: 'Let Arc look for the official school record first.' }).count() === 1, 'School identity search is missing from first-time calendar setup.')
 assert(await page.getByText('This step does not add school-calendar dates.').count() >= 1, 'Identity/date truth separation is not visible.')
 
