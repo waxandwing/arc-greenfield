@@ -19,8 +19,9 @@ export function AppFrame() {
   const workspace = useArcWorkspace(workspaceMode.close)
   const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
 
-  const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
+  const workspaceBusy = workspaceMode.mode !== 'calendar'
   const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
+  const availabilityFor = workspace.calendar ? workspace.viewAvailability : preCalendarViewAvailability
 
   useEffect(() => {
     if (!workspace.calendar || !workspace.anchorDate) return
@@ -44,10 +45,10 @@ export function AppFrame() {
 
   function returnHome() {
     if (workspaceBusy) return
-    workspace.setActiveView(resolveAvailableHomeView(viewPreferences, workspace.viewAvailability))
+    workspace.setActiveView(resolveAvailableHomeView(viewPreferences, availabilityFor))
   }
 
-  const homeView = resolveAvailableHomeView(viewPreferences, workspace.viewAvailability)
+  const homeView = resolveAvailableHomeView(viewPreferences, availabilityFor)
 
   return (
     <div className="arc-shell">
@@ -69,7 +70,7 @@ export function AppFrame() {
         <CalendarViewRail
           activeView={workspace.activeView}
           disabled={workspaceBusy}
-          availabilityFor={workspace.viewAvailability}
+          availabilityFor={availabilityFor}
           onSelect={selectView}
         />
 
@@ -131,6 +132,7 @@ export function AppFrame() {
               onUseUnits={workspace.useUnits}
               onUseLessons={workspace.useLessons}
               onApplyRecoveryShift={workspace.applyRecoveryShift}
+              onOpenCalendarSetup={() => workspaceMode.open('calendar-setup')}
               onCloseMode={workspaceMode.close}
             />
           </section>
@@ -138,6 +140,11 @@ export function AppFrame() {
       </div>
     </div>
   )
+}
+
+function preCalendarViewAvailability(view: CalendarView): { available: boolean; reason?: string } {
+  if (view === 'Day' || view === 'Week' || view === 'Month') return { available: true }
+  return { available: false, reason: 'Add school dates before using this school-year view.' }
 }
 
 function resolveAvailableHomeView(
