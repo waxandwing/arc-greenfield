@@ -1,4 +1,4 @@
-import type { Plan, Workspace } from "./domain";
+import type { Workspace } from "./domain";
 import { movePlanToCalendarDate } from "./plan-operations";
 import { collectPlanTree, movePlanTreeToIdeas } from "./plan-tree";
 
@@ -51,8 +51,4 @@ export function moveWorkspacePlanToCalendar(
   courseId: string
 ): Workspace {
   return relocatePlan(workspace, planId, { location: "calendar", date, courseId });
-}
-
-export function planById(plans: Plan[], planId: string): Plan | undefined {
-  return plans.find((plan) => plan.id === planId);
 }
