@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Plan, PlanType } from "../lib/domain";
+import type { ArcView, Plan, PlanType } from "../lib/domain";
 import { applyCut, createClipboard, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
 import { addCalendarDays, formatDateKey, mondayFor } from "../lib/date-utils";
 import { resolveArcShortcut } from "../lib/shortcuts";
@@ -10,6 +10,7 @@ import {
   commitWorkspaceReplacement,
   dispatchWorkspaceCommand,
   redoWorkspaceCommand,
+  setLastUsedView,
   undoWorkspaceCommand,
   type WorkspaceCommand
 } from "../lib/workspace-controller";
@@ -23,6 +24,10 @@ import { WeekPlanner } from "./week-planner";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
 type PlannerView = "week" | "month" | "quarter";
+
+function supportedPlannerView(view: ArcView): PlannerView {
+  return view === "month" || view === "quarter" ? view : "week";
+}
 
 function weekDays(anchor = new Date()) {
   const monday = mondayFor(anchor);
@@ -73,6 +78,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     const loaded = loadWorkspace();
     setHistory(createWorkspaceHistory(loaded));
     setActiveCourseId(loaded.courses[0]?.id ?? "");
+    setActiveView(supportedPlannerView(loaded.preferences.lastUsedView));
     setReady(true);
   }, []);
 
@@ -80,6 +86,10 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     if (!ready) return;
     const timer = window.setTimeout(() => {
       const state = saveWorkspace(workspace);
+      if (!state.ok) {
+        setSaveLabel("Save failed · browser storage unavailable");
+        return;
+      }
       setSaveLabel(`Saved here · ${new Date(state.savedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`);
     }, 300);
     return () => window.clearTimeout(timer);
@@ -87,6 +97,11 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
 
   function dispatch(command: WorkspaceCommand) {
     setHistory((current) => dispatchWorkspaceCommand(current, command));
+  }
+
+  function changeView(view: PlannerView) {
+    setActiveView(view);
+    setHistory((current) => setLastUsedView(current, view));
   }
 
   function addPlan(title: string, planType: PlanType, courseId: string | null, date: string | null, location: "calendar" | "ideas") {
@@ -204,7 +219,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   return (
     <main className="arcApp">
       <header className="arcTopbar">
-        <button className="arcBrand" type="button" aria-label="Arc home" onClick={() => setActiveView("week")}>
+        <button className="arcBrand" type="button" aria-label="Arc home" onClick={() => changeView(supportedPlannerView(workspace.preferences.lastUsedView))}>
           <span className="arcBrandEyebrow">Wax &amp; Wing</span>
           <span className="arcBrandWord">Arc</span>
         </button>
@@ -236,9 +251,9 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
 
         <div className="viewControlBar">
           <div className="viewSwitcher" aria-label="Planner view">
-            <button type="button" className={activeView === "week" ? "active" : ""} onClick={() => setActiveView("week")}>Week</button>
-            <button type="button" className={activeView === "month" ? "active" : ""} onClick={() => setActiveView("month")}>Month</button>
-            <button type="button" className={activeView === "quarter" ? "active" : ""} disabled={quarterRanges.length === 0} title={quarterRanges.length === 0 ? "Add quarter dates in Setup first" : undefined} onClick={() => setActiveView("quarter")}>Quarter</button>
+            <button type="button" className={activeView === "week" ? "active" : ""} onClick={() => changeView("week")}>Week</button>
+            <button type="button" className={activeView === "month" ? "active" : ""} onClick={() => changeView("month")}>Month</button>
+            <button type="button" className={activeView === "quarter" ? "active" : ""} disabled={quarterRanges.length === 0} title={quarterRanges.length === 0 ? "Add quarter dates in Setup first" : undefined} onClick={() => changeView("quarter")}>Quarter</button>
           </div>
           {activeView !== "week" && (
             <label className="rangeCoursePicker">
