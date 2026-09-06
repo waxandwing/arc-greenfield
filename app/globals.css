@@ -29,7 +29,7 @@ body {
 }
 button, input, select { font: inherit; }
 button { color: inherit; }
-button:disabled { opacity: 0.4; cursor: not-allowed !important; }
+button:disabled { opacity: 0.4; }
 button:focus-visible, input:focus-visible, select:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
@@ -266,9 +266,14 @@ h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 500; }
   .ideaAdder { grid-template-columns: 1fr 90px 40px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    scroll-behavior: auto !important;
-    transition: none !important;
-    animation: none !important;
+  html:focus-within { scroll-behavior: auto; }
+  .lessonMagnet,
+  .monthPlan,
+  .quarterPlan,
+  .ideaCard,
+  .onboardingChoices > button,
+  .setupPopout {
+    transition: none;
+    animation: none;
   }
 }
