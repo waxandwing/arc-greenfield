@@ -15,6 +15,7 @@ import './styles/lessonSetup.css'
 import './styles/recoveryReview.css'
 import './styles/sourceCalendarReview.css'
 import './styles/schoolIdentitySearch.css'
+import './styles/preCalendar.css'
 import './styles/buildFingerprint.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
