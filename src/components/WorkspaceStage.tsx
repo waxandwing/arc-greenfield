@@ -2,6 +2,7 @@ import { CalendarProjectionView } from './CalendarProjectionView'
 import { CalendarSetup } from './CalendarSetup'
 import { ClassSetup } from './ClassSetup'
 import { LessonSetup } from './LessonSetup'
+import { PreCalendarExplorer } from './PreCalendarExplorer'
 import { RecoveryReview } from './RecoveryReview'
 import { TermBoundarySetup } from './TermBoundarySetup'
 import { UnitSetup } from './UnitSetup'
@@ -42,6 +43,7 @@ type WorkspaceStageProps = {
   onUseUnits: (input: UnitWorkspaceInput, workspace: UnitWorkspace) => void
   onUseLessons: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => void
   onApplyRecoveryShift: (operation: ShiftOperation) => string | null
+  onOpenCalendarSetup: () => void
   onCloseMode: () => void
 }
 
@@ -69,17 +71,26 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onUseUnits,
     onUseLessons,
     onApplyRecoveryShift,
+    onOpenCalendarSetup,
     onCloseMode,
   } = props
 
-  const needsCalendarSetup = !calendar || !anchorDate || mode === 'calendar-setup'
-
-  if (needsCalendarSetup) {
+  if (mode === 'calendar-setup') {
     return (
       <CalendarSetup
         initialValue={calendarInput}
         onSave={onUseCalendar}
-        onCancel={calendar ? onCloseMode : undefined}
+        onCancel={onCloseMode}
+      />
+    )
+  }
+
+  if (!calendar || !anchorDate) {
+    return (
+      <PreCalendarExplorer
+        view={activeView}
+        showWeekends={showWeekends}
+        onOpenSetup={onOpenCalendarSetup}
       />
     )
   }
