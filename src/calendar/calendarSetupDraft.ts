@@ -30,6 +30,8 @@ const VALID_KINDS = new Set<CalendarSetupDraftException['kind']>([
   'break',
   'instructional',
 ])
+const VALID_SOURCES = new Set<CalendarSource>(['manual', 'import', 'district-source'])
+const VALID_CONFIDENCE = new Set<Confidence>(['confirmed', 'mixed', 'inferred'])
 
 export function loadCalendarSetupDraft(storage: Pick<Storage, 'getItem'> = localStorage): CalendarSetupDraft | null {
   try {
@@ -94,8 +96,8 @@ function parseException(value: unknown): CalendarSetupDraftException | null {
   const record = value as Record<string, unknown>
   if (!nonEmptyString(record.id) || typeof record.date !== 'string' || typeof record.label !== 'string') return null
   if (typeof record.kind !== 'string' || !VALID_KINDS.has(record.kind as CalendarSetupDraftException['kind'])) return null
-  if (record.source !== undefined && typeof record.source !== 'string') return null
-  if (record.confidence !== undefined && typeof record.confidence !== 'string') return null
+  if (record.source !== undefined && (typeof record.source !== 'string' || !VALID_SOURCES.has(record.source as CalendarSource))) return null
+  if (record.confidence !== undefined && (typeof record.confidence !== 'string' || !VALID_CONFIDENCE.has(record.confidence as Confidence))) return null
   return {
     id: record.id.trim(),
     date: record.date,
