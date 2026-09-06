@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useRef, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
   buildManualCalendarInput,
   createManualCalendarId,
@@ -13,6 +13,12 @@ import {
   type SchoolCalendar,
   type Weekday,
 } from '../calendar'
+import {
+  clearCalendarSetupDraft,
+  loadCalendarSetupDraft,
+  saveCalendarSetupDraft,
+  type CalendarSetupDraftException,
+} from '../calendar/calendarSetupDraft'
 import { SchoolIdentitySearch } from './SchoolIdentitySearch'
 import { SourceCalendarReview } from './SourceCalendarReview'
 
@@ -34,14 +40,7 @@ const DAY_KINDS: Array<{ value: Exclude<DayKind, 'unknown'>; label: string }> = 
   { value: 'instructional', label: 'Instructional day' },
 ]
 
-type DraftException = {
-  id: string
-  date: string
-  kind: Exclude<DayKind, 'unknown'>
-  label: string
-  source?: CalendarSource
-  confidence?: Confidence
-}
+type DraftException = CalendarSetupDraftException
 
 type ExceptionPatch = Pick<Partial<DraftException>, 'date' | 'kind' | 'label'>
 
@@ -52,22 +51,39 @@ type Props = {
 }
 
 export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) {
-  const [calendarId] = useState(() => initialValue?.id ?? createManualCalendarId())
-  const [schoolYearLabel, setSchoolYearLabel] = useState(initialValue?.schoolYearLabel ?? '')
-  const [firstDay, setFirstDay] = useState(initialValue?.firstDay ?? '')
-  const [lastDay, setLastDay] = useState(initialValue?.lastDay ?? '')
-  const [weekdays, setWeekdays] = useState<Weekday[]>(initialValue?.instructionalWeekdays ?? [1, 2, 3, 4, 5])
-  const [exceptions, setExceptions] = useState<DraftException[]>(() => (initialValue?.exceptions ?? []).map((day, index) => ({
-    id: `${day.date}-${index}`,
-    date: day.date,
-    kind: day.kind === 'unknown' ? 'no-school' : day.kind,
-    label: day.label ?? '',
-    source: day.source,
-    confidence: day.confidence,
-  })))
+  const [restoredDraft] = useState(() => initialValue ? null : loadCalendarSetupDraft())
+  const [calendarId] = useState(() => initialValue?.id ?? restoredDraft?.calendarId ?? createManualCalendarId())
+  const [schoolYearLabel, setSchoolYearLabel] = useState(initialValue?.schoolYearLabel ?? restoredDraft?.schoolYearLabel ?? '')
+  const [firstDay, setFirstDay] = useState(initialValue?.firstDay ?? restoredDraft?.firstDay ?? '')
+  const [lastDay, setLastDay] = useState(initialValue?.lastDay ?? restoredDraft?.lastDay ?? '')
+  const [weekdays, setWeekdays] = useState<Weekday[]>(initialValue?.instructionalWeekdays ?? restoredDraft?.weekdays ?? [1, 2, 3, 4, 5])
+  const [exceptions, setExceptions] = useState<DraftException[]>(() => {
+    if (!initialValue && restoredDraft) return restoredDraft.exceptions.map((item) => ({ ...item }))
+    return (initialValue?.exceptions ?? []).map((day, index) => ({
+      id: `${day.date}-${index}`,
+      date: day.date,
+      kind: day.kind === 'unknown' ? 'no-school' : day.kind,
+      label: day.label ?? '',
+      source: day.source,
+      confidence: day.confidence,
+    }))
+  })
   const [errors, setErrors] = useState<string[]>([])
   const errorSummaryRef = useRef<HTMLDivElement | null>(null)
   const isSourceBackedEdit = Boolean(initialValue && initialValue.patternSource !== 'manual')
+
+  useEffect(() => {
+    if (initialValue) return
+    saveCalendarSetupDraft({
+      schemaVersion: 1,
+      calendarId,
+      schoolYearLabel,
+      firstDay,
+      lastDay,
+      weekdays,
+      exceptions: exceptions.map((item) => ({ ...item })),
+    })
+  }, [calendarId, exceptions, firstDay, initialValue, lastDay, schoolYearLabel, weekdays])
 
   const input = useMemo<CalendarHydrationInput>(() => buildManualCalendarInput({
     calendarId,
@@ -128,6 +144,11 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
     setExceptions((current) => current.filter((item) => item.id !== id))
   }
 
+  function acceptCalendar(calendar: SchoolCalendar, acceptedInput: CalendarHydrationInput) {
+    if (!initialValue) clearCalendarSetupDraft()
+    onSave(calendar, acceptedInput)
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const nextErrors = [
@@ -142,7 +163,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
     }
 
     setErrors([])
-    onSave(hydrateSchoolCalendar(input), input)
+    acceptCalendar(hydrateSchoolCalendar(input), input)
   }
 
   return (
@@ -153,7 +174,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
         <p>Start with your school. Arc will look for an official identity before you enter dates yourself.</p>
       </div>
 
-      {!initialValue && <SchoolIdentitySearch onUseCalendar={onSave} />}
+      {!initialValue && <SchoolIdentitySearch onUseCalendar={acceptCalendar} />}
       {isSourceBackedEdit && initialValue && <SourceCalendarReview input={initialValue} />}
 
       <form className="calendar-setup-form" onSubmit={submit} noValidate>
@@ -278,9 +299,9 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
         <div className="setup-actions">
           <p>{isSourceBackedEdit
             ? 'This edit keeps the reviewed source and confidence history. Dates you change here are recorded as your confirmed manual corrections.'
-            : 'Manual setup is treated as confirmed only because you are explicitly declaring the pattern and exceptions here.'}</p>
+            : 'You can close setup and come back. Arc keeps this draft separate from your calendar until you explicitly use it.'}</p>
           <div className="setup-action-buttons">
-            {onCancel && <button type="button" className="quiet-button" onClick={onCancel}>Cancel</button>}
+            {onCancel && <button type="button" className="quiet-button" onClick={onCancel}>Close setup</button>}
             <button type="submit" className="primary-button">Use this calendar</button>
           </div>
         </div>
