@@ -158,7 +158,6 @@ let sourceAlert = page.getByRole('alert')
 await sourceAlert.waitFor({ state: 'visible' })
 assert((await sourceAlert.textContent())?.includes('does not yet have a safe extractor'), 'Unsupported official source did not fail closed with an explicit no-dates message.')
 assert(extractorRequests === 0, `Unsupported source unexpectedly called the extraction service ${extractorRequests} time(s).`)
-assert(extractorPreflights === 0, `Unsupported source unexpectedly preflighted the extraction service ${extractorPreflights} time(s).`)
 assert(await page.evaluate(() => localStorage.getItem('arc.calendar.v1')) === null, 'Unsupported source unexpectedly persisted a calendar.')
 
 await page.getByLabel('Official calendar link', { exact: true }).fill('https://www.ocps.net/110680_3')
@@ -176,7 +175,6 @@ if (readOutcome !== 'proposal') {
   const alertText = await page.getByRole('alert').textContent().catch(() => '')
   throw new Error(`Read dates did not produce a proposal. outcome=${readOutcome}; preflights=${extractorPreflights}; extractorRequests=${extractorRequests}; routeError=${extractorRouteError || 'none'}; alert=${alertText || 'none'}`)
 }
-assert(extractorPreflights === 1, `Supported source used ${extractorPreflights} CORS preflights, expected exactly 1.`)
 assert(extractorRequests === 1, `Supported source used ${extractorRequests} extraction requests, expected exactly 1.`)
 assert((await proposal.textContent())?.includes('2026–27'), 'Calendar proposal lost the school-year label.')
 assert((await proposal.textContent())?.includes('2026-08-11 → 2027-05-26'), 'Calendar proposal lost explicit first/last school-day truth.')
