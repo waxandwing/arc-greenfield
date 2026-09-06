@@ -1,4 +1,5 @@
-import type { CalendarSource, Confidence, DayKind, Weekday } from './types'
+import type { Weekday } from './hydration'
+import type { CalendarSource, Confidence, DayKind } from './types'
 
 export const CALENDAR_SETUP_DRAFT_KEY = 'arc.calendar-setup-draft.v1'
 
