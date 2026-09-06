@@ -1,12 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 
 const APP_DIR = join(process.cwd(), "app");
 
-function cssFiles() {
-  return readdirSync(APP_DIR).filter((name) => name.endsWith(".css"));
+function filesWithExtension(root: string, extension: string): string[] {
+  return readdirSync(root).flatMap((name) => {
+    const path = join(root, name);
+    return statSync(path).isDirectory()
+      ? filesWithExtension(path, extension)
+      : path.endsWith(extension) ? [path] : [];
+  });
 }
 
 function css(name: string) {
@@ -14,8 +19,12 @@ function css(name: string) {
 }
 
 test("B00.5 keeps executable CSS free of emergency important overrides", () => {
-  for (const file of cssFiles()) {
-    assert.equal(css(file).includes("!important"), false, `${file} contains !important`);
+  for (const file of filesWithExtension(APP_DIR, ".css")) {
+    assert.equal(
+      readFileSync(file, "utf8").includes("!important"),
+      false,
+      `${relative(process.cwd(), file)} contains !important`
+    );
   }
 });
 
