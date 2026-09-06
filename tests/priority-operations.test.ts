@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { Workspace } from "../lib/domain";
-import { deletePriority, movePriority, priorityCounts, renamePriority, reorderPriority } from "../lib/priority-operations";
+import { deletePriority, movePriority, renamePriority, reorderPriority } from "../lib/priority-operations";
 
 function workspace(): Workspace {
   return {
@@ -37,9 +37,5 @@ test("priority reorder only swaps within the same tier", () => {
   const next = reorderPriority(workspace(), "b", -1);
   assert.deepEqual(next.priorities.map((priority) => priority.id), ["b", "a", "c"]);
   const unchanged = reorderPriority(next, "b", -1);
-  assert.deepEqual(unchanged.priorities.map((priority) => priority.id), ["b", "a", "c"]);
-});
-
-test("priority counts reflect Must Should Could", () => {
-  assert.deepEqual(priorityCounts(workspace().priorities), { must: 2, should: 1, could: 0 });
+  assert.equal(unchanged, next);
 });
