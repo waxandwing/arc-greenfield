@@ -2,13 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { emptyWorkspace, type Workspace } from "../lib/domain";
+import { onboardingReady } from "../lib/onboarding-state";
 import { loadWorkspace, saveWorkspace } from "../lib/workspace-store";
 import { ArcShell } from "./arc-shell";
 import { OnboardingScreen } from "./onboarding-screen";
-
-function isReady(workspace: Workspace) {
-  return Boolean(workspace.teacherName.trim() && workspace.courses.length > 0 && workspace.calendar.firstStudentDay);
-}
 
 export function ArcEntry({ buildId, gitSha }: { buildId: string; gitSha: string }) {
   const [workspace, setWorkspace] = useState<Workspace>(() => emptyWorkspace());
@@ -18,7 +15,7 @@ export function ArcEntry({ buildId, gitSha }: { buildId: string; gitSha: string 
   useEffect(() => {
     const stored = loadWorkspace();
     setWorkspace(stored);
-    setComplete(isReady(stored));
+    setComplete(onboardingReady(stored));
     setLoaded(true);
   }, []);
 
@@ -31,13 +28,18 @@ export function ArcEntry({ buildId, gitSha }: { buildId: string; gitSha: string 
   }
 
   function openSetup() {
-    const current = loadWorkspace();
-    setWorkspace(current);
+    setWorkspace(loadWorkspace());
     setComplete(false);
   }
 
   if (!loaded) return <main className="loadingShell">Opening Arc…</main>;
   if (complete) return <ArcShell buildId={buildId} gitSha={gitSha} onOpenSetup={openSetup} />;
 
-  return <OnboardingScreen workspace={workspace} onUpdate={updateWorkspace} onComplete={() => { saveWorkspace(workspace); setComplete(true); }} />;
+  return (
+    <OnboardingScreen
+      workspace={workspace}
+      onUpdate={updateWorkspace}
+      onComplete={() => setComplete(true)}
+    />
+  );
 }
