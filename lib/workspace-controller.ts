@@ -6,41 +6,38 @@ import {
   renamePriority,
   reorderPriority
 } from "./priority-operations";
-import type { WorkspaceHistory } from "./workspace-history";
-import { commitWorkspace, redoWorkspace, undoWorkspace } from "./workspace-history";
 import {
   moveWorkspacePlanToCalendar,
   moveWorkspacePlanToIdeas
 } from "./workspace-plan-operations";
+import type { WorkspaceHistory } from "./workspace-history";
+import { commitWorkspace, redoWorkspace, undoWorkspace } from "./workspace-history";
 
 export type WorkspaceCommand =
   | {
       type: "plan.create";
+      id: string;
       title: string;
       planType: PlanType;
       courseId: string | null;
       date: string | null;
       location: PlanLocation;
     }
-  | { type: "plan.add-child"; unitId: string; title: string }
+  | { type: "plan.add-child"; id: string; unitId: string; title: string }
   | { type: "plan.rename"; planId: string; title: string }
   | { type: "plan.delete"; planId: string }
   | { type: "plan.move-to-ideas"; planId: string }
   | { type: "plan.move-to-calendar"; planId: string; date: string; courseId: string }
   | { type: "unit.toggle-collapsed"; unitId: string }
-  | { type: "priority.add"; tier: PriorityTier; title: string; scope?: "school" | "personal" }
+  | { type: "priority.add"; id: string; tier: PriorityTier; title: string; scope?: "school" | "personal" }
   | { type: "priority.toggle"; priorityId: string }
   | { type: "priority.rename"; priorityId: string; title: string }
   | { type: "priority.delete"; priorityId: string }
   | { type: "priority.move"; priorityId: string; tier: PriorityTier }
   | { type: "priority.reorder"; priorityId: string; direction: -1 | 1 };
 
-export type WorkspaceDispatchResult = {
-  history: WorkspaceHistory;
-  createdId: string | null;
-};
-
 function createPlan(
+  id: string,
   planType: PlanType,
   title: string,
   courseId: string | null,
@@ -50,7 +47,7 @@ function createPlan(
   childOrder: number | null = null
 ): Plan {
   return {
-    id: crypto.randomUUID(),
+    id,
     type: planType,
     title,
     courseId,
@@ -67,24 +64,111 @@ function createPlan(
   };
 }
 
-function applyCommand(
-  workspace: Workspace,
-  command: WorkspaceCommand
-): { workspace: Workspace; createdId: string | null } {
+function applyCommand(workspace: Workspace, command: WorkspaceCommand): Workspace {
   switch (command.type) {
-    case "plan.create": { const title = command.title.trim(); if (!title) return { workspace, createdId: null }; const plan = createPlan(command.planType, title, command.courseId, command.date, command.location); return { workspace: { ...workspace, plans: [...workspace.plans, plan] }, createdId: plan.id }; }
-    case "plan.add-child": { const title = command.title.trim(); if (!title) return { workspace, createdId: null }; const unit = workspace.plans.find((plan) => plan.id === command.unitId && plan.type === "unit"); if (!unit) return { workspace, createdId: null }; const lesson = createPlan("lesson", title, unit.courseId, unit.date, unit.location, unit.id, orderedUnitChildren(workspace.plans, unit.id).length); return { workspace: { ...workspace, plans: [...workspace.plans, lesson] }, createdId: lesson.id }; }
-    case "plan.rename": { const title = command.title.trim(); const plan = workspace.plans.find((item) => item.id === command.planId); if (!plan || !title || plan.title === title) return { workspace, createdId: null }; return { workspace: { ...workspace, plans: workspace.plans.map((item) => item.id === command.planId ? { ...item, title } : item) }, createdId: null }; }
-    case "plan.delete": { if (!workspace.plans.some((plan) => plan.id === command.planId)) return { workspace, createdId: null }; return { workspace: { ...workspace, plans: deletePlanTree(workspace.plans, command.planId) }, createdId: null }; }
-    case "plan.move-to-ideas": return { workspace: moveWorkspacePlanToIdeas(workspace, command.planId), createdId: null };
-    case "plan.move-to-calendar": return { workspace: moveWorkspacePlanToCalendar(workspace, command.planId, command.date, command.courseId), createdId: null };
-    case "unit.toggle-collapsed": { if (!workspace.plans.some((plan) => plan.id === command.unitId && plan.type === "unit")) return { workspace, createdId: null }; const collapsed = new Set(workspace.preferences.collapsedUnitIds); if (collapsed.has(command.unitId)) collapsed.delete(command.unitId); else collapsed.add(command.unitId); return { workspace: { ...workspace, preferences: { ...workspace.preferences, collapsedUnitIds: [...collapsed] } }, createdId: null }; }
-    case "priority.add": { const title = command.title.trim(); if (!title) return { workspace, createdId: null }; const id = crypto.randomUUID(); return { workspace: { ...workspace, priorities: [...workspace.priorities, { id, title, tier: command.tier, completed: false, scope: command.scope ?? "school" }] }, createdId: id }; }
-    case "priority.toggle": { const priority = workspace.priorities.find((item) => item.id === command.priorityId); if (!priority) return { workspace, createdId: null }; return { workspace: { ...workspace, priorities: workspace.priorities.map((item) => item.id === command.priorityId ? { ...item, completed: !item.completed } : item) }, createdId: null }; }
-    case "priority.rename": return { workspace: renamePriority(workspace, command.priorityId, command.title), createdId: null };
-    case "priority.delete": return { workspace: deletePriority(workspace, command.priorityId), createdId: null };
-    case "priority.move": return { workspace: movePriority(workspace, command.priorityId, command.tier), createdId: null };
-    case "priority.reorder": return { workspace: reorderPriority(workspace, command.priorityId, command.direction), createdId: null };
+    case "plan.create": {
+      const title = command.title.trim();
+      if (!title || workspace.plans.some((plan) => plan.id === command.id)) return workspace;
+      const plan = createPlan(
+        command.id,
+        command.planType,
+        title,
+        command.courseId,
+        command.date,
+        command.location
+      );
+      return { ...workspace, plans: [...workspace.plans, plan] };
+    }
+
+    case "plan.add-child": {
+      const title = command.title.trim();
+      const unit = workspace.plans.find((plan) => plan.id === command.unitId && plan.type === "unit");
+      if (!title || !unit || workspace.plans.some((plan) => plan.id === command.id)) return workspace;
+      const lesson = createPlan(
+        command.id,
+        "lesson",
+        title,
+        unit.courseId,
+        unit.date,
+        unit.location,
+        unit.id,
+        orderedUnitChildren(workspace.plans, unit.id).length
+      );
+      return { ...workspace, plans: [...workspace.plans, lesson] };
+    }
+
+    case "plan.rename": {
+      const title = command.title.trim();
+      const plan = workspace.plans.find((item) => item.id === command.planId);
+      if (!plan || !title || plan.title === title) return workspace;
+      return {
+        ...workspace,
+        plans: workspace.plans.map((item) => item.id === command.planId ? { ...item, title } : item)
+      };
+    }
+
+    case "plan.delete":
+      return workspace.plans.some((plan) => plan.id === command.planId)
+        ? { ...workspace, plans: deletePlanTree(workspace.plans, command.planId) }
+        : workspace;
+
+    case "plan.move-to-ideas":
+      return moveWorkspacePlanToIdeas(workspace, command.planId);
+
+    case "plan.move-to-calendar":
+      return moveWorkspacePlanToCalendar(workspace, command.planId, command.date, command.courseId);
+
+    case "unit.toggle-collapsed": {
+      if (!workspace.plans.some((plan) => plan.id === command.unitId && plan.type === "unit")) return workspace;
+      const collapsed = new Set(workspace.preferences.collapsedUnitIds);
+      if (collapsed.has(command.unitId)) collapsed.delete(command.unitId);
+      else collapsed.add(command.unitId);
+      return {
+        ...workspace,
+        preferences: { ...workspace.preferences, collapsedUnitIds: [...collapsed] }
+      };
+    }
+
+    case "priority.add": {
+      const title = command.title.trim();
+      if (!title || workspace.priorities.some((priority) => priority.id === command.id)) return workspace;
+      return {
+        ...workspace,
+        priorities: [
+          ...workspace.priorities,
+          {
+            id: command.id,
+            title,
+            tier: command.tier,
+            completed: false,
+            scope: command.scope ?? "school"
+          }
+        ]
+      };
+    }
+
+    case "priority.toggle": {
+      const priority = workspace.priorities.find((item) => item.id === command.priorityId);
+      if (!priority) return workspace;
+      return {
+        ...workspace,
+        priorities: workspace.priorities.map((item) =>
+          item.id === command.priorityId ? { ...item, completed: !item.completed } : item
+        )
+      };
+    }
+
+    case "priority.rename":
+      return renamePriority(workspace, command.priorityId, command.title);
+
+    case "priority.delete":
+      return deletePriority(workspace, command.priorityId);
+
+    case "priority.move":
+      return movePriority(workspace, command.priorityId, command.tier);
+
+    case "priority.reorder":
+      return reorderPriority(workspace, command.priorityId, command.direction);
   }
 }
 
@@ -95,16 +179,13 @@ function applyCommand(
 export function dispatchWorkspaceCommand(
   history: WorkspaceHistory,
   command: WorkspaceCommand
-): WorkspaceDispatchResult {
-  const result = applyCommand(history.present, command);
-  if (result.workspace === history.present) return { history, createdId: result.createdId };
-  return {
-    history: commitWorkspace(history, { ...result.workspace, updatedAt: new Date().toISOString() }),
-    createdId: result.createdId
-  };
+): WorkspaceHistory {
+  const next = applyCommand(history.present, command);
+  if (next === history.present) return history;
+  return commitWorkspace(history, { ...next, updatedAt: new Date().toISOString() });
 }
 
-/** Commit a domain-produced workspace replacement (for example clipboard paste/cut). */
+/** Commit a domain-produced replacement, such as a clipboard cut/paste result. */
 export function commitWorkspaceReplacement(
   history: WorkspaceHistory,
   next: Workspace
