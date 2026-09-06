@@ -1,8 +1,10 @@
 import { FormEvent, useState } from 'react'
 import {
   searchNcesPublicSchools,
+  type CalendarHydrationInput,
   type OfficialSourceCandidate,
   type OfficialSourceSearchResult,
+  type SchoolCalendar,
 } from '../calendar'
 import { OfficialCalendarSourceInput } from './OfficialCalendarSourceInput'
 
@@ -11,7 +13,11 @@ type SearchState =
   | { status: 'loading' }
   | OfficialSourceSearchResult
 
-export function SchoolIdentitySearch() {
+type Props = {
+  onUseCalendar: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
+}
+
+export function SchoolIdentitySearch({ onUseCalendar }: Props) {
   const [schoolName, setSchoolName] = useState('')
   const [districtName, setDistrictName] = useState('')
   const [city, setCity] = useState('')
@@ -145,7 +151,7 @@ export function SchoolIdentitySearch() {
             <p>{selected.districtName ?? 'District not listed'}{selected.locality ? ` · ${selected.locality}` : ''}</p>
             <p>Nothing has been added to your calendar. Next, Arc needs the school or district’s official calendar before it can propose dates for review.</p>
           </div>
-          <OfficialCalendarSourceInput key={selected.id} school={selected} />
+          <OfficialCalendarSourceInput key={selected.id} school={selected} onUseCalendar={onUseCalendar} />
         </>
       )}
     </section>

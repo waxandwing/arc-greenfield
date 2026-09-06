@@ -153,7 +153,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
         <p>Start with your school. Arc will look for an official identity before you enter dates yourself.</p>
       </div>
 
-      {!initialValue && <SchoolIdentitySearch />}
+      {!initialValue && <SchoolIdentitySearch onUseCalendar={onSave} />}
       {isSourceBackedEdit && initialValue && <SourceCalendarReview input={initialValue} />}
 
       <form className="calendar-setup-form" onSubmit={submit} noValidate>
