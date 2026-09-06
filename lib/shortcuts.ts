@@ -31,13 +31,3 @@ export function resolveArcShortcut(input: ShortcutInput): ArcShortcutAction | nu
   if (key === "v") return "paste";
   return null;
 }
-
-export const ARC_SHORTCUT_LABELS: Array<{ action: ArcShortcutAction; label: string }> = [
-  { action: "undo", label: "⌘/Ctrl Z · Undo" },
-  { action: "redo", label: "⌘/Ctrl Shift Z · Redo" },
-  { action: "copy", label: "⌘/Ctrl C · Copy selection" },
-  { action: "cut", label: "⌘/Ctrl X · Cut selection" },
-  { action: "paste", label: "⌘/Ctrl V · Paste selection" },
-  { action: "delete", label: "Delete · Remove selection" },
-  { action: "escape", label: "Esc · Clear selection" }
-];
