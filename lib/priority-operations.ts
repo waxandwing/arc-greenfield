@@ -2,27 +2,32 @@ import type { Priority, PriorityTier, Workspace } from "./domain";
 
 export function renamePriority(workspace: Workspace, id: string, title: string): Workspace {
   const trimmed = title.trim();
-  if (!trimmed) return workspace;
+  const priority = workspace.priorities.find((item) => item.id === id);
+  if (!priority || !trimmed || priority.title === trimmed) return workspace;
   return {
     ...workspace,
-    priorities: workspace.priorities.map((priority) => priority.id === id ? { ...priority, title: trimmed } : priority)
+    priorities: workspace.priorities.map((item) => item.id === id ? { ...item, title: trimmed } : item)
   };
 }
 
 export function deletePriority(workspace: Workspace, id: string): Workspace {
+  if (!workspace.priorities.some((priority) => priority.id === id)) return workspace;
   return { ...workspace, priorities: workspace.priorities.filter((priority) => priority.id !== id) };
 }
 
 export function movePriority(workspace: Workspace, id: string, tier: PriorityTier): Workspace {
+  const priority = workspace.priorities.find((item) => item.id === id);
+  if (!priority || priority.tier === tier) return workspace;
   return {
     ...workspace,
-    priorities: workspace.priorities.map((priority) => priority.id === id ? { ...priority, tier } : priority)
+    priorities: workspace.priorities.map((item) => item.id === id ? { ...item, tier } : item)
   };
 }
 
 export function reorderPriority(workspace: Workspace, id: string, direction: -1 | 1): Workspace {
   const index = workspace.priorities.findIndex((priority) => priority.id === id);
   if (index < 0) return workspace;
+
   const priority = workspace.priorities[index];
   const sameTierIndices = workspace.priorities
     .map((item, itemIndex) => item.tier === priority.tier ? itemIndex : -1)
