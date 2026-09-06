@@ -5,11 +5,10 @@ import "./range-views.css";
 import "./range-interactions.css";
 import "./arc-visual-language.css";
 import "./onboarding-screen.css";
-import "./week-planner.css";
 
 export const metadata: Metadata = {
-  title: "Arc Greenfield",
-  description: "Arc by Wax & Wing — greenfield rebuild"
+  title: "Arc | Wax & Wing",
+  description: "A teacher planning workspace from Wax & Wing."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
