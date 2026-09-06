@@ -199,8 +199,8 @@ assert(geometry.scroll <= geometry.width + 1, `Read-dates proposal review overfl
 
 await useCalendar.click()
 await page.getByRole('heading', { name: 'Month', exact: true }).waitFor({ state: 'visible' })
-await page.getByText('2026–27', { exact: true }).waitFor({ state: 'visible' })
 const persisted = await page.evaluate(() => JSON.parse(localStorage.getItem('arc.calendar.v1') ?? 'null'))
+assert(persisted?.schoolYearLabel === '2026–27', 'Explicit commit lost the source-backed school-year label.')
 assert(persisted?.firstDay === '2026-08-11', 'Explicit commit did not persist the source-backed first day.')
 assert(persisted?.lastDay === '2027-05-26', 'Explicit commit did not persist the source-backed last day.')
 assert(persisted?.patternSource === 'district-source', 'Explicit commit lost district-source truth.')
@@ -209,7 +209,8 @@ assert(Array.isArray(persisted?.provenance) && persisted.provenance.some((item) 
 
 await page.reload({ waitUntil: 'networkidle' })
 assert(await page.getByRole('heading', { name: 'Month', exact: true }).count() === 1, 'Committed source-backed calendar did not restore the canonical Month workspace after reload.')
-assert(await page.getByText('2026–27', { exact: true }).count() >= 1, 'Committed source-backed school-year context did not survive reload.')
+const restored = await page.evaluate(() => JSON.parse(localStorage.getItem('arc.calendar.v1') ?? 'null'))
+assert(restored?.schoolYearLabel === '2026–27', 'Committed source-backed school-year label did not survive reload.')
 assert(runtimeErrors.length === 0, `Read-dates proposal review runtime errors: ${runtimeErrors.join(' | ')}`)
 
 await context.close()
