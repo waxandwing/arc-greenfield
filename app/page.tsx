@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
-import { ArcEntry } from "./arc-entry";
+import canonicalBuild from "../CANONICAL_BUILD.json";
 import { isArcAuthConfigured } from "../lib/auth-config";
 import { createArcServerClient } from "../lib/supabase-server";
-
-const BUILD_ID = "ARC-GF-0002";
+import { ArcEntry } from "./arc-entry";
 
 export default async function HomePage() {
   if (isArcAuthConfigured()) {
@@ -12,10 +11,6 @@ export default async function HomePage() {
     if (!data.user) redirect("/login");
   }
 
-  const gitSha =
-    process.env.VERCEL_GIT_COMMIT_SHA ??
-    process.env.GITHUB_SHA ??
-    "local-uncommitted";
-
-  return <ArcEntry buildId={BUILD_ID} gitSha={gitSha} />;
+  const gitSha = process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? "local-uncommitted";
+  return <ArcEntry buildId={canonicalBuild.buildId} gitSha={gitSha} />;
 }
