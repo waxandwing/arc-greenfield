@@ -1,0 +1,164 @@
+.pre-calendar {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.pre-calendar-intro {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.pre-calendar-intro h2,
+.pre-calendar-period h3 {
+  margin: var(--space-1) 0 var(--space-2);
+  font-family: var(--font-editorial);
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.pre-calendar-intro p:not(.section-label),
+.pre-calendar-boundary,
+.pre-calendar-neutral-note {
+  max-width: 68ch;
+  color: var(--soft-charcoal);
+}
+
+.pre-calendar-period {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pre-calendar-period > div {
+  text-align: center;
+}
+
+.pre-calendar-period h3 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+
+.pre-calendar-month {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-top: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line-subtle);
+}
+
+.pre-calendar-week {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-top: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line-subtle);
+}
+
+.pre-calendar-week--seven {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.pre-calendar-weekday-heading {
+  padding: var(--space-2) var(--space-2);
+  border-right: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-strong);
+  font-size: .76rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--soft-charcoal);
+}
+
+.pre-calendar-cell {
+  min-height: 82px;
+  padding: var(--space-2);
+  border-right: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  background: rgba(247,241,231,.42);
+  color: var(--ink);
+}
+
+.pre-calendar-cell--outside {
+  color: rgba(44,46,46,.4);
+  background: rgba(247,241,231,.2);
+}
+
+.pre-calendar-week .pre-calendar-cell {
+  min-height: 180px;
+}
+
+.pre-calendar-weekday {
+  margin: 0 0 var(--space-2);
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--soft-charcoal);
+}
+
+.pre-calendar-cell-date {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-size: 1.4rem;
+}
+
+.pre-calendar-day {
+  min-height: 300px;
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.pre-calendar-day-number {
+  margin: var(--space-2) 0;
+  font-family: var(--font-editorial);
+  font-size: clamp(4rem, 10vw, 7rem);
+  line-height: .9;
+}
+
+.pre-calendar-boundary {
+  padding: var(--space-4) 0 0;
+  border-top: 1px solid var(--line-subtle);
+  font-size: .92rem;
+}
+
+.pre-calendar-boundary strong {
+  color: var(--ink);
+}
+
+@media (max-width: 720px) {
+  .pre-calendar-intro {
+    display: grid;
+  }
+
+  .pre-calendar-intro .primary-button {
+    width: 100%;
+  }
+
+  .pre-calendar-month {
+    font-size: .9rem;
+  }
+
+  .pre-calendar-cell {
+    min-height: 58px;
+    padding: var(--space-1);
+  }
+
+  .pre-calendar-week {
+    grid-template-columns: 1fr;
+    border-left: 0;
+  }
+
+  .pre-calendar-week--seven {
+    grid-template-columns: 1fr;
+  }
+
+  .pre-calendar-week .pre-calendar-cell {
+    min-height: 82px;
+    border-left: 1px solid var(--line-subtle);
+  }
+}
