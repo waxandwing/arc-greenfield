@@ -84,6 +84,7 @@ const page = await context.newPage()
 const runtimeErrors = trackRuntimeErrors(page)
 let ncesRequests = 0
 let extractorRequests = 0
+let extractorRouteError = ''
 
 await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWith('/MapServer/1/query'), async (route) => {
   ncesRequests += 1
@@ -94,25 +95,31 @@ await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWit
   })
 })
 
-await page.route('https://calendar-text.example.invalid/functions/v1/official-calendar-source-text', async (route) => {
+await page.route((url) => url.hostname === 'calendar-text.example.invalid', async (route) => {
   extractorRequests += 1
-  const request = route.request()
-  const headers = request.headers()
-  assert(headers.authorization === 'Bearer test-public-client-jwt', 'Read dates did not send configured bearer authorization.')
-  assert(headers.apikey === 'test-public-client-jwt', 'Read dates did not send configured public API key.')
-  assert(request.postData() === JSON.stringify({ sourceLocator: 'https://www.ocps.net/110680_3' }), 'Read dates sent more than the held source locator.')
-  await route.fulfill({
-    status: 200,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
-    body: JSON.stringify({
-      sourceLocator: 'https://www.ocps.net/110680_3',
-      sourceLabel: 'OCPS 2026–27 School Calendar',
-      publisher: 'Orange County Public Schools',
-      capturedAt: '2026-09-05T23:20:00Z',
-      totalPages: 2,
-      text: extractedText,
-    }),
-  })
+  try {
+    const request = route.request()
+    const headers = request.headers()
+    assert(request.url() === 'https://calendar-text.example.invalid/functions/v1/official-calendar-source-text', `Unexpected extraction endpoint: ${request.url()}`)
+    assert(headers.authorization === 'Bearer test-public-client-jwt', 'Read dates did not send configured bearer authorization.')
+    assert(headers.apikey === 'test-public-client-jwt', 'Read dates did not send configured public API key.')
+    assert(request.postData() === JSON.stringify({ sourceLocator: 'https://www.ocps.net/110680_3' }), `Read dates sent unexpected request body: ${request.postData()}`)
+    await route.fulfill({
+      status: 200,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({
+        sourceLocator: 'https://www.ocps.net/110680_3',
+        sourceLabel: 'OCPS 2026–27 School Calendar',
+        publisher: 'Orange County Public Schools',
+        capturedAt: '2026-09-05T23:20:00Z',
+        totalPages: 2,
+        text: extractedText,
+      }),
+    })
+  } catch (error) {
+    extractorRouteError = error instanceof Error ? error.message : String(error)
+    await route.abort('failed')
+  }
 })
 
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
@@ -144,8 +151,15 @@ const readButton = page.getByRole('button', { name: 'Read dates' })
 await readButton.focus()
 await page.keyboard.press('Enter')
 
-const proposal = page.getByRole('region', { name: 'Calendar proposal' })
-await proposal.waitFor({ state: 'visible' })
+const proposal = page.locator('.official-calendar-proposal')
+const readOutcome = await Promise.race([
+  proposal.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'proposal'),
+  page.getByRole('alert').waitFor({ state: 'visible', timeout: 10000 }).then(() => 'alert'),
+]).catch(() => 'timeout')
+if (readOutcome !== 'proposal') {
+  const alertText = await page.getByRole('alert').textContent().catch(() => '')
+  throw new Error(`Read dates did not produce a proposal. outcome=${readOutcome}; extractorRequests=${extractorRequests}; routeError=${extractorRouteError || 'none'}; alert=${alertText || 'none'}`)
+}
 assert(extractorRequests === 1, `Supported source used ${extractorRequests} extraction requests, expected exactly 1.`)
 assert((await proposal.textContent())?.includes('2026–27'), 'Calendar proposal lost the school-year label.')
 assert((await proposal.textContent())?.includes('2026-08-11 → 2027-05-26'), 'Calendar proposal lost explicit first/last school-day truth.')
