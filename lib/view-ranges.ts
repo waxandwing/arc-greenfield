@@ -1,4 +1,5 @@
 import type { SchoolCalendar } from "./domain";
+import { addCalendarDays, formatDateKey, fridayFor, mondayFor, parseDateKey } from "./date-utils";
 
 export type CalendarDay = {
   key: string;
@@ -19,42 +20,13 @@ export type QuarterRange = {
   weeks: CalendarWeek[];
 };
 
-function dateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseDate(value: string) {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year, month - 1, day, 12, 0, 0, 0);
-}
-
-function mondayFor(date: Date) {
-  const next = new Date(date);
-  const day = next.getDay();
-  const delta = day === 0 ? -6 : 1 - day;
-  next.setDate(next.getDate() + delta);
-  next.setHours(12, 0, 0, 0);
-  return next;
-}
-
-function fridayFor(date: Date) {
-  const monday = mondayFor(date);
-  const friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
-  return friday;
-}
-
 function schoolWeek(startMonday: Date, primaryMonth?: number): CalendarWeek {
   const days = Array.from({ length: 5 }, (_, index) => {
-    const date = new Date(startMonday);
-    date.setDate(startMonday.getDate() + index);
+    const date = addCalendarDays(startMonday, index);
     return {
-      key: dateKey(date),
+      key: formatDateKey(date),
       date,
-      inPrimaryMonth: primaryMonth === undefined ? true : date.getMonth() === primaryMonth
+      inPrimaryMonth: primaryMonth === undefined || date.getMonth() === primaryMonth
     };
   });
   return { key: days[0].key, days };
@@ -71,9 +43,7 @@ export function monthWeeks(anchor: Date): CalendarWeek[] {
 
   while (cursor <= end) {
     weeks.push(schoolWeek(cursor, month));
-    const next = new Date(cursor);
-    next.setDate(cursor.getDate() + 7);
-    cursor = next;
+    cursor = addCalendarDays(cursor, 7);
   }
   return weeks;
 }
@@ -82,8 +52,8 @@ export function quarterRange(calendar: SchoolCalendar, quarterId: string): Quart
   const boundary = calendar.quarterBoundaries.find((quarter) => quarter.id === quarterId);
   if (!boundary?.start || !boundary?.end) return null;
 
-  const startDate = parseDate(boundary.start);
-  const endDate = parseDate(boundary.end);
+  const startDate = parseDateKey(boundary.start);
+  const endDate = parseDateKey(boundary.end);
   if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate > endDate) return null;
 
   let cursor = mondayFor(startDate);
@@ -91,9 +61,7 @@ export function quarterRange(calendar: SchoolCalendar, quarterId: string): Quart
   const weeks: CalendarWeek[] = [];
   while (cursor <= end) {
     weeks.push(schoolWeek(cursor));
-    const next = new Date(cursor);
-    next.setDate(cursor.getDate() + 7);
-    cursor = next;
+    cursor = addCalendarDays(cursor, 7);
   }
 
   return { ...boundary, weeks };
