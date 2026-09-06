@@ -12,36 +12,22 @@
   border: 1px solid var(--line);
   border-radius: 28px 28px 28px 10px;
   background: var(--card);
-  box-shadow: 0 18px 48px rgba(38, 51, 58, .08);
+  box-shadow: 0 18px 48px rgba(38, 51, 58, 0.08);
 }
 
-.brand {
-  margin-bottom: 28px;
-}
-
+.brand { margin-bottom: 28px; }
 .brand small {
   display: block;
   margin-bottom: 4px;
   color: var(--teal);
-  font-size: .68rem;
+  font-size: 0.68rem;
   font-weight: 900;
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-
-.brand strong {
-  font: 500 3rem/.9 Georgia, serif;
-}
-
-.card h1 {
-  margin-bottom: 10px;
-  font-size: 2rem;
-}
-
-.card p {
-  color: var(--muted);
-  line-height: 1.55;
-}
+.brand strong { font: 500 3rem/0.9 Georgia, serif; }
+.card h1 { margin-bottom: 10px; font-size: 2rem; }
+.card p { color: var(--muted); line-height: 1.55; }
 
 .googleButton {
   width: 100%;
@@ -57,6 +43,6 @@
 
 .error {
   margin: 14px 0 0;
-  color: #99493f !important;
-  font-size: .8rem;
+  color: #99493f;
+  font-size: 0.8rem;
 }
