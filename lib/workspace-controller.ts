@@ -1,4 +1,4 @@
-import type { Plan, PlanLocation, PlanType, PriorityTier, Workspace } from "./domain";
+import type { ArcView, Plan, PlanLocation, PlanType, PriorityTier, Workspace } from "./domain";
 import { deletePlanTree, orderedUnitChildren } from "./plan-tree";
 import {
   deletePriority,
@@ -172,10 +172,7 @@ function applyCommand(workspace: Workspace, command: WorkspaceCommand): Workspac
   }
 }
 
-/**
- * Canonical mutation boundary for persistent Arc workspace state.
- * One meaningful command creates one history entry. No-op commands create none.
- */
+/** Persistent content mutation boundary. One meaningful command creates one history entry. */
 export function dispatchWorkspaceCommand(
   history: WorkspaceHistory,
   command: WorkspaceCommand
@@ -194,5 +191,28 @@ export function commitWorkspaceReplacement(
   return commitWorkspace(history, { ...next, updatedAt: new Date().toISOString() });
 }
 
-export const undoWorkspaceCommand = undoWorkspace;
-export const redoWorkspaceCommand = redoWorkspace;
+/** Navigation preference persists but is intentionally not a user-content Undo event. */
+export function setLastUsedView(history: WorkspaceHistory, view: ArcView): WorkspaceHistory {
+  if (history.present.preferences.lastUsedView === view) return history;
+  return {
+    ...history,
+    present: {
+      ...history.present,
+      preferences: { ...history.present.preferences, lastUsedView: view },
+      updatedAt: new Date().toISOString()
+    }
+  };
+}
+
+function preserveNavigationPreference(previous: WorkspaceHistory, next: WorkspaceHistory): WorkspaceHistory {
+  if (next === previous) return previous;
+  return setLastUsedView(next, previous.present.preferences.lastUsedView);
+}
+
+export function undoWorkspaceCommand(history: WorkspaceHistory): WorkspaceHistory {
+  return preserveNavigationPreference(history, undoWorkspace(history));
+}
+
+export function redoWorkspaceCommand(history: WorkspaceHistory): WorkspaceHistory {
+  return preserveNavigationPreference(history, redoWorkspace(history));
+}
