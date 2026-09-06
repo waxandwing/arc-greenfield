@@ -138,6 +138,7 @@ await page.route((url) => url.hostname === 'calendar-text.example.invalid', asyn
 })
 
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: 'Add my school dates' }).click()
 await page.getByLabel('School name').fill('Oak Ridge')
 await page.getByLabel('City').fill('Orlando')
 await page.getByLabel('State').fill('FL')
