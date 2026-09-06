@@ -1,4 +1,4 @@
-import type { Priority, PriorityTier, Workspace } from "./domain";
+import type { PriorityTier, Workspace } from "./domain";
 
 export function renamePriority(workspace: Workspace, id: string, title: string): Workspace {
   const trimmed = title.trim();
@@ -40,11 +40,4 @@ export function reorderPriority(workspace: Workspace, id: string, direction: -1 
   const priorities = [...workspace.priorities];
   [priorities[index], priorities[targetIndex]] = [priorities[targetIndex], priorities[index]];
   return { ...workspace, priorities };
-}
-
-export function priorityCounts(priorities: Priority[]) {
-  return priorities.reduce<Record<PriorityTier, number>>((counts, priority) => {
-    counts[priority.tier] += 1;
-    return counts;
-  }, { must: 0, should: 0, could: 0 });
 }
