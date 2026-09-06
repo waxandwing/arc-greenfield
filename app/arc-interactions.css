@@ -6,53 +6,50 @@
   flex-wrap: wrap;
 }
 .deskActions button {
-  min-height: 34px;
+  min-height: 38px;
   padding: 6px 9px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255,255,255,.5);
-  font-size: .68rem;
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.5);
+  font-size: 0.68rem;
   font-weight: 800;
   cursor: pointer;
 }
-.deskActions button:disabled { opacity: .35; cursor: not-allowed; }
 .deskActions .todayButton { padding-inline: 12px; background: var(--ink); color: white; }
 .actionDivider { width: 1px; height: 24px; margin: 0 3px; background: var(--line); }
 
 .dayCell.pasteTarget,
 .ideasPanel.pasteTarget {
-  box-shadow: inset 0 0 0 2px rgba(47,111,115,.42);
-  background: rgba(47,111,115,.055);
+  box-shadow: inset 0 0 0 2px rgba(47, 111, 115, 0.55);
+  background: rgba(47, 111, 115, 0.055);
 }
 
 .lessonMagnet { position: relative; cursor: grab; }
 .lessonMagnet:active { cursor: grabbing; }
 .lessonMagnet.selected,
 .ideaCard.selected,
-.unitChild.selected {
-  outline: 2px solid rgba(47,111,115,.7);
-  outline-offset: 1px;
+.monthPlan.selected,
+.quarterPlan.selected {
+  outline: 2px solid rgba(217, 121, 101, 0.78);
+  outline-offset: 2px;
 }
 .unitMagnet {
-  border-color: rgba(38,51,58,.27);
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(38, 51, 58, 0.27);
   background: #f3eadb;
-  box-shadow: 0 6px 13px rgba(38,51,58,.08);
+  box-shadow: 0 6px 13px rgba(38, 51, 58, 0.08);
 }
-.magnetTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-}
-.magnetTitleRow strong { flex: 1; min-width: 0; }
+.magnetTitleRow { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.magnetTitleRow strong { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .disclosureButton {
   flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
   border-radius: 5px;
-  background: rgba(38,51,58,.07);
+  background: rgba(38, 51, 58, 0.07);
   cursor: pointer;
 }
 .unitCount {
@@ -63,8 +60,8 @@
   min-height: 20px;
   padding: 2px 6px;
   border-radius: 999px;
-  background: rgba(38,51,58,.1);
-  font-size: .54rem;
+  background: rgba(38, 51, 58, 0.1);
+  font-size: 0.54rem;
   font-weight: 900;
   white-space: nowrap;
 }
@@ -73,137 +70,259 @@
   gap: 4px;
   margin: 8px -2px 2px 17px;
   padding-left: 7px;
-  border-left: 2px solid rgba(38,51,58,.12);
-}
-.unitChild {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
-  padding: 6px 7px;
-  border: 1px solid rgba(38,51,58,.1);
-  border-radius: 7px;
-  background: rgba(255,253,248,.75);
-  text-align: left;
-  cursor: grab;
-}
-.unitChild:active { cursor: grabbing; }
-.unitChild:focus-visible { outline: 3px solid rgba(217,121,101,.42); outline-offset: 2px; }
-.unitChild span { min-width: 0; font-size: .66rem; font-weight: 750; }
-.unitChild small { color: var(--muted); font-size: .54rem; }
-.addChild {
-  justify-self: start;
-  border: 0;
-  background: transparent;
-  padding: 3px 1px;
-  color: var(--teal);
-  font-size: .6rem;
-  font-weight: 850;
-  cursor: pointer;
-}
-.childComposer { display: grid; grid-template-columns: 1fr auto; gap: 4px; }
-.childComposer input { min-height: 30px; padding: 5px 7px; font-size: .64rem; }
-.childComposer button { border: 0; border-radius: 6px; background: var(--ink); color: white; font-size: .58rem; font-weight: 800; }
-
-.cellComposerActions { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-.cellComposerActions .secondaryComposerAction {
-  background: #e7ddcc;
-  color: var(--ink);
-  border: 1px solid rgba(38,51,58,.12);
-}
-
-.classUnitAdd {
-  margin-top: 7px;
-  min-height: 28px;
-  padding: 4px 9px;
-  border: 1px solid rgba(47,111,115,.3);
-  border-radius: 999px;
-  background: #fffaf0;
-  color: var(--teal);
-  font-size: .58rem;
-  font-weight: 850;
-  letter-spacing: .04em;
-  cursor: pointer;
-}
-.classUnitAdd:hover { background: #f2d24b; color: var(--ink); }
-.classUnitAdd:focus-visible { outline: 3px solid rgba(217,121,101,.42); outline-offset: 2px; }
-.classUnitComposer { display: grid; gap: 4px; width: 100%; margin-top: 7px; }
-.classUnitComposer input,
-.classUnitComposer select { min-width: 0; min-height: 31px; padding: 5px 7px; font-size: .62rem; }
-.classUnitComposer button { min-height: 28px; border: 0; border-radius: 7px; background: var(--gold); color: var(--ink); font-size: .58rem; font-weight: 850; cursor: pointer; }
-.quickMode { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 5px; }
-.quickMode button { min-height: 30px; border: 1px solid var(--line); border-radius: 7px; background: #fffaf0; color: var(--muted); font-size: .58rem; font-weight: 850; cursor: pointer; }
-.quickMode button.active { border-color: var(--gold); background: var(--gold); color: var(--ink); }
-
-/* A nested lesson keeps Unit ownership but renders on its actual teaching day. */
-.nestedLessonMagnet {
-  border-color: rgba(47,111,115,.28);
-  background: #fffdf8;
-  box-shadow: 0 4px 10px rgba(38,51,58,.055);
-}
-.nestedLessonMagnet:focus-visible {
-  outline: 3px solid rgba(217,121,101,.42);
-  outline-offset: 2px;
-}
-.lessonUnitLabel {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--teal);
-  font-size: .52rem;
-  font-weight: 850;
-  letter-spacing: .03em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  border-left: 2px solid rgba(38, 51, 58, 0.12);
 }
 .unitChildrenSummary { margin-left: 8px; }
 .unitSequenceSummary { display: grid; gap: 3px; }
 .unitSequenceSummary span {
   color: var(--muted);
-  font-size: .56rem;
+  font-size: 0.56rem;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  white-space: nowrap;
+.addChild {
+  justify-self: start;
+  min-height: 28px;
+  min-width: 28px;
   border: 0;
+  background: transparent;
+  padding: 5px 7px;
+  color: var(--teal);
+  font-size: 0.64rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+.childComposer { display: grid; grid-template-columns: 1fr auto; gap: 4px; }
+.childComposer input { min-height: 30px; padding: 5px 7px; font-size: 0.64rem; }
+.childComposer button {
+  border: 0;
+  border-radius: 6px;
+  background: var(--ink);
+  color: white;
+  font-size: 0.58rem;
+  font-weight: 800;
 }
 
-.ideaCard.unitIdea { background: #f3eadb; border-color: rgba(38,51,58,.22); }
-.ideaUnitMeta { display: block; margin: -3px 0 8px; color: var(--muted); font-size: .58rem; font-weight: 750; }
+.magnetActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+  opacity: 0.62;
+}
+.lessonMagnet:hover .magnetActions,
+.lessonMagnet:focus-within .magnetActions,
+.lessonMagnet.selected .magnetActions { opacity: 1; }
+.magnetActions button,
+.ideaDelete {
+  min-height: 28px;
+  min-width: 28px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  padding: 5px 7px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+.magnetActions .dangerAction,
+.ideaDelete { color: #9a4b40; }
+.lessonMagnet .magnetActions button:disabled { opacity: 0.28; cursor: not-allowed; }
+
+.classUnitAdd {
+  margin-top: 7px;
+  min-height: 28px;
+  padding: 4px 9px;
+  border: 1px solid rgba(47, 111, 115, 0.3);
+  border-radius: 999px;
+  background: #fffaf0;
+  color: var(--teal);
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.classUnitAdd:hover { background: #f2d24b; color: var(--ink); }
+.classUnitComposer { display: grid; gap: 4px; width: 100%; margin-top: 7px; }
+.classUnitComposer input,
+.classUnitComposer select { min-width: 0; min-height: 31px; padding: 5px 7px; font-size: 0.62rem; }
+.classUnitComposer button {
+  min-height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 0.58rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+.quickMode { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 5px; }
+.quickMode button {
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fffaf0;
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+.quickMode button.active { border-color: var(--gold); background: var(--gold); color: var(--ink); }
+
+.nestedLessonMagnet {
+  border-color: rgba(47, 111, 115, 0.28);
+  background: #fffdf8;
+  box-shadow: 0 4px 10px rgba(38, 51, 58, 0.055);
+}
+.lessonUnitLabel {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--teal);
+  font-size: 0.52rem;
+  font-weight: 850;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weekInlineEdit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 4px;
+  align-items: center;
+}
+.weekInlineEdit input {
+  min-width: 0;
+  min-height: 32px;
+  padding: 5px 7px;
+  border: 1px solid rgba(38, 51, 58, 0.18);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  font-size: 0.66rem;
+}
+.weekInlineEdit button {
+  min-height: 30px;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
+  font-size: 0.56rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+.weekInlineEdit button:first-of-type { border-color: transparent; background: var(--ink); color: white; }
+
+.ideaCard.unitIdea { background: #f3eadb; border-color: rgba(38, 51, 58, 0.22); }
+.ideaUnitMeta { display: block; margin: -3px 0 8px; color: var(--muted); font-size: 0.58rem; font-weight: 750; }
 
 .priorityPanelHeading { display: flex; align-items: start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-.priorityPanelNote { margin: 2px 0 0; color: var(--muted); font-size: .66rem; line-height: 1.35; }
+.priorityPanelNote { margin: 2px 0 0; color: var(--muted); font-size: 0.66rem; line-height: 1.35; }
+.priorityTier { padding: 11px 0; border-top: 1px solid var(--line); }
 .priorityHeading { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 7px; }
-.priorityHeading small { display: grid; place-items: center; min-width: 22px; height: 22px; border-radius: 999px; background: rgba(38,51,58,.08); color: var(--muted); font-size: .58rem; font-weight: 900; }
-.priorityItem { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 8px; align-items: start; padding: 8px; border: 1px solid rgba(38,51,58,.1); border-radius: 9px; background: rgba(255,253,248,.72); }
-.priorityItem.done { opacity: .58; }
-.priorityTitle { min-width: 0; padding-top: 2px; font-size: .7rem; font-weight: 760; line-height: 1.3; }
+.priorityHeading > span { font-size: 0.76rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+.priorityHeading small {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(38, 51, 58, 0.08);
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 900;
+}
+.priorityHeading button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.priorityList { display: grid; gap: 6px; margin-top: 7px; }
+.priorityItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  padding: 8px;
+  border: 1px solid rgba(38, 51, 58, 0.1);
+  border-radius: 9px;
+  background: rgba(255, 253, 248, 0.72);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+.priorityItem input { width: auto; min-height: auto; margin-top: 2px; }
+.priorityItem.done { opacity: 0.58; }
+.priorityItem.done .priorityTitle { text-decoration: line-through; }
+.priorityTitle { min-width: 0; padding-top: 2px; font-size: 0.7rem; font-weight: 760; line-height: 1.3; }
 .priorityActions { grid-column: 2; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-.priorityActions button,.priorityActions select { min-height: 30px; border: 1px solid var(--line); border-radius: 7px; background: rgba(255,255,255,.66); color: var(--ink); padding: 4px 7px; font-size: .58rem; font-weight: 800; }
+.priorityActions button,
+.priorityActions select {
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.66);
+  color: var(--ink);
+  padding: 4px 7px;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
 .priorityActions button { cursor: pointer; }
-.priorityActions button:disabled { opacity: .3; cursor: not-allowed; }
 .priorityActions .dangerAction { color: #8c4138; }
 .priorityEditRow { display: grid; grid-template-columns: 1fr auto; gap: 5px; }
-.priorityEditRow input { min-height: 32px; font-size: .68rem; }
-.priorityEditRow button { border: 0; border-radius: 7px; background: var(--ink); color: white; padding: 5px 8px; font-size: .58rem; font-weight: 850; }
-.priorityEmpty { margin: 2px 0 4px; color: var(--muted); font-size: .62rem; font-style: italic; }
-.priorityComposer { grid-template-columns: 1fr auto auto; }
-.priorityTier-must .priorityHeading > span::after,.priorityTier-should .priorityHeading > span::after,.priorityTier-could .priorityHeading > span::after { content: ""; display: inline-block; width: 18px; height: 4px; margin-left: 7px; border-radius: 999px; vertical-align: middle; }
+.priorityEditRow input { min-height: 32px; font-size: 0.68rem; }
+.priorityEditRow button {
+  border: 0;
+  border-radius: 7px;
+  background: var(--ink);
+  color: white;
+  padding: 5px 8px;
+  font-size: 0.58rem;
+  font-weight: 850;
+}
+.priorityEmpty { margin: 2px 0 4px; color: var(--muted); font-size: 0.62rem; font-style: italic; }
+.priorityComposer { display: grid; grid-template-columns: 1fr auto auto; gap: 5px; margin-top: 8px; }
+.priorityComposer input { min-height: 36px; font-size: 0.72rem; }
+.priorityComposer button { padding: 7px 10px; font-size: 0.68rem; }
+.priorityTier-must .priorityHeading > span::after,
+.priorityTier-should .priorityHeading > span::after,
+.priorityTier-could .priorityHeading > span::after {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 4px;
+  margin-left: 7px;
+  border-radius: 999px;
+  vertical-align: middle;
+}
 .priorityTier-must .priorityHeading > span::after { background: var(--coral); }
 .priorityTier-should .priorityHeading > span::after { background: var(--gold); }
 .priorityTier-could .priorityHeading > span::after { background: var(--teal); }
 
 @media (max-width: 900px) {
   .deskActions { justify-content: flex-start; }
+}
+
+@media (pointer: coarse) {
+  .magnetActions { opacity: 1; }
+  .magnetActions button,
+  .ideaDelete,
+  .disclosureButton,
+  .addChild,
+  .cellAdd,
+  .deskActions button,
+  .viewSwitcher button,
+  .quietButton {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
