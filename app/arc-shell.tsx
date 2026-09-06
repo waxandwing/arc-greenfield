@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Plan, PlanType, Workspace } from "../lib/domain";
+import type { Plan, PlanType } from "../lib/domain";
 import { applyCut, createClipboard, pasteClipboard, type ArcClipboard, type PasteTarget } from "../lib/clipboard";
+import { addCalendarDays, formatDateKey, mondayFor } from "../lib/date-utils";
 import { resolveArcShortcut } from "../lib/shortcuts";
 import { availableQuarterRanges } from "../lib/view-ranges";
 import {
@@ -23,35 +24,17 @@ import { WeekPlanner } from "./week-planner";
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri"] as const;
 type PlannerView = "week" | "month" | "quarter";
 
-function dateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 function weekDays(anchor = new Date()) {
-  const day = anchor.getDay();
-  const offset = day === 0 ? -6 : 1 - day;
-  const monday = new Date(anchor);
-  monday.setHours(12, 0, 0, 0);
-  monday.setDate(anchor.getDate() + offset);
+  const monday = mondayFor(anchor);
   return DAY_LABELS.map((label, index) => {
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + index);
+    const date = addCalendarDays(monday, index);
     return {
       label,
-      key: dateKey(date),
+      key: formatDateKey(date),
       number: date.getDate(),
       month: date.toLocaleDateString(undefined, { month: "short" })
     };
   });
-}
-
-function shiftDate(date: Date, days: number) {
-  const next = new Date(date);
-  next.setDate(next.getDate() + days);
-  return next;
 }
 
 function shiftMonth(date: Date, months: number) {
@@ -107,14 +90,18 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   }
 
   function addPlan(title: string, planType: PlanType, courseId: string | null, date: string | null, location: "calendar" | "ideas") {
+    const trimmed = title.trim();
+    if (!trimmed) return;
     const id = crypto.randomUUID();
-    dispatch({ type: "plan.create", id, title, planType, courseId, date, location });
+    dispatch({ type: "plan.create", id, title: trimmed, planType, courseId, date, location });
     setSelectedPlanId(id);
   }
 
   function addChildLesson(unit: Plan, title: string) {
+    const trimmed = title.trim();
+    if (!trimmed) return;
     const id = crypto.randomUUID();
-    dispatch({ type: "plan.add-child", id, unitId: unit.id, title });
+    dispatch({ type: "plan.add-child", id, unitId: unit.id, title: trimmed });
     setSelectedPlanId(id);
   }
 
@@ -175,13 +162,13 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
   }
 
   function goPrevious() {
-    if (activeView === "week") setWeekAnchor((current) => shiftDate(current, -7));
+    if (activeView === "week") setWeekAnchor((current) => addCalendarDays(current, -7));
     else if (activeView === "month") setMonthAnchor((current) => shiftMonth(current, -1));
     else setQuarterIndex((current) => Math.max(0, current - 1));
   }
 
   function goNext() {
-    if (activeView === "week") setWeekAnchor((current) => shiftDate(current, 7));
+    if (activeView === "week") setWeekAnchor((current) => addCalendarDays(current, 7));
     else if (activeView === "month") setMonthAnchor((current) => shiftMonth(current, 1));
     else setQuarterIndex((current) => Math.min(Math.max(0, quarterRanges.length - 1), current + 1));
   }
@@ -190,7 +177,7 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     const now = new Date();
     setWeekAnchor(now);
     setMonthAnchor(now);
-    const today = dateKey(now);
+    const today = formatDateKey(now);
     const currentQuarterIndex = quarterRanges.findIndex((quarter) => quarter.start <= today && quarter.end >= today);
     if (currentQuarterIndex >= 0) setQuarterIndex(currentQuarterIndex);
   }
@@ -210,14 +197,14 @@ export function ArcShell({ buildId, gitSha, onOpenSetup }: { buildId: string; gi
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  });
+  }, [clipboard, pasteTarget, selectedPlanId, workspace]);
 
   if (!ready) return <main className="loadingShell">Opening Arc…</main>;
 
   return (
     <main className="arcApp">
       <header className="arcTopbar">
-        <button className="arcBrand" type="button" aria-label="Arc home">
+        <button className="arcBrand" type="button" aria-label="Arc home" onClick={() => setActiveView("week")}>
           <span className="arcBrandEyebrow">Wax &amp; Wing</span>
           <span className="arcBrandWord">Arc</span>
         </button>
