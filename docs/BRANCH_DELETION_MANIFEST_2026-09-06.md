@@ -1,6 +1,6 @@
 # Arc Branch Deletion Manifest — 2026-09-06
 
-Authority: protected `develop @ 9f75bb392e71ba485cc595f85f5b1507dbbef7f6`.
+Classification baseline: protected `develop @ d49ed01e82736e8152204aad3c11bb24aa788ed7`. This manifest revision changes documentation only; it does not alter runtime product code.
 
 Delete only branches in **SAFE DELETE NOW**. Do not delete anything in **KEEP** or **REVIEW / DONOR**. If a SAFE branch has gained commits after this manifest, stop and re-audit it before deletion.
 
