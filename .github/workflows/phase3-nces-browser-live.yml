@@ -31,9 +31,20 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Build browser target
         run: npm run build
-      - name: Run live browser NCES gate
+      - name: Prove runner can reach NCES through the server-side proxy core
         run: |
-          npm run preview -- --host 127.0.0.1 > /tmp/arc-preview-phase3-nces-browser-live.log 2>&1 &
+          node --input-type=module - <<'NODE'
+          import { fetchNcesProxy } from './server/ncesProxy.mjs'
+          const result = await fetchNcesProxy({ schoolName: 'Oak Ridge', city: 'Orlando', state: 'FL', maxCandidates: 25 })
+          if (result.status < 200 || result.status >= 300) throw new Error(`NCES proxy upstream returned HTTP ${result.status}`)
+          const payload = JSON.parse(result.body)
+          const names = Array.isArray(payload.features) ? payload.features.map((feature) => feature?.attributes?.SCH_NAME).filter(Boolean) : []
+          if (!names.some((name) => String(name).toUpperCase().includes('OAK RIDGE HIGH'))) throw new Error(`NCES proxy upstream did not return Oak Ridge High: ${names.join(', ')}`)
+          console.log('server-side NCES reachability passed')
+          NODE
+      - name: Run live browser NCES gate through same-origin proxy
+        run: |
+          node tests/phase3-nces-live-server.mjs > /tmp/arc-phase3-nces-live-server.log 2>&1 &
           PREVIEW_PID=$!
           trap 'kill $PREVIEW_PID || true' EXIT
           for attempt in {1..30}; do
@@ -41,4 +52,5 @@ jobs:
             sleep 1
           done
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          curl --fail --silent 'http://127.0.0.1:4173/api/nces?schoolName=Oak%20Ridge&city=Orlando&state=FL' > /tmp/nces-proxy-response.json
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/phase3-nces-browser-live.mjs
