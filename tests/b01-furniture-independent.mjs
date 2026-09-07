@@ -65,8 +65,17 @@ async function geometrySnapshot(page) {
     scrollHeight: document.documentElement.scrollHeight,
     innerWidth: window.innerWidth,
     innerHeight: window.innerHeight,
+    scrollX: window.scrollX,
+    scrollY: window.scrollY,
     bodyWidth: document.body.getBoundingClientRect().width,
   }))
+}
+
+async function documentRect(locator, page) {
+  const box = await locator.boundingBox()
+  if (!box) return null
+  const scroll = await page.evaluate(() => ({ x: window.scrollX, y: window.scrollY }))
+  return { x: box.x + scroll.x, y: box.y + scroll.y, width: box.width, height: box.height }
 }
 
 const browser = await chromium.launch({ headless: true })
@@ -83,7 +92,8 @@ try {
   assert(await page.getByText('Temple lesson', { exact: true }).count() > 0, 'B01-B: Lesson truth missing from alternate Week.')
   assert(await page.getByText('Period 5', { exact: true }).count() > 0, 'B01-B: second Section row missing from alternate Week.')
 
-  const calendarBefore = await page.locator('.calendar-canvas').boundingBox()
+  const calendar = page.locator('.calendar-canvas')
+  const calendarBefore = await documentRect(calendar, page)
   const viewportBefore = await geometrySnapshot(page)
   const settings = page.getByRole('button', { name: 'Settings', exact: true })
   const fridge = page.getByRole('button', { name: 'Fridge', exact: true })
@@ -98,12 +108,12 @@ try {
     assert(await control.getAttribute('aria-expanded') === 'true', 'B01-B: keyboard did not open a furniture owner.')
   }
 
-  const calendarAfter = await page.locator('.calendar-canvas').boundingBox()
+  const calendarAfter = await documentRect(calendar, page)
   const viewportAfter = await geometrySnapshot(page)
   mkdirSync('artifacts/b01-furniture-independent', { recursive: true })
   await page.screenshot({ path: 'artifacts/b01-furniture-independent/all-open-1366x768.png', fullPage: true })
   const fixedGeometry = calendarBefore && calendarAfter && Math.abs(calendarBefore.x - calendarAfter.x) <= 1 && Math.abs(calendarBefore.y - calendarAfter.y) <= 1 && Math.abs(calendarBefore.width - calendarAfter.width) <= 1 && Math.abs(calendarBefore.height - calendarAfter.height) <= 1
-  assert(fixedGeometry, `B01-B: alternate all-open path changed calendar geometry. before=${JSON.stringify(calendarBefore)} after=${JSON.stringify(calendarAfter)} viewportBefore=${JSON.stringify(viewportBefore)} viewportAfter=${JSON.stringify(viewportAfter)}`)
+  assert(fixedGeometry, `B01-B: alternate all-open path changed document geometry. before=${JSON.stringify(calendarBefore)} after=${JSON.stringify(calendarAfter)} viewportBefore=${JSON.stringify(viewportBefore)} viewportAfter=${JSON.stringify(viewportAfter)}`)
 
   const doc = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(doc.scroll <= doc.width + 1, `B01-B: 1366×768 all-open path overflowed (${doc.scroll} > ${doc.width}).`)
@@ -124,7 +134,7 @@ try {
   assert(runtimeErrors.length === 0, `B01-B runtime errors: ${runtimeErrors.join(' | ')}`)
 
   await context.close()
-  console.log('Independent B01 audit B passed: alternate AP Art History Week, reverse-order keyboard furniture opening, 44px targets, fixed calendar geometry, 1366×768 overflow, order-agnostic Escape/focus closure, and runtime cleanliness.')
+  console.log(`Independent B01 audit B passed: alternate AP Art History Week, reverse-order keyboard furniture opening, 44px targets, fixed document geometry, 1366×768 overflow, order-agnostic Escape/focus closure, and runtime cleanliness. viewportScroll=${viewportBefore.scrollY}→${viewportAfter.scrollY}`)
 } finally {
   await browser.close()
 }
