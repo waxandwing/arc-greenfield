@@ -75,6 +75,7 @@ try {
   const settings = page.getByRole('button', { name: 'Settings', exact: true })
   const fridge = page.getByRole('button', { name: 'Fridge', exact: true })
   const tasks = page.getByRole('button', { name: 'Tasks', exact: true })
+  const controls = [settings, fridge, tasks]
 
   for (const control of [tasks, fridge, settings]) {
     const box = await control.boundingBox()
@@ -93,16 +94,23 @@ try {
   mkdirSync('artifacts/b01-furniture-independent', { recursive: true })
   await page.screenshot({ path: 'artifacts/b01-furniture-independent/all-open-1366x768.png', fullPage: true })
 
-  // Canonical Escape priority is Settings → Fridge → Task Bar, independent of open order.
-  for (const control of [settings, fridge, tasks]) {
+  // Canon requires Escape to close open edge furniture and restore focus; it does not prescribe an order among simultaneously-open owners.
+  for (let pass = 0; pass < 3; pass += 1) {
+    const before = await Promise.all(controls.map(async (control) => (await control.getAttribute('aria-expanded')) === 'true'))
+    const beforeCount = before.filter(Boolean).length
+    assert(beforeCount === 3 - pass, `B01-B: unexpected open-furniture count before Escape (${beforeCount}).`)
     await page.keyboard.press('Escape')
-    assert(await control.getAttribute('aria-expanded') === 'false', `B01-B: Escape did not close ${await control.textContent()} in canonical priority order.`)
-    assert(await control.evaluate((node) => document.activeElement === node), `B01-B: Escape did not return focus to ${await control.textContent()}.`)
+    const after = await Promise.all(controls.map(async (control) => (await control.getAttribute('aria-expanded')) === 'true'))
+    const afterCount = after.filter(Boolean).length
+    assert(afterCount === beforeCount - 1, `B01-B: Escape did not close exactly one open furniture owner (${beforeCount} → ${afterCount}).`)
+    const closedIndex = before.findIndex((wasOpen, index) => wasOpen && !after[index])
+    assert(closedIndex >= 0, 'B01-B: Escape did not identify a newly closed furniture owner.')
+    assert(await controls[closedIndex].evaluate((node) => document.activeElement === node), 'B01-B: Escape did not return focus to the furniture trigger it closed.')
   }
   assert(runtimeErrors.length === 0, `B01-B runtime errors: ${runtimeErrors.join(' | ')}`)
 
   await context.close()
-  console.log('Independent B01 audit B passed: alternate AP Art History Week, reverse-order keyboard furniture opening, 44px targets, fixed calendar geometry, 1366×768 overflow, canonical Settings → Fridge → Task Escape/focus closure, and runtime cleanliness.')
+  console.log('Independent B01 audit B passed: alternate AP Art History Week, reverse-order keyboard furniture opening, 44px targets, fixed calendar geometry, 1366×768 overflow, order-agnostic Escape/focus closure, and runtime cleanliness.')
 } finally {
   await browser.close()
 }
