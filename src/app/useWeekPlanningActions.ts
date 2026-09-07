@@ -47,6 +47,10 @@ export function useWeekPlanningActions(
     setContextNotice(error instanceof Error ? error.message : String(error))
   }
 
+  function reportMutationResult(accepted: boolean, successMessage: string) {
+    setContextNotice(accepted ? successMessage : null)
+  }
+
   function shiftWithOverrides(overrides: ShiftPersistenceInput['overrides']): ShiftPersistenceInput | null {
     if (!workspace.calendar) return null
     return { calendarId: workspace.calendar.id, overrides, undo: workspace.shiftState?.undo ?? null }
@@ -56,8 +60,7 @@ export function useWeekPlanningActions(
     if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
     try {
       const next = moveUnit({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], unitId, placement: { startDate, endDate } })
-      workspace.useUnits(next, next)
-      setContextNotice('Unit range updated. Identity, Lessons, and teaching history were preserved.')
+      reportMutationResult(workspace.useUnits(next, next), 'Unit range updated. Identity, Lessons, and teaching history were preserved.')
     } catch (error) { reportContextError(error) }
   }
 
@@ -65,8 +68,7 @@ export function useWeekPlanningActions(
     if (!workspace.unitWorkspace) return
     try {
       const next = copyUnitForLater(workspace.unitWorkspace, unitId)
-      workspace.useUnits(next, next)
-      setContextNotice('Unit copied for later with a new identity. Lessons and placement were not duplicated.')
+      reportMutationResult(workspace.useUnits(next, next), 'Unit copied for later with a new identity. Lessons and placement were not duplicated.')
     } catch (error) { reportContextError(error) }
   }
 
@@ -74,8 +76,7 @@ export function useWeekPlanningActions(
     if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
     try {
       const next = unplaceUnitFromCalendar({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], unitId })
-      workspace.useUnits(next, next)
-      setContextNotice('Unit unplaced. Its identity and history were preserved.')
+      reportMutationResult(workspace.useUnits(next, next), 'Unit unplaced. Its identity and history were preserved.')
     } catch (error) { reportContextError(error) }
   }
 
@@ -83,8 +84,7 @@ export function useWeekPlanningActions(
     if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
     try {
       const next = deleteUnit({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], unitId })
-      workspace.useUnits(next, next)
-      setContextNotice('Unit deleted after dependency checks passed.')
+      reportMutationResult(workspace.useUnits(next, next), 'Unit deleted after dependency checks passed.')
     } catch (error) { reportContextError(error) }
   }
 
@@ -94,8 +94,7 @@ export function useWeekPlanningActions(
       const next = moveLesson({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], lessonId, plannedDate })
       const shift = shiftWithOverrides(workspace.shiftState?.overrides ?? [])
       if (!shift) return
-      workspace.useLessons(next, next, shift)
-      setContextNotice('Lesson moved in the shared Course plan. Identity and teaching history were preserved.')
+      reportMutationResult(workspace.useLessons(next, next, shift), 'Lesson moved in the shared Course plan. Identity and teaching history were preserved.')
     } catch (error) { reportContextError(error) }
   }
 
@@ -130,8 +129,7 @@ export function useWeekPlanningActions(
       const next = copyLessonForLater(workspace.lessonWorkspace, lessonId)
       const shift = shiftWithOverrides(workspace.shiftState?.overrides ?? [])
       if (!shift) return
-      workspace.useLessons(next, next, shift)
-      setContextNotice('Lesson copied for later with a new identity. Dates and teaching history were not duplicated.')
+      reportMutationResult(workspace.useLessons(next, next, shift), 'Lesson copied for later with a new identity. Dates and teaching history were not duplicated.')
     } catch (error) { reportContextError(error) }
   }
 
@@ -140,8 +138,8 @@ export function useWeekPlanningActions(
     try {
       const result = unplaceLessonFromCalendar({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], lessonId })
       const shift: ShiftPersistenceInput = { calendarId: workspace.calendar.id, overrides: result.overrides, undo: null }
-      workspace.useLessons(result.lessons, result.lessons, shift)
-      setContextNotice(result.removedOverrides.length > 0 ? 'Lesson unplaced. Section-specific dates were cleared; teaching history was preserved.' : 'Lesson unplaced. Identity and teaching history were preserved.')
+      const message = result.removedOverrides.length > 0 ? 'Lesson unplaced. Section-specific dates were cleared; teaching history was preserved.' : 'Lesson unplaced. Identity and teaching history were preserved.'
+      reportMutationResult(workspace.useLessons(result.lessons, result.lessons, shift), message)
     } catch (error) { reportContextError(error) }
   }
 
@@ -151,8 +149,7 @@ export function useWeekPlanningActions(
       const next = deleteLesson({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], lessonId })
       const shift = shiftWithOverrides(workspace.shiftState?.overrides ?? [])
       if (!shift) return
-      workspace.useLessons(next, next, shift)
-      setContextNotice('Lesson deleted after history and Section-schedule guards passed.')
+      reportMutationResult(workspace.useLessons(next, next, shift), 'Lesson deleted after history and Section-schedule guards passed.')
     } catch (error) { reportContextError(error) }
   }
 
@@ -160,8 +157,7 @@ export function useWeekPlanningActions(
     if (!workspace.planningWorkspace) return
     try {
       const next = movePlanningNote(workspace.planningWorkspace, noteId, date, placement)
-      workspace.useClasses(next, next)
-      setContextNotice('Note moved. Identity, source, and Important state were preserved.')
+      reportMutationResult(workspace.useClasses(next, next), 'Note moved. Identity, source, and Important state were preserved.')
     } catch (error) { reportContextError(error) }
   }
 
@@ -169,8 +165,7 @@ export function useWeekPlanningActions(
     if (!workspace.planningWorkspace) return
     try {
       const next = copyPlanningNote(workspace.planningWorkspace, noteId)
-      workspace.useClasses(next, next)
-      setContextNotice('Note copied with a new identity. Source and Important state were preserved.')
+      reportMutationResult(workspace.useClasses(next, next), 'Note copied with a new identity. Source and Important state were preserved.')
     } catch (error) { reportContextError(error) }
   }
 
@@ -178,38 +173,50 @@ export function useWeekPlanningActions(
     if (!workspace.planningWorkspace) return
     try {
       const next = deletePlanningNote(workspace.planningWorkspace, noteId)
-      workspace.useClasses(next, next)
-      setContextNotice('Note deleted.')
+      reportMutationResult(workspace.useClasses(next, next), 'Note deleted.')
     } catch (error) { reportContextError(error) }
   }
 
-  function createUnitFromWeek(courseId: string, title: string, startDate: ISODate, endDate: ISODate) {
-    if (!workspace.calendar || !workspace.unitWorkspace) return
+  function createUnitFromWeek(courseId: string, title: string, startDate: ISODate, endDate: ISODate): boolean {
+    if (!workspace.calendar || !workspace.unitWorkspace) return false
     try {
       const next = createUnitOnWeek({ calendar: workspace.calendar, workspace: workspace.unitWorkspace, courseId, title, startDate, endDate })
-      workspace.useUnits(next, next)
-      setContextNotice('Unit added from the Week calendar.')
-    } catch (error) { reportContextError(error) }
+      const accepted = workspace.useUnits(next, next)
+      reportMutationResult(accepted, 'Unit added from the Week calendar.')
+      return accepted
+    } catch (error) {
+      reportContextError(error)
+      return false
+    }
   }
 
-  function createLessonFromWeek(unitId: string, title: string, plannedDate: ISODate) {
-    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+  function createLessonFromWeek(unitId: string, title: string, plannedDate: ISODate): boolean {
+    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return false
     try {
       const next = createLessonOnWeek({ calendar: workspace.calendar, units: workspace.unitWorkspace, workspace: workspace.lessonWorkspace, unitId, title, plannedDate })
       const shift = shiftWithOverrides(workspace.shiftState?.overrides ?? [])
-      if (!shift) return
-      workspace.useLessons(next, next, shift)
-      setContextNotice('Lesson added from the Week calendar.')
-    } catch (error) { reportContextError(error) }
+      if (!shift) return false
+      const accepted = workspace.useLessons(next, next, shift)
+      reportMutationResult(accepted, 'Lesson added from the Week calendar.')
+      return accepted
+    } catch (error) {
+      reportContextError(error)
+      return false
+    }
   }
 
-  function createNoteFromWeek(date: ISODate, text: string, placement: PlanningNotePlacement, important: boolean) {
-    if (!workspace.calendar || !workspace.planningWorkspace) return
+  function createNoteFromWeek(date: ISODate, text: string, placement: PlanningNotePlacement, important: boolean): boolean {
+    if (!workspace.calendar || !workspace.planningWorkspace) return false
     try {
       const next = createPlanningNoteOnWeek({ workspace: workspace.planningWorkspace, calendarId: workspace.calendar.id, date, text, placement, important })
-      workspace.useClasses(next, next)
-      setContextNotice(placement === 'after-school' ? 'After School note added from the Week calendar.' : 'Note added from the Week calendar.')
-    } catch (error) { reportContextError(error) }
+      const message = placement === 'after-school' ? 'After School note added from the Week calendar.' : 'Note added from the Week calendar.'
+      const accepted = workspace.useClasses(next, next)
+      reportMutationResult(accepted, message)
+      return accepted
+    } catch (error) {
+      reportContextError(error)
+      return false
+    }
   }
 
   function sendLessonBackToFridge(lessonId: string) {
@@ -218,8 +225,9 @@ export function useWeekPlanningActions(
       const result = moveLessonToFridge({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], lessonId })
       const nextShift = shiftWithOverrides(result.overrides)
       if (!nextShift) return
-      workspace.useLessons(result.lessons, result.lessons, nextShift)
-      setFridgeUndo(result.undo)
+      const accepted = workspace.useLessons(result.lessons, result.lessons, nextShift)
+      if (accepted) setFridgeUndo(result.undo)
+      else setContextNotice(null)
     } catch (error) { reportContextError(error) }
   }
 
@@ -229,8 +237,9 @@ export function useWeekPlanningActions(
       const result = moveLessonFromFridge({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], lessonId, plannedDate: fridgeDate as ISODate })
       const nextShift = shiftWithOverrides(result.overrides)
       if (!nextShift) return
-      workspace.useLessons(result.lessons, result.lessons, nextShift)
-      setFridgeUndo(result.undo)
+      const accepted = workspace.useLessons(result.lessons, result.lessons, nextShift)
+      if (accepted) setFridgeUndo(result.undo)
+      else setContextNotice(null)
     } catch (error) { reportContextError(error) }
   }
 
@@ -239,8 +248,9 @@ export function useWeekPlanningActions(
     const restored = undoFridgeRoundTrip(fridgeUndo)
     const nextShift = shiftWithOverrides(restored.overrides)
     if (!nextShift) return
-    workspace.useLessons(restored.lessons, restored.lessons, nextShift)
-    setFridgeUndo(null)
+    const accepted = workspace.useLessons(restored.lessons, restored.lessons, nextShift)
+    if (accepted) setFridgeUndo(null)
+    else setContextNotice(null)
   }
 
   const weekObjectActions: PlanningWeekObjectActions = {

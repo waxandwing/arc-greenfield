@@ -139,17 +139,17 @@ export function useArcWorkspace(onCloseMode: () => void) {
     else setStorageNotice(null)
   }
 
-  function useClasses(input: PlanningWorkspaceInput, workspace: PlanningWorkspace) {
+  function useClasses(input: PlanningWorkspaceInput, workspace: PlanningWorkspace): boolean {
     if (calendar && unitWorkspace && lessonWorkspace) {
       const lessonErrors = validateLessonWorkspace(lessonWorkspace, calendar, workspace, unitWorkspace)
       if (lessonErrors.length > 0) {
         setStorageNotice('That class change would orphan existing Lesson progress. Resolve the affected Lesson history first; Arc has not changed the classes.')
-        return
+        return false
       }
       const shift = reconcileShiftState(shiftState, calendar, workspace, unitWorkspace, lessonWorkspace)
       if (!shift.allowed) {
         setStorageNotice('That class change would orphan an existing Section schedule. Resolve the affected Shift history first; Arc has not changed the classes.')
-        return
+        return false
       }
       const classesPersisted = savePlanningWorkspaceToBrowser(input)
       const shiftPersisted = persistReconciledShift(shift.next)
@@ -159,26 +159,27 @@ export function useArcWorkspace(onCloseMode: () => void) {
       if (!classesPersisted || !shiftPersisted) setStorageNotice('These classes are active for this session, but Arc could not save all related planning state in this browser.')
       else if (shift.undoDropped) setStorageNotice('Classes updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
       else setStorageNotice(null)
-      return
+      return true
     }
     const persisted = savePlanningWorkspaceToBrowser(input)
     setPlanningWorkspace(workspace)
     setPlanningInput(input)
     onCloseMode()
     setStorageNotice(persisted ? null : 'These classes are active for this session, but Arc could not save them in this browser.')
+    return true
   }
 
-  function useUnits(input: UnitWorkspaceInput, workspace: UnitWorkspace) {
+  function useUnits(input: UnitWorkspaceInput, workspace: UnitWorkspace): boolean {
     if (calendar && planningWorkspace && lessonWorkspace) {
       const lessonErrors = validateLessonWorkspace(lessonWorkspace, calendar, planningWorkspace, workspace)
       if (lessonErrors.length > 0) {
         setStorageNotice('That Unit change would invalidate one or more Lessons. Move or update those Lessons first; Arc has not changed the Units.')
-        return
+        return false
       }
       const shift = reconcileShiftState(shiftState, calendar, planningWorkspace, workspace, lessonWorkspace)
       if (!shift.allowed) {
         setStorageNotice('That Unit change would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the Units.')
-        return
+        return false
       }
       const unitsPersisted = saveUnitsToBrowser(input)
       const shiftPersisted = persistReconciledShift(shift.next)
@@ -188,19 +189,20 @@ export function useArcWorkspace(onCloseMode: () => void) {
       if (!unitsPersisted || !shiftPersisted) setStorageNotice('These Units are active for this session, but Arc could not save all related planning state in this browser.')
       else if (shift.undoDropped) setStorageNotice('Units updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
       else setStorageNotice(null)
-      return
+      return true
     }
     const persisted = saveUnitsToBrowser(input)
     setUnitWorkspace(workspace)
     setUnitInput(input)
     onCloseMode()
     setStorageNotice(persisted ? null : 'These Units are active for this session, but Arc could not save them in this browser.')
+    return true
   }
 
-  function useLessons(input: LessonWorkspaceInput, workspace: LessonWorkspace, requestedShiftState: ShiftPersistenceInput) {
+  function useLessons(input: LessonWorkspaceInput, workspace: LessonWorkspace, requestedShiftState: ShiftPersistenceInput): boolean {
     if (!calendar || !planningWorkspace || !unitWorkspace) {
       setStorageNotice('Arc cannot save these Lessons because the planning context is incomplete. Nothing changed.')
-      return
+      return false
     }
 
     let candidateShift: ShiftPersistenceInput = {
@@ -211,7 +213,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     let validation = validateShiftPersistenceInput(candidateShift, calendar, planningWorkspace, unitWorkspace, workspace)
     if (validation.scheduleErrors.length > 0) {
       setStorageNotice('That Lesson change would invalidate an existing Section schedule. Resolve the affected Section dates first; Arc has not changed the Lessons.')
-      return
+      return false
     }
 
     let undoDropped = false
@@ -221,7 +223,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
       validation = validateShiftPersistenceInput(candidateShift, calendar, planningWorkspace, unitWorkspace, workspace)
       if (validation.scheduleErrors.length > 0) {
         setStorageNotice('Arc refused this Lesson change because the resulting Section schedule did not pass its integrity check. Nothing changed.')
-        return
+        return false
       }
     }
 
@@ -230,7 +232,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
       setStorageNotice(persisted.rollbackSucceeded
         ? 'Arc could not save the Lesson and Section schedule together, so it restored the previous browser state. Nothing changed.'
         : 'Arc could not save the Lesson and Section schedule together, and browser storage also refused a complete rollback. Do not continue editing in this tab until the stored workspace is checked.')
-      return
+      return false
     }
 
     setLessonWorkspace(workspace)
@@ -240,6 +242,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     setStorageNotice(undoDropped
       ? 'Lessons updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.'
       : null)
+    return true
   }
 
   function applyRecoveryShift(operation: ShiftOperation): string | null {
