@@ -22,6 +22,11 @@ async function configureCalendar(page) {
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 }
 
+async function selectCalendarView(page, view) {
+  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
+  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
+}
+
 const browser = await chromium.launch({ headless: true })
 try {
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 } })
@@ -35,7 +40,7 @@ try {
   await page.getByText('View options', { exact: true }).click()
   await page.getByLabel('Open Arc to').selectOption('last-used')
   await page.getByLabel('Show weekends in Week view').check()
-  await page.getByRole('button', { name: 'Week' }).click()
+  await selectCalendarView(page, 'Week')
 
   const weekRegion = page.locator('.projection-section').first()
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: Week did not become the active workspace view.')
@@ -51,6 +56,7 @@ try {
 
   await page.reload({ waitUntil: 'networkidle' })
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: reload did not restore Last used Week behavior.')
+  assert(await page.getByRole('button', { name: 'Change calendar view, current Week' }).count() === 1, 'RGAV-B: title-based view navigation did not survive reload.')
   await page.getByText('View options', { exact: true }).click()
   assert(await page.getByLabel('Show weekends in Week view').isChecked(), 'RGAV-B: weekend preference did not persist across reload.')
 
@@ -73,7 +79,7 @@ try {
   assert(keyboardRuntimeErrors.length === 0, `RGAV-B fresh-page keyboard runtime errors: ${keyboardRuntimeErrors.join(' | ')}`)
   await keyboardPage.close()
   await context.close()
-  console.log('Independent RGAV shell pass B succeeded: Last used persistence, optional weekends, navigation/home/reload, fresh-page keyboard skip, 1366×768 overflow, and runtime-error checks.')
+  console.log('Independent RGAV shell pass B succeeded: title-based view switching, Last used persistence, optional weekends, navigation/home/reload, fresh-page keyboard skip, 1366×768 overflow, and runtime-error checks.')
 } finally {
   await browser.close()
 }
