@@ -51,3 +51,83 @@ jobs:
           path: artifacts/b03-b04-week-interaction/*.png
           if-no-files-found: warn
           retention-days: 7
+
+  b03-b04-week-interaction-independent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Chromium audit runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Build browser target
+        run: npm run build
+      - name: Run independent B03 B04 adversarial audit
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/arc-preview-b03-b04-independent.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/b03-b04-week-interaction-independent.mjs
+      - name: Publish independent B03 B04 render
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-b03-b04-week-interaction-independent
+          path: artifacts/b03-b04-week-interaction-independent/*.png
+          if-no-files-found: warn
+          retention-days: 7
+
+  b03-b04-week-interaction-stress:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Chromium audit runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Build browser target
+        run: npm run build
+      - name: Stress B03 B04 Week components
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/arc-preview-b03-b04-stress.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/b03-b04-week-interaction.stress.mjs
+      - name: Publish B03 B04 stress render
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-b03-b04-week-interaction-stress
+          path: artifacts/b03-b04-week-interaction-stress/*.png
+          if-no-files-found: warn
+          retention-days: 7
