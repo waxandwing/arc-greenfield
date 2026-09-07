@@ -64,3 +64,14 @@
   .b01-side-owner[data-state='open']{height:min(70vh,560px)}
   .b01-task-owner[data-state='open']{height:clamp(320px,64vh,560px)}
 }
+
+/* At narrow/reflow widths, closed edge furniture shares the exterior bottom edge instead of covering planner content. */
+@media (max-width:700px){
+  .b01-side-owner[data-state='closed']{top:auto;bottom:0;width:94px;height:44px}
+  .b01-settings-owner[data-state='closed']{left:0;right:auto}
+  .b01-fridge-owner[data-state='closed']{right:0;left:auto}
+  .b01-side-owner[data-state='closed'] .b01-edge-tab{top:0;left:0;right:auto;width:94px;height:44px;min-height:44px;padding:7px 8px;writing-mode:horizontal-tb;transform:none;border-radius:5px 5px 0 0}
+}
+@media (max-width:520px){
+  .b01-side-owner[data-state='closed'],.b01-side-owner[data-state='closed'] .b01-edge-tab{width:82px}
+}
