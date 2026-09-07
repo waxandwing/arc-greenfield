@@ -112,11 +112,16 @@ async function audit(page) {
   check(Number.parseFloat(noteStyle.fontSize) >= 16 && Number.parseFloat(lessonStyle.fontSize) >= 16, 'Independent B02: primary object copy must remain at least 16px.')
   check(unitStyle.borderLeft !== '0px' && lessonStyle.borderLeft !== '0px', 'Independent B02: Unit and Lesson type language must remain structurally visible.')
 
-  const importantCircle = await after.locator('.planning-note--important').evaluate((element) => {
+  const importantNote = after.locator('.planning-note--important')
+  const importantCircle = await importantNote.evaluate((element) => {
     const pseudo = getComputedStyle(element, '::after')
     return { width:pseudo.borderTopWidth, style:pseudo.borderTopStyle, color:pseudo.borderTopColor }
   })
   check(importantCircle.style === 'solid' && Number.parseFloat(importantCircle.width) >= 2, 'Independent B02: canonical Important circle must be visibly drawn around the paper object.')
+  const importantSlot = importantNote.locator('xpath=..')
+  const noteBox = await importantNote.boundingBox()
+  const slotBox = await importantSlot.boundingBox()
+  check(noteBox && slotBox && noteBox.x + noteBox.width + 9 <= slotBox.x + slotBox.width, 'Independent B02: Important paper plus its hand-drawn ring must remain fully inside an edge day column.')
 
   const ordered = await page.locator('.planning-grid > *').evaluateAll((nodes) => nodes.map((node) => ({ cls:node.className, label:node.getAttribute('aria-label') })))
   const noteIndex = ordered.findIndex((item) => String(item.cls).includes('planning-note-lane') && item.label === 'Notes')
