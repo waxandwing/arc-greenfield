@@ -19,6 +19,22 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function openSettings(page) {
+  const settings = page.getByRole('button', { name: 'Settings' })
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  assert(await page.getByRole('navigation', { name: 'Calendar views' }).isVisible(), 'Phase 2 calendar edge: Settings did not expose Calendar views.')
+}
+
+async function closeSettings(page) {
+  if (await page.getByRole('button', { name: 'Close Settings' }).count()) await page.getByRole('button', { name: 'Close Settings' }).click()
+}
+
+async function selectView(page, view) {
+  await openSettings(page)
+  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
+  await closeSettings(page)
+}
+
 async function configureCalendarWithEdges(page) {
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-02')
@@ -94,7 +110,7 @@ async function createAndProbeLessons(page) {
 }
 
 async function moveToWeekOfSeptember14(page) {
-  await page.getByRole('button', { name: 'Week', exact: true }).click()
+  await selectView(page, 'Week')
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
 }
@@ -120,6 +136,7 @@ try {
   assert(await page.locator('.planning-date-heading').count() === 5, 'Phase 2 calendar edge: default Week did not remain Monday–Friday.')
   assert(await page.getByText('Saturday studio lesson', { exact: true }).count() === 0, 'Phase 2 calendar edge: Saturday Lesson leaked into Week while weekends were hidden.')
 
+  await openSettings(page)
   await page.getByText('View options', { exact: true }).click()
   const weekendToggle = page.getByRole('checkbox', { name: 'Show weekends in Week view', exact: true })
   await weekendToggle.check()
@@ -130,6 +147,7 @@ try {
   assert(await page.getByText('Saturday studio lesson', { exact: true }).count() === 0, 'Phase 2 calendar edge: Saturday Lesson remained visible after weekends were hidden again.')
   await weekendToggle.check()
   assert(await page.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: hiding weekends mutated/deleted Saturday planning data.')
+  await closeSettings(page)
 
   await page.reload({ waitUntil: 'networkidle' })
   await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
@@ -140,7 +158,7 @@ try {
 
   assert(runtimeErrors.length === 0, `Phase 2 calendar-edge runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
-  console.log('Phase 2 calendar-edge planning truth gate passed: multi-day Unit across no-school/weekend → invalid non-instructional-only placement fails closed → no-school Lesson rejected → instructional Saturday accepted → Week hide/show preserves data → reload preserves truth.')
+  console.log('Phase 2 calendar-edge planning truth gate passed: Settings-owned view/weekend controls → multi-day Unit across no-school/weekend → invalid non-instructional-only placement fails closed → no-school Lesson rejected → instructional Saturday accepted → Week hide/show preserves data → reload preserves truth.')
 } finally {
   await browser.close()
 }
