@@ -57,6 +57,18 @@ async function seed(page) {
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
 }
 
+async function geometrySnapshot(page) {
+  return page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    clientHeight: document.documentElement.clientHeight,
+    scrollWidth: document.documentElement.scrollWidth,
+    scrollHeight: document.documentElement.scrollHeight,
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+    bodyWidth: document.body.getBoundingClientRect().width,
+  }))
+}
+
 const browser = await chromium.launch({ headless: true })
 try {
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 } })
@@ -72,6 +84,7 @@ try {
   assert(await page.getByText('Period 5', { exact: true }).count() > 0, 'B01-B: second Section row missing from alternate Week.')
 
   const calendarBefore = await page.locator('.calendar-canvas').boundingBox()
+  const viewportBefore = await geometrySnapshot(page)
   const settings = page.getByRole('button', { name: 'Settings', exact: true })
   const fridge = page.getByRole('button', { name: 'Fridge', exact: true })
   const tasks = page.getByRole('button', { name: 'Tasks', exact: true })
@@ -86,13 +99,14 @@ try {
   }
 
   const calendarAfter = await page.locator('.calendar-canvas').boundingBox()
-  assert(calendarBefore && calendarAfter && Math.abs(calendarBefore.x - calendarAfter.x) <= 1 && Math.abs(calendarBefore.y - calendarAfter.y) <= 1 && Math.abs(calendarBefore.width - calendarAfter.width) <= 1 && Math.abs(calendarBefore.height - calendarAfter.height) <= 1, 'B01-B: alternate all-open path changed calendar geometry.')
+  const viewportAfter = await geometrySnapshot(page)
+  mkdirSync('artifacts/b01-furniture-independent', { recursive: true })
+  await page.screenshot({ path: 'artifacts/b01-furniture-independent/all-open-1366x768.png', fullPage: true })
+  const fixedGeometry = calendarBefore && calendarAfter && Math.abs(calendarBefore.x - calendarAfter.x) <= 1 && Math.abs(calendarBefore.y - calendarAfter.y) <= 1 && Math.abs(calendarBefore.width - calendarAfter.width) <= 1 && Math.abs(calendarBefore.height - calendarAfter.height) <= 1
+  assert(fixedGeometry, `B01-B: alternate all-open path changed calendar geometry. before=${JSON.stringify(calendarBefore)} after=${JSON.stringify(calendarAfter)} viewportBefore=${JSON.stringify(viewportBefore)} viewportAfter=${JSON.stringify(viewportAfter)}`)
 
   const doc = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(doc.scroll <= doc.width + 1, `B01-B: 1366×768 all-open path overflowed (${doc.scroll} > ${doc.width}).`)
-
-  mkdirSync('artifacts/b01-furniture-independent', { recursive: true })
-  await page.screenshot({ path: 'artifacts/b01-furniture-independent/all-open-1366x768.png', fullPage: true })
 
   // Canon requires Escape to close open edge furniture and restore focus; it does not prescribe an order among simultaneously-open owners.
   for (let pass = 0; pass < 3; pass += 1) {
