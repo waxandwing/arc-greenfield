@@ -3,6 +3,9 @@
  * Visual overrides for scheduled Units, Lessons, Notes, Important mark,
  * add controls, and contextual object tools. No state, drag, auth, shell,
  * furniture, or planner geometry ownership lives here.
+ *
+ * Important-ring provenance: exact path data cropped from the approved
+ * Arc `page elements.svg` asset sheet supplied in the canonical asset bundle.
  */
 
 :root {
