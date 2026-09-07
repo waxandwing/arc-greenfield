@@ -14,9 +14,17 @@ import {
   type ViewPreferences,
 } from '../navigation/viewPreferences'
 import {
+  copyLessonForLater,
+  copyPlanningNote,
+  copyUnitForLater,
+  deleteLesson,
+  deletePlanningNote,
+  deleteUnit,
   moveLessonFromFridge,
   moveLessonToFridge,
   undoFridgeRoundTrip,
+  unplaceLessonFromCalendar,
+  unplaceUnitFromCalendar,
   type FridgeRoundTripReceipt,
   type ShiftPersistenceInput,
 } from '../planning'
@@ -28,6 +36,7 @@ export function AppFrame() {
   const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
   const [fridgeDate, setFridgeDate] = useState('')
   const [fridgeUndo, setFridgeUndo] = useState<FridgeRoundTripReceipt | null>(null)
+  const [contextNotice, setContextNotice] = useState<string | null>(null)
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
@@ -64,22 +73,93 @@ export function AppFrame() {
 
   function shiftWithOverrides(overrides: ShiftPersistenceInput['overrides']): ShiftPersistenceInput | null {
     if (!workspace.calendar) return null
-    return {
-      calendarId: workspace.calendar.id,
-      overrides,
-      undo: workspace.shiftState?.undo ?? null,
-    }
+    return { calendarId: workspace.calendar.id, overrides, undo: workspace.shiftState?.undo ?? null }
+  }
+
+  function reportContextError(error: unknown) {
+    setContextNotice(error instanceof Error ? error.message : String(error))
+  }
+
+  function copyUnit(unitId: string) {
+    if (!workspace.unitWorkspace) return
+    try {
+      const next = copyUnitForLater(workspace.unitWorkspace, unitId)
+      workspace.useUnits(next, next)
+      setContextNotice('Unit copied for later with a new identity. Lessons and placement were not duplicated.')
+    } catch (error) { reportContextError(error) }
+  }
+
+  function unplaceUnit(unitId: string) {
+    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+    try {
+      const next = unplaceUnitFromCalendar({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], unitId })
+      workspace.useUnits(next, next)
+      setContextNotice('Unit unplaced. Its identity and history were preserved.')
+    } catch (error) { reportContextError(error) }
+  }
+
+  function destroyUnit(unitId: string) {
+    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+    try {
+      const next = deleteUnit({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], unitId })
+      workspace.useUnits(next, next)
+      setContextNotice('Unit deleted after dependency checks passed.')
+    } catch (error) { reportContextError(error) }
+  }
+
+  function copyLesson(lessonId: string) {
+    if (!workspace.lessonWorkspace) return
+    try {
+      const next = copyLessonForLater(workspace.lessonWorkspace, lessonId)
+      const shift = shiftWithOverrides(workspace.shiftState?.overrides ?? [])
+      if (!shift) return
+      workspace.useLessons(next, next, shift)
+      setContextNotice('Lesson copied for later with a new identity. Dates and teaching history were not duplicated.')
+    } catch (error) { reportContextError(error) }
+  }
+
+  function unplaceLesson(lessonId: string) {
+    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+    try {
+      const result = unplaceLessonFromCalendar({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], lessonId })
+      const shift: ShiftPersistenceInput = { calendarId: workspace.calendar.id, overrides: result.overrides, undo: null }
+      workspace.useLessons(result.lessons, result.lessons, shift)
+      setContextNotice(result.removedOverrides.length > 0 ? 'Lesson unplaced. Section-specific dates were cleared; teaching history was preserved.' : 'Lesson unplaced. Identity and teaching history were preserved.')
+    } catch (error) { reportContextError(error) }
+  }
+
+  function destroyLesson(lessonId: string) {
+    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+    try {
+      const next = deleteLesson({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], lessonId })
+      const shift = shiftWithOverrides(workspace.shiftState?.overrides ?? [])
+      if (!shift) return
+      workspace.useLessons(next, next, shift)
+      setContextNotice('Lesson deleted after history and Section-schedule guards passed.')
+    } catch (error) { reportContextError(error) }
+  }
+
+  function copyNote(noteId: string) {
+    if (!workspace.planningWorkspace) return
+    try {
+      const next = copyPlanningNote(workspace.planningWorkspace, noteId)
+      workspace.useClasses(next, next)
+      setContextNotice('Note copied with a new identity. Source and Important state were preserved.')
+    } catch (error) { reportContextError(error) }
+  }
+
+  function destroyNote(noteId: string) {
+    if (!workspace.planningWorkspace) return
+    try {
+      const next = deletePlanningNote(workspace.planningWorkspace, noteId)
+      workspace.useClasses(next, next)
+      setContextNotice('Note deleted.')
+    } catch (error) { reportContextError(error) }
   }
 
   function sendLessonBackToFridge(lessonId: string) {
     if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
-    const result = moveLessonToFridge({
-      calendar: workspace.calendar,
-      units: workspace.unitWorkspace,
-      lessons: workspace.lessonWorkspace,
-      overrides: workspace.shiftState?.overrides ?? [],
-      lessonId,
-    })
+    const result = moveLessonToFridge({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], lessonId })
     const nextShift = shiftWithOverrides(result.overrides)
     if (!nextShift) return
     workspace.useLessons(result.lessons, result.lessons, nextShift)
@@ -88,14 +168,7 @@ export function AppFrame() {
 
   function scheduleLessonFromFridge(lessonId: string) {
     if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace || !fridgeDate) return
-    const result = moveLessonFromFridge({
-      calendar: workspace.calendar,
-      units: workspace.unitWorkspace,
-      lessons: workspace.lessonWorkspace,
-      overrides: workspace.shiftState?.overrides ?? [],
-      lessonId,
-      plannedDate: fridgeDate as ISODate,
-    })
+    const result = moveLessonFromFridge({ calendar: workspace.calendar, units: workspace.unitWorkspace, lessons: workspace.lessonWorkspace, overrides: workspace.shiftState?.overrides ?? [], lessonId, plannedDate: fridgeDate as ISODate })
     const nextShift = shiftWithOverrides(result.overrides)
     if (!nextShift) return
     workspace.useLessons(result.lessons, result.lessons, nextShift)
@@ -123,81 +196,31 @@ export function AppFrame() {
     </div>
   ) : <p className="b01-furniture-empty">Fridge is available in calendar mode.</p>
 
+  const weekObjectActions = {
+    editUnit: () => workspaceMode.open('units'),
+    copyUnit,
+    unplaceUnit,
+    deleteUnit: destroyUnit,
+    editLesson: () => workspaceMode.open('lessons'),
+    copyLesson,
+    unplaceLesson,
+    deleteLesson: destroyLesson,
+    copyNote,
+    deleteNote: destroyNote,
+  }
+
   return (
     <div className="arc-shell">
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
-
-      <header className="arc-header" aria-label="Arc application header">
-        <button className="arc-wordmark" type="button" aria-label={`Return to ${homeView} view`} onClick={returnHome}>arc</button>
-        <div className="arc-header-space" aria-hidden="true" />
-      </header>
-
+      <header className="arc-header" aria-label="Arc application header"><button className="arc-wordmark" type="button" aria-label={`Return to ${homeView} view`} onClick={returnHome}>arc</button><div className="arc-header-space" aria-hidden="true" /></header>
       <div className="arc-layout">
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
-          <CalendarStageHeader
-            activeView={workspace.activeView}
-            mode={workspaceMode.mode}
-            calendar={workspace.calendar}
-            anchorDate={workspace.anchorDate}
-            previousTarget={workspace.previousTarget}
-            nextTarget={workspace.nextTarget}
-            todayTarget={workspace.todayTarget}
-            hasTerms={workspace.hasTerms}
-            hasClasses={workspace.hasClasses}
-            hasUnits={workspace.hasUnits}
-            hasLessons={workspace.hasLessons}
-            recoveryCount={workspace.recoveryCount}
-            undoAvailable={Boolean(workspace.shiftState?.undo)}
-            stageTitle={stageTitle}
-            viewSelectionDisabled={workspaceBusy}
-            availabilityFor={workspace.viewAvailability}
-            onSelectView={selectView}
-            onMovePrevious={() => workspace.movePeriod('previous')}
-            onMoveNext={() => workspace.movePeriod('next')}
-            onToday={workspace.goToday}
-            onOpenCalendarSetup={() => workspaceMode.open('calendar-setup')}
-            onOpenTerms={() => workspaceMode.open('terms')}
-            onOpenClasses={() => workspaceMode.open('classes')}
-            onOpenUnits={() => workspaceMode.open('units')}
-            onOpenLessons={() => workspaceMode.open('lessons')}
-            onOpenRecovery={() => workspaceMode.open('recovery')}
-            onUndoShift={workspace.undoLastShift}
-          />
-
+          <CalendarStageHeader activeView={workspace.activeView} mode={workspaceMode.mode} calendar={workspace.calendar} anchorDate={workspace.anchorDate} previousTarget={workspace.previousTarget} nextTarget={workspace.nextTarget} todayTarget={workspace.todayTarget} hasTerms={workspace.hasTerms} hasClasses={workspace.hasClasses} hasUnits={workspace.hasUnits} hasLessons={workspace.hasLessons} recoveryCount={workspace.recoveryCount} undoAvailable={Boolean(workspace.shiftState?.undo)} stageTitle={stageTitle} viewSelectionDisabled={workspaceBusy} availabilityFor={workspace.viewAvailability} onSelectView={selectView} onMovePrevious={() => workspace.movePeriod('previous')} onMoveNext={() => workspace.movePeriod('next')} onToday={workspace.goToday} onOpenCalendarSetup={() => workspaceMode.open('calendar-setup')} onOpenTerms={() => workspaceMode.open('terms')} onOpenClasses={() => workspaceMode.open('classes')} onOpenUnits={() => workspaceMode.open('units')} onOpenLessons={() => workspaceMode.open('lessons')} onOpenRecovery={() => workspaceMode.open('recovery')} onUndoShift={workspace.undoLastShift} />
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
-
-          <B01Furniture
-            settings={workspace.calendar && workspaceMode.mode === 'calendar'
-              ? <CalendarViewPreferences preferences={viewPreferences} onChange={updateViewPreferences} />
-              : <p className="b01-furniture-empty">Calendar settings are available in calendar mode.</p>}
-            fridge={fridgeContent}
-          >
+          {contextNotice && <p className="storage-notice b03-context-notice" role="status">{contextNotice}</p>}
+          <B01Furniture settings={workspace.calendar && workspaceMode.mode === 'calendar' ? <CalendarViewPreferences preferences={viewPreferences} onChange={updateViewPreferences} /> : <p className="b01-furniture-empty">Calendar settings are available in calendar mode.</p>} fridge={fridgeContent}>
             <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
-              <WorkspaceStage
-                mode={workspaceMode.mode}
-                activeView={workspace.activeView}
-                showWeekends={viewPreferences.showWeekends}
-                calendar={workspace.calendar}
-                calendarInput={workspace.calendarInput}
-                anchorDate={workspace.anchorDate}
-                planningWorkspace={workspace.planningWorkspace}
-                planningInput={workspace.planningInput}
-                unitWorkspace={workspace.unitWorkspace}
-                unitInput={workspace.unitInput}
-                lessonWorkspace={workspace.lessonWorkspace}
-                lessonInput={workspace.lessonInput}
-                shiftState={workspace.shiftState}
-                protectedCourseIds={workspace.protectedCourseIds}
-                protectedUnitIds={workspace.protectedUnitIds}
-                protectedSectionIds={workspace.protectedSectionIds}
-                onUseCalendar={workspace.useCalendar}
-                onUseTerms={workspace.useTerms}
-                onUseClasses={workspace.useClasses}
-                onUseUnits={workspace.useUnits}
-                onUseLessons={workspace.useLessons}
-                onApplyRecoveryShift={workspace.applyRecoveryShift}
-                onCloseMode={workspaceMode.close}
-              />
+              <WorkspaceStage mode={workspaceMode.mode} activeView={workspace.activeView} showWeekends={viewPreferences.showWeekends} calendar={workspace.calendar} calendarInput={workspace.calendarInput} anchorDate={workspace.anchorDate} planningWorkspace={workspace.planningWorkspace} planningInput={workspace.planningInput} unitWorkspace={workspace.unitWorkspace} unitInput={workspace.unitInput} lessonWorkspace={workspace.lessonWorkspace} lessonInput={workspace.lessonInput} shiftState={workspace.shiftState} protectedCourseIds={workspace.protectedCourseIds} protectedUnitIds={workspace.protectedUnitIds} protectedSectionIds={workspace.protectedSectionIds} weekObjectActions={weekObjectActions} onUseCalendar={workspace.useCalendar} onUseTerms={workspace.useTerms} onUseClasses={workspace.useClasses} onUseUnits={workspace.useUnits} onUseLessons={workspace.useLessons} onApplyRecoveryShift={workspace.applyRecoveryShift} onCloseMode={workspaceMode.close} />
             </section>
           </B01Furniture>
         </main>
@@ -206,10 +229,7 @@ export function AppFrame() {
   )
 }
 
-function resolveAvailableHomeView(
-  preferences: ViewPreferences,
-  availabilityFor: (view: CalendarView) => { available: boolean },
-): CalendarView {
+function resolveAvailableHomeView(preferences: ViewPreferences, availabilityFor: (view: CalendarView) => { available: boolean }): CalendarView {
   const preferred = resolveHomeView(preferences)
   return availabilityFor(preferred).available ? preferred : DEFAULT_HOME_VIEW
 }
