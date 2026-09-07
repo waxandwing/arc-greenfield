@@ -1,0 +1,48 @@
+name: Phase 3 live browser NCES
+
+on:
+  push:
+    branches:
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  nces-browser-live:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Chromium audit runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Build browser target
+        run: npm run build
+      - name: Record live NCES availability
+        run: node tests/nces-live-smoke.mjs
+      - name: Run browser NCES integration gate through same-origin proxy
+        run: |
+          NCES_FIXTURE=1 node tests/phase3-nces-live-server.mjs > /tmp/arc-phase3-nces-live-server.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          curl --fail --silent 'http://127.0.0.1:4173/api/nces?schoolName=Oak%20Ridge&city=Orlando&state=FL' > /tmp/nces-proxy-response.json
+          grep -q '120144001406' /tmp/nces-proxy-response.json
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/phase3-nces-browser-live.mjs
