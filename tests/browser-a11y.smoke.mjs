@@ -98,9 +98,15 @@ async function auditShellHierarchyAndZoom(browser) {
   const options = page.getByText('View options', { exact: true })
   assert(await options.count() === 1, 'Shell hierarchy: View options disclosure is missing or duplicated.')
 
+  await selectCalendarView(page, 'Week')
+  assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'B01 evidence: exact shell artifact must render Week as the level-one workspace heading.')
+  assert(await page.getByRole('button', { name: 'Change calendar view, current Week' }).count() === 1, 'B01 evidence: Week must retain the always-reachable current-view switch control.')
+  assert(await page.getByRole('group', { name: 'Week date navigation' }).count() === 1, 'B01 evidence: Week date navigation must remain explicitly named.')
+
   mkdirSync('artifacts', { recursive: true })
   await page.screenshot({ path: 'artifacts/phase1-shell-1280.png', fullPage: true })
 
+  await selectCalendarView(page, 'Month')
   await page.evaluate(() => { document.documentElement.style.zoom = '2' })
   const zoom200 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(zoom200.scroll <= zoom200.width + 1, `200% zoom: document overflowed horizontally (${zoom200.scroll} > ${zoom200.width}).`)
@@ -224,7 +230,7 @@ try {
   await auditTouchAndReflow(browser)
   await auditMinimumWidth(browser)
   await auditReducedMotion(browser)
-  console.log('Arc browser accessibility smoke gate passed: landmarks, title-based calendar view navigation, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
+  console.log('Arc browser accessibility smoke gate passed: landmarks, title-based calendar view navigation, exact B01 Week shell evidence, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
 } finally {
   await browser.close()
 }
