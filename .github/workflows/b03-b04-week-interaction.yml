@@ -1,0 +1,50 @@
+name: B03 B04 Week interaction
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  b03-b04-week-interaction:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Chromium audit runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Build browser target
+        run: npm run build
+      - name: Run B03 B04 Week interaction gate
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/arc-preview-b03-b04.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/b03-b04-week-interaction.smoke.mjs
+      - name: Publish exact B03 B04 renders
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-b03-b04-week-interaction
+          path: artifacts/b03-b04-week-interaction/*.png
+          if-no-files-found: warn
+          retention-days: 7
