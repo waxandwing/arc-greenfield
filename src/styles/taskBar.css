@@ -1,5 +1,5 @@
 .taskbar-panel{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;height:100%;min-height:0;color:var(--ink)}
-.b01-task-surface>.taskbar-panel{padding:0;border:0;font-size:16px;letter-spacing:normal}
+.b01-task-surface>.taskbar-panel{grid-column:1/-1;width:100%;min-width:0;padding:0;border:0;font-size:16px;letter-spacing:normal}
 .taskbar-lane{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;min-width:0;min-height:0;padding:0 16px;border-right:1px solid rgba(74,52,30,.2)}
 .taskbar-lane:last-child{border-right:0}
 .taskbar-lane-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
