@@ -104,7 +104,7 @@ try {
 
   const settings = page.getByRole('button', { name: 'Settings', exact: true })
   const fridge = page.getByRole('button', { name: 'Fridge', exact: true })
-  const tasks = page.getByRole('button', { name: 'Tasks', exact: true })
+  const tasks = page.getByRole('button', { name: 'Task Bar', exact: true })
   const settingsSurface = page.locator('.b01-settings-surface')
   const fridgeSurface = page.locator('.b01-fridge-surface')
   const taskSurface = page.locator('.b01-task-surface')
@@ -130,7 +130,7 @@ try {
   assert(sameRect(baseline, await calendarRect(page)), 'B01: Task Bar opening reflowed the Calendar Shell.')
   assert(await taskSurface.evaluate((node) => getComputedStyle(node).visibility) === 'visible', 'B01: open Task surface is not visible.')
   assertOutside(await calendarRect(page), await documentRect(taskSurface, page), 'bottom', 'Task Bar surface')
-  await capture(page, '04-tasks-open-1440')
+  await capture(page, '04-taskbar-open-1440')
 
   await settings.click()
   await fridge.click()
