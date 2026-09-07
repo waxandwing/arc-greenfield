@@ -9,10 +9,12 @@ import {
   joinInterestList,
   loadAuthSession,
   loadRuntimeConfig,
+  refreshAuthSession,
   startCloudWorkspaceMirror,
   type ArcAuthSession,
   type ArcRuntimeConfig,
   type BetaGateResult,
+  type CloudSaveStatus,
 } from './arcCloud'
 import './deployment.css'
 
@@ -112,10 +114,17 @@ function AuthCallbackPage() {
   useEffect(() => {
     const session = captureOAuthCallback() ?? loadAuthSession()
     if (!session) { setState('error'); return }
-    void checkBetaGate(session).then((gate) => {
-      if (gate.allowed) window.location.replace('/core')
-      else setState('unauthorized')
-    }).catch(() => setState('error'))
+    void (async () => {
+      try {
+        const runtime = await loadRuntimeConfig()
+        const active = await refreshAuthSession(runtime, session)
+        const gate = await checkBetaGate(active)
+        if (gate.allowed) window.location.replace('/core')
+        else setState('unauthorized')
+      } catch {
+        setState('error')
+      }
+    })()
   }, [])
 
   if (state === 'unauthorized') return <Unauthorized />
@@ -128,21 +137,23 @@ function CoreGate() {
   const [config, setConfig] = useState<ArcRuntimeConfig | null>(null)
   const [session, setSession] = useState<ArcAuthSession | null>(null)
   const [gate, setGate] = useState<BetaGateResult | null>(null)
+  const [cloudStatus, setCloudStatus] = useState<CloudSaveStatus>('idle')
 
   useEffect(() => {
     let stopMirror: (() => void) | undefined
     const auth = loadAuthSession()
     if (!auth) { window.location.replace('/beta'); return }
-    setSession(auth)
     void (async () => {
       try {
         const runtime = await loadRuntimeConfig()
-        const result = await checkBetaGate(auth)
+        const active = await refreshAuthSession(runtime, auth)
+        const result = await checkBetaGate(active)
         if (!result.allowed || !result.user) { setGate(result); setState('unauthorized'); return }
-        await hydrateCloudWorkspace(runtime, auth, result.user.id)
+        await hydrateCloudWorkspace(runtime, active, result.user.id)
         setConfig(runtime)
+        setSession(active)
         setGate(result)
-        stopMirror = startCloudWorkspaceMirror(runtime, auth, result.user.id)
+        stopMirror = startCloudWorkspaceMirror(runtime, active, result.user.id, setCloudStatus)
         setState('ready')
       } catch {
         setState('error')
@@ -154,7 +165,13 @@ function CoreGate() {
   if (state === 'unauthorized') return <Unauthorized />
   if (state === 'error') return <ShellCard title="Arc couldn’t open this workspace" intro="Your planner was not mounted because the beta gate or cloud workspace restore failed."><a className="entry-action" href="/beta">Return to beta access</a></ShellCard>
   if (state !== 'ready' || !config || !session || !gate?.user) return <ShellCard title="Opening Arc…" intro="Restoring your workspace." />
-  return <App />
+  return <div className="core-cloud-shell"><CloudSaveIndicator status={cloudStatus} /><App /></div>
+}
+
+function CloudSaveIndicator({ status }: { status: CloudSaveStatus }) {
+  if (status === 'idle') return null
+  const message = status === 'saving' ? 'Saving to Arc…' : status === 'saved' ? 'Saved to Arc' : 'Cloud save failed — keep this tab open and retry before continuing.'
+  return <div className={`cloud-save-status cloud-save-status--${status}`} role={status === 'error' ? 'alert' : 'status'} aria-live="polite">{message}</div>
 }
 
 function Unauthorized() {
