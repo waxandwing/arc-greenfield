@@ -112,12 +112,18 @@ async function guardedUnitRange(page) {
 async function reloadProof(page) {
   await page.reload({ waitUntil:'networkidle' })
   await targetWeek(page)
+
+  const originalStudioA = page.locator('.planning-section-row').filter({ hasText:'Studio A' })
+  const originalStudioB = page.locator('.planning-section-row').filter({ hasText:'Studio B' })
+  check(await originalStudioA.getByRole('button', { name:/Select Critique/ }).count() === 0, 'Independent B07: shifted Studio A Critique must no longer appear on the shared Sep. 17 date.')
+  check(await originalStudioB.getByRole('button', { name:/Select Critique/ }).count() === 1, 'Independent B07: unshifted Studio B Critique must remain on the shared Sep. 17 date after reload.')
+
   await page.getByRole('button', { name:'Next Week', exact:true }).click()
   await page.getByText('Mat board pickup', { exact:true }).waitFor({ state:'visible' })
-  const studioA = page.locator('.planning-section-row').filter({ hasText:'Studio A' })
-  const studioB = page.locator('.planning-section-row').filter({ hasText:'Studio B' })
-  check(await studioA.getByRole('button', { name:/Select Critique.*Section-specific date/ }).count() === 1, 'Independent B07: Section-specific Shift must survive reload for Studio A.')
-  check(await studioB.getByRole('button', { name:/Select Critique/ }).count() === 1, 'Independent B07: shared Critique must remain intact for Studio B.')
+  const shiftedStudioA = page.locator('.planning-section-row').filter({ hasText:'Studio A' })
+  const shiftedStudioB = page.locator('.planning-section-row').filter({ hasText:'Studio B' })
+  check(await shiftedStudioA.getByRole('button', { name:/Select Critique.*Section-specific date/ }).count() === 1, 'Independent B07: Section-specific Shift must survive reload for Studio A on Sep. 21.')
+  check(await shiftedStudioB.getByRole('button', { name:/Select Critique/ }).count() === 0, 'Independent B07: Studio B must not be dragged into Studio A’s shifted week.')
   check(await page.getByText('Blocked studio add', { exact:true }).count() === 0, 'Independent B07: rejected draft must remain absent after reload.')
 }
 
