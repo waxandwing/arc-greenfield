@@ -5,6 +5,10 @@ import { fetchNcesProxy } from '../server/ncesProxy.mjs'
 
 const root = join(process.cwd(), 'dist')
 const port = Number(process.env.PORT || 4173)
+const fixtureMode = process.env.NCES_FIXTURE === '1'
+const fixtureBody = JSON.stringify({
+  features: [{ attributes: { NCESSCH: '120144001406', LEAID: '1201440', NAME: 'Oak Ridge High', STREET: '700 W Oak Ridge Rd', CITY: 'Orlando', STATE: 'FL', ZIP: '32809' } }],
+})
 
 const server = createServer(async (request, response) => {
   try {
@@ -13,6 +17,11 @@ const server = createServer(async (request, response) => {
       if (request.method !== 'GET') {
         response.writeHead(405, { Allow: 'GET', 'Content-Type': 'application/json' })
         response.end(JSON.stringify({ error: 'Method not allowed' }))
+        return
+      }
+      if (fixtureMode) {
+        response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+        response.end(fixtureBody)
         return
       }
       const result = await fetchNcesProxy({
@@ -35,7 +44,7 @@ const server = createServer(async (request, response) => {
   }
 })
 
-server.listen(port, '127.0.0.1', () => console.log(`phase3 NCES live server listening on http://127.0.0.1:${port}`))
+server.listen(port, '127.0.0.1', () => console.log(`phase3 NCES integration server listening on http://127.0.0.1:${port} (${fixtureMode ? 'fixture' : 'live'} mode)`))
 
 function contentType(path) {
   switch (extname(path)) {
