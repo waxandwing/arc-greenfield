@@ -121,7 +121,7 @@ async function audit(page) {
   const importantSlot = importantNote.locator('xpath=..')
   const noteBox = await importantNote.boundingBox()
   const slotBox = await importantSlot.boundingBox()
-  check(noteBox && slotBox && noteBox.x + noteBox.width + 9 <= slotBox.x + slotBox.width, 'Independent B02: Important paper plus its hand-drawn ring must remain fully inside an edge day column.')
+  check(noteBox && slotBox && noteBox.x + noteBox.width + 12 <= slotBox.x + slotBox.width, 'Independent B02: Important paper plus its hand-drawn ring must remain fully inside an edge day column.')
 
   const ordered = await page.locator('.planning-grid > *').evaluateAll((nodes) => nodes.map((node) => ({ cls:node.className, label:node.getAttribute('aria-label') })))
   const noteIndex = ordered.findIndex((item) => String(item.cls).includes('planning-note-lane') && item.label === 'Notes')
@@ -129,6 +129,8 @@ async function audit(page) {
   const afterIndex = ordered.findIndex((item) => String(item.cls).includes('planning-note-lane') && item.label === 'After School')
   check(noteIndex >= 0 && courseIndex > noteIndex && afterIndex > courseIndex, 'Independent B02: DOM/read order must remain Notes → instructional plan → After School.')
 
+  const internalOverflow = await page.locator('.planning-scroll-frame').evaluate((element) => element.scrollWidth - element.clientWidth)
+  check(internalOverflow <= 1, `Independent B02: Week must not hide edge columns behind internal horizontal scrolling at the governed viewport; got ${internalOverflow}px.`)
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
   check(overflow <= 1, `Independent B02: page-level overflow must remain zero; got ${overflow}px.`)
 }
