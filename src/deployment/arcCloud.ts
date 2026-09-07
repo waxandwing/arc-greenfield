@@ -55,9 +55,7 @@ export function loadAuthSession(): ArcAuthSession | null {
     const raw = window.localStorage.getItem(AUTH_KEY)
     if (!raw) return null
     const session = JSON.parse(raw) as ArcAuthSession
-    if (!session.accessToken) return null
-    if (session.expiresAt && session.expiresAt <= Date.now()) return null
-    return session
+    return session.accessToken ? session : null
   } catch {
     return null
   }
@@ -65,6 +63,25 @@ export function loadAuthSession(): ArcAuthSession | null {
 
 export function clearAuthSession() {
   window.localStorage.removeItem(AUTH_KEY)
+}
+
+export async function refreshAuthSession(config: ArcRuntimeConfig, session: ArcAuthSession): Promise<ArcAuthSession> {
+  if (!session.expiresAt || session.expiresAt > Date.now()) return session
+  if (!session.refreshToken) throw new Error('Arc beta session expired.')
+  const response = await fetch(`${config.supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
+    method: 'POST',
+    headers: { apikey: config.publishableKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: session.refreshToken }),
+  })
+  if (!response.ok) throw new Error('Arc beta session expired.')
+  const next = await response.json() as { access_token: string; refresh_token?: string; expires_in?: number }
+  const refreshed: ArcAuthSession = {
+    accessToken: next.access_token,
+    refreshToken: next.refresh_token ?? session.refreshToken,
+    expiresAt: Date.now() + Math.max(0, (next.expires_in ?? 3600) - 30) * 1000,
+  }
+  window.localStorage.setItem(AUTH_KEY, JSON.stringify(refreshed))
+  return refreshed
 }
 
 export async function checkBetaGate(session: ArcAuthSession): Promise<BetaGateResult> {
@@ -81,7 +98,6 @@ export async function joinInterestList(config: ArcRuntimeConfig, input: { email:
     method: 'POST',
     headers: {
       apikey: config.publishableKey,
-      Authorization: `Bearer ${config.publishableKey}`,
       'Content-Type': 'application/json',
       Prefer: 'return=minimal',
     },
@@ -180,5 +196,6 @@ function snapshotPlannerStorage() {
 }
 
 function serializePlannerStorage() {
-  return JSON.stringify(snapshotPlannerStorage(), Object.keys(snapshotPlannerStorage()).sort())
+  const snapshot = snapshotPlannerStorage()
+  return JSON.stringify(Object.fromEntries(Object.entries(snapshot).sort(([a], [b]) => a.localeCompare(b))))
 }
