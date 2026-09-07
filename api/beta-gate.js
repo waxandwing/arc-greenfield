@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   const headers = {
     apikey: publishableKey,
     Authorization: authorization,
-    'Content-Type': 'application/json',
+    Accept: 'application/json',
   }
 
   const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, { headers })
@@ -30,16 +30,14 @@ export default async function handler(req, res) {
   }
   const user = await userResponse.json()
 
-  const gateResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/is_arc_beta_allowed`, {
-    method: 'POST',
-    headers,
-    body: '{}',
-  })
+  const gateResponse = await fetch(`${supabaseUrl}/rest/v1/beta_allowlist?select=email&limit=1`, { headers })
   if (!gateResponse.ok) {
     res.status(502).json({ allowed: false, reason: 'gate' })
     return
   }
-  const allowed = Boolean(await gateResponse.json())
+  const rows = await gateResponse.json()
+  const allowed = Array.isArray(rows) && rows.length === 1
+
   res.setHeader('Cache-Control', 'no-store')
   res.status(200).json({
     allowed,
