@@ -1,48 +1,56 @@
-import { useCallback, useState } from 'react'
 import {
   addTask,
   createTaskBarItem,
+  deleteTask,
   moveTaskPriority,
-  removeTask,
   renameTask,
   setTaskCompleted,
   setTaskImportant,
+  type PlanningWorkspace,
+  type PlanningWorkspaceInput,
   type TaskPriority,
-} from '../planning/taskBar'
-import { loadTaskBar, saveTaskBar } from '../planning/taskBarPersistence'
+} from '../planning'
+import type { SchoolCalendar } from '../calendar'
 
-export function useTaskBar() {
-  const [workspace, setWorkspace] = useState(() => loadTaskBar().workspace)
-  const [storageNotice, setStorageNotice] = useState<string | null>(null)
+type TaskBarWorkspaceOwner = {
+  calendar: SchoolCalendar | null
+  planningWorkspace: PlanningWorkspace | null
+  useClasses: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
+}
 
-  const commit = useCallback((update: Parameters<typeof setWorkspace>[0]) => {
-    setWorkspace((current) => {
-      const next = typeof update === 'function' ? update(current) : update
-      setStorageNotice(saveTaskBar(next) ? null : 'Task Bar changes are available for this session, but browser storage is unavailable.')
-      return next
-    })
-  }, [])
+export function useTaskBar(owner: TaskBarWorkspaceOwner) {
+  const workspace = owner.planningWorkspace ?? (owner.calendar ? emptyPlanningWorkspace(owner.calendar.id) : null)
+
+  function commit(update: (current: PlanningWorkspace) => PlanningWorkspace) {
+    if (!workspace) return
+    const next = update(workspace)
+    owner.useClasses(next, next)
+  }
 
   return {
     workspace,
-    storageNotice,
     add(priority: TaskPriority, text: string) {
-      commit((current) => addTask(current, createTaskBarItem(text, priority)))
+      if (!workspace) return
+      commit((current) => addTask(current, createTaskBarItem(current.calendarId, text, priority)))
     },
-    rename(taskId: string, text: string) {
-      commit((current) => renameTask(current, taskId, text))
+    rename(noteId: string, text: string) {
+      commit((current) => renameTask(current, noteId, text))
     },
-    move(taskId: string, priority: TaskPriority) {
-      commit((current) => moveTaskPriority(current, taskId, priority))
+    move(noteId: string, priority: TaskPriority) {
+      commit((current) => moveTaskPriority(current, noteId, priority))
     },
-    setImportant(taskId: string, important: boolean) {
-      commit((current) => setTaskImportant(current, taskId, important))
+    setImportant(noteId: string, important: boolean) {
+      commit((current) => setTaskImportant(current, noteId, important))
     },
-    setCompleted(taskId: string, completed: boolean) {
-      commit((current) => setTaskCompleted(current, taskId, completed))
+    setCompleted(noteId: string, completed: boolean) {
+      commit((current) => setTaskCompleted(current, noteId, completed))
     },
-    remove(taskId: string) {
-      commit((current) => removeTask(current, taskId))
+    delete(noteId: string) {
+      commit((current) => deleteTask(current, noteId))
     },
   }
+}
+
+function emptyPlanningWorkspace(calendarId: string): PlanningWorkspace {
+  return { calendarId, courses: [], sections: [], notes: [] }
 }
