@@ -19,6 +19,15 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function selectView(page, view) {
+  const settings = page.getByRole('button', { name: 'Settings' })
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  const nav = page.getByRole('navigation', { name: 'Calendar views' })
+  assert(await nav.isVisible(), `Recovery: Settings did not expose Calendar views before selecting ${view}.`)
+  await nav.getByRole('button', { name: view, exact: true }).click()
+  await page.getByRole('button', { name: 'Close Settings' }).click()
+}
+
 async function configureCalendar(page) {
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-02')
@@ -72,7 +81,7 @@ async function createRecoveryLessons(page) {
 }
 
 async function moveToWeekOfSeptember14(page) {
-  await page.getByRole('button', { name: 'Week', exact: true }).click()
+  await selectView(page, 'Week')
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
 }
@@ -188,7 +197,7 @@ try {
 
   assert(runtimeErrors.length === 0, `Phase 2 recovery/Undo runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
-  console.log('Phase 2 recovery/Undo continuity gate passed: in-progress Section → preview with fixed anchor → explicit Shift → Section-isolated Week truth → reload → Undo → restored Week truth → reload.')
+  console.log('Phase 2 recovery/Undo continuity gate passed: Settings-owned Week selection → in-progress Section → preview with fixed anchor → explicit Shift → Section-isolated Week truth → reload → Undo → restored Week truth → reload.')
 } finally {
   await browser.close()
 }
