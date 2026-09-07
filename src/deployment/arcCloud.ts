@@ -9,10 +9,9 @@ export type ArcRuntimeConfig = {
   publishableKey: string
 }
 
-export type BetaGateResult = {
-  allowed: boolean
-  user?: { id: string; email: string | null }
-  reason?: string
+export type BetaAccessResult = {
+  unlocked: boolean
+  error?: string
 }
 
 export type CloudSaveStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -25,6 +24,33 @@ export async function loadRuntimeConfig(): Promise<ArcRuntimeConfig> {
   const response = await fetch('/api/runtime-config', { headers: { Accept: 'application/json' } })
   if (!response.ok) throw new Error('Arc could not load its beta configuration.')
   return response.json() as Promise<ArcRuntimeConfig>
+}
+
+export async function checkBetaAccess(): Promise<BetaAccessResult> {
+  const response = await fetch('/api/beta-access', {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'same-origin',
+    cache: 'no-store',
+  })
+  if (!response.ok) throw new Error('Arc could not verify beta access.')
+  return response.json() as Promise<BetaAccessResult>
+}
+
+export async function unlockBeta(password: string): Promise<BetaAccessResult> {
+  const response = await fetch('/api/beta-access', {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ password }),
+  })
+  const result = await response.json().catch(() => ({ unlocked: false })) as BetaAccessResult
+  if (!response.ok) return { unlocked: false, error: result.error ?? 'That beta password is not correct.' }
+  return result
+}
+
+export async function lockBeta() {
+  await fetch('/api/beta-access', { method: 'DELETE', credentials: 'same-origin' })
 }
 
 export function beginGoogleSignIn(config: ArcRuntimeConfig) {
@@ -69,13 +95,13 @@ export function clearAuthSession() {
 
 export async function refreshAuthSession(config: ArcRuntimeConfig, session: ArcAuthSession): Promise<ArcAuthSession> {
   if (!session.expiresAt || session.expiresAt > Date.now()) return session
-  if (!session.refreshToken) throw new Error('Arc beta session expired.')
+  if (!session.refreshToken) throw new Error('Arc cloud session expired.')
   const response = await fetch(`${config.supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
     method: 'POST',
     headers: { apikey: config.publishableKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({ refresh_token: session.refreshToken }),
   })
-  if (!response.ok) throw new Error('Arc beta session expired.')
+  if (!response.ok) throw new Error('Arc cloud session expired.')
   const next = await response.json() as { access_token: string; refresh_token?: string; expires_in?: number }
   const refreshed: ArcAuthSession = {
     accessToken: next.access_token,
@@ -86,13 +112,12 @@ export async function refreshAuthSession(config: ArcRuntimeConfig, session: ArcA
   return refreshed
 }
 
-export async function checkBetaGate(session: ArcAuthSession): Promise<BetaGateResult> {
-  const response = await fetch('/api/beta-gate', {
-    headers: { Accept: 'application/json', Authorization: `Bearer ${session.accessToken}` },
-  })
-  if (response.status === 401) return { allowed: false, reason: 'session' }
-  if (!response.ok) throw new Error('Arc could not verify beta access.')
-  return response.json() as Promise<BetaGateResult>
+export async function getCloudUser(config: ArcRuntimeConfig, session: ArcAuthSession): Promise<{ id: string; email: string | null }> {
+  const response = await fetch(`${config.supabaseUrl}/auth/v1/user`, { headers: authHeaders(config, session) })
+  if (!response.ok) throw new Error('Arc could not verify this cloud account.')
+  const user = await response.json() as { id?: string; email?: string | null }
+  if (!user.id) throw new Error('Arc cloud account is unavailable.')
+  return { id: user.id, email: user.email ?? null }
 }
 
 export async function joinInterestList(config: ArcRuntimeConfig, input: { email: string; name?: string; role?: string }) {
@@ -109,7 +134,6 @@ export async function joinInterestList(config: ArcRuntimeConfig, input: { email:
 }
 
 export async function hydrateCloudWorkspace(config: ArcRuntimeConfig, session: ArcAuthSession, userId: string) {
-  clearPlannerStorage()
   const endpoint = new URL('/rest/v1/arc_workspaces', config.supabaseUrl)
   endpoint.searchParams.set('select', 'payload')
   endpoint.searchParams.set('user_id', `eq.${userId}`)
@@ -121,6 +145,7 @@ export async function hydrateCloudWorkspace(config: ArcRuntimeConfig, session: A
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return
   const storage = (payload as { browserStorage?: unknown }).browserStorage
   if (!storage || typeof storage !== 'object' || Array.isArray(storage)) return
+  clearPlannerStorage()
   for (const [key, value] of Object.entries(storage as Record<string, unknown>)) {
     if (!isPlannerStorageKey(key) || typeof value !== 'string') continue
     window.localStorage.setItem(key, value)
