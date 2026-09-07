@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
+import { B01Furniture } from './B01Furniture'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { CalendarViewPreferences } from './CalendarViewPreferences'
-import { CalendarViewRail } from './CalendarViewRail'
 import { WorkspaceStage } from './WorkspaceStage'
 import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
@@ -66,13 +66,6 @@ export function AppFrame() {
       </header>
 
       <div className="arc-layout">
-        <CalendarViewRail
-          activeView={workspace.activeView}
-          disabled={workspaceBusy}
-          availabilityFor={workspace.viewAvailability}
-          onSelect={selectView}
-        />
-
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
           <CalendarStageHeader
             activeView={workspace.activeView}
@@ -89,6 +82,9 @@ export function AppFrame() {
             recoveryCount={workspace.recoveryCount}
             undoAvailable={Boolean(workspace.shiftState?.undo)}
             stageTitle={stageTitle}
+            viewSelectionDisabled={workspaceBusy}
+            availabilityFor={workspace.viewAvailability}
+            onSelectView={selectView}
             onMovePrevious={() => workspace.movePeriod('previous')}
             onMoveNext={() => workspace.movePeriod('next')}
             onToday={workspace.goToday}
@@ -101,39 +97,41 @@ export function AppFrame() {
             onUndoShift={workspace.undoLastShift}
           />
 
-          {workspace.calendar && workspaceMode.mode === 'calendar' && (
-            <CalendarViewPreferences preferences={viewPreferences} onChange={updateViewPreferences} />
-          )}
-
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
-          <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
-            <WorkspaceStage
-              mode={workspaceMode.mode}
-              activeView={workspace.activeView}
-              showWeekends={viewPreferences.showWeekends}
-              calendar={workspace.calendar}
-              calendarInput={workspace.calendarInput}
-              anchorDate={workspace.anchorDate}
-              planningWorkspace={workspace.planningWorkspace}
-              planningInput={workspace.planningInput}
-              unitWorkspace={workspace.unitWorkspace}
-              unitInput={workspace.unitInput}
-              lessonWorkspace={workspace.lessonWorkspace}
-              lessonInput={workspace.lessonInput}
-              shiftState={workspace.shiftState}
-              protectedCourseIds={workspace.protectedCourseIds}
-              protectedUnitIds={workspace.protectedUnitIds}
-              protectedSectionIds={workspace.protectedSectionIds}
-              onUseCalendar={workspace.useCalendar}
-              onUseTerms={workspace.useTerms}
-              onUseClasses={workspace.useClasses}
-              onUseUnits={workspace.useUnits}
-              onUseLessons={workspace.useLessons}
-              onApplyRecoveryShift={workspace.applyRecoveryShift}
-              onCloseMode={workspaceMode.close}
-            />
-          </section>
+          <B01Furniture
+            settings={workspace.calendar && workspaceMode.mode === 'calendar'
+              ? <CalendarViewPreferences preferences={viewPreferences} onChange={updateViewPreferences} />
+              : <p className="b01-furniture-empty">Calendar settings are available in calendar mode.</p>}
+          >
+            <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
+              <WorkspaceStage
+                mode={workspaceMode.mode}
+                activeView={workspace.activeView}
+                showWeekends={viewPreferences.showWeekends}
+                calendar={workspace.calendar}
+                calendarInput={workspace.calendarInput}
+                anchorDate={workspace.anchorDate}
+                planningWorkspace={workspace.planningWorkspace}
+                planningInput={workspace.planningInput}
+                unitWorkspace={workspace.unitWorkspace}
+                unitInput={workspace.unitInput}
+                lessonWorkspace={workspace.lessonWorkspace}
+                lessonInput={workspace.lessonInput}
+                shiftState={workspace.shiftState}
+                protectedCourseIds={workspace.protectedCourseIds}
+                protectedUnitIds={workspace.protectedUnitIds}
+                protectedSectionIds={workspace.protectedSectionIds}
+                onUseCalendar={workspace.useCalendar}
+                onUseTerms={workspace.useTerms}
+                onUseClasses={workspace.useClasses}
+                onUseUnits={workspace.useUnits}
+                onUseLessons={workspace.useLessons}
+                onApplyRecoveryShift={workspace.applyRecoveryShift}
+                onCloseMode={workspaceMode.close}
+              />
+            </section>
+          </B01Furniture>
         </main>
       </div>
     </div>

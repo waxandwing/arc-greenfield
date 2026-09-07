@@ -71,8 +71,15 @@ async function createRecoveryLessons(page) {
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
 }
 
+async function selectCalendarView(page, view) {
+  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
+  const navigation = page.getByRole('navigation', { name: 'Calendar views' })
+  assert(await navigation.isVisible(), 'Recovery gate: current-view control did not reveal the view choices.')
+  await navigation.getByRole('button', { name: view, exact: true }).click()
+}
+
 async function moveToWeekOfSeptember14(page) {
-  await page.getByRole('button', { name: 'Week', exact: true }).click()
+  await selectCalendarView(page, 'Week')
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
 }
