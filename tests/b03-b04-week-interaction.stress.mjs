@@ -61,6 +61,7 @@ async function stressUnitRanges(page) {
     await page.getByRole('textbox', { name:'Unit end date' }).fill(index % 2 ? '2026-09-30' : '2026-09-25')
     await page.getByRole('button', { name:'Apply range', exact:true }).click()
     await page.getByText(/Unit range updated/).waitFor({ state:'visible' })
+    await page.keyboard.press('Escape')
   }
 }
 
@@ -76,6 +77,7 @@ async function stressShiftUndo(page) {
     await page.getByText(/Section Shift applied/).waitFor({ state:'visible' })
     await action(page, 'Undo last Shift').click()
     await page.getByText(/Undid the last Shift/).waitFor({ state:'visible' })
+    await page.keyboard.press('Escape')
   }
 }
 
