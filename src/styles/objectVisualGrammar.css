@@ -116,22 +116,28 @@
   margin: 6px 7px 6px 5px;
 }
 
+.planning-note--important .planning-note-select {
+  position: relative;
+  z-index: 1;
+}
+
 .planning-note--important::after {
-  inset: -7px -8px -7px -8px;
+  inset: -10px -11px -10px -11px;
+  z-index: 0;
   border: 2px solid transparent;
   border-radius: 0;
   background: url('../assets/important-circle-round.svg') center / 100% 100% no-repeat;
   transform: none;
-  opacity: .96;
+  opacity: .94;
 }
 
 .planning-note--important:nth-child(3n + 2)::after {
-  inset: -7px -9px -7px -9px;
+  inset: -10px -12px -10px -12px;
   background-image: url('../assets/important-circle-wide-a.svg');
 }
 
 .planning-note--important:nth-child(3n)::after {
-  inset: -6px -9px -7px -9px;
+  inset: -9px -12px -10px -12px;
   background-image: url('../assets/important-circle-wide-b.svg');
 }
 
