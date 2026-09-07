@@ -13,9 +13,9 @@ export type PlanningNote = {
   important: boolean
   sourceLabel: string | null
   sourceLocator: string | null
-  priority: PlanningNotePriority | null
-  completed: boolean
-  completedAt: string | null
+  priority?: PlanningNotePriority | null
+  completed?: boolean
+  completedAt?: string | null
 }
 
 export type PlanningNoteInput = {
@@ -55,6 +55,9 @@ export function createPlanningNote(input: PlanningNoteInput): PlanningNote {
 
 export function validatePlanningNote(note: PlanningNote): string[] {
   const errors: string[] = []
+  const priority = note.priority ?? null
+  const completed = note.completed ?? false
+  const completedAt = note.completedAt ?? null
   if (!note.id.trim()) errors.push('Note ID is required.')
   if (!note.calendarId.trim()) errors.push('Note school calendar ID is required.')
   if (!note.text.trim()) errors.push('Note text is required.')
@@ -64,17 +67,17 @@ export function validatePlanningNote(note: PlanningNote): string[] {
 
   if (note.placement === 'task-bar') {
     if (note.date !== null) errors.push('Task Bar Notes must remain unscheduled.')
-    if (!isPlanningNotePriority(note.priority)) errors.push('Task Bar Notes require Must, Should, or Could priority.')
+    if (!isPlanningNotePriority(priority)) errors.push('Task Bar Notes require Must, Should, or Could priority.')
   } else {
     if (note.date === null) errors.push('Calendar and After School Notes require a date.')
     else {
       try { assertISODate(note.date) } catch { errors.push('Note date must be a valid ISO date.') }
     }
-    if (note.priority !== null) errors.push('Only Task Bar Notes carry task priority.')
+    if (priority !== null) errors.push('Only Task Bar Notes carry task priority.')
   }
 
-  if (note.completedAt !== null && Number.isNaN(Date.parse(note.completedAt))) errors.push('Note completion time must be a valid timestamp.')
-  if (!note.completed && note.completedAt !== null) errors.push('Incomplete Notes cannot retain a completion timestamp.')
+  if (completedAt !== null && Number.isNaN(Date.parse(completedAt))) errors.push('Note completion time must be a valid timestamp.')
+  if (!completed && completedAt !== null) errors.push('Incomplete Notes cannot retain a completion timestamp.')
   return errors
 }
 
