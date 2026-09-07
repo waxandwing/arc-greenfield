@@ -16,19 +16,21 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .arc-wordmark::after{content:'';display:block;width:22px;height:2px;margin-top:5px;background:var(--terracotta);transform:rotate(-2deg);transform-origin:left center}
 .arc-header-space{min-width:0}
 
-.arc-layout{position:relative;display:grid;grid-template-columns:116px minmax(0,1fr);min-height:calc(100dvh - 68px);overflow:hidden}
-.arc-view-rail{position:relative;z-index:2;display:flex;flex-direction:column;align-items:stretch;gap:3px;padding:84px 0 var(--space-6) var(--space-4);background:transparent}
-.view-nav-item{position:relative;min-height:44px;border:0;border-left:2px solid transparent;border-radius:0;background:transparent;padding:8px 14px 8px 12px;text-align:left;cursor:pointer;font-size:14px;font-weight:650;color:var(--soft-charcoal);transition:transform .14s ease,background .14s ease,color .14s ease}
-.view-nav-item:hover{background:rgba(243,235,221,.55);color:var(--ink)}
-.view-nav-item[aria-current='page']{z-index:1;background:var(--mustard);border-left-color:rgba(44,46,46,.34);color:var(--ink);font-weight:800;box-shadow:2px 2px 0 rgba(44,46,46,.08);transform:translateX(4px)}
-.view-nav-item[aria-current='page']::after{content:'';position:absolute;top:0;right:-8px;width:8px;height:100%;background:var(--mustard);clip-path:polygon(0 0,100% 8px,100% calc(100% - 8px),0 100%)}
-.view-nav-item[aria-disabled='true']{text-decoration:none;color:rgba(74,73,69,.46)}
-
-.arc-calendar-stage{min-width:0;padding:0 var(--page-gutter) var(--page-gutter) var(--space-3);outline:none}
+.arc-layout{position:relative;min-height:calc(100dvh - 68px);overflow:hidden}
+.arc-calendar-stage{min-width:0;padding:0 var(--page-gutter) var(--page-gutter);outline:none}
 .calendar-stage-header{display:grid;grid-template-columns:minmax(180px,1fr) auto;align-items:end;gap:var(--space-6);min-height:84px;margin-bottom:var(--space-2);padding:0 2px}
-.calendar-stage-header>div:first-child{display:flex;flex-direction:column;gap:2px}
+.calendar-stage-header>div:first-child{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
 .section-label{margin:0;font-size:12px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--soft-charcoal)}
 .view-title{margin:0;font:400 40px/1.06 var(--font-editorial);letter-spacing:-.035em}
+.calendar-view-switcher{position:relative;display:inline-block;max-width:100%}
+.view-title-trigger{display:inline-flex;align-items:center;gap:8px;max-width:100%;min-height:44px;margin:-4px 0 -4px -4px;padding:4px;border:0;border-radius:var(--radius-sm);background:transparent;color:inherit;font:inherit;letter-spacing:inherit;text-align:left;cursor:pointer}
+.view-title-trigger:disabled{cursor:default}
+.view-title-chevron{flex:0 0 auto;font:700 16px/1 var(--font-ui);letter-spacing:0;color:var(--soft-charcoal);transform:translateY(1px)}
+.calendar-view-choices{position:absolute;z-index:30;top:calc(100% + 8px);left:0;display:grid;min-width:190px;padding:6px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--paper-raised);box-shadow:0 14px 30px -22px rgba(44,46,46,.65)}
+.view-choice{min-height:44px;border:0;border-radius:2px;background:transparent;padding:8px 10px;text-align:left;cursor:pointer;font-size:14px;font-weight:650;color:var(--soft-charcoal)}
+.view-choice:hover{background:rgba(243,235,221,.55);color:var(--ink)}
+.view-choice[aria-current='page']{background:rgba(228,179,61,.22);color:var(--ink);font-weight:800}
+.view-choice[aria-disabled='true']{cursor:not-allowed;color:rgba(74,73,69,.46)}
 .calendar-context{margin:0;font-size:12px;font-weight:800;letter-spacing:.05em;color:var(--soft-charcoal)}
 .calendar-canvas{position:relative;isolation:isolate;min-height:calc(100dvh - 168px);overflow:auto;border:1px solid rgba(44,46,46,.18);border-radius:var(--radius-sm);background:var(--paper-raised);box-shadow:3px 3px 0 rgba(198,167,125,.22),7px 8px 0 rgba(44,46,46,.035),0 18px 36px -30px rgba(44,46,46,.45)}
 .calendar-canvas::before{content:'';position:absolute;z-index:-1;inset:auto 10px -5px 10px;height:5px;border-radius:0 0 3px 3px;background:rgba(198,167,125,.18)}
@@ -88,9 +90,8 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 
 @media (max-width:800px){
   .arc-header{height:64px;padding-inline:var(--mobile-gutter)}
-  .arc-layout{grid-template-columns:100px minmax(0,1fr);min-height:calc(100dvh - 64px)}
-  .arc-view-rail{padding:72px 0 var(--space-4) var(--space-2)}
-  .arc-calendar-stage{padding:0 var(--mobile-gutter) var(--mobile-gutter) var(--space-2)}
+  .arc-layout{min-height:calc(100dvh - 64px)}
+  .arc-calendar-stage{padding:0 var(--mobile-gutter) var(--mobile-gutter)}
   .calendar-stage-header{align-items:end;grid-template-columns:1fr;gap:var(--space-2);min-height:88px}
   .calendar-canvas{min-height:calc(100dvh - 164px)}
   .projection-section{padding:var(--space-3)}
@@ -106,14 +107,10 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
   html,body,.arc-shell{background:var(--paper)}
   .arc-header{grid-template-columns:1fr;background:var(--paper)}
   .arc-wordmark::after{display:none}
-  .arc-layout{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;overflow:visible;background:var(--paper)}
-  .arc-calendar-stage{padding:0 var(--space-3) calc(76px + var(--space-3))}
-  .arc-view-rail{position:fixed;z-index:20;left:0;right:0;bottom:0;display:flex;flex-direction:row;gap:2px;overflow-x:auto;overscroll-behavior-x:contain;padding:8px;border-top:1px solid var(--line-subtle);border-right:0;background:var(--paper);scrollbar-width:none}
-  .arc-view-rail::-webkit-scrollbar{display:none}
-  .view-nav-item{flex:0 0 auto;min-width:72px;min-height:48px;padding:6px 8px;border-left:0;text-align:center;font-size:13px;white-space:nowrap;transform:none}
-  .view-nav-item[aria-current='page']{transform:none;box-shadow:none}
-  .view-nav-item[aria-current='page']::after{display:none}
+  .arc-layout{overflow:visible;background:var(--paper)}
+  .arc-calendar-stage{padding:0 var(--space-3) var(--space-3)}
   .view-title{font-size:34px}
+  .calendar-view-choices{max-width:calc(100vw - (2 * var(--space-3)))}
   .calendar-canvas{border-radius:var(--radius-sm);box-shadow:0 1px 0 rgba(44,46,46,.04)}
   .calendar-canvas::before{display:none}
   .month-week,.projection-range{min-width:644px}

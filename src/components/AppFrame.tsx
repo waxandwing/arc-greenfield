@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { CalendarViewPreferences } from './CalendarViewPreferences'
-import { CalendarViewRail } from './CalendarViewRail'
 import { WorkspaceStage } from './WorkspaceStage'
 import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
@@ -66,13 +65,6 @@ export function AppFrame() {
       </header>
 
       <div className="arc-layout">
-        <CalendarViewRail
-          activeView={workspace.activeView}
-          disabled={workspaceBusy}
-          availabilityFor={workspace.viewAvailability}
-          onSelect={selectView}
-        />
-
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
           <CalendarStageHeader
             activeView={workspace.activeView}
@@ -89,6 +81,9 @@ export function AppFrame() {
             recoveryCount={workspace.recoveryCount}
             undoAvailable={Boolean(workspace.shiftState?.undo)}
             stageTitle={stageTitle}
+            viewSelectionDisabled={workspaceBusy}
+            availabilityFor={workspace.viewAvailability}
+            onSelectView={selectView}
             onMovePrevious={() => workspace.movePeriod('previous')}
             onMoveNext={() => workspace.movePeriod('next')}
             onToday={workspace.goToday}

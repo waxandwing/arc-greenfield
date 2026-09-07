@@ -19,6 +19,11 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function selectCalendarView(page, view) {
+  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
+  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
+}
+
 async function configureCalendarWithEdges(page) {
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-02')
@@ -94,7 +99,7 @@ async function createAndProbeLessons(page) {
 }
 
 async function moveToWeekOfSeptember14(page) {
-  await page.getByRole('button', { name: 'Week', exact: true }).click()
+  await selectCalendarView(page, 'Week')
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
 }
@@ -140,7 +145,7 @@ try {
 
   assert(runtimeErrors.length === 0, `Phase 2 calendar-edge runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
-  console.log('Phase 2 calendar-edge planning truth gate passed: multi-day Unit across no-school/weekend → invalid non-instructional-only placement fails closed → no-school Lesson rejected → instructional Saturday accepted → Week hide/show preserves data → reload preserves truth.')
+  console.log('Phase 2 calendar-edge planning truth gate passed: multi-day Unit across no-school/weekend → invalid non-instructional-only placement fails closed → no-school Lesson rejected → instructional Saturday accepted → title-based Week hide/show preserves data → reload preserves truth.')
 } finally {
   await browser.close()
 }

@@ -19,6 +19,11 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function selectCalendarView(page, view) {
+  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
+  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
+}
+
 async function waitForCalendarAfterLessonSave(page, context) {
   try {
     await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible', timeout: 5000 })
@@ -72,7 +77,7 @@ async function addLesson(page, title, date) {
 }
 
 async function goToWeekContainingLessons(page) {
-  await page.getByRole('button', { name: 'Week', exact: true }).click()
+  await selectCalendarView(page, 'Week')
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
 }
@@ -100,7 +105,7 @@ try {
   assert(await page.getByText('Temple lesson', { exact: true }).count() > 0, 'Phase 2: Week projection disagrees with Month for Temple lesson.')
   assert(await page.getByText('Image comparison', { exact: true }).count() > 0, 'Phase 2: Week projection lost a same-day Lesson.')
 
-  await page.getByRole('button', { name: 'Day', exact: true }).click()
+  await selectCalendarView(page, 'Day')
   assert(await page.getByText('Temple lesson', { exact: true }).count() > 0, 'Phase 2: Day projection disagrees with Week for Temple lesson.')
   assert(await page.getByText('Image comparison', { exact: true }).count() > 0, 'Phase 2: Day projection lost a same-day Lesson.')
 
@@ -130,7 +135,7 @@ try {
 
   assert(runtimeErrors.length === 0, `Phase 2 runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
-  console.log('Phase 2 rendered planning truth gate passed: create → same-day placement → Month/Week/Day continuity → reload → move → reload.')
+  console.log('Phase 2 rendered planning truth gate passed: create → same-day placement → title-based Month/Week/Day continuity → reload → move → reload.')
 } finally {
   await browser.close()
 }
