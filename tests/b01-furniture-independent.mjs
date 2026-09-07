@@ -145,7 +145,13 @@ try {
     assert(afterCount === beforeCount - 1, `B01-B: Escape did not close exactly one open furniture owner (${beforeCount} → ${afterCount}).`)
     const closedIndex = before.findIndex((wasOpen, index) => wasOpen && !after[index])
     assert(closedIndex >= 0, 'B01-B: Escape did not identify a newly closed furniture owner.')
-    assert(await controls[closedIndex].evaluate((node) => document.activeElement === node), 'B01-B: Escape did not return focus to the furniture trigger it closed.')
+    const expectedControls = await controls[closedIndex].getAttribute('aria-controls')
+    await page.waitForFunction(
+      (controlsId) => document.activeElement?.getAttribute('aria-controls') === controlsId,
+      expectedControls,
+      { timeout: 1000 },
+    )
+    assert(await controls[closedIndex].evaluate((node) => document.activeElement === node), 'B01-B: focus restored to a different element than the furniture trigger it closed.')
   }
   assert(runtimeErrors.length === 0, `B01-B runtime errors: ${runtimeErrors.join(' | ')}`)
 
