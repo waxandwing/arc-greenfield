@@ -116,7 +116,7 @@ async function reloadProof(page) {
   await page.getByText('Mat board pickup', { exact:true }).waitFor({ state:'visible' })
   const studioA = page.locator('.planning-section-row').filter({ hasText:'Studio A' })
   const studioB = page.locator('.planning-section-row').filter({ hasText:'Studio B' })
-  check(await studioA.getByRole('button', { name:/Select Critique.*Shifted for this class/ }).count() === 1, 'Independent B07: Section-specific Shift must survive reload for Studio A.')
+  check(await studioA.getByRole('button', { name:/Select Critique.*Section-specific date/ }).count() === 1, 'Independent B07: Section-specific Shift must survive reload for Studio A.')
   check(await studioB.getByRole('button', { name:/Select Critique/ }).count() === 1, 'Independent B07: shared Critique must remain intact for Studio B.')
   check(await page.getByText('Blocked studio add', { exact:true }).count() === 0, 'Independent B07: rejected draft must remain absent after reload.')
 }
