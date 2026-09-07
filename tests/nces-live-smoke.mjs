@@ -1,8 +1,8 @@
-const layer = 'https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_ADMINDATA_PUBLICSCH_2425/MapServer/1'
+const layer = 'https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_GEOCODE_PUBLICSCH_2425/MapServer/0'
 const params = new URLSearchParams({
   f: 'json',
-  where: "SCH_NAME LIKE '%Oak Ridge%' AND LCITY LIKE 'Orlando' AND LSTATE = 'FL'",
-  outFields: 'NCESSCH,LEAID,LEA_NAME,SCH_NAME,LCITY,LSTATE,SY_STATUS_TEXT',
+  where: "NAME LIKE '%Oak Ridge%' AND CITY LIKE 'Orlando' AND STATE = 'FL'",
+  outFields: 'NCESSCH,LEAID,NAME,CITY,STATE,ZIP',
   returnGeometry: 'false',
   resultRecordCount: '10',
 })
@@ -15,14 +15,10 @@ if (!Array.isArray(payload?.features)) throw new Error('NCES live smoke response
 
 const candidates = payload.features.map((feature) => feature?.attributes)
 const match = candidates.find((attributes) => {
-  const school = String(attributes?.SCH_NAME ?? '').trim().toUpperCase()
-  const city = String(attributes?.LCITY ?? '').trim().toUpperCase()
-  const state = String(attributes?.LSTATE ?? '').trim().toUpperCase()
-  const district = String(attributes?.LEA_NAME ?? '').trim().toUpperCase()
-  return school === 'OAK RIDGE HIGH'
-    && city === 'ORLANDO'
-    && state === 'FL'
-    && district === 'ORANGE'
+  const school = String(attributes?.NAME ?? '').trim().toUpperCase()
+  const city = String(attributes?.CITY ?? '').trim().toUpperCase()
+  const state = String(attributes?.STATE ?? '').trim().toUpperCase()
+  return school === 'OAK RIDGE HIGH' && city === 'ORLANDO' && state === 'FL'
 })
 
 if (!match) {
@@ -32,4 +28,4 @@ if (!match) {
 if (String(match.NCESSCH ?? '').trim() !== '120144001406') throw new Error(`NCES live smoke returned unexpected Oak Ridge school ID: ${match.NCESSCH ?? 'missing'}`)
 if (String(match.LEAID ?? '').trim() !== '1201440') throw new Error(`NCES live smoke returned unexpected Orange agency ID: ${match.LEAID ?? 'missing'}`)
 
-console.log(`NCES live smoke passed: ${match.SCH_NAME} · ${match.LEA_NAME} · ${match.NCESSCH}`)
+console.log(`NCES live smoke passed: ${match.NAME} · ${match.NCESSCH}`)
