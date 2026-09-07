@@ -1,22 +1,18 @@
-const NCES_PUBLIC_SCHOOL_LAYER = 'https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_ADMINDATA_PUBLICSCH_2425/MapServer/1'
-const OUT_FIELDS = ['NCESSCH','LEAID','LEA_NAME','SCH_NAME','LSTREET1','LCITY','LSTATE','LZIP','SY_STATUS_TEXT'].join(',')
+const NCES_PUBLIC_SCHOOL_LAYER = 'https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_GEOCODE_PUBLICSCH_2425/MapServer/0'
+const OUT_FIELDS = ['NCESSCH','LEAID','NAME','STREET','CITY','STATE','ZIP'].join(',')
 
 export function buildNcesTargetUrl(params) {
   const schoolName = clean(params.schoolName)
   const city = clean(params.city)
   const state = clean(params.state).toUpperCase()
-  const districtName = clean(params.districtName)
   if (!schoolName) throw new Error('School name is required.')
   if (state && !/^[A-Z]{2}$/.test(state)) throw new Error('State must be a two-letter abbreviation.')
   const where = [
-    `SCH_NAME LIKE '%${escapeSqlLike(schoolName)}%'`,
-    state ? `LSTATE = '${escapeSql(state)}'` : null,
-    city ? `LCITY LIKE '${escapeSqlLike(city)}'` : null,
-    districtName ? `LEA_NAME LIKE '%${escapeSqlLike(districtName)}%'` : null,
+    `NAME LIKE '%${escapeSqlLike(schoolName)}%'`,
+    state ? `STATE = '${escapeSql(state)}'` : null,
+    city ? `CITY LIKE '${escapeSqlLike(city)}'` : null,
   ].filter(Boolean).join(' AND ')
-  const query = new URLSearchParams({
-    f: 'json', where, outFields: OUT_FIELDS, returnGeometry: 'false', resultRecordCount: String(clampLimit(params.maxCandidates)),
-  })
+  const query = new URLSearchParams({ f: 'json', where, outFields: OUT_FIELDS, returnGeometry: 'false', resultRecordCount: String(clampLimit(params.maxCandidates)) })
   return `${NCES_PUBLIC_SCHOOL_LAYER}/query?${query.toString()}`
 }
 
