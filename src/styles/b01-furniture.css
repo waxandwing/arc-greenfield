@@ -14,7 +14,7 @@
 .b01-edge-tab--left{right:92px;border-radius:0 4px 4px 0}
 .b01-edge-tab--right{left:92px;border-radius:4px 0 0 4px;transform:rotate(180deg)}
 .b01-task-owner{left:max(60px,calc((100% - 986px)/2));right:max(60px,calc((100% - 986px)/2));bottom:0;height:116px}
-.b01-task-tab{position:absolute;z-index:6;top:-36px;left:50%;min-width:132px;min-height:36px;transform:translateX(-50%);border:1px solid rgba(44,46,46,.22);border-bottom:0;border-radius:4px 4px 0 0;background:#eadfc8;padding:7px 18px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;pointer-events:auto}
+.b01-task-tab{position:absolute;z-index:6;top:-44px;left:50%;min-width:132px;min-height:44px;transform:translateX(-50%);border:1px solid rgba(44,46,46,.22);border-bottom:0;border-radius:4px 4px 0 0;background:#eadfc8;padding:7px 18px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;pointer-events:auto}
 .b01-task-surface{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;padding:18px 24px;background:#efe2c8;transition:transform 180ms ease}
 .b01-task-owner[data-state='closed'] .b01-task-surface{transform:translateY(100%);visibility:hidden;pointer-events:none}
 .b01-task-owner[data-state='open'] .b01-task-surface{transform:translateY(0);visibility:visible;pointer-events:auto}
