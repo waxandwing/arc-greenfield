@@ -1,0 +1,42 @@
+name: B01 Green Gate
+
+on:
+  push:
+    branches:
+      - 'design/b01-**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Contracts, typecheck, production bundle
+        run: npm run build
+
+  b01-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Enforce B01 shell laws
+        run: |
+          set -eu
+          ! grep -q "CalendarViewRail" src/components/AppFrame.tsx
+          ! grep -q "PLACEHOLDER" src/styles/b01FurnitureShell.css
+          grep -q "furniture-settings" src/components/AppFrame.tsx
+          grep -q "furniture-fridge" src/components/AppFrame.tsx
+          grep -q "furniture-task" src/components/AppFrame.tsx
+          grep -q "b01-fixed-calendar" src/components/AppFrame.tsx
+          grep -q "showWeekends: false" src/navigation/viewPreferences.ts
+          grep -q "sendLessonToFridge" src/planning/objectActions.ts
+          grep -q "scheduleLessonFromFridge" src/planning/objectActions.ts
+          grep -q "undoFridgeRoundTrip" src/planning/fridgeRoundTrip.ts
+          test "$(find src/arc/planning -type f 2>/dev/null | wc -l)" -eq 0
