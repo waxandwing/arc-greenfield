@@ -25,8 +25,8 @@ const unit=placeUnit(createUnit({id:'unit-egypt',calendarId:calendar.id,courseId
 const units:UnitWorkspace={calendarId:calendar.id,units:[unit]}
 const lesson17=createLesson({id:'lesson-17',calendarId:calendar.id,courseId:course.id,unitId:unit.id,title:'Lesson 17',sequence:17,plannedDate:'2026-09-16'})
 const lesson18=createLesson({id:'lesson-18',calendarId:calendar.id,courseId:course.id,unitId:unit.id,title:'Lesson 18',sequence:18,plannedDate:'2026-09-17'})
-const sameDay=createLesson({id:'lesson-same-day',calendarId:calendar.id,courseId:course.id,unitId:unit.id,title:'Image comparison',sequence:18.5,plannedDate:'2026-09-17'})
-const test=createLesson({id:'lesson-test',calendarId:calendar.id,courseId:course.id,unitId:unit.id,title:'Egypt test',sequence:19,plannedDate:'2026-09-18',datePolicy:'fixed'})
+const sameDay=createLesson({id:'lesson-same-day',calendarId:calendar.id,courseId:course.id,unitId:unit.id,title:'Image comparison',sequence:19,plannedDate:'2026-09-17'})
+const test=createLesson({id:'lesson-test',calendarId:calendar.id,courseId:course.id,unitId:unit.id,title:'Egypt test',sequence:20,plannedDate:'2026-09-18',datePolicy:'fixed'})
 const lessonList:Lesson[]=[lesson17,lesson18,sameDay,test]
 let p2State=createLessonDeliveryState({lesson:lesson17,section:p2});p2State=updateLessonDeliveryState(p2State,lesson17,p2,{status:'completed',taughtDate:'2026-09-16'})
 let p5State=createLessonDeliveryState({lesson:lesson17,section:p5});p5State=updateLessonDeliveryState(p5State,lesson17,p5,{status:'in-progress',taughtDate:'2026-09-16',resumeNote:'Stopped after demo.'})
