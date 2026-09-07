@@ -93,13 +93,15 @@ try {
   mkdirSync('artifacts/b01-furniture-independent', { recursive: true })
   await page.screenshot({ path: 'artifacts/b01-furniture-independent/all-open-1366x768.png', fullPage: true })
 
-  await page.keyboard.press('Escape')
-  assert(await settings.getAttribute('aria-expanded') === 'false', 'B01-B: Escape did not close the last-open Settings owner.')
-  assert(await settings.evaluate((node) => document.activeElement === node), 'B01-B: Escape did not return focus to the last-open owner.')
+  for (const control of [tasks, fridge, settings]) {
+    await page.keyboard.press('Escape')
+    assert(await control.getAttribute('aria-expanded') === 'false', `B01-B: Escape did not close ${await control.textContent()} in the canonical priority order.`)
+    assert(await control.evaluate((node) => document.activeElement === node), `B01-B: Escape did not return focus to ${await control.textContent()}.`)
+  }
   assert(runtimeErrors.length === 0, `B01-B runtime errors: ${runtimeErrors.join(' | ')}`)
 
   await context.close()
-  console.log('Independent B01 audit B passed: alternate AP Art History Week, reverse-order keyboard furniture opening, 44px targets, fixed calendar geometry, 1366×768 overflow, Escape/focus, and runtime cleanliness.')
+  console.log('Independent B01 audit B passed: alternate AP Art History Week, reverse-order keyboard furniture opening, 44px targets, fixed calendar geometry, 1366×768 overflow, deterministic Escape/focus closure, and runtime cleanliness.')
 } finally {
   await browser.close()
 }
