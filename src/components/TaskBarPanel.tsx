@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { tasksForPriority, type TaskBarItem, type TaskBarWorkspace, type TaskPriority } from '../planning/taskBar'
 import '../styles/taskBar.css'
 
@@ -20,11 +20,11 @@ type Props = {
 
 export function TaskBarPanel(props: Props) {
   return (
-    <div className="taskbar-panel" aria-label="Task priorities">
+    <section className="taskbar-panel" aria-label="Task priorities">
       {LANES.map((lane) => (
         <TaskLane key={lane.priority} {...lane} {...props} />
       ))}
-    </div>
+    </section>
   )
 }
 
@@ -42,11 +42,17 @@ function TaskLane({
 }: Props & { priority: TaskPriority; label: string; hint: string }) {
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState('')
+  const addTrigger = useRef<HTMLButtonElement>(null)
   const tasks = tasksForPriority(workspace, priority)
+
+  function restoreAddFocus() {
+    requestAnimationFrame(() => addTrigger.current?.focus())
+  }
 
   function cancelAdd() {
     setDraft('')
     setAdding(false)
+    restoreAddFocus()
   }
 
   function commitAdd() {
@@ -55,6 +61,7 @@ function TaskLane({
     onAdd(priority, text)
     setDraft('')
     setAdding(false)
+    restoreAddFocus()
   }
 
   return (
@@ -99,7 +106,7 @@ function TaskLane({
           <button type="button" className="taskbar-add-cancel" onClick={cancelAdd}>Cancel</button>
         </div>
       ) : (
-        <button type="button" className="taskbar-add-trigger" onClick={() => setAdding(true)}>+ Add task</button>
+        <button ref={addTrigger} type="button" className="taskbar-add-trigger" onClick={() => setAdding(true)}>+ Add task</button>
       )}
     </section>
   )
@@ -122,12 +129,20 @@ function TaskRow({
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(task.text)
+  const editTrigger = useRef<HTMLButtonElement>(null)
 
-  function finishEdit() {
+  function finishEdit(restoreFocus = false) {
     const text = draft.trim()
     if (text && text !== task.text) onRename(task.id, text)
     else setDraft(task.text)
     setEditing(false)
+    if (restoreFocus) requestAnimationFrame(() => editTrigger.current?.focus())
+  }
+
+  function cancelEdit() {
+    setDraft(task.text)
+    setEditing(false)
+    requestAnimationFrame(() => editTrigger.current?.focus())
   }
 
   return (
@@ -143,14 +158,14 @@ function TaskRow({
           value={draft}
           aria-label={`Edit task ${task.text}`}
           onChange={(event) => setDraft(event.target.value)}
-          onBlur={finishEdit}
+          onBlur={() => finishEdit(false)}
           onKeyDown={(event) => {
-            if (event.key === 'Enter') { event.preventDefault(); finishEdit() }
-            if (event.key === 'Escape') { event.preventDefault(); setDraft(task.text); setEditing(false) }
+            if (event.key === 'Enter') { event.preventDefault(); finishEdit(true) }
+            if (event.key === 'Escape') { event.preventDefault(); cancelEdit() }
           }}
         />
       ) : (
-        <button type="button" className="taskbar-task-text" onClick={() => setEditing(true)} aria-label={`Edit task ${task.text}`}>
+        <button ref={editTrigger} type="button" className="taskbar-task-text" onClick={() => setEditing(true)} aria-label={`Edit task ${task.text}`}>
           <span>{task.text}</span>
           {task.important ? <span className="taskbar-important-label">Important</span> : null}
         </button>
@@ -165,7 +180,7 @@ function TaskRow({
             <option value="could">Could</option>
           </select>
         </label>
-        <button type="button" className="taskbar-remove" onClick={() => onRemove(task.id)} aria-label={`Remove task ${task.text}`}>Remove</button>
+        <button type="button" className="taskbar-remove" onClick={() => onRemove(task.id)} aria-label={`Delete task ${task.text}`}>Delete</button>
       </div>
     </article>
   )
