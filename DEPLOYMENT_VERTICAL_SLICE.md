@@ -2,7 +2,7 @@
 
 Functional baseline: `develop @ 224e66a6a93447ea1930c5806c47b70e4c866ac1`
 
-Visual-authority work: PR #100 remains separate and must not be merged into this deployment candidate until B01/B05/B06 furniture checks are Green.
+Visual-authority work: PR #100 remains separate and must not be merged into this deployment candidate until its visual/furniture checks are Green.
 
 ## Architecture contract
 
@@ -25,6 +25,15 @@ Target chain:
 - `/interest` writes to the existing RLS-protected `arc_interest_signups` table.
 - Vercel SPA rewrites for `/interest`, `/beta`, `/auth/callback`, and `/core` while preserving the strict `npm run build` gate and preview-only/manual Git deployment setting.
 - Canonical deployment asset contract documented in `docs/DEPLOYMENT_ASSET_MAP.md`.
+- Canonical Bug Fix Log records BUG 018 (missing approved title-media binaries) and BUG 019 (Vercel external project configuration).
+
+## Current pre-preview blockers
+
+- Exact-head frozen regression matrix must finish Green.
+- Founder-approved 900×900 VP9-alpha title WebM and transparent poster must be restored at the controlled runtime paths; opaque MP4/H.264 exports are not substitutes.
+- Vercel Root Directory must be the repository root containing `package.json`.
+- Vercel Preview environment must contain `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` for the existing `arc` project.
+- Supabase Auth must allow the exact preview origin `/auth/callback`.
 
 ## Green requirements before preview is trusted
 
@@ -39,6 +48,6 @@ Target chain:
 ## Hard boundaries
 
 - No `main`.
-- No PR #100 merge while its furniture gate is Red.
+- No PR #100 merge while its furniture/visual gate is Red.
 - No production Vercel target.
 - No `arc.waxandwing.com` promotion until the deployment gate is Green.
