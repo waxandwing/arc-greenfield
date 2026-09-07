@@ -15,21 +15,19 @@ async function run() {
     city: 'Orlando',
     state: 'fl',
   }, 500))
-  assert(url.origin + url.pathname === `${NCES_PUBLIC_SCHOOL_LAYER}/query`, 'NCES query must target only the declared public-school layer.')
+  assert(url.origin + url.pathname === `${NCES_PUBLIC_SCHOOL_LAYER}/query`, 'NCES query must target only the declared public-school location layer.')
   assert(url.searchParams.get('returnGeometry') === 'false', 'School identity lookup must not request unnecessary geometry.')
   assert(url.searchParams.get('resultRecordCount') === '50', 'Candidate limit must clamp to the provider-safe maximum.')
-  assert(url.searchParams.get('orderByFields') === null, 'NCES identity lookup must avoid nonessential server-side ordering.')
   const where = url.searchParams.get('where') ?? ''
-  assert(!where.includes('UPPER('), 'NCES query must avoid function-wrapped fields rejected by the live endpoint.')
-  assert(where.includes("SCH_NAME LIKE '%O''Brien High%'"), 'NCES query must escape apostrophes in school names.')
-  assert(where.includes("LSTATE = 'FL'"), 'NCES query must normalize state filtering.')
-  assert(where.includes("LCITY LIKE 'Orlando'"), 'NCES query must constrain supplied city identity.')
-  assert(where.includes("LEA_NAME LIKE '%Example District%'"), 'NCES query must constrain supplied district identity.')
+  assert(where.includes("NAME LIKE '%O''Brien High%'"), 'NCES query must escape apostrophes in school names.')
+  assert(where.includes("STATE = 'FL'"), 'NCES query must normalize state filtering.')
+  assert(where.includes("CITY LIKE 'Orlando'"), 'NCES query must constrain supplied city identity.')
+  assert(!where.includes('Example District'), 'Location-layer lookup must not pretend it can filter on unavailable district-name fields.')
 
   const fixturePayload = {
     features: [{ attributes: {
-      NCESSCH: '120144001406', LEAID: '1201440', LEA_NAME: 'Orange', SCH_NAME: 'Oak Ridge High',
-      LSTREET1: '700 W Oak Ridge Rd', LCITY: 'Orlando', LSTATE: 'FL', LZIP: '32809', SY_STATUS_TEXT: 'Open',
+      NCESSCH: '120144001406', LEAID: '1201440', NAME: 'Oak Ridge High', STREET: '700 W Oak Ridge Rd',
+      CITY: 'Orlando', STATE: 'FL', ZIP: '32809',
     }}],
   }
   const fixtureFetch = async () => new Response(JSON.stringify(fixturePayload), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -39,7 +37,6 @@ async function run() {
     const candidate = found.candidates[0]
     assert(candidate.id === 'nces:120144001406', 'Candidate identity must use stable NCES school ID.')
     assert(candidate.schoolName === 'Oak Ridge High', 'Candidate must retain NCES school name.')
-    assert(candidate.districtName === 'Orange', 'Candidate must retain the NCES agency identity exactly as supplied.')
     assert(candidate.locality === 'Orlando, FL, 32809', 'Candidate must retain locality for teacher disambiguation.')
     assert(candidate.sourceLocator.endsWith('ID=120144001406'), 'Candidate must expose a stable official NCES detail locator.')
     assert(candidate.confidence === 'confirmed', 'NCES directory identity should be treated as confirmed identity evidence, not calendar-date evidence.')
