@@ -1,0 +1,33 @@
+.b01-furniture-composition{position:relative;isolation:isolate;max-width:1176px;margin:0 auto;padding-bottom:42px}
+.b01-calendar-owner{position:relative;z-index:4}
+.b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 190px);background:linear-gradient(90deg,rgba(243,235,221,.92) 0 49.6%,rgba(222,210,190,.45) 49.85% 50.15%,rgba(243,235,221,.92) 50.4% 100%);box-shadow:3px 3px 0 rgba(198,167,125,.22),7px 8px 0 rgba(44,46,46,.035),0 18px 36px -30px rgba(44,46,46,.45)}
+.b01-side-owner,.b01-task-owner{position:absolute;z-index:2;pointer-events:none}
+.b01-side-owner{top:55px;width:270px;height:560px;transition:transform 180ms ease}
+.b01-settings-owner{left:0;transform:translateX(calc(-100% + 46px))}
+.b01-fridge-owner{right:0;transform:translateX(calc(100% - 46px))}
+.b01-side-owner[data-state='open']{transform:translateX(0)}
+.b01-furniture-surface{height:100%;border:1px solid rgba(44,46,46,.18);background:#f0e5cf;box-shadow:0 16px 32px -26px rgba(44,46,46,.55);overflow:auto;pointer-events:auto}
+.b01-settings-surface{padding:28px 58px 28px 24px}
+.b01-fridge-surface{padding:28px 24px 28px 58px;background:#d8d6ce}
+.b01-furniture-kicker{margin:0 0 18px;font:700 12px/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--soft-charcoal)}
+.b01-furniture-empty{margin:0;color:var(--soft-charcoal);font-size:14px}
+.b01-edge-tab{position:absolute;z-index:3;top:44%;display:flex;align-items:center;justify-content:center;width:46px;min-height:116px;padding:12px 8px;border:1px solid rgba(44,46,46,.22);background:#eadfc8;box-shadow:0 7px 18px -16px rgba(44,46,46,.7);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;writing-mode:vertical-rl;cursor:pointer;pointer-events:auto}
+.b01-edge-tab--left{right:0;border-radius:0 4px 4px 0}
+.b01-edge-tab--right{left:0;border-radius:4px 0 0 4px;transform:rotate(180deg)}
+.b01-task-owner{left:50%;bottom:0;width:min(986px,calc(100% - 120px));height:116px;transform:translate(-50%,calc(100% - 36px));transition:transform 180ms ease}
+.b01-task-owner[data-state='open']{transform:translate(-50%,0)}
+.b01-task-tab{position:absolute;z-index:3;top:-36px;left:50%;min-width:132px;min-height:36px;transform:translateX(-50%);border:1px solid rgba(44,46,46,.22);border-bottom:0;border-radius:4px 4px 0 0;background:#eadfc8;padding:7px 18px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;pointer-events:auto}
+.b01-task-surface{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;padding:18px 24px;background:#efe2c8}
+.b01-task-surface>div{min-width:0;padding:5px 18px;border-right:1px solid rgba(44,46,46,.14);font-size:13px;letter-spacing:.03em}
+.b01-task-surface>div:last-child{border-right:0}
+.b01-settings-owner[data-state='closed'] .b01-furniture-surface,.b01-fridge-owner[data-state='closed'] .b01-furniture-surface,.b01-task-owner[data-state='closed'] .b01-furniture-surface{visibility:hidden;pointer-events:none}
+.b01-settings-owner .view-preferences{border:0;background:transparent;padding:0}
+.b01-settings-owner .view-preferences>summary{font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.b01-settings-owner .view-preferences-panel{display:grid;gap:14px;padding-top:8px}
+.b01-settings-owner .view-preferences-panel label{display:grid;gap:6px;font-size:13px;font-weight:700}
+.b01-settings-owner .view-preferences-check{grid-template-columns:auto 1fr;align-items:center}
+.b01-settings-owner .view-preferences-check input{min-height:auto}
+@media (max-width:1280px){.b01-furniture-composition{max-width:calc(100vw - 64px)}.b01-side-owner{width:240px;height:520px}.b01-task-owner{width:min(900px,calc(100% - 96px))}}
+@media (max-width:800px){.b01-furniture-composition{max-width:100%;padding-bottom:38px}.b01-side-owner{top:48px;width:220px;height:480px}.b01-task-owner{width:calc(100% - 72px)}.b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 184px)}}
+@media (max-width:520px){.b01-side-owner{width:min(82vw,300px);height:min(68vh,520px)}.b01-task-owner{width:calc(100% - 40px);height:132px}.b01-task-surface{padding:14px 12px}.b01-task-surface>div{padding:5px 8px;font-size:12px}}
+@media (prefers-reduced-motion:reduce){.b01-side-owner,.b01-task-owner{transition:none}}
