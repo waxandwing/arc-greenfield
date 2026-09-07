@@ -1,3 +1,5 @@
+import { decideCloudHydration, isPlannerStorageKey, parseRemotePlannerStorage } from './cloudWorkspace'
+
 export type ArcAuthSession = {
   accessToken: string
   refreshToken?: string
@@ -17,8 +19,6 @@ export type BetaAccessResult = {
 export type CloudSaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 const AUTH_KEY = 'arc.auth.v1'
-const CLOUD_PREFIX = 'arc.'
-const EXCLUDED_CLOUD_KEYS = new Set([AUTH_KEY])
 
 export async function loadRuntimeConfig(): Promise<ArcRuntimeConfig> {
   const response = await fetch('/api/runtime-config', { headers: { Accept: 'application/json' } })
@@ -140,16 +140,16 @@ export async function hydrateCloudWorkspace(config: ArcRuntimeConfig, session: A
   endpoint.searchParams.set('limit', '1')
   const response = await fetch(endpoint, { headers: authHeaders(config, session) })
   if (!response.ok) throw new Error('Arc could not restore this account workspace.')
+
   const rows = await response.json() as Array<{ payload?: unknown }>
-  const payload = rows[0]?.payload
-  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return
-  const storage = (payload as { browserStorage?: unknown }).browserStorage
-  if (!storage || typeof storage !== 'object' || Array.isArray(storage)) return
-  clearPlannerStorage()
-  for (const [key, value] of Object.entries(storage as Record<string, unknown>)) {
-    if (!isPlannerStorageKey(key) || typeof value !== 'string') continue
-    window.localStorage.setItem(key, value)
-  }
+  const local = snapshotPlannerStorage()
+  const parsedRemote = parseRemotePlannerStorage(rows[0]?.payload)
+  const decision = decideCloudHydration(local, parsedRemote)
+
+  if (decision.action === 'keep-local') return decision
+
+  replacePlannerStorage(decision.snapshot)
+  return decision
 }
 
 export function startCloudWorkspaceMirror(
@@ -198,6 +198,11 @@ export function startCloudWorkspaceMirror(
   document.addEventListener('visibilitychange', onVisibility)
   window.addEventListener('pagehide', onPageHide)
 
+  // Seed or reconcile the authenticated cloud row immediately after a successful,
+  // non-destructive hydration decision. This is what turns first-use local state
+  // into the user's cloud workspace without waiting for another planner mutation.
+  void flush(true)
+
   return () => {
     window.clearInterval(interval)
     document.removeEventListener('visibilitychange', onVisibility)
@@ -210,8 +215,16 @@ function authHeaders(config: ArcRuntimeConfig, session: ArcAuthSession) {
   return { apikey: config.publishableKey, Authorization: `Bearer ${session.accessToken}`, Accept: 'application/json' }
 }
 
-function isPlannerStorageKey(key: string) {
-  return key.startsWith(CLOUD_PREFIX) && !EXCLUDED_CLOUD_KEYS.has(key)
+function replacePlannerStorage(snapshot: Record<string, string>) {
+  const previous = snapshotPlannerStorage()
+  try {
+    clearPlannerStorage()
+    for (const [key, value] of Object.entries(snapshot)) window.localStorage.setItem(key, value)
+  } catch (error) {
+    clearPlannerStorage()
+    for (const [key, value] of Object.entries(previous)) window.localStorage.setItem(key, value)
+    throw error
+  }
 }
 
 function clearPlannerStorage() {
