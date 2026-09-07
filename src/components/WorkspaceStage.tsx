@@ -5,6 +5,7 @@ import { LessonSetup } from './LessonSetup'
 import { RecoveryReview } from './RecoveryReview'
 import { TermBoundarySetup } from './TermBoundarySetup'
 import { UnitSetup } from './UnitSetup'
+import type { PlanningWeekObjectActions } from './PlanningWeekDayView'
 import type { CalendarHydrationInput, ISODate, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
@@ -36,6 +37,7 @@ type WorkspaceStageProps = {
   protectedCourseIds: Set<string>
   protectedUnitIds: Set<string>
   protectedSectionIds: Set<string>
+  weekObjectActions?: PlanningWeekObjectActions
   onUseCalendar: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
   onUseTerms: (input: CalendarHydrationInput) => void
   onUseClasses: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
@@ -63,6 +65,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     protectedCourseIds,
     protectedUnitIds,
     protectedSectionIds,
+    weekObjectActions,
     onUseCalendar,
     onUseTerms,
     onUseClasses,
@@ -73,101 +76,34 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
   } = props
 
   const needsCalendarSetup = !calendar || !anchorDate || mode === 'calendar-setup'
-
-  if (needsCalendarSetup) {
-    return (
-      <CalendarSetup
-        initialValue={calendarInput}
-        onSave={onUseCalendar}
-        onCancel={calendar ? onCloseMode : undefined}
-      />
-    )
-  }
-
-  if (mode === 'terms' && calendarInput) {
-    return <TermBoundarySetup input={calendarInput} onSave={onUseTerms} onCancel={onCloseMode} />
-  }
+  if (needsCalendarSetup) return <CalendarSetup initialValue={calendarInput} onSave={onUseCalendar} onCancel={calendar ? onCloseMode : undefined} />
+  if (mode === 'terms' && calendarInput) return <TermBoundarySetup input={calendarInput} onSave={onUseTerms} onCancel={onCloseMode} />
 
   if (mode === 'classes') {
-    return (
-      <ClassSetup
-        calendarId={calendar.id}
-        initialValue={planningInput}
-        protectedCourseIds={protectedCourseIds}
-        protectedSectionIds={protectedSectionIds}
-        onSave={onUseClasses}
-        onCancel={onCloseMode}
-      />
-    )
+    return <ClassSetup calendarId={calendar.id} initialValue={planningInput} protectedCourseIds={protectedCourseIds} protectedSectionIds={protectedSectionIds} onSave={onUseClasses} onCancel={onCloseMode} />
   }
 
   if (mode === 'units' && planningWorkspace) {
-    return (
-      <UnitSetup
-        calendar={calendar}
-        planning={planningWorkspace}
-        lessons={lessonWorkspace ?? emptyLessonProjection(calendar.id)}
-        overrides={shiftState?.overrides ?? []}
-        initialValue={unitInput}
-        protectedUnitIds={protectedUnitIds}
-        onSave={onUseUnits}
-        onCancel={onCloseMode}
-      />
-    )
+    return <UnitSetup calendar={calendar} planning={planningWorkspace} lessons={lessonWorkspace ?? emptyLessonProjection(calendar.id)} overrides={shiftState?.overrides ?? []} initialValue={unitInput} protectedUnitIds={protectedUnitIds} onSave={onUseUnits} onCancel={onCloseMode} />
   }
 
   if (mode === 'lessons' && planningWorkspace && unitWorkspace) {
-    return (
-      <LessonSetup
-        calendar={calendar}
-        planning={planningWorkspace}
-        units={unitWorkspace}
-        shiftState={shiftState}
-        initialValue={lessonInput}
-        onSave={onUseLessons}
-        onCancel={onCloseMode}
-      />
-    )
+    return <LessonSetup calendar={calendar} planning={planningWorkspace} units={unitWorkspace} shiftState={shiftState} initialValue={lessonInput} onSave={onUseLessons} onCancel={onCloseMode} />
   }
 
   if (mode === 'recovery' && planningWorkspace && unitWorkspace && lessonWorkspace) {
-    return (
-      <RecoveryReview
-        calendar={calendar}
-        planning={planningWorkspace}
-        units={unitWorkspace}
-        lessons={lessonWorkspace}
-        overrides={shiftState?.overrides ?? []}
-        onApply={onApplyRecoveryShift}
-        onClose={onCloseMode}
-      />
-    )
+    return <RecoveryReview calendar={calendar} planning={planningWorkspace} units={unitWorkspace} lessons={lessonWorkspace} overrides={shiftState?.overrides ?? []} onApply={onApplyRecoveryShift} onClose={onCloseMode} />
   }
 
-  const planningContext = planningWorkspace
-    ? {
-        planning: planningWorkspace,
-        units: unitWorkspace ?? emptyUnitProjection(calendar.id),
-        lessons: lessonWorkspace ?? emptyLessonProjection(calendar.id),
-        shiftState: lessonWorkspace ? shiftState : null,
-      }
-    : null
+  const planningContext = planningWorkspace ? {
+    planning: planningWorkspace,
+    units: unitWorkspace ?? emptyUnitProjection(calendar.id),
+    lessons: lessonWorkspace ?? emptyLessonProjection(calendar.id),
+    shiftState: lessonWorkspace ? shiftState : null,
+  } : null
 
-  return (
-    <CalendarProjectionView
-      view={activeView}
-      showWeekends={showWeekends}
-      calendar={calendar}
-      anchorDate={anchorDate}
-      planningContext={planningContext}
-    />
-  )
+  return <CalendarProjectionView view={activeView} showWeekends={showWeekends} calendar={calendar} anchorDate={anchorDate} planningContext={planningContext} weekObjectActions={weekObjectActions} />
 }
 
-function emptyUnitProjection(calendarId: string): UnitWorkspace {
-  return { calendarId, units: [] }
-}
-
-function emptyLessonProjection(calendarId: string): LessonWorkspace {
-  return { calendarId, lessons: [], deliveryStates: [] }
-}
+function emptyUnitProjection(calendarId: string): UnitWorkspace { return { calendarId, units: [] } }
+function emptyLessonProjection(calendarId: string): LessonWorkspace { return { calendarId, lessons: [], deliveryStates: [] } }
