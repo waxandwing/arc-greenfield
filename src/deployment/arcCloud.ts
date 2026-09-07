@@ -15,6 +15,8 @@ export type BetaGateResult = {
   reason?: string
 }
 
+export type CloudSaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
 const AUTH_KEY = 'arc.auth.v1'
 const CLOUD_PREFIX = 'arc.'
 const EXCLUDED_CLOUD_KEYS = new Set([AUTH_KEY])
@@ -125,7 +127,12 @@ export async function hydrateCloudWorkspace(config: ArcRuntimeConfig, session: A
   }
 }
 
-export function startCloudWorkspaceMirror(config: ArcRuntimeConfig, session: ArcAuthSession, userId: string) {
+export function startCloudWorkspaceMirror(
+  config: ArcRuntimeConfig,
+  session: ArcAuthSession,
+  userId: string,
+  onStatus: (status: CloudSaveStatus) => void = () => undefined,
+) {
   let last = serializePlannerStorage()
   let saving = false
 
@@ -133,6 +140,7 @@ export function startCloudWorkspaceMirror(config: ArcRuntimeConfig, session: Arc
     const current = serializePlannerStorage()
     if ((!force && current === last) || saving) return
     saving = true
+    onStatus('saving')
     try {
       const response = await fetch(`${config.supabaseUrl}/rest/v1/arc_workspaces?on_conflict=user_id`, {
         method: 'POST',
@@ -150,6 +158,10 @@ export function startCloudWorkspaceMirror(config: ArcRuntimeConfig, session: Arc
       })
       if (!response.ok) throw new Error(`workspace save failed (${response.status})`)
       last = current
+      onStatus('saved')
+    } catch (error) {
+      console.error('Arc cloud workspace save failed', error)
+      onStatus('error')
     } finally {
       saving = false
     }
