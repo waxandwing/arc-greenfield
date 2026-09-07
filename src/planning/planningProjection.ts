@@ -2,6 +2,7 @@ import type { ISODate } from '../calendar/types'
 import type { Course, Section } from './courses'
 import { effectiveLessonDeliveryState, type DeliveryStatus, type LessonDeliveryState } from './deliveryState'
 import type { Lesson, LessonDatePolicy } from './lessons'
+import type { PlanningNote, PlanningNotePlacement } from './notes'
 import { effectiveLessonDate, type SectionLessonDateOverride } from './sectionSchedule'
 import type { Unit } from './units'
 import type { PlanningWorkspace } from './workspace'
@@ -34,6 +35,16 @@ export type PlanningLessonPlacement = {
   resumeNote: string | null
 }
 
+export type PlanningNoteProjection = {
+  noteId: string
+  date: ISODate
+  text: string
+  placement: PlanningNotePlacement
+  important: boolean
+  sourceLabel: string | null
+  sourceLocator: string | null
+}
+
 export type PlanningDaySlot = {
   date: ISODate
   lessons: PlanningLessonPlacement[]
@@ -53,6 +64,7 @@ export type PlanningCourseGroup = {
 export type PlanningRangeProjection = {
   dates: ISODate[]
   courses: PlanningCourseGroup[]
+  notes: PlanningNoteProjection[]
 }
 
 export function projectPlanningRange(input: {
@@ -63,7 +75,7 @@ export function projectPlanningRange(input: {
   overrides: SectionLessonDateOverride[]
 }): PlanningRangeProjection {
   const { dates, planning, units, lessons, overrides } = input
-  if (dates.length === 0) return { dates: [], courses: [] }
+  if (dates.length === 0) return { dates: [], courses: [], notes: [] }
 
   validateProjectionDates(dates)
   validateProjectionOwnership(planning, units, lessons)
@@ -85,7 +97,23 @@ export function projectPlanningRange(input: {
         .filter((section) => section.courseId === course.id)
         .map((section) => projectSectionRow(section, course.id, dates, lessonList, unitTitles, deliveryStates, overrides)),
     })),
+    notes: projectNotes(planning.notes, dateIndexes),
   }
+}
+
+function projectNotes(notes: PlanningNote[], dateIndexes: Map<ISODate, number>): PlanningNoteProjection[] {
+  return notes
+    .filter((note) => dateIndexes.has(note.date))
+    .map((note) => ({
+      noteId: note.id,
+      date: note.date,
+      text: note.text,
+      placement: note.placement,
+      important: note.important,
+      sourceLabel: note.sourceLabel,
+      sourceLocator: note.sourceLocator,
+    }))
+    .sort((a, b) => (dateIndexes.get(a.date)! - dateIndexes.get(b.date)!) || a.noteId.localeCompare(b.noteId))
 }
 
 function projectUnitSpans(
