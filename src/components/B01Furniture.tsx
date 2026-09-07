@@ -72,7 +72,7 @@ export function B01Furniture({ settings, fridge, tasks, onCleanUpFocus, children
       <div className="b01-calendar-owner">{children}</div>
 
       <aside className="b01-task-owner" data-state={open.tasks ? 'open' : 'closed'} aria-label="Task Bar furniture">
-        <button ref={tasksButton} className="b01-task-tab" type="button" aria-expanded={open.tasks} aria-controls="b01-task-surface" onClick={() => toggle('tasks')}>Tasks</button>
+        <button ref={tasksButton} className="b01-task-tab" type="button" aria-expanded={open.tasks} aria-controls="b01-task-surface" onClick={() => toggle('tasks')}>Task Bar</button>
         {anyOpen ? <button type="button" className="b05-clean-up" onClick={cleanUp}>Clean Up</button> : null}
         <div id="b01-task-surface" className="b01-furniture-surface b01-task-surface" inert={!open.tasks ? true : undefined}>
           {tasks ?? <><div><strong>Must</strong></div><div><strong>Should</strong></div><div><strong>Could</strong></div></>}
