@@ -23,6 +23,8 @@
 .furniture-tab {
   position: fixed;
   z-index: 80;
+  min-width: 44px;
+  min-height: 44px;
   border: 1px solid rgba(47, 51, 43, .26);
   background: #f4efe4;
   color: #2f332b;
@@ -129,8 +131,8 @@
 }
 
 .furniture-heading button {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
   border: 1px solid rgba(47, 51, 43, .22);
   background: rgba(255, 255, 255, .55);
@@ -158,6 +160,7 @@
 .furniture-undo,
 .task-note-composer button,
 .fridge-return-list button {
+  min-height: 44px;
   border: 1px solid rgba(47, 51, 43, .22);
   background: rgba(255, 255, 255, .64);
   color: inherit;
@@ -190,7 +193,7 @@
 
 .fridge-date input,
 .task-note-composer input {
-  min-height: 42px;
+  min-height: 44px;
   border: 1px solid rgba(47, 51, 43, .24);
   border-radius: 10px;
   background: rgba(255, 255, 255, .72);
@@ -287,6 +290,8 @@
 }
 
 .task-note > button {
+  min-width: 44px;
+  min-height: 44px;
   border: 0;
   background: transparent;
   font-size: 18px;
