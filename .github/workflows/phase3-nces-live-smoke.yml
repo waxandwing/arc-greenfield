@@ -1,0 +1,34 @@
+name: Phase 3 NCES live identity smoke
+
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - 'src/calendar/ncesSchoolIdentityProvider.ts'
+      - 'src/calendar/ncesSchoolIdentityProvider.contract.ts'
+      - 'src/calendar/sourceAcquisition.ts'
+      - 'tests/nces-live-smoke.mjs'
+      - '.github/workflows/phase3-nces-live-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nces-live-identity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run domain contracts
+        run: npm run test:contracts
+      - name: Query live NCES public-school directory
+        run: node tests/nces-live-smoke.mjs

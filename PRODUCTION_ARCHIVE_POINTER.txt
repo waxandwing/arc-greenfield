@@ -1,2 +1,0 @@
-Pre-Green production head: e2964738d0d66792f31de496270af5de54ef10a6
-Preserved here only as a human-readable pointer before production promotion.

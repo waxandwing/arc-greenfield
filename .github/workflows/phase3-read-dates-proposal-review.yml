@@ -1,0 +1,56 @@
+name: Phase 3 read dates proposal review
+
+on:
+  push:
+    branches:
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+jobs:
+  read-dates-proposal-review:
+    runs-on: ubuntu-latest
+    env:
+      VITE_ARC_CALENDAR_TEXT_ENDPOINT: https://calendar-text.example.invalid/functions/v1/official-calendar-source-text
+      VITE_ARC_CALENDAR_TEXT_AUTH_TOKEN: test-public-client-jwt
+      VITE_ARC_CALENDAR_TEXT_API_KEY: test-public-client-jwt
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Chromium audit runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Build browser target with deterministic extraction endpoint
+        run: npm run build
+      - name: Run rendered Read dates proposal review gate
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/arc-preview-phase3-read-dates-proposal-review.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/phase3-read-dates-proposal-review.mjs
+      - name: Publish exact proposal review screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-phase3-read-dates-proposal-review-1280
+          path: artifacts/phase3-read-dates-proposal-review/read-dates-proposal-1280.png
+          if-no-files-found: warn
+          retention-days: 7
