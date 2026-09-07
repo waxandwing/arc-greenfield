@@ -133,7 +133,10 @@ async function auditQuickAdd(page) {
 
   await reloadTargetWeek(page)
   check(await page.getByText('Printmaking', { exact:true }).count() === 1, 'B04: quick-added Unit must survive reload.')
-  check(await page.getByText('Friday reflection', { exact:true }).count() === 2, 'B04: shared quick-added Lesson must project once per Section after reload.')
+  for (const sectionName of ['Period 1','Period 6']) {
+    const row = page.locator('.planning-section-row').filter({ hasText:sectionName })
+    check(await row.locator('.planning-day-slot').nth(4).getByText('Friday reflection', { exact:true }).count() === 1, `B04: shared quick-added Lesson must project once in ${sectionName} on Friday after reload.`)
+  }
   check(await page.getByRole('region', { name:'After School', exact:true }).getByText('Call home', { exact:true }).count() === 1, 'B04: quick-added Note must survive reload.')
   check(await page.getByRole('button', { name:/Select Important\. After School note\. Call home/ }).count() === 1, 'B04: quick-added Important Note must retain non-color semantics.')
 }
