@@ -1,6 +1,7 @@
 export * from './courses'
 export * from './units'
 export * from './lessons'
+export * from './notes'
 export * from './deliveryState'
 export * from './planningProjection'
 export * from './monthPlanningProjection'
