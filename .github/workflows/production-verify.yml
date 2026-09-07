@@ -57,3 +57,13 @@ jobs:
             artifacts/phase2-behavior/*.png
           if-no-files-found: warn
           retention-days: 14
+      - name: Publish deployable production package
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-production-package
+          path: |
+            dist/**
+            api/nces.js
+            server/ncesProxy.mjs
+          if-no-files-found: error
+          retention-days: 14
