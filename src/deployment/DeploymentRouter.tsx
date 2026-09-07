@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import App from '../App'
 import {
   beginGoogleSignIn,
@@ -161,7 +161,7 @@ function Unauthorized() {
   return <ShellCard title="This account isn’t in the Arc beta yet" intro="Your Google sign-in worked. This account does not currently have planner access."><div className="entry-actions"><a className="entry-action entry-action--primary" href="/interest">Join the interest list</a><button className="entry-action" onClick={() => { clearAuthSession(); window.location.assign('/beta') }}>Try another Google account</button></div></ShellCard>
 }
 
-function ShellCard({ title, intro, children }: { title: string; intro: string; children?: React.ReactNode }) {
+function ShellCard({ title, intro, children }: { title: string; intro: string; children?: ReactNode }) {
   return <main className="entry-page entry-page--simple"><section className="entry-card"><a className="entry-wordmark" href="/">arc</a><h1>{title}</h1><p>{intro}</p>{children}</section></main>
 }
 
