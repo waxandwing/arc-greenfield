@@ -18,34 +18,21 @@ async function run() {
   assert(url.origin + url.pathname === `${NCES_PUBLIC_SCHOOL_LAYER}/query`, 'NCES query must target only the declared public-school layer.')
   assert(url.searchParams.get('returnGeometry') === 'false', 'School identity lookup must not request unnecessary geometry.')
   assert(url.searchParams.get('resultRecordCount') === '50', 'Candidate limit must clamp to the provider-safe maximum.')
+  assert(url.searchParams.get('orderByFields') === null, 'NCES identity lookup must avoid nonessential server-side ordering.')
   const where = url.searchParams.get('where') ?? ''
-  assert(where.includes("O''BRIEN HIGH"), 'NCES query must escape apostrophes in school names.')
-  assert(where.includes("UPPER(LSTATE) = 'FL'"), 'NCES query must normalize state filtering.')
-  assert(where.includes("UPPER(LCITY) = 'ORLANDO'"), 'NCES query must constrain supplied city identity.')
-  assert(where.includes('EXAMPLE DISTRICT'), 'NCES query must constrain supplied district identity.')
+  assert(!where.includes('UPPER('), 'NCES query must avoid function-wrapped fields rejected by the live endpoint.')
+  assert(where.includes("SCH_NAME LIKE '%O''Brien High%'"), 'NCES query must escape apostrophes in school names.')
+  assert(where.includes("LSTATE = 'FL'"), 'NCES query must normalize state filtering.')
+  assert(where.includes("LCITY LIKE 'Orlando'"), 'NCES query must constrain supplied city identity.')
+  assert(where.includes("LEA_NAME LIKE '%Example District%'"), 'NCES query must constrain supplied district identity.')
 
   const fixturePayload = {
-    features: [
-      {
-        attributes: {
-          NCESSCH: '120144001406',
-          LEAID: '1201440',
-          LEA_NAME: 'Orange',
-          SCH_NAME: 'Oak Ridge High',
-          LSTREET1: '700 W Oak Ridge Rd',
-          LCITY: 'Orlando',
-          LSTATE: 'FL',
-          LZIP: '32809',
-          SY_STATUS_TEXT: 'Open',
-        },
-      },
-    ],
+    features: [{ attributes: {
+      NCESSCH: '120144001406', LEAID: '1201440', LEA_NAME: 'Orange', SCH_NAME: 'Oak Ridge High',
+      LSTREET1: '700 W Oak Ridge Rd', LCITY: 'Orlando', LSTATE: 'FL', LZIP: '32809', SY_STATUS_TEXT: 'Open',
+    }}],
   }
-
-  const fixtureFetch = async () => new Response(JSON.stringify(fixturePayload), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  })
+  const fixtureFetch = async () => new Response(JSON.stringify(fixturePayload), { status: 200, headers: { 'Content-Type': 'application/json' } })
   const found = await searchNcesPublicSchools({ schoolName: 'Oak Ridge', city: 'Orlando', state: 'FL' }, { fetchImpl: fixtureFetch })
   assert(found.status === 'candidates' && found.candidates.length === 1, 'Valid NCES response must return a candidate.')
   if (found.status === 'candidates') {
@@ -59,25 +46,14 @@ async function run() {
   }
 
   const noneFetch = async () => new Response(JSON.stringify({ features: [] }), { status: 200 })
-  const none = await searchNcesPublicSchools({ schoolName: 'Definitely Missing School', state: 'FL' }, { fetchImpl: noneFetch })
-  assert(none.status === 'none', 'Zero NCES features must remain an honest no-result state.')
-
+  assert((await searchNcesPublicSchools({ schoolName: 'Definitely Missing School', state: 'FL' }, { fetchImpl: noneFetch })).status === 'none', 'Zero NCES features must remain an honest no-result state.')
   const malformedFetch = async () => new Response(JSON.stringify({ features: [{ attributes: { NCESSCH: '123' } }] }), { status: 200 })
-  const malformed = await searchNcesPublicSchools({ schoolName: 'Broken', state: 'FL' }, { fetchImpl: malformedFetch })
-  assert(malformed.status === 'invalid', 'Incomplete NCES records must fail closed.')
-
+  assert((await searchNcesPublicSchools({ schoolName: 'Broken', state: 'FL' }, { fetchImpl: malformedFetch })).status === 'invalid', 'Incomplete NCES records must fail closed.')
   const providerErrorFetch = async () => new Response(JSON.stringify({ error: { message: 'Fixture provider error' } }), { status: 200 })
-  const providerError = await searchNcesPublicSchools({ schoolName: 'Broken', state: 'FL' }, { fetchImpl: providerErrorFetch })
-  assert(providerError.status === 'invalid', 'NCES ArcGIS error payload must fail closed.')
-
-  const networkError = await searchNcesPublicSchools(
-    { schoolName: 'Broken', state: 'FL' },
-    { fetchImpl: async () => { throw new Error('offline') } },
-  )
+  assert((await searchNcesPublicSchools({ schoolName: 'Broken', state: 'FL' }, { fetchImpl: providerErrorFetch })).status === 'invalid', 'NCES ArcGIS error payload must fail closed.')
+  const networkError = await searchNcesPublicSchools({ schoolName: 'Broken', state: 'FL' }, { fetchImpl: async () => { throw new Error('offline') } })
   assert(networkError.status === 'invalid' && networkError.message.includes('Nothing was selected or saved'), 'Network failure must be explicit and non-mutating.')
-
-  const invalidQuery = await searchNcesPublicSchools({ schoolName: '' }, { fetchImpl: fixtureFetch })
-  assert(invalidQuery.status === 'invalid', 'Invalid identity query must fail before provider lookup.')
+  assert((await searchNcesPublicSchools({ schoolName: '' }, { fetchImpl: fixtureFetch })).status === 'invalid', 'Invalid identity query must fail before provider lookup.')
 
   console.log('NCES school identity provider contract passed')
 }
