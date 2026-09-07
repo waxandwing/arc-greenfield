@@ -1,5 +1,6 @@
 :root{scrollbar-gutter:stable}
 .b01-furniture-composition{position:relative;isolation:isolate;width:min(1000px,69.4444vw);margin:0 auto;padding-bottom:44px;overflow:visible}
+.b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:min(240px,16.6667vw)}
 .b01-calendar-owner{position:relative;z-index:4}
 .b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 190px);border:2px solid rgba(44,46,46,.84);border-radius:7px;background:linear-gradient(90deg,rgba(247,241,229,.98) 0 49.55%,rgba(213,199,176,.62) 49.84% 50.16%,rgba(247,241,229,.98) 50.45% 100%);box-shadow:3px 3px 0 rgba(198,167,125,.2),7px 8px 0 rgba(44,46,46,.04),0 18px 36px -30px rgba(44,46,46,.48)}
 .b01-side-owner,.b01-task-owner{position:absolute;pointer-events:none}
@@ -30,6 +31,6 @@
 .b01-settings-owner .view-preferences-check{grid-template-columns:auto 1fr;align-items:center}
 .b01-settings-owner .view-preferences-check input{min-height:auto}
 @media (max-width:1280px){.b01-furniture-composition{width:min(900px,70.3125vw)}.b01-side-owner{width:260px;height:500px}.b01-settings-owner{left:-190px}.b01-fridge-owner{right:-190px}.b01-edge-tab--left{right:70px}.b01-edge-tab--right{left:70px}.b01-task-owner{width:min(760px,59.375vw)}}
-@media (max-width:800px){.b01-furniture-composition{width:100%;padding-bottom:44px;overflow:clip}.b01-side-owner{top:48px;width:220px;height:480px}.b01-settings-owner{left:0}.b01-fridge-owner{right:0}.b01-edge-tab--left{right:0}.b01-edge-tab--right{left:0}.b01-settings-surface{padding:22px 62px 22px 18px}.b01-fridge-surface{padding:22px 18px 22px 62px}.b01-task-owner{left:36px;right:36px;width:auto;height:44px;transform:none}.b01-task-owner[data-state='open']{height:210px}.b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 184px)}}
+@media (max-width:800px){.b01-furniture-composition{width:100%;padding-bottom:44px;overflow:clip}.b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:210px}.b01-side-owner{top:48px;width:220px;height:480px}.b01-settings-owner{left:0}.b01-fridge-owner{right:0}.b01-edge-tab--left{right:0}.b01-edge-tab--right{left:0}.b01-settings-surface{padding:22px 62px 22px 18px}.b01-fridge-surface{padding:22px 18px 22px 62px}.b01-task-owner{left:36px;right:36px;width:auto;height:44px;transform:none}.b01-task-owner[data-state='open']{height:210px}.b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 184px)}}
 @media (max-width:520px){.b01-side-owner{width:min(82vw,300px);height:min(68vh,520px)}.b01-task-owner{left:20px;right:20px}.b01-task-owner[data-state='open']{height:190px}.b01-task-surface{padding:58px 12px 18px}.b01-task-surface>div{padding:5px 8px;font-size:12px}}
 @media (prefers-reduced-motion:reduce){.b01-task-surface{transition:none}}
