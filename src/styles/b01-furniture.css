@@ -2,6 +2,7 @@
 
 /* Group 2 ownership: Settings, Fridge, Task Bar only. Calendar geometry is never resized by furniture state. */
 .b01-furniture-composition{position:relative;isolation:isolate;width:min(1000px,69.4444vw);margin:0 auto;padding-bottom:44px;overflow:visible}
+.b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:min(290px,20.1389vw)}
 .b01-calendar-owner{position:relative;z-index:4}
 .b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 190px);border:2px solid rgba(44,46,46,.84);border-radius:7px;background:linear-gradient(90deg,rgba(247,241,229,.98) 0 49.55%,rgba(213,199,176,.62) 49.84% 50.16%,rgba(247,241,229,.98) 50.45% 100%);box-shadow:3px 3px 0 rgba(198,167,125,.2),7px 8px 0 rgba(44,46,46,.04),0 18px 36px -30px rgba(44,46,46,.48)}
 
@@ -22,7 +23,7 @@
 .b01-settings-owner[data-state='closed'] .b01-furniture-surface,.b01-fridge-owner[data-state='closed'] .b01-furniture-surface{visibility:hidden;opacity:0;pointer-events:none}
 .b01-settings-owner[data-state='open'] .b01-furniture-surface,.b01-fridge-owner[data-state='open'] .b01-furniture-surface{visibility:visible;opacity:1;pointer-events:auto}
 
-/* Task Bar is absolutely owned by the lower edge. Opening it never changes composition padding or calendar size. */
+/* Task Bar owns the lower exterior. Its open reserve grows outside the calendar rect, so the calendar never squeezes or reflows. */
 .b01-task-owner{z-index:8;left:50%;bottom:0;width:min(850px,59.0278vw);height:44px;transform:translateX(-50%);pointer-events:auto}
 .b01-task-owner[data-state='open']{height:min(290px,20.1389vw)}
 .b01-task-tab{position:absolute;z-index:6;top:0;left:50%;min-width:148px;min-height:44px;transform:translateX(-50%);border:1px solid rgba(44,46,46,.2);border-bottom:0;border-radius:5px 5px 0 0;background:var(--furniture-task-tab);padding:7px 20px;font-size:16px;line-height:1.1;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;pointer-events:auto}
@@ -44,6 +45,7 @@
 
 @media (max-width:1280px){
   .b01-furniture-composition{width:900px}
+  .b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:260px}
   .b01-side-owner{width:260px;height:500px}
   .b01-settings-owner{left:-190px}
   .b01-fridge-owner{right:-190px}
@@ -58,6 +60,7 @@
 /* Arc remains a desktop planner at narrow capture widths. Preserve the 1280 composition and pan it; never stack furniture below the calendar. */
 @media (max-width:800px){
   .b01-furniture-composition{width:900px;margin-left:190px;margin-right:190px;padding-bottom:44px;overflow:visible}
+  .b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:260px}
   .b01-side-owner{top:48px;width:260px;height:500px}
   .b01-settings-owner{left:-190px}
   .b01-fridge-owner{right:-190px}
