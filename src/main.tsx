@@ -17,8 +17,9 @@ import './styles/recoveryReview.css'
 import './styles/sourceCalendarReview.css'
 import './styles/schoolIdentitySearch.css'
 
-const localPlannerRegression = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname)
-  && window.location.pathname === '/'
+const isLocalHost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname)
+const localEntryPreview = isLocalHost && new URLSearchParams(window.location.search).has('entry')
+const localPlannerRegression = isLocalHost && window.location.pathname === '/' && !localEntryPreview
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>{localPlannerRegression ? <App /> : <DeploymentRouter />}</React.StrictMode>,
