@@ -28,6 +28,19 @@ async function assertNoHorizontalOverflow(page, label) {
   record(`${label} horizontal overflow`, geometry.scroll <= geometry.client + 1, `${geometry.scroll} > ${geometry.client}`)
 }
 
+async function assertEntryMedia(context, label) {
+  const assets = [
+    ['/assets/Arc_Motion_Transparent.webm', 'video/webm'],
+    ['/assets/arc-motion-final-transparent.png', 'image/png'],
+  ]
+  for (const [path, expectedType] of assets) {
+    const response = await context.request.get(`${baseUrl}${path}`)
+    const type = response.headers()['content-type'] ?? ''
+    record(`${label} ${path} HTTP`, response.status() === 200, `status ${response.status()}`)
+    record(`${label} ${path} type`, type.includes(expectedType), `content-type ${type || '(missing)'}`)
+  }
+}
+
 async function configureCalendar(page) {
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-02')
@@ -51,6 +64,7 @@ async function runCase(name, action) {
 async function captureEntry(browser, viewport, suffix) {
   const context = await browser.newContext({ viewport, reducedMotion: 'reduce' })
   try {
+    await assertEntryMedia(context, `entry ${suffix}`)
     const page = await context.newPage()
     const errors = trackRuntimeErrors(page)
     await page.goto(`${baseUrl}/?entry=1`, { waitUntil: 'networkidle' })
