@@ -1,0 +1,113 @@
+import { createHash, timingSafeEqual } from 'node:crypto'
+
+const COOKIE_NAME = 'arc_beta_access'
+const EXPECTED_PASSWORD_HASH = '02960e0be166e38c3f854ece834f50973db2f54fb8f3b969a8978ebf722dc280'
+const THIRTY_DAYS = 60 * 60 * 24 * 30
+
+function sha256(value) {
+  return createHash('sha256').update(value).digest('hex')
+}
+
+function safeEqual(left, right) {
+  const a = Buffer.from(left, 'utf8')
+  const b = Buffer.from(right, 'utf8')
+  return a.length === b.length && timingSafeEqual(a, b)
+}
+
+function accessTokenForUser(userId) {
+  return sha256(`arc-beta-access:${userId}:${EXPECTED_PASSWORD_HASH}`)
+}
+
+function parseCookies(header = '') {
+  return Object.fromEntries(
+    header
+      .split(';')
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .map((pair) => {
+        const index = pair.indexOf('=')
+        return index < 0
+          ? [pair, '']
+          : [pair.slice(0, index), decodeURIComponent(pair.slice(index + 1))]
+      }),
+  )
+}
+
+function send(res, status, body, extraHeaders = {}) {
+  res.statusCode = status
+  res.setHeader('content-type', 'application/json; charset=utf-8')
+  res.setHeader('cache-control', 'private, no-store')
+  for (const [name, value] of Object.entries(extraHeaders)) res.setHeader(name, value)
+  res.end(JSON.stringify(body))
+}
+
+async function readJson(req) {
+  let raw = ''
+  for await (const chunk of req) raw += chunk
+  return JSON.parse(raw || '{}')
+}
+
+async function getAuthenticatedUser(req) {
+  const supabaseUrl = process.env.SUPABASE_URL
+  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY
+  const authorization = req.headers.authorization
+  if (!supabaseUrl || !publishableKey) return { error: 'config' }
+  if (!authorization?.startsWith('Bearer ')) return { error: 'session' }
+
+  const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    headers: {
+      apikey: publishableKey,
+      Authorization: authorization,
+      Accept: 'application/json',
+    },
+  })
+  if (!response.ok) return { error: 'session' }
+  const user = await response.json()
+  if (!user?.id) return { error: 'session' }
+  return { user: { id: user.id, email: user.email ?? null } }
+}
+
+export default async function handler(req, res) {
+  if (!['GET', 'POST', 'DELETE'].includes(req.method)) {
+    return send(res, 405, { unlocked: false, reason: 'method' }, { allow: 'GET, POST, DELETE' })
+  }
+
+  const auth = await getAuthenticatedUser(req)
+  if (auth.error === 'config') return send(res, 503, { unlocked: false, reason: 'config' })
+  if (auth.error || !auth.user) return send(res, 401, { unlocked: false, reason: 'session' })
+
+  const { user } = auth
+
+  if (req.method === 'GET') {
+    const storedToken = parseCookies(req.headers.cookie)[COOKIE_NAME] ?? ''
+    const unlocked = safeEqual(storedToken, accessTokenForUser(user.id))
+    return send(res, 200, { unlocked, user })
+  }
+
+  if (req.method === 'POST') {
+    let body
+    try {
+      body = await readJson(req)
+    } catch {
+      return send(res, 400, { unlocked: false, error: 'Enter the beta password to continue.', user })
+    }
+
+    const password = typeof body.password === 'string' ? body.password : ''
+    if (!password) return send(res, 400, { unlocked: false, error: 'Enter the beta password to continue.', user })
+    if (!safeEqual(sha256(password), EXPECTED_PASSWORD_HASH)) {
+      return send(res, 401, { unlocked: false, error: 'That beta password is not correct.', user })
+    }
+
+    const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+    const cookie = `${COOKIE_NAME}=${encodeURIComponent(accessTokenForUser(user.id))}; Path=/; Max-Age=${THIRTY_DAYS}; HttpOnly; SameSite=Lax${secure}`
+    return send(res, 200, { unlocked: true, user }, { 'set-cookie': cookie })
+  }
+
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+  return send(
+    res,
+    200,
+    { unlocked: false, user },
+    { 'set-cookie': `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${secure}` },
+  )
+}
