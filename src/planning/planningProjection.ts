@@ -11,7 +11,7 @@ import type { LessonWorkspace } from './lessonWorkspace'
 
 export type PlanningUnitSpan = { unitId:string; title:string; courseId:string; startDate:ISODate; endDate:ISODate; startIndex:number; endIndex:number }
 export type PlanningLessonPlacement = { lessonId:string; unitId:string; unitTitle:string; courseId:string; title:string; sequence:number; datePolicy:LessonDatePolicy; sharedPlannedDate:ISODate|null; effectiveDate:ISODate; isSectionOverride:boolean; deliveryStatus:DeliveryStatus; taughtDate:ISODate|null; resumeNote:string|null }
-export type PlanningNoteProjection = { noteId:string; date:ISODate; text:string; placement:PlanningNotePlacement; important:boolean; sourceLabel:string|null; sourceLocator:string|null }
+export type PlanningNoteProjection = { noteId:string; date:ISODate; text:string; placement:Exclude<PlanningNotePlacement,'task-bar'>; important:boolean; sourceLabel:string|null; sourceLocator:string|null }
 export type PlanningDaySlot = { date:ISODate; lessons:PlanningLessonPlacement[] }
 export type PlanningSectionRow = { section:Section; days:PlanningDaySlot[] }
 export type PlanningCourseGroup = { course:Course; unitSpans:PlanningUnitSpan[]; sections:PlanningSectionRow[] }
@@ -34,7 +34,12 @@ export function projectPlanningRange(input:{dates:ISODate[]; planning:PlanningWo
 }
 
 function projectNotes(notes:PlanningNote[],dateIndexes:Map<ISODate,number>):PlanningNoteProjection[]{
-  return notes.filter((note)=>dateIndexes.has(note.date)).map((note)=>({noteId:note.id,date:note.date,text:note.text,placement:note.placement,important:note.important,sourceLabel:note.sourceLabel,sourceLocator:note.sourceLocator})).sort((a,b)=>(dateIndexes.get(a.date)!-dateIndexes.get(b.date)!)||a.noteId.localeCompare(b.noteId))
+  const projected:PlanningNoteProjection[]=[]
+  for(const note of notes){
+    if(note.placement==='task-bar'||note.date===null||!dateIndexes.has(note.date))continue
+    projected.push({noteId:note.id,date:note.date,text:note.text,placement:note.placement,important:note.important,sourceLabel:note.sourceLabel,sourceLocator:note.sourceLocator})
+  }
+  return projected.sort((a,b)=>(dateIndexes.get(a.date)!-dateIndexes.get(b.date)!)||a.noteId.localeCompare(b.noteId))
 }
 
 function projectUnitSpans(units:Unit[],courseId:string,firstDate:ISODate,lastDate:ISODate,dateIndexes:Map<ISODate,number>):PlanningUnitSpan[]{
