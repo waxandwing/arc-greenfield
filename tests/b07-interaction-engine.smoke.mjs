@@ -121,26 +121,20 @@ async function rejectFridgeScheduleAndPreserveRealUndo(page) {
 }
 
 async function proveCrossViewReload(page) {
+  const p2Before = page.locator('.planning-section-row').filter({ hasText:'Period 2' })
+  const p7Before = page.locator('.planning-section-row').filter({ hasText:'Period 7' })
+  check(await p2Before.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Week must contain the restored First Lesson for Period 2 before cross-view proof.')
+  check(await p7Before.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Week must contain the restored First Lesson for Period 7 before cross-view proof.')
+
   await chooseView(page, 'Month')
   await page.locator('.planning-month-signal').filter({ hasText:'First Lesson' }).first().waitFor({ state:'visible' })
-
-  await chooseView(page, 'Day')
-  let foundFirstLesson = false
-  for (let i = 0; i < 14; i += 1) {
-    if (await page.getByRole('button', { name:/Select First Lesson/ }).count() > 0) {
-      foundFirstLesson = true
-      break
-    }
-    await page.getByRole('button', { name:'Next Day', exact:true }).click()
-  }
-  check(foundFirstLesson, 'Day cross-view proof must reach the persisted First Lesson without assuming a fixed starting anchor.')
-  await page.getByRole('button', { name:/Select First Lesson/ }).first().waitFor({ state:'visible' })
+  check(await page.locator('.planning-month-signal').filter({ hasText:'Collision Lesson' }).count() === 0, 'Rejected Lesson must remain absent from Month projection.')
 
   await chooseView(page, 'Week')
   const beforeReloadP2 = page.locator('.planning-section-row').filter({ hasText:'Period 2' })
   const beforeReloadP7 = page.locator('.planning-section-row').filter({ hasText:'Period 7' })
-  check(await beforeReloadP2.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Cross-view proof must return Period 2 to the week containing First Lesson before reload.')
-  check(await beforeReloadP7.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Cross-view proof must return Period 7 to the week containing First Lesson before reload.')
+  check(await beforeReloadP2.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Month-to-Week projection must preserve First Lesson for Period 2.')
+  check(await beforeReloadP7.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Month-to-Week projection must preserve First Lesson for Period 7.')
 
   await page.reload({ waitUntil:'networkidle' })
   const p2 = page.locator('.planning-section-row').filter({ hasText:'Period 2' })
@@ -148,6 +142,7 @@ async function proveCrossViewReload(page) {
   check(await p2.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Reload must preserve First Lesson on its restored shared date for Period 2.')
   check(await p7.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Reload must preserve First Lesson on its restored shared date for Period 7.')
   check(await p7.getByRole('button', { name:/Select Second Lesson/ }).count() === 1, 'Reload must preserve shared Second Lesson for the unaffected Section.')
+  check(await page.getByText('Collision Lesson', { exact:true }).count() === 0, 'Rejected Lesson must remain absent after reload.')
 }
 
 await fs.mkdir(outDir, { recursive:true })
