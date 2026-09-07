@@ -25,6 +25,11 @@ async function press(locator, key = 'Enter') {
   await locator.press(key)
 }
 
+async function selectCalendarView(page, view) {
+  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
+  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
+}
+
 async function configure(page) {
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-02')
@@ -74,8 +79,8 @@ async function makePlan(page) {
 }
 
 async function moveToTargetWeek(page) {
-  await page.getByRole('button', { name: 'Month', exact: true }).click()
-  await page.getByRole('button', { name: 'Week', exact: true }).click()
+  await selectCalendarView(page, 'Month')
+  await selectCalendarView(page, 'Week')
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
 }
@@ -102,7 +107,7 @@ try {
   await moveToTargetWeek(page)
   assert((await titlesInRow(page, 'Period 1')).includes('Color intro'), 'RGAV B: Week lost Color intro for Period 1.')
   assert((await titlesInRow(page, 'Period 4')).includes('Mixing lab'), 'RGAV B: Week lost Mixing lab for Period 4.')
-  await page.getByRole('button', { name: 'Day', exact: true }).click()
+  await selectCalendarView(page, 'Day')
   assert(await page.getByRole('heading', { level: 1, name: 'Day', exact: true }).count() === 1, 'RGAV B: Day projection did not open.')
 
   // Mutate the shared plan by keyboard, then prove reload persistence.
@@ -160,7 +165,7 @@ try {
   assert(runtimeErrors.length === 0, `RGAV B runtime errors: ${runtimeErrors.join(' | ')}`)
 
   await context.close()
-  console.log('Independent Phase 2 RGAV B passed: alternate teacher story/viewport verified cross-view truth, keyboard move + reload, Section divergence, recovery/fixed-anchor context, Section isolation, Apply/Undo persistence, no drag-only route, overflow, and runtime cleanliness.')
+  console.log('Independent Phase 2 RGAV B passed: alternate teacher story/viewport verified title-based cross-view truth, keyboard move + reload, Section divergence, recovery/fixed-anchor context, Section isolation, Apply/Undo persistence, no drag-only route, overflow, and runtime cleanliness.')
 } finally {
   await browser.close()
 }
