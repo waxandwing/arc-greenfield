@@ -1,0 +1,90 @@
+/* Founder-supplied 2026-09-07 interface references are the visual authority for desktop shell composition.
+   Controlled furniture overlap is intentional; the notebook remains the fixed dominant center. */
+@media (min-width:801px){
+  .b01-furniture-composition{
+    width:min(1060px,69vw);
+    padding-bottom:44px;
+  }
+
+  /* Open Task Bar rises over the lower planner instead of reserving a separate SaaS-style band. */
+  .b01-furniture-composition:has(.b01-task-owner[data-state='open']){
+    padding-bottom:44px;
+  }
+
+  .b01-side-owner{
+    top:min(54px,3.6vw);
+    width:min(360px,23.5vw);
+    height:min(570px,38vw);
+  }
+
+  /* Settings is wall/edge furniture. Its yellow body may cross the notebook edge slightly. */
+  .b01-settings-owner{
+    left:max(-260px,-17vw);
+  }
+  .b01-settings-surface{
+    width:calc(100% - min(40px,2.6vw));
+    padding-right:min(76px,5vw);
+  }
+  .b01-edge-tab--left{
+    right:min(40px,2.6vw);
+  }
+
+  /* Drawer/Fridge is the corresponding right-side owner and may overlap the notebook edge. */
+  .b01-fridge-owner{
+    right:max(-260px,-17vw);
+  }
+  .b01-fridge-surface{
+    width:calc(100% - min(40px,2.6vw));
+    margin-left:min(40px,2.6vw);
+    padding-left:min(76px,5vw);
+  }
+  .b01-edge-tab--right{
+    left:min(40px,2.6vw);
+  }
+
+  /* Source-of-truth task composition: broad orange furniture enters from lower left and overlaps the notebook. */
+  .b01-task-owner{
+    left:max(-250px,-16.3vw);
+    bottom:0;
+    width:min(930px,60.5vw);
+    transform:none;
+  }
+  .b01-task-owner[data-state='open']{
+    height:min(255px,17vw);
+  }
+  .b01-task-tab{
+    left:54px;
+    transform:none;
+    min-width:190px;
+    justify-content:flex-start;
+    text-align:left;
+  }
+  .b05-clean-up{
+    left:auto;
+    right:-370px;
+    top:calc(100% - 44px);
+    white-space:nowrap;
+    border:0;
+    background:transparent;
+    box-shadow:none;
+    text-transform:uppercase;
+  }
+  .b01-task-surface{
+    border-radius:20px 20px 8px 8px;
+    padding:64px 38px 24px;
+  }
+}
+
+@media (min-width:801px) and (max-width:1280px){
+  .b01-furniture-composition{width:min(940px,73.5vw)}
+  .b01-side-owner{width:320px;height:520px}
+  .b01-settings-owner{left:-225px}
+  .b01-fridge-owner{right:-225px}
+  .b01-settings-surface{width:285px;padding-right:58px}
+  .b01-fridge-surface{width:285px;margin-left:35px;padding-left:58px}
+  .b01-edge-tab--left{right:35px}
+  .b01-edge-tab--right{left:35px}
+  .b01-task-owner{left:-205px;width:min(840px,65.5vw)}
+  .b01-task-owner[data-state='open']{height:235px}
+  .b05-clean-up{right:-315px}
+}
