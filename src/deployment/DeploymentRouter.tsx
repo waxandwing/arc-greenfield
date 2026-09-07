@@ -14,7 +14,6 @@ import {
   refreshAuthSession,
   startCloudWorkspaceMirror,
   unlockBeta,
-  type ArcAuthSession,
   type ArcRuntimeConfig,
   type CloudSaveStatus,
 } from './arcCloud'
