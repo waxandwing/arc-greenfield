@@ -38,7 +38,7 @@ jobs:
           const result = await fetchNcesProxy({ schoolName: 'Oak Ridge', city: 'Orlando', state: 'FL', maxCandidates: 25 })
           if (result.status < 200 || result.status >= 300) throw new Error(`NCES proxy upstream returned HTTP ${result.status}`)
           const payload = JSON.parse(result.body)
-          const names = Array.isArray(payload.features) ? payload.features.map((feature) => feature?.attributes?.SCH_NAME).filter(Boolean) : []
+          const names = Array.isArray(payload.features) ? payload.features.map((feature) => feature?.attributes?.NAME).filter(Boolean) : []
           if (!names.some((name) => String(name).toUpperCase().includes('OAK RIDGE HIGH'))) throw new Error(`NCES proxy upstream did not return Oak Ridge High: ${names.join(', ')}`)
           console.log('server-side NCES reachability passed')
           NODE
