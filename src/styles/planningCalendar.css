@@ -104,7 +104,7 @@
 .planning-note-select{align-content:start;gap:8px}
 .planning-lesson-select{align-content:start;gap:5px}
 .planning-unit-object{position:relative;align-self:center;min-width:0}
-.planning-unit-object .planning-unit-span{width:calc(100% - 12px);min-height:44px;text-align:left;cursor:pointer}
+.planning-unit-object .planning-unit-span{width:calc(100% - 12px);min-height:44px;border-left:4px solid var(--terracotta);text-align:left;cursor:pointer}
 .planning-object--selected{z-index:7;outline:2px solid rgba(64,93,108,.4);outline-offset:3px}
 .planning-object-select:focus-visible,.planning-quick-add-trigger:focus-visible,.planning-context-toolbar button:focus-visible,.planning-inline-editor :is(button,input,select):focus-visible,.planning-quick-add :is(button,input,textarea,select):focus-visible{outline:3px solid var(--dusty-blue);outline-offset:2px}
 
