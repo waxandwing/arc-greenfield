@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { tasksForPriority, type TaskBarItem, type TaskBarWorkspace, type TaskPriority } from '../planning/taskBar'
 import '../styles/taskBar.css'
 
@@ -43,16 +43,23 @@ function TaskLane({
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState('')
   const addTrigger = useRef<HTMLButtonElement>(null)
+  const restoreAddFocus = useRef(false)
   const tasks = tasksForPriority(workspace, priority)
 
-  function restoreAddFocus() {
-    requestAnimationFrame(() => addTrigger.current?.focus())
+  useEffect(() => {
+    if (adding || !restoreAddFocus.current) return
+    restoreAddFocus.current = false
+    addTrigger.current?.focus()
+  }, [adding])
+
+  function closeAddAndRestoreFocus() {
+    restoreAddFocus.current = true
+    setAdding(false)
   }
 
   function cancelAdd() {
     setDraft('')
-    setAdding(false)
-    restoreAddFocus()
+    closeAddAndRestoreFocus()
   }
 
   function commitAdd() {
@@ -60,8 +67,7 @@ function TaskLane({
     if (!text) return
     onAdd(priority, text)
     setDraft('')
-    setAdding(false)
-    restoreAddFocus()
+    closeAddAndRestoreFocus()
   }
 
   return (
@@ -130,19 +136,26 @@ function TaskRow({
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(task.text)
   const editTrigger = useRef<HTMLButtonElement>(null)
+  const restoreEditFocus = useRef(false)
+
+  useEffect(() => {
+    if (editing || !restoreEditFocus.current) return
+    restoreEditFocus.current = false
+    editTrigger.current?.focus()
+  }, [editing])
 
   function finishEdit(restoreFocus = false) {
     const text = draft.trim()
     if (text && text !== task.text) onRename(task.id, text)
     else setDraft(task.text)
+    if (restoreFocus) restoreEditFocus.current = true
     setEditing(false)
-    if (restoreFocus) requestAnimationFrame(() => editTrigger.current?.focus())
   }
 
   function cancelEdit() {
     setDraft(task.text)
+    restoreEditFocus.current = true
     setEditing(false)
-    requestAnimationFrame(() => editTrigger.current?.focus())
   }
 
   return (
