@@ -6,6 +6,7 @@ import {
   removeTask,
   renameTask,
   setTaskCompleted,
+  setTaskImportant,
   type TaskPriority,
 } from '../planning/taskBar'
 import { loadTaskBar, saveTaskBar } from '../planning/taskBarPersistence'
@@ -33,6 +34,9 @@ export function useTaskBar() {
     },
     move(taskId: string, priority: TaskPriority) {
       commit((current) => moveTaskPriority(current, taskId, priority))
+    },
+    setImportant(taskId: string, important: boolean) {
+      commit((current) => setTaskImportant(current, taskId, important))
     },
     setCompleted(taskId: string, completed: boolean) {
       commit((current) => setTaskCompleted(current, taskId, completed))
