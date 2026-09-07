@@ -36,3 +36,30 @@
 @media (max-width:800px){.b01-furniture-composition{width:100%;padding-bottom:44px;overflow:clip}.b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:210px}.b01-side-owner{top:48px;width:220px;height:480px}.b01-settings-owner{left:0}.b01-fridge-owner{right:0}.b01-settings-surface,.b01-fridge-surface{width:100%;margin-left:0}.b01-edge-tab--left{right:0}.b01-edge-tab--right{left:0}.b01-settings-surface{padding:22px 62px 22px 18px}.b01-fridge-surface{padding:22px 18px 22px 62px}.b01-task-owner{left:36px;right:36px;width:auto;height:44px;transform:none}.b01-task-owner[data-state='open']{height:210px}.b05-clean-up{left:calc(50% + 78px)}.b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 184px)}}
 @media (max-width:520px){.b01-side-owner{width:min(82vw,300px);height:min(68vh,520px)}.b01-task-owner{left:20px;right:20px}.b01-task-owner[data-state='open']{height:190px}.b01-task-surface{padding:58px 12px 18px}.b01-task-surface>div{padding:5px 8px;font-size:16px}.b05-clean-up{left:auto;right:0;padding-inline:10px}}
 @media (prefers-reduced-motion:reduce){.b01-task-surface{transition:none}}
+
+/* Narrow responsive furniture: open surfaces move below the calendar rather than covering it. */
+@media (max-width:800px){
+  .b01-furniture-composition{display:flex;flex-direction:column;overflow:visible;padding-bottom:44px}
+  .b01-calendar-owner{order:1;flex:0 0 auto}
+  .b01-settings-owner{order:2}
+  .b01-fridge-owner{order:3}
+  .b01-task-owner{order:4}
+  .b01-side-owner[data-state='open']{position:relative;inset:auto;width:100%;height:min(68vh,520px);margin-top:12px;pointer-events:auto}
+  .b01-side-owner[data-state='open'] .b01-edge-tab{position:relative;top:auto;left:auto;right:auto;width:100%;min-height:44px;padding:8px 16px;writing-mode:horizontal-tb;transform:none;border-radius:5px 5px 0 0}
+  .b01-side-owner[data-state='open'] .b01-furniture-surface{width:100%;height:calc(100% - 44px);margin:0;padding:22px 18px;border:1px solid rgba(44,46,46,.2);border-radius:0 0 12px 12px}
+  .b01-side-owner[data-state='closed']{position:absolute;top:48px;height:480px;width:min(82vw,300px)}
+  .b01-settings-owner[data-state='closed']{left:0;right:auto}
+  .b01-fridge-owner[data-state='closed']{right:0;left:auto}
+  .b01-side-owner[data-state='closed'] .b01-edge-tab--left{right:0}
+  .b01-side-owner[data-state='closed'] .b01-edge-tab--right{left:0}
+  .b01-task-owner[data-state='open']{position:relative;inset:auto;width:100%;height:clamp(260px,52vh,440px);margin-top:12px;transform:none;pointer-events:auto}
+  .b01-task-owner[data-state='open'] .b01-task-tab{position:relative;top:auto;left:auto;width:100%;transform:none}
+  .b01-task-owner[data-state='open'] .b05-clean-up{top:0;right:0;left:auto}
+  .b01-task-owner[data-state='open'] .b01-task-surface{height:calc(100% - 44px);padding:14px 12px 18px;border-radius:0 0 12px 12px}
+  .b01-task-owner[data-state='closed']{position:absolute;left:20px;right:20px;bottom:0;width:auto;height:44px;transform:none}
+  .b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:44px}
+}
+@media (max-width:520px){
+  .b01-side-owner[data-state='open']{height:min(70vh,560px)}
+  .b01-task-owner[data-state='open']{height:clamp(320px,64vh,560px)}
+}
