@@ -19,6 +19,15 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function selectView(page, view) {
+  const settings = page.getByRole('button', { name: 'Settings' })
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  const nav = page.getByRole('navigation', { name: 'Calendar views' })
+  assert(await nav.isVisible(), `Phase 2: Settings did not expose Calendar views before selecting ${view}.`)
+  await nav.getByRole('button', { name: view, exact: true }).click()
+  await page.getByRole('button', { name: 'Close Settings' }).click()
+}
+
 async function waitForCalendarAfterLessonSave(page, context) {
   try {
     await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible', timeout: 5000 })
@@ -72,7 +81,7 @@ async function addLesson(page, title, date) {
 }
 
 async function goToWeekContainingLessons(page) {
-  await page.getByRole('button', { name: 'Week', exact: true }).click()
+  await selectView(page, 'Week')
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
   await page.getByRole('button', { name: 'Next Week', exact: true }).click()
 }
@@ -100,7 +109,7 @@ try {
   assert(await page.getByText('Temple lesson', { exact: true }).count() > 0, 'Phase 2: Week projection disagrees with Month for Temple lesson.')
   assert(await page.getByText('Image comparison', { exact: true }).count() > 0, 'Phase 2: Week projection lost a same-day Lesson.')
 
-  await page.getByRole('button', { name: 'Day', exact: true }).click()
+  await selectView(page, 'Day')
   assert(await page.getByText('Temple lesson', { exact: true }).count() > 0, 'Phase 2: Day projection disagrees with Week for Temple lesson.')
   assert(await page.getByText('Image comparison', { exact: true }).count() > 0, 'Phase 2: Day projection lost a same-day Lesson.')
 
@@ -130,7 +139,7 @@ try {
 
   assert(runtimeErrors.length === 0, `Phase 2 runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
-  console.log('Phase 2 rendered planning truth gate passed: create → same-day placement → Month/Week/Day continuity → reload → move → reload.')
+  console.log('Phase 2 rendered planning truth gate passed: B01 Settings view navigation → create → same-day placement → Month/Week/Day continuity → reload → move → reload.')
 } finally {
   await browser.close()
 }
