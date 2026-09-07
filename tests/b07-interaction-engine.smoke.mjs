@@ -125,8 +125,15 @@ async function proveCrossViewReload(page) {
   await page.locator('.planning-month-signal').filter({ hasText:'First Lesson' }).first().waitFor({ state:'visible' })
 
   await chooseView(page, 'Day')
-  for (let i = 0; i < 3; i += 1) await page.getByRole('button', { name:'Next Day', exact:true }).click()
-  await page.getByRole('button', { name:/Add work on .*September 17, 2026/ }).waitFor({ state:'visible' })
+  let foundFirstLesson = false
+  for (let i = 0; i < 14; i += 1) {
+    if (await page.getByRole('button', { name:/Select First Lesson/ }).count() > 0) {
+      foundFirstLesson = true
+      break
+    }
+    await page.getByRole('button', { name:'Next Day', exact:true }).click()
+  }
+  check(foundFirstLesson, 'Day cross-view proof must reach the persisted First Lesson without assuming a fixed starting anchor.')
   await page.getByRole('button', { name:/Select First Lesson/ }).first().waitFor({ state:'visible' })
 
   await chooseView(page, 'Week')
