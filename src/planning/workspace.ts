@@ -1,15 +1,18 @@
 import { createCourse, createSection, validateCourse, validateSection, validateSectionCourse, type Course, type Section } from './courses'
+import { createPlanningNote, validatePlanningNote, type PlanningNote, type PlanningNoteInput } from './notes'
 
 export type PlanningWorkspace = {
   calendarId: string
   courses: Course[]
   sections: Section[]
+  notes: PlanningNote[]
 }
 
 export type PlanningWorkspaceInput = {
   calendarId: string
   courses: Course[]
   sections: Section[]
+  notes?: PlanningNoteInput[]
 }
 
 export function hydratePlanningWorkspace(input: PlanningWorkspaceInput): PlanningWorkspace {
@@ -17,6 +20,7 @@ export function hydratePlanningWorkspace(input: PlanningWorkspaceInput): Plannin
     calendarId: input.calendarId.trim(),
     courses: input.courses.map((course) => createCourse(course)),
     sections: input.sections.map((section) => createSection(section)),
+    notes: (input.notes ?? []).map((note) => createPlanningNote(note)),
   }
 
   const errors = validatePlanningWorkspace(normalized)
@@ -51,6 +55,14 @@ export function validatePlanningWorkspace(workspace: PlanningWorkspace): string[
     } else {
       errors.push(...validateSectionCourse(section, course))
     }
+  }
+
+  const noteIds = new Set<string>()
+  for (const note of workspace.notes) {
+    errors.push(...validatePlanningNote(note))
+    if (noteIds.has(note.id)) errors.push(`Duplicate Note ID: ${note.id}.`)
+    noteIds.add(note.id)
+    if (note.calendarId !== workspace.calendarId) errors.push(`Note ${note.id} belongs to a different school calendar.`)
   }
 
   return unique(errors)
