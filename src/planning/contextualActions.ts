@@ -13,6 +13,12 @@ function newId(prefix: string): string {
   return `${prefix}-${token}`
 }
 
+function assertCalendarOwner(label: string, workspaceCalendarId: string, calendarId: string) {
+  if (workspaceCalendarId !== calendarId) {
+    throw new Error(`${label} belongs to a different school calendar.`)
+  }
+}
+
 export function createUnitOnWeek(input: {
   calendar: SchoolCalendar
   workspace: UnitWorkspace
@@ -21,6 +27,7 @@ export function createUnitOnWeek(input: {
   startDate: ISODate
   endDate: ISODate
 }): UnitWorkspace {
+  assertCalendarOwner('Unit workspace', input.workspace.calendarId, input.calendar.id)
   const unit = placeUnit(createUnit({
     id: newId('unit'),
     calendarId: input.calendar.id,
@@ -38,8 +45,11 @@ export function createLessonOnWeek(input: {
   title: string
   plannedDate: ISODate
 }): LessonWorkspace {
+  assertCalendarOwner('Unit workspace', input.units.calendarId, input.calendar.id)
+  assertCalendarOwner('Lesson workspace', input.workspace.calendarId, input.calendar.id)
   const unit = input.units.units.find((candidate) => candidate.id === input.unitId)
   if (!unit) throw new Error(`Cannot create Lesson. Unit does not exist: ${input.unitId}.`)
+  assertCalendarOwner('Unit', unit.calendarId, input.calendar.id)
   const siblings = lessonsForUnit(input.workspace.lessons, unit.id)
   const lesson = createLesson({
     id: newId('lesson'),
@@ -64,6 +74,7 @@ export function createPlanningNoteOnWeek(input: {
   placement?: PlanningNotePlacement
   important?: boolean
 }): PlanningWorkspace {
+  assertCalendarOwner('Planning workspace', input.workspace.calendarId, input.calendarId)
   const note = createPlanningNote({
     id: newId('note'),
     calendarId: input.calendarId,
@@ -78,6 +89,7 @@ export function createPlanningNoteOnWeek(input: {
 export function copyUnitForLater(workspace: UnitWorkspace, unitId: string): UnitWorkspace {
   const source = workspace.units.find((unit) => unit.id === unitId)
   if (!source) throw new Error(`Unit does not exist: ${unitId}.`)
+  assertCalendarOwner('Unit', source.calendarId, workspace.calendarId)
   const copy = createUnit({
     id: newId('unit'),
     calendarId: source.calendarId,
@@ -90,6 +102,7 @@ export function copyUnitForLater(workspace: UnitWorkspace, unitId: string): Unit
 export function copyLessonForLater(workspace: LessonWorkspace, lessonId: string): LessonWorkspace {
   const source = workspace.lessons.find((lesson) => lesson.id === lessonId)
   if (!source) throw new Error(`Lesson does not exist: ${lessonId}.`)
+  assertCalendarOwner('Lesson', source.calendarId, workspace.calendarId)
   const siblings = lessonsForUnit(workspace.lessons, source.unitId)
   const copy = createLesson({
     id: newId('lesson'),
@@ -129,5 +142,6 @@ export function deletePlanningNote(workspace: PlanningWorkspace, noteId: string)
 function requireNote(workspace: PlanningWorkspace, noteId: string): PlanningNote {
   const note = (workspace.notes ?? []).find((candidate) => candidate.id === noteId)
   if (!note) throw new Error(`Note does not exist: ${noteId}.`)
+  assertCalendarOwner('Note', note.calendarId, workspace.calendarId)
   return note
 }
