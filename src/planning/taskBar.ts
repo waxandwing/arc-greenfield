@@ -16,7 +16,7 @@ export function createTaskBarItem(
     id,
     calendarId,
     date: null,
-    text,
+    text: normalizeTaskText(text),
     placement: 'task-bar',
     priority,
     important: false,
