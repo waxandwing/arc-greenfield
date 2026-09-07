@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App'
+import { DeploymentRouter } from './deployment/DeploymentRouter'
 import './styles/tokens.css'
 import './styles/global.css'
 import './styles/calendarControls.css'
@@ -17,5 +17,5 @@ import './styles/sourceCalendarReview.css'
 import './styles/schoolIdentitySearch.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode><App /></React.StrictMode>,
+  <React.StrictMode><DeploymentRouter /></React.StrictMode>,
 )
