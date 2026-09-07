@@ -1,10 +1,9 @@
 const layer = 'https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_ADMINDATA_PUBLICSCH_2425/MapServer/1'
 const params = new URLSearchParams({
   f: 'json',
-  where: "UPPER(SCH_NAME) LIKE '%OAK RIDGE%' AND UPPER(LCITY) = 'ORLANDO' AND UPPER(LSTATE) = 'FL'",
+  where: "SCH_NAME LIKE '%Oak Ridge%' AND LCITY LIKE 'Orlando' AND LSTATE = 'FL'",
   outFields: 'NCESSCH,LEAID,LEA_NAME,SCH_NAME,LCITY,LSTATE,SY_STATUS_TEXT',
   returnGeometry: 'false',
-  orderByFields: 'SCH_NAME ASC',
   resultRecordCount: '10',
 })
 
