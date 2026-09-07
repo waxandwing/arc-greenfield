@@ -149,6 +149,7 @@ async function proveCrossViewReload(page) {
   check(await beforeReloadP7.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Month-to-Day-to-Week projection must preserve First Lesson for Period 7.')
 
   await page.reload({ waitUntil:'networkidle' })
+  await goTargetWeek(page)
   const p2 = page.locator('.planning-section-row').filter({ hasText:'Period 2' })
   const p7 = page.locator('.planning-section-row').filter({ hasText:'Period 7' })
   check(await p2.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Reload must preserve First Lesson on its restored shared date for Period 2.')
