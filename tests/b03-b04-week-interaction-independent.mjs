@@ -5,6 +5,12 @@ const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const outDir = 'artifacts/b03-b04-week-interaction-independent'
 function check(condition, message) { if (!condition) throw new Error(message) }
 function action(page, text) { return page.locator('.calendar-context-actions button').filter({ hasText:text }) }
+async function waitForFocus(page, locator) {
+  const handle = await locator.elementHandle()
+  check(handle, 'Focus target must exist before focus recovery can be verified.')
+  await page.waitForFunction((element) => document.activeElement === element, handle)
+  await handle.dispose()
+}
 
 async function goTargetWeek(page) {
   await page.getByRole('button', { name:/Change calendar view, current/ }).click()
@@ -53,7 +59,7 @@ async function pass14ToolbarKeyboard(page) {
   check(await toolbar.getByRole('button', { name:'Close object actions' }).evaluate((el) => el === document.activeElement), 'Pass 14: End must focus the final toolbar control.')
   await page.keyboard.press('Escape')
   check(await unit.getAttribute('aria-pressed') === 'false', 'Pass 14: Escape must dismiss selected Unit actions.')
-  check(await unit.evaluate((el) => el === document.activeElement), 'Pass 14: toolbar Escape must restore focus to the Unit.')
+  await waitForFocus(page, unit)
 }
 
 async function pass15QuickAddFocus(page) {
@@ -64,7 +70,7 @@ async function pass15QuickAddFocus(page) {
   check(await page.getByRole('textbox', { name:'Lesson title' }).evaluate((el) => el === document.activeElement), 'Pass 15: quick-add must focus its primary text field.')
   await page.keyboard.press('Escape')
   check(await dialog.count() === 0, 'Pass 15: Escape must close quick-add.')
-  check(await trigger.evaluate((el) => el === document.activeElement), 'Pass 15: quick-add Escape must return focus to the originating day trigger.')
+  await waitForFocus(page, trigger)
 }
 
 async function pass16DestructiveConfirmation(page) {
