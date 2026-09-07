@@ -177,31 +177,46 @@ export function useWeekPlanningActions(
     } catch (error) { reportContextError(error) }
   }
 
-  function createUnitFromWeek(courseId: string, title: string, startDate: ISODate, endDate: ISODate) {
-    if (!workspace.calendar || !workspace.unitWorkspace) return
+  function createUnitFromWeek(courseId: string, title: string, startDate: ISODate, endDate: ISODate): boolean {
+    if (!workspace.calendar || !workspace.unitWorkspace) return false
     try {
       const next = createUnitOnWeek({ calendar: workspace.calendar, workspace: workspace.unitWorkspace, courseId, title, startDate, endDate })
-      reportMutationResult(workspace.useUnits(next, next), 'Unit added from the Week calendar.')
-    } catch (error) { reportContextError(error) }
+      const accepted = workspace.useUnits(next, next)
+      reportMutationResult(accepted, 'Unit added from the Week calendar.')
+      return accepted
+    } catch (error) {
+      reportContextError(error)
+      return false
+    }
   }
 
-  function createLessonFromWeek(unitId: string, title: string, plannedDate: ISODate) {
-    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+  function createLessonFromWeek(unitId: string, title: string, plannedDate: ISODate): boolean {
+    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return false
     try {
       const next = createLessonOnWeek({ calendar: workspace.calendar, units: workspace.unitWorkspace, workspace: workspace.lessonWorkspace, unitId, title, plannedDate })
       const shift = shiftWithOverrides(workspace.shiftState?.overrides ?? [])
-      if (!shift) return
-      reportMutationResult(workspace.useLessons(next, next, shift), 'Lesson added from the Week calendar.')
-    } catch (error) { reportContextError(error) }
+      if (!shift) return false
+      const accepted = workspace.useLessons(next, next, shift)
+      reportMutationResult(accepted, 'Lesson added from the Week calendar.')
+      return accepted
+    } catch (error) {
+      reportContextError(error)
+      return false
+    }
   }
 
-  function createNoteFromWeek(date: ISODate, text: string, placement: PlanningNotePlacement, important: boolean) {
-    if (!workspace.calendar || !workspace.planningWorkspace) return
+  function createNoteFromWeek(date: ISODate, text: string, placement: PlanningNotePlacement, important: boolean): boolean {
+    if (!workspace.calendar || !workspace.planningWorkspace) return false
     try {
       const next = createPlanningNoteOnWeek({ workspace: workspace.planningWorkspace, calendarId: workspace.calendar.id, date, text, placement, important })
       const message = placement === 'after-school' ? 'After School note added from the Week calendar.' : 'Note added from the Week calendar.'
-      reportMutationResult(workspace.useClasses(next, next), message)
-    } catch (error) { reportContextError(error) }
+      const accepted = workspace.useClasses(next, next)
+      reportMutationResult(accepted, message)
+      return accepted
+    } catch (error) {
+      reportContextError(error)
+      return false
+    }
   }
 
   function sendLessonBackToFridge(lessonId: string) {
