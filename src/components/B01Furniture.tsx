@@ -21,7 +21,7 @@ export function B01Furniture({ settings, children }: Props) {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Escape') return
-      const active: DrawerName | null = open.settings ? 'settings' : open.fridge ? 'fridge' : open.tasks ? 'tasks' : null
+      const active: DrawerName | null = open.tasks ? 'tasks' : open.fridge ? 'fridge' : open.settings ? 'settings' : null
       if (!active) return
       event.preventDefault()
       setOpen((current) => ({ ...current, [active]: false }))
