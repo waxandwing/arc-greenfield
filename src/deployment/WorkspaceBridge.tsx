@@ -56,6 +56,16 @@ export function WorkspaceBridge({ children }: Props) {
 
     async function start() {
       try {
+        const gateResponse = await fetch('/api/beta-access', {
+          cache: 'no-store',
+          credentials: 'same-origin',
+        })
+        const gate = gateResponse.ok ? await gateResponse.json() as { unlocked?: boolean } : { unlocked: false }
+        if (!gate.unlocked) {
+          window.location.replace('/core')
+          return
+        }
+
         const supabase = await loadArcSupabase()
         const { data, error } = await supabase.auth.getSession()
         if (error || !data.session?.user?.id) {
