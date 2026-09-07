@@ -9,7 +9,7 @@ export function createTaskBarItem(
   calendarId: string,
   text: string,
   priority: TaskPriority,
-  now = new Date(),
+  _now = new Date(),
   id = createTaskId(),
 ): TaskBarItem {
   return createPlanningNote({
