@@ -110,7 +110,7 @@ try {
   const viewportBefore = await geometrySnapshot(page)
   const settings = page.getByRole('button', { name: 'Settings', exact: true })
   const fridge = page.getByRole('button', { name: 'Fridge', exact: true })
-  const tasks = page.getByRole('button', { name: 'Tasks', exact: true })
+  const tasks = page.getByRole('button', { name: 'Task Bar', exact: true })
   const controls = [settings, fridge, tasks]
 
   for (const control of [tasks, fridge, settings]) {

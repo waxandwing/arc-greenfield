@@ -13,6 +13,17 @@
   --kraft:#C6A77D;
   --soft-charcoal:#4A4945;
 
+  /* Derived furniture surfaces remain visually stable while tokens.css owns their values. */
+  --furniture-settings-light:#F5D77C;
+  --furniture-settings-deep:#EDC95F;
+  --furniture-settings-tab:#EFD070;
+  --furniture-fridge-light:#DFF1F4;
+  --furniture-fridge-deep:#CCE6EB;
+  --furniture-fridge-tab:#D2E9ED;
+  --furniture-task-tab:#C49A6C;
+  --furniture-task-light:#C8A170;
+  --furniture-task-deep:#BD9160;
+
   --line-subtle:rgba(44,46,46,.12);
   --line-strong:rgba(44,46,46,.22);
   --control-border:rgba(44,46,46,.55);

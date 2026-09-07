@@ -35,6 +35,7 @@ const contracts = [
   'tests/generated/src/planning/objectActions.contract.js',
   'tests/generated/src/planning/contextualActions.contract.js',
   'tests/generated/src/planning/fridgeRoundTrip.contract.js',
+  'tests/generated/src/planning/taskBar.contract.js',
   'tests/generated/src/planning/recoveryPreview.contract.js',
   'tests/generated/src/planning/recoveryShiftDraft.contract.js',
   'tests/generated/src/planning/recoveryResolution.contract.js',
