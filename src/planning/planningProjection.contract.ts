@@ -67,6 +67,7 @@ const p5Row = week.courses[0].sections.find((row) => row.section.id === p5.id)!
 const p7Row = week.courses[0].sections.find((row) => row.section.id === p7.id)!
 
 assert(p2Row.days[2].lessons[0]?.lessonId === lesson17.id, 'P2 should keep Lesson 17 on the shared Wednesday plan.')
+assert(p2Row.days[2].lessons[0]?.unitId === unit.id && p2Row.days[2].lessons[0]?.unitTitle === unit.title, 'Every projected Lesson should retain explicit parent Unit identity for canonical hierarchy.')
 assert(p2Row.days[2].lessons[0]?.deliveryStatus === 'completed', 'P2 should project completed teaching state.')
 assert(p5Row.days[2].lessons.length === 0, 'P5 should no longer show Lesson 17 on Wednesday after its Section-specific Shift.')
 assert(p5Row.days[3].lessons.some((lesson) => lesson.lessonId === lesson17.id && lesson.isSectionOverride), 'P5 should show the effective Thursday continuation and mark it as Section-specific.')
