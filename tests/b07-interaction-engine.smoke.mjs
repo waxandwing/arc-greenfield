@@ -130,11 +130,23 @@ async function proveCrossViewReload(page) {
   await page.locator('.planning-month-signal').filter({ hasText:'First Lesson' }).first().waitFor({ state:'visible' })
   check(await page.locator('.planning-month-signal').filter({ hasText:'Collision Lesson' }).count() === 0, 'Rejected Lesson must remain absent from Month projection.')
 
+  await chooseView(page, 'Day')
+  for (let i = 0; i < 14; i += 1) {
+    const daySection = page.locator('.projection-section').first()
+    const dayLabel = (await daySection.getAttribute('aria-label')) ?? ''
+    if (/September 17, 2026/.test(dayLabel)) break
+    await page.getByRole('button', { name:'Next Day', exact:true }).click()
+  }
+  const daySection = page.locator('.projection-section').first()
+  check(/September 17, 2026/.test((await daySection.getAttribute('aria-label')) ?? ''), 'Day cross-view proof must reach September 17 from canonical navigation state.')
+  await page.getByRole('article', { name:/First Lesson/ }).first().waitFor({ state:'visible' })
+  check(await page.getByText('Collision Lesson', { exact:true }).count() === 0, 'Rejected Lesson must remain absent from Day projection.')
+
   await chooseView(page, 'Week')
   const beforeReloadP2 = page.locator('.planning-section-row').filter({ hasText:'Period 2' })
   const beforeReloadP7 = page.locator('.planning-section-row').filter({ hasText:'Period 7' })
-  check(await beforeReloadP2.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Month-to-Week projection must preserve First Lesson for Period 2.')
-  check(await beforeReloadP7.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Month-to-Week projection must preserve First Lesson for Period 7.')
+  check(await beforeReloadP2.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Month-to-Day-to-Week projection must preserve First Lesson for Period 2.')
+  check(await beforeReloadP7.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Month-to-Day-to-Week projection must preserve First Lesson for Period 7.')
 
   await page.reload({ waitUntil:'networkidle' })
   const p2 = page.locator('.planning-section-row').filter({ hasText:'Period 2' })
