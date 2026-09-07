@@ -22,6 +22,17 @@ async function configureCalendar(page) {
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 }
 
+async function openSettings(page) {
+  const settings = page.getByRole('button', { name: 'Settings' })
+  assert(await settings.count() === 1, 'RGAV-B: Settings furniture tab is missing.')
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  assert(await page.getByRole('navigation', { name: 'Calendar views' }).isVisible(), 'RGAV-B: Settings did not expose Calendar views.')
+}
+
+async function closeSettings(page) {
+  if (await page.getByRole('button', { name: 'Close Settings' }).count()) await page.getByRole('button', { name: 'Close Settings' }).click()
+}
+
 const browser = await chromium.launch({ headless: true })
 try {
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 } })
@@ -30,12 +41,14 @@ try {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await configureCalendar(page)
 
-  // Different path from the primary smoke gate: teacher configures preferences first,
+  // B01 path: teacher opens Settings furniture, configures preferences,
   // uses a seven-day Week, navigates, returns Home, then reloads.
+  await openSettings(page)
   await page.getByText('View options', { exact: true }).click()
   await page.getByLabel('Open Arc to').selectOption('last-used')
   await page.getByLabel('Show weekends in Week view').check()
-  await page.getByRole('button', { name: 'Week' }).click()
+  await page.getByRole('button', { name: 'Week', exact: true }).click()
+  await closeSettings(page)
 
   const weekRegion = page.locator('.projection-section').first()
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: Week did not become the active workspace view.')
@@ -51,8 +64,10 @@ try {
 
   await page.reload({ waitUntil: 'networkidle' })
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: reload did not restore Last used Week behavior.')
+  await openSettings(page)
   await page.getByText('View options', { exact: true }).click()
   assert(await page.getByLabel('Show weekends in Week view').isChecked(), 'RGAV-B: weekend preference did not persist across reload.')
+  await closeSettings(page)
 
   const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(geometry.scroll <= geometry.width + 1, `RGAV-B: shell overflowed horizontally at 1366×768 (${geometry.scroll} > ${geometry.width}).`)
@@ -63,6 +78,7 @@ try {
   const keyboardRuntimeErrors = trackRuntimeErrors(keyboardPage)
   await keyboardPage.goto(baseUrl, { waitUntil: 'networkidle' })
   assert(await keyboardPage.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: persisted Last used Week did not survive a fresh page in the same browser context.')
+  assert(await keyboardPage.getByRole('navigation', { name: 'Calendar views' }).count() === 0, 'RGAV-B: closed Settings leaked view controls on a fresh page.')
   await keyboardPage.keyboard.press('Tab')
   const skip = keyboardPage.getByRole('link', { name: 'Skip to calendar' })
   assert(await skip.evaluate((node) => document.activeElement === node), 'RGAV-B: Skip to calendar is not first in keyboard order on a fresh page.')
@@ -73,7 +89,7 @@ try {
   assert(keyboardRuntimeErrors.length === 0, `RGAV-B fresh-page keyboard runtime errors: ${keyboardRuntimeErrors.join(' | ')}`)
   await keyboardPage.close()
   await context.close()
-  console.log('Independent RGAV shell pass B succeeded: Last used persistence, optional weekends, navigation/home/reload, fresh-page keyboard skip, 1366×768 overflow, and runtime-error checks.')
+  console.log('Independent RGAV shell pass B succeeded: B01 Settings ownership, Last used persistence, optional weekends, navigation/home/reload, fresh-page keyboard skip, 1366×768 overflow, and runtime-error checks.')
 } finally {
   await browser.close()
 }
