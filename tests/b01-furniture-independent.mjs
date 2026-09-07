@@ -78,6 +78,19 @@ async function documentRect(locator, page) {
   return { x: box.x + scroll.x, y: box.y + scroll.y, width: box.width, height: box.height }
 }
 
+function assertOutside(calendar, surface, side, label) {
+  assert(calendar && surface, `B01-B: ${label} geometry is unavailable.`)
+  const calendarRight = calendar.x + calendar.width
+  const calendarBottom = calendar.y + calendar.height
+  const surfaceRight = surface.x + surface.width
+  const outside = side === 'left'
+    ? surfaceRight <= calendar.x + 1
+    : side === 'right'
+      ? surface.x >= calendarRight - 1
+      : surface.y >= calendarBottom - 1
+  assert(outside, `B01-B: ${label} overlaps the Calendar Shell. calendar=${JSON.stringify(calendar)} surface=${JSON.stringify(surface)}`)
+}
+
 const browser = await chromium.launch({ headless: true })
 try {
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 } })
@@ -114,6 +127,9 @@ try {
   await page.screenshot({ path: 'artifacts/b01-furniture-independent/all-open-1366x768.png', fullPage: true })
   const fixedGeometry = calendarBefore && calendarAfter && Math.abs(calendarBefore.x - calendarAfter.x) <= 1 && Math.abs(calendarBefore.y - calendarAfter.y) <= 1 && Math.abs(calendarBefore.width - calendarAfter.width) <= 1 && Math.abs(calendarBefore.height - calendarAfter.height) <= 1
   assert(fixedGeometry, `B01-B: alternate all-open path changed document geometry. before=${JSON.stringify(calendarBefore)} after=${JSON.stringify(calendarAfter)} viewportBefore=${JSON.stringify(viewportBefore)} viewportAfter=${JSON.stringify(viewportAfter)}`)
+  assertOutside(calendarAfter, await documentRect(page.locator('.b01-settings-surface'), page), 'left', 'all-open Settings surface')
+  assertOutside(calendarAfter, await documentRect(page.locator('.b01-fridge-surface'), page), 'right', 'all-open Fridge surface')
+  assertOutside(calendarAfter, await documentRect(page.locator('.b01-task-surface'), page), 'bottom', 'all-open Task Bar surface')
 
   const doc = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(doc.scroll <= doc.width + 1, `B01-B: 1366×768 all-open path overflowed (${doc.scroll} > ${doc.width}).`)
@@ -134,7 +150,7 @@ try {
   assert(runtimeErrors.length === 0, `B01-B runtime errors: ${runtimeErrors.join(' | ')}`)
 
   await context.close()
-  console.log(`Independent B01 audit B passed: alternate AP Art History Week, reverse-order keyboard furniture opening, 44px targets, fixed document geometry, 1366×768 overflow, order-agnostic Escape/focus closure, and runtime cleanliness. viewportScroll=${viewportBefore.scrollY}→${viewportAfter.scrollY}`)
+  console.log(`Independent B01 audit B passed: alternate AP Art History Week, reverse-order keyboard furniture opening, 44px targets, fixed document geometry, explicit all-open non-overlap, 1366×768 overflow, order-agnostic Escape/focus closure, and runtime cleanliness. viewportScroll=${viewportBefore.scrollY}→${viewportAfter.scrollY}`)
 } finally {
   await browser.close()
 }
