@@ -1,26 +1,26 @@
 {
-  "name": "arc-greenfield",
-  "version": "0.1.0",
+  "name": "arc",
   "private": true,
+  "version": "0.1.0",
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts"
+    "dev": "vite",
+    "test:contracts": "tsc -p tsconfig.contracts.json && node tests/run-contracts.mjs",
+    "typecheck": "tsc -b",
+    "build:bundle": "vite build",
+    "build": "npm run test:contracts && npm run typecheck && npm run build:bundle",
+    "preview": "vite preview",
+    "test:browser-a11y": "node tests/browser-a11y.smoke.mjs"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.7.0",
-    "@supabase/supabase-js": "^2.57.4",
-    "next": "^15.5.2",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.0.12",
-    "@types/react-dom": "^19.0.4",
-    "tsx": "^4.20.5",
-    "typescript": "^5.8.2"
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "@vitejs/plugin-react": "6.1.0",
+    "typescript": "5.8.3",
+    "vite": "8.2.2"
   }
 }

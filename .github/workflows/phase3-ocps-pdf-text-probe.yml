@@ -1,0 +1,28 @@
+name: Phase 3 OCPS PDF text probe
+
+on:
+  push:
+    branches:
+      - feature/phase3-server-calendar-extractor-boundary
+
+permissions:
+  contents: read
+
+jobs:
+  ocps-pdf-text-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned serverless PDF probe dependency
+        run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund unpdf@1.8.1
+      - name: Extract current OCPS calendar PDF text
+        run: node tests/phase3-ocps-pdf-text-probe.mjs
