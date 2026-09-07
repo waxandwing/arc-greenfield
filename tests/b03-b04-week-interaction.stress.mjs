@@ -104,7 +104,7 @@ async function stressQuickAdd(page) {
     await page.getByRole('button', { name:'Note', exact:true }).click()
     await page.getByRole('textbox', { name:'Note text' }).fill(`Stress note ${index+1}`)
     await page.getByRole('combobox', { name:'Note placement' }).selectOption(index % 2 ? 'after-school' : 'calendar')
-    if (index % 3 === 0) await page.getByLabel('Important', { exact:true }).check()
+    if (index % 3 === 0) await page.getByRole('checkbox', { name:'Important', exact:true }).check()
     await page.getByRole('button', { name:'Add Note', exact:true }).click()
     await page.getByText(/note added from the Week calendar/i).waitFor({ state:'visible' })
   }
