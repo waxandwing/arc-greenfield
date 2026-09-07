@@ -1,0 +1,209 @@
+/*
+ * Group 3 — Object visual grammar only.
+ * Visual overrides for scheduled Units, Lessons, Notes, Important mark,
+ * add controls, and contextual object tools. No state, drag, auth, shell,
+ * furniture, or planner geometry ownership lives here.
+ */
+
+:root {
+  --arc-object-unit-ink: #5f4a3b;
+  --arc-object-unit-wash: rgba(143, 103, 78, .115);
+  --arc-object-lesson-ink: #38484f;
+  --arc-object-lesson-wash: rgba(109, 139, 151, .08);
+  --arc-object-note-paper: rgba(250, 247, 240, .96);
+  --arc-object-pencil: rgba(44, 46, 46, .68);
+  --arc-object-red: var(--terracotta);
+}
+
+/* Scheduled Unit: a quiet planner band, never a pottery/magnet object. */
+.planning-unit-object {
+  isolation: isolate;
+}
+
+.planning-unit-object .planning-unit-span {
+  box-sizing: border-box;
+  min-height: 38px;
+  margin: 3px 6px;
+  padding: 7px 10px 6px;
+  border: 0;
+  border-left: 3px solid var(--arc-object-unit-ink);
+  border-radius: 0;
+  background: var(--arc-object-unit-wash);
+  box-shadow: none;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: .005em;
+  line-height: 1.25;
+}
+
+/* Scheduled Lesson: paper-planner entry, quieter than Unit. */
+.planning-lesson {
+  gap: 3px;
+  padding: 7px 8px 8px;
+  border: 0;
+  border-left: 2px solid var(--dusty-blue);
+  border-radius: 1px;
+  background: var(--arc-object-lesson-wash);
+  box-shadow: none;
+}
+
+.planning-lesson-parent {
+  margin-bottom: 1px;
+  color: var(--soft-charcoal);
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: .025em;
+  line-height: 1.2;
+}
+
+.planning-lesson-title {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.28;
+}
+
+.planning-lesson-anchor,
+.planning-lesson-meta {
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+.planning-lesson-anchor {
+  letter-spacing: .045em;
+}
+
+.planning-resume-note {
+  padding-top: 5px;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+/* Notes are annotation slips, not competing sticky-note cards. */
+.planning-note {
+  width: min(100%, 138px);
+  min-height: 86px;
+  gap: 5px;
+  padding: 10px 10px 9px;
+  border: 1px solid rgba(44, 46, 46, .08);
+  border-radius: 0;
+  background: var(--arc-object-note-paper);
+  box-shadow: 1px 2px 0 rgba(44, 46, 46, .035);
+  transform: rotate(-.25deg);
+}
+
+.planning-note:nth-child(even) {
+  transform: rotate(.2deg);
+}
+
+.planning-note-text {
+  color: var(--ink);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.planning-note-source {
+  padding-top: 5px;
+  border-top-color: rgba(44, 46, 46, .08);
+  color: var(--arc-object-pencil);
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+/* Important is a hand-drawn red circle around the object, never a badge/icon. */
+.planning-note--important {
+  width: min(calc(100% - 12px), 138px);
+  margin: 6px 7px 6px 5px;
+}
+
+.planning-note--important::after {
+  inset: -6px -7px -6px -7px;
+  border-width: 2px;
+  border-color: var(--arc-object-red);
+  border-radius: 49% 52% 47% 53% / 51% 46% 54% 49%;
+  transform: rotate(-1.1deg);
+  opacity: .92;
+}
+
+.planning-note--important:nth-child(even)::after {
+  inset: -7px -6px -5px -7px;
+  border-radius: 53% 46% 51% 48% / 48% 54% 47% 52%;
+  transform: rotate(.9deg);
+}
+
+/* Add control: a restrained pencil-margin affordance rather than app chrome. */
+.planning-quick-add-trigger {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  margin-top: 3px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--soft-charcoal);
+  font: 500 21px/1 Georgia, 'Times New Roman', serif;
+  opacity: .64;
+}
+
+.planning-quick-add-trigger:hover,
+.planning-quick-add-trigger:focus-visible {
+  background: rgba(109, 139, 151, .08);
+  color: var(--ink);
+  opacity: 1;
+}
+
+/* Object-specific contextual tools read as a small editing strip, not a floating SaaS panel. */
+.planning-unit-object > .planning-context-toolbar,
+.planning-lesson > .planning-context-toolbar,
+.planning-note > .planning-context-toolbar {
+  gap: 2px;
+  margin: 5px 0 1px;
+  padding: 3px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line-subtle);
+  background: transparent;
+  box-shadow: none;
+}
+
+.planning-context-toolbar button {
+  min-height: 32px;
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--soft-charcoal);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .01em;
+}
+
+.planning-context-toolbar button:hover,
+.planning-context-toolbar button:focus-visible {
+  background: rgba(109, 139, 151, .08);
+  color: var(--ink);
+}
+
+.planning-context-toolbar .planning-context-action--danger {
+  border: 0;
+  color: #7b3128;
+}
+
+.planning-context-dismiss {
+  min-width: 32px !important;
+  min-height: 32px !important;
+  font-size: 16px !important;
+}
+
+/* Selection stays legible without turning the object into a generic card. */
+.planning-object--selected {
+  outline: 1px solid rgba(64, 93, 108, .42);
+  outline-offset: 2px;
+}
+
+@media (max-width: 700px) {
+  .planning-unit-object .planning-unit-span { font-size: 13px; }
+  .planning-lesson-title { font-size: 11.5px; }
+  .planning-note-text { font-size: 11px; }
+}
