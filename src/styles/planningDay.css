@@ -1,0 +1,192 @@
+.day-continuity {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.day-continuity-day-note {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-4) 0;
+  border-block: 1px solid var(--line-subtle);
+  color: var(--soft-charcoal);
+  font-size: 16px;
+}
+
+.day-continuity-day-note strong {
+  color: var(--ink);
+}
+
+.day-continuity-course {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.day-continuity-course + .day-continuity-course {
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--line-strong);
+}
+
+.day-continuity-course-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.day-continuity-course-heading h2,
+.day-continuity-section-heading h3,
+.day-continuity-units,
+.day-continuity-kicker,
+.day-continuity-lesson-meta,
+.day-continuity-last-taught,
+.day-continuity-resume,
+.day-continuity-empty {
+  margin: 0;
+}
+
+.day-continuity-course-heading h2 {
+  font: 600 22px/1.2 var(--font-editorial);
+  color: var(--ink);
+}
+
+.day-continuity-units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: baseline;
+  color: var(--soft-charcoal);
+  font-size: 14px;
+}
+
+.day-continuity-units strong {
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.day-continuity-sections {
+  display: grid;
+  border-top: 1px solid var(--line-strong);
+}
+
+.day-continuity-section {
+  display: grid;
+  grid-template-columns: minmax(132px, .45fr) minmax(0, 2.2fr);
+  gap: var(--space-6);
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.day-continuity-section-heading h3 {
+  font: 700 16px/1.35 var(--font-ui);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.day-continuity-work {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+
+.day-continuity-held,
+.day-continuity-planned {
+  min-width: 0;
+}
+
+.day-continuity-held {
+  padding-left: var(--space-4);
+  border-left: 4px solid var(--terracotta);
+}
+
+.day-continuity-kicker {
+  margin-bottom: var(--space-2);
+  color: var(--soft-charcoal);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.day-continuity-held .day-continuity-kicker {
+  color: var(--terracotta-text);
+}
+
+.day-continuity-lesson {
+  display: grid;
+  gap: var(--space-2);
+  padding-block: var(--space-2) var(--space-3);
+}
+
+.day-continuity-lesson + .day-continuity-lesson {
+  border-top: 1px solid var(--line-subtle);
+  padding-top: var(--space-3);
+}
+
+.day-continuity-lesson-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.day-continuity-lesson-heading strong {
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.day-continuity-fixed {
+  flex: 0 0 auto;
+  color: var(--terracotta-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.day-continuity-lesson-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  color: var(--soft-charcoal);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.day-continuity-last-taught,
+.day-continuity-resume,
+.day-continuity-empty {
+  color: var(--soft-charcoal);
+  font-size: 16px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.day-continuity-resume {
+  color: var(--ink);
+}
+
+.day-continuity-empty {
+  padding-block: var(--space-2);
+}
+
+@media (max-width: 900px) {
+  .day-continuity-section {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+}
+
+@media (max-width: 680px) {
+  .day-continuity-course-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .day-continuity-work {
+    grid-template-columns: 1fr;
+  }
+
+  .day-continuity-held {
+    padding-left: var(--space-3);
+  }
+}
