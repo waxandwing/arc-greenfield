@@ -44,7 +44,7 @@
 .b01-settings-owner .view-preferences-check input{min-height:auto}
 
 @media (max-width:1280px){
-  .b01-furniture-composition{width:900px}
+  .b01-furniture-composition{width:min(900px,70.3125vw)}
   .b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:260px}
   .b01-side-owner{width:260px;height:500px}
   .b01-settings-owner{left:-190px}
@@ -53,27 +53,40 @@
   .b01-fridge-surface{margin-left:70px}
   .b01-edge-tab--left{right:70px}
   .b01-edge-tab--right{left:70px}
-  .b01-task-owner{width:760px}
+  .b01-task-owner{width:min(760px,59.375vw)}
   .b01-task-owner[data-state='open']{height:260px}
 }
 
-/* Arc remains a desktop planner at narrow capture widths. Preserve the 1280 composition and pan it; never stack furniture below the calendar. */
+/* At narrow widths, open furniture moves below the fixed calendar instead of covering or resizing it. */
 @media (max-width:800px){
-  .b01-furniture-composition{width:900px;margin-left:190px;margin-right:190px;padding-bottom:44px;overflow:visible}
-  .b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:260px}
-  .b01-side-owner{top:48px;width:260px;height:500px}
-  .b01-settings-owner{left:-190px}
-  .b01-fridge-owner{right:-190px}
-  .b01-settings-surface,.b01-fridge-surface{width:190px;margin-left:0}
-  .b01-fridge-surface{margin-left:70px}
-  .b01-settings-surface{padding:22px 62px 22px 18px}
-  .b01-fridge-surface{padding:22px 18px 22px 62px}
-  .b01-edge-tab--left{right:70px}
-  .b01-edge-tab--right{left:70px}
-  .b01-task-owner{left:50%;right:auto;width:760px;height:44px;transform:translateX(-50%)}
-  .b01-task-owner[data-state='open']{height:260px}
-  .b05-clean-up{left:calc(50% + 78px)}
+  .b01-furniture-composition{display:flex;flex-direction:column;width:100%;padding-bottom:44px;overflow:visible}
+  .b01-calendar-owner{order:1;flex:0 0 auto}
+  .b01-settings-owner{order:2}
+  .b01-fridge-owner{order:3}
+  .b01-task-owner{order:4}
+  .b01-side-owner[data-state='open']{position:relative;inset:auto;width:100%;height:min(68vh,520px);margin-top:12px;pointer-events:auto}
+  .b01-side-owner[data-state='open'] .b01-edge-tab{position:relative;top:auto;left:auto;right:auto;width:100%;min-height:44px;padding:8px 16px;writing-mode:horizontal-tb;transform:none;border-radius:5px 5px 0 0}
+  .b01-side-owner[data-state='open'] .b01-furniture-surface{width:100%;height:calc(100% - 44px);margin:0;padding:22px 18px;border:1px solid rgba(44,46,46,.2);border-radius:0 0 12px 12px}
+  .b01-side-owner[data-state='closed']{position:absolute;top:48px;height:480px;width:min(82vw,300px)}
+  .b01-settings-owner[data-state='closed']{left:0;right:auto}
+  .b01-fridge-owner[data-state='closed']{right:0;left:auto}
+  .b01-side-owner[data-state='closed'] .b01-edge-tab--left{right:0}
+  .b01-side-owner[data-state='closed'] .b01-edge-tab--right{left:0}
+  .b01-task-owner[data-state='open']{position:relative;inset:auto;width:100%;height:clamp(260px,52vh,440px);margin-top:12px;transform:none;pointer-events:auto}
+  .b01-task-owner[data-state='open'] .b01-task-tab{position:relative;top:auto;left:auto;width:100%;transform:none}
+  .b01-task-owner[data-state='open'] .b05-clean-up{top:0;right:0;left:auto}
+  .b01-task-owner[data-state='open'] .b01-task-surface{height:calc(100% - 44px);padding:14px 12px 18px;border-radius:0 0 12px 12px}
+  .b01-task-owner[data-state='closed']{position:absolute;left:20px;right:20px;bottom:0;width:auto;height:44px;transform:none}
+  .b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:44px}
   .b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 184px)}
+}
+
+@media (max-width:520px){
+  .b01-side-owner[data-state='open']{height:min(70vh,560px)}
+  .b01-task-owner[data-state='open']{height:clamp(320px,64vh,560px)}
+  .b01-task-surface{padding-inline:12px}
+  .b01-task-surface>div{padding-inline:8px}
+  .b05-clean-up{left:auto;right:0;padding-inline:10px}
 }
 
 @media (prefers-reduced-motion:reduce){.b01-task-surface{transition:none}}
