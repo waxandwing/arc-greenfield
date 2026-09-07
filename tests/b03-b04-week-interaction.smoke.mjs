@@ -6,6 +6,18 @@ const outDir = 'artifacts/b03-b04-week-interaction'
 function check(condition, message) { if (!condition) throw new Error(message) }
 function action(page, text) { return page.locator('.calendar-context-actions button').filter({ hasText: text }) }
 
+async function enterTargetWeek(page) {
+  await page.getByRole('button', { name:/Change calendar view, current/ }).click()
+  await page.getByRole('navigation', { name:'Calendar views' }).getByRole('button', { name:'Week', exact:true }).click()
+  await page.getByRole('button', { name:'Next Week', exact:true }).click()
+  await page.getByRole('button', { name:'Next Week', exact:true }).click()
+}
+
+async function reloadTargetWeek(page) {
+  await page.reload({ waitUntil:'networkidle' })
+  await enterTargetWeek(page)
+}
+
 async function seed(page) {
   await page.goto(baseUrl, { waitUntil:'networkidle' })
   await page.locator('#school-year-label').fill('2026–27')
@@ -40,11 +52,7 @@ async function seed(page) {
     stored.input.notes = [{ id:'note-copies', calendarId:stored.input.calendarId, date:'2026-09-16', text:'Make copies', placement:'calendar', important:false, sourceLabel:null, sourceLocator:null }]
     localStorage.setItem('arc.planningWorkspace.v1', JSON.stringify(stored))
   })
-  await page.reload({ waitUntil:'networkidle' })
-  await page.getByRole('button', { name:/Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name:'Calendar views' }).getByRole('button', { name:'Week', exact:true }).click()
-  await page.getByRole('button', { name:'Next Week', exact:true }).click()
-  await page.getByRole('button', { name:'Next Week', exact:true }).click()
+  await reloadTargetWeek(page)
 }
 
 async function auditSelectionAndMove(page) {
@@ -58,7 +66,7 @@ async function auditSelectionAndMove(page) {
   await page.getByRole('textbox', { name:'Unit end date' }).fill('2026-09-30')
   await page.getByRole('button', { name:'Apply range', exact:true }).click()
   await page.getByText(/Unit range updated/).waitFor({ state:'visible' })
-  await page.reload({ waitUntil:'networkidle' })
+  await reloadTargetWeek(page)
   check(await page.getByRole('button', { name:/Select Unit Sculpture.*September 30, 2026/ }).count() === 1, 'B03: Unit range must survive reload in rendered Week state.')
 
   const p1 = page.locator('.planning-section-row').filter({ hasText:'Period 1' })
@@ -81,13 +89,13 @@ async function auditSelectionAndMove(page) {
   await p1.getByRole('button', { name:'Apply Shift', exact:true }).click()
   await page.getByText(/Section Shift applied/).waitFor({ state:'visible' })
   check(await action(page, 'Undo last Shift').count() === 1, 'B03: applied Shift must surface Undo.')
-  await page.reload({ waitUntil:'networkidle' })
+  await reloadTargetWeek(page)
   const p1Reloaded = page.locator('.planning-section-row').filter({ hasText:'Period 1' })
   const p6Reloaded = page.locator('.planning-section-row').filter({ hasText:'Period 6' })
   check(await p1Reloaded.locator('.planning-day-slot').nth(4).getByText('Armature demo', { exact:true }).count() === 1, 'B03: Section Shift must survive reload on Friday.')
   check(await p6Reloaded.locator('.planning-day-slot').nth(3).getByText('Armature demo', { exact:true }).count() === 1, 'B03: neighboring Section must remain on Thursday.')
   await action(page, 'Undo last Shift').click()
-  await page.reload({ waitUntil:'networkidle' })
+  await reloadTargetWeek(page)
   check(await page.locator('.planning-section-row').filter({ hasText:'Period 1' }).locator('.planning-day-slot').nth(3).getByText('Armature demo', { exact:true }).count() === 1, 'B03: Shift Undo must restore original Section date after reload.')
 
   const note = page.getByRole('button', { name:/Select Note\. Make copies/ })
@@ -97,7 +105,7 @@ async function auditSelectionAndMove(page) {
   await page.getByRole('combobox', { name:'Move Note placement' }).selectOption('after-school')
   await page.getByRole('button', { name:'Move Note', exact:true }).click()
   await page.getByText(/Note moved/).waitFor({ state:'visible' })
-  await page.reload({ waitUntil:'networkidle' })
+  await reloadTargetWeek(page)
   check(await page.getByRole('region', { name:'After School', exact:true }).getByText('Make copies', { exact:true }).count() === 1, 'B03: Note Move must persist date/placement across reload.')
 }
 
@@ -123,7 +131,7 @@ async function auditQuickAdd(page) {
   await page.getByRole('button', { name:'Add Note', exact:true }).click()
   await page.getByText(/After School note added from the Week calendar/).waitFor({ state:'visible' })
 
-  await page.reload({ waitUntil:'networkidle' })
+  await reloadTargetWeek(page)
   check(await page.getByText('Printmaking', { exact:true }).count() === 1, 'B04: quick-added Unit must survive reload.')
   check(await page.getByText('Friday reflection', { exact:true }).count() === 2, 'B04: shared quick-added Lesson must project once per Section after reload.')
   check(await page.getByRole('region', { name:'After School', exact:true }).getByText('Call home', { exact:true }).count() === 1, 'B04: quick-added Note must survive reload.')
