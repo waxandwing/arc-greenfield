@@ -11,6 +11,8 @@
   "include": [
     "src/calendar/**/*.ts",
     "src/planning/**/*.ts",
+    "src/deployment/**/*.contract.ts",
+    "src/deployment/cloudWorkspace.ts",
     "tests/calendar.contract.ts"
   ]
 }
