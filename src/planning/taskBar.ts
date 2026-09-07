@@ -5,6 +5,7 @@ export type TaskBarItem = {
   text: string
   priority: TaskPriority
   completed: boolean
+  important: boolean
   createdAt: string
   completedAt: string | null
 }
@@ -29,6 +30,7 @@ export function createTaskBarItem(
     text: cleaned,
     priority,
     completed: false,
+    important: false,
     createdAt: now.toISOString(),
     completedAt: null,
   }
@@ -47,6 +49,10 @@ export function renameTask(workspace: TaskBarWorkspace, taskId: string, text: st
 
 export function moveTaskPriority(workspace: TaskBarWorkspace, taskId: string, priority: TaskPriority): TaskBarWorkspace {
   return replaceTask(workspace, taskId, (task) => ({ ...task, priority }))
+}
+
+export function setTaskImportant(workspace: TaskBarWorkspace, taskId: string, important: boolean): TaskBarWorkspace {
+  return replaceTask(workspace, taskId, (task) => ({ ...task, important }))
 }
 
 export function setTaskCompleted(
@@ -97,6 +103,7 @@ export function normalizeTaskBarWorkspace(value: unknown): TaskBarWorkspace {
       text: normalizeTaskText(task.text),
       priority: task.priority,
       completed: task.completed,
+      important: task.important === true,
       createdAt: task.createdAt,
       completedAt: task.completed ? task.completedAt ?? task.createdAt : null,
     })
