@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { B01Furniture } from './B01Furniture'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { CalendarViewPreferences } from './CalendarViewPreferences'
 import { WorkspaceStage } from './WorkspaceStage'
@@ -96,39 +97,41 @@ export function AppFrame() {
             onUndoShift={workspace.undoLastShift}
           />
 
-          {workspace.calendar && workspaceMode.mode === 'calendar' && (
-            <CalendarViewPreferences preferences={viewPreferences} onChange={updateViewPreferences} />
-          )}
-
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
-          <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
-            <WorkspaceStage
-              mode={workspaceMode.mode}
-              activeView={workspace.activeView}
-              showWeekends={viewPreferences.showWeekends}
-              calendar={workspace.calendar}
-              calendarInput={workspace.calendarInput}
-              anchorDate={workspace.anchorDate}
-              planningWorkspace={workspace.planningWorkspace}
-              planningInput={workspace.planningInput}
-              unitWorkspace={workspace.unitWorkspace}
-              unitInput={workspace.unitInput}
-              lessonWorkspace={workspace.lessonWorkspace}
-              lessonInput={workspace.lessonInput}
-              shiftState={workspace.shiftState}
-              protectedCourseIds={workspace.protectedCourseIds}
-              protectedUnitIds={workspace.protectedUnitIds}
-              protectedSectionIds={workspace.protectedSectionIds}
-              onUseCalendar={workspace.useCalendar}
-              onUseTerms={workspace.useTerms}
-              onUseClasses={workspace.useClasses}
-              onUseUnits={workspace.useUnits}
-              onUseLessons={workspace.useLessons}
-              onApplyRecoveryShift={workspace.applyRecoveryShift}
-              onCloseMode={workspaceMode.close}
-            />
-          </section>
+          <B01Furniture
+            settings={workspace.calendar && workspaceMode.mode === 'calendar'
+              ? <CalendarViewPreferences preferences={viewPreferences} onChange={updateViewPreferences} />
+              : <p className="b01-furniture-empty">Calendar settings are available in calendar mode.</p>}
+          >
+            <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
+              <WorkspaceStage
+                mode={workspaceMode.mode}
+                activeView={workspace.activeView}
+                showWeekends={viewPreferences.showWeekends}
+                calendar={workspace.calendar}
+                calendarInput={workspace.calendarInput}
+                anchorDate={workspace.anchorDate}
+                planningWorkspace={workspace.planningWorkspace}
+                planningInput={workspace.planningInput}
+                unitWorkspace={workspace.unitWorkspace}
+                unitInput={workspace.unitInput}
+                lessonWorkspace={workspace.lessonWorkspace}
+                lessonInput={workspace.lessonInput}
+                shiftState={workspace.shiftState}
+                protectedCourseIds={workspace.protectedCourseIds}
+                protectedUnitIds={workspace.protectedUnitIds}
+                protectedSectionIds={workspace.protectedSectionIds}
+                onUseCalendar={workspace.useCalendar}
+                onUseTerms={workspace.useTerms}
+                onUseClasses={workspace.useClasses}
+                onUseUnits={workspace.useUnits}
+                onUseLessons={workspace.useLessons}
+                onApplyRecoveryShift={workspace.applyRecoveryShift}
+                onCloseMode={workspaceMode.close}
+              />
+            </section>
+          </B01Furniture>
         </main>
       </div>
     </div>
