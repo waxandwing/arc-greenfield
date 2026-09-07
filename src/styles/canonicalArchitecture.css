@@ -1,0 +1,285 @@
+/*
+ * Canonical Arc interface architecture — founder/master authority.
+ * This layer changes composition and material language only. Dynamic planner truth remains live.
+ */
+
+:root{
+  --arc-environment:#ded5c6;
+  --arc-paper:#f7f1e5;
+  --arc-paper-edge:#d9cbb8;
+  --arc-rule:rgba(44,46,46,.16);
+  --arc-ink:#2c2e2e;
+}
+
+html,body{background:var(--arc-environment)}
+body{overflow-x:hidden}
+.arc-shell{
+  min-height:100dvh;
+  background:
+    radial-gradient(circle at 50% -12%,rgba(255,255,255,.35),transparent 42%),
+    linear-gradient(180deg,#e5ddcf 0%,#ddd3c3 100%);
+}
+
+/* The Arc mark is a quiet planner mark, not an application masthead. */
+.arc-header{
+  position:relative;
+  z-index:12;
+  height:58px;
+  display:flex;
+  align-items:flex-end;
+  padding:10px clamp(18px,3vw,42px) 5px;
+  background:transparent;
+  pointer-events:none;
+}
+.arc-wordmark{
+  pointer-events:auto;
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  border:0;
+  background:transparent;
+  padding:2px 4px;
+  font:500 27px/1 var(--font-editorial);
+  letter-spacing:-.045em;
+  color:var(--arc-ink);
+}
+.arc-wordmark::after{width:18px;height:1.5px;margin-top:4px;background:var(--terracotta)}
+.arc-header-space{display:none}
+
+.arc-layout{min-height:calc(100dvh - 58px);overflow:visible}
+.arc-calendar-stage{padding:0 clamp(12px,2.5vw,36px) clamp(24px,3vw,44px)}
+
+/* Header belongs to the page margin, not a SaaS toolbar. */
+.calendar-stage-header{
+  width:min(100%,1120px);
+  min-height:70px;
+  margin:0 auto 4px;
+  padding:0 clamp(4px,1vw,12px) 8px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;
+  gap:24px;
+}
+.section-label{font-size:11px;letter-spacing:.12em;color:rgba(74,73,69,.72)}
+.view-title{font-size:clamp(32px,3.05vw,44px);line-height:1;letter-spacing:-.045em}
+.calendar-context{font-size:12px;letter-spacing:.035em;color:rgba(74,73,69,.72)}
+
+/* The book is the visual center. */
+.b01-furniture-composition{
+  --book-width:min(1000px,72vw);
+  position:relative;
+  isolation:isolate;
+  width:var(--book-width);
+  max-width:none;
+  margin:0 auto;
+  padding-bottom:48px;
+  overflow:visible;
+}
+.b01-calendar-owner{position:relative;z-index:6;width:100%}
+.b01-calendar-owner>.calendar-canvas,
+.calendar-canvas{
+  position:relative;
+  isolation:isolate;
+  min-height:clamp(620px,calc(100dvh - 155px),900px);
+  overflow:auto;
+  border:0;
+  border-radius:3px 5px 5px 3px;
+  background:
+    linear-gradient(90deg,
+      var(--arc-paper) 0%,
+      var(--arc-paper) 49.05%,
+      #e7ddcd 49.35%,
+      #cdbda7 49.88%,
+      #e7ddcd 50.35%,
+      var(--arc-paper) 50.72%,
+      var(--arc-paper) 100%);
+  box-shadow:
+    0 0 0 1px rgba(44,46,46,.18),
+    5px 7px 0 -2px rgba(198,167,125,.28),
+    10px 13px 0 -5px rgba(91,77,57,.10),
+    0 24px 48px -34px rgba(44,46,46,.62);
+}
+.calendar-canvas::before{
+  content:'';
+  position:absolute;
+  z-index:-1;
+  inset:8px -5px -7px 7px;
+  height:auto;
+  border-radius:0 2px 5px 0;
+  background:var(--arc-paper-edge);
+  opacity:.52;
+}
+.calendar-canvas::after{
+  content:'';
+  position:absolute;
+  z-index:20;
+  pointer-events:none;
+  top:0;bottom:0;left:50%;
+  width:18px;
+  transform:translateX(-50%);
+  background:linear-gradient(90deg,transparent,rgba(98,80,57,.08),rgba(255,255,255,.22),transparent);
+  mix-blend-mode:multiply;
+}
+
+/* Keep live content continuous and editorial. */
+.calendar-setup,.class-setup,.unit-setup,.lesson-setup,.recovery-review{
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:clamp(28px,4vw,58px) clamp(34px,5vw,72px);
+  background:transparent;
+}
+.calendar-setup-form,.class-setup-form,.unit-setup-form,.lesson-setup-form{gap:28px}
+.calendar-setup-intro,.setup-intro{max-width:680px}
+.calendar-setup-intro h2,.setup-intro h2{font-size:clamp(28px,2.6vw,38px);font-weight:500}
+
+/* Kill dashboard/card-kit drift while preserving semantic sections. */
+.calendar-setup section,.class-setup section,.unit-setup section,.lesson-setup section,
+.setup-section,.setup-card,.setup-panel,.planning-panel{
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+}
+.setup-field-grid{
+  grid-template-columns:minmax(0,1.25fr) repeat(2,minmax(150px,.72fr));
+  gap:18px 24px;
+  padding:22px 0 28px;
+  border-top:1px solid var(--arc-rule);
+  border-bottom:1px solid var(--arc-rule);
+}
+input,select,textarea{
+  border:0;
+  border-bottom:1px solid rgba(44,46,46,.38);
+  border-radius:0;
+  background:rgba(255,255,255,.18);
+  box-shadow:none;
+}
+input:focus,select:focus,textarea:focus{background:rgba(255,255,255,.38)}
+.primary-button{
+  border:1px solid rgba(44,46,46,.24);
+  border-radius:4px;
+  background:var(--mustard);
+  box-shadow:none;
+}
+.quiet-button{
+  border:1px solid rgba(44,46,46,.24);
+  border-radius:4px;
+  background:rgba(247,241,229,.34);
+}
+
+/* Edge furniture: physically exterior, large when open, compact when closed. */
+.b01-side-owner{
+  top:42px;
+  height:min(650px,72vh);
+  pointer-events:none;
+  transition:none;
+}
+.b01-settings-owner{left:0;width:clamp(260px,27vw,390px);transform:translateX(calc(-100% + 48px))}
+.b01-fridge-owner{right:0;width:clamp(280px,29vw,420px);transform:translateX(calc(100% - 48px))}
+.b01-settings-owner[data-state='open'],.b01-fridge-owner[data-state='open']{pointer-events:auto}
+.b01-settings-owner[data-state='open']{transform:translateX(calc(-100% + clamp(210px,22vw,320px)))}
+.b01-fridge-owner[data-state='open']{transform:translateX(calc(100% - clamp(225px,23vw,340px)))}
+
+.b01-furniture-surface{height:100%;border-radius:0;box-shadow:0 20px 38px -31px rgba(44,46,46,.72)}
+.b01-settings-surface{
+  width:100%;
+  padding:34px 68px 30px 28px;
+  border:1px solid rgba(103,74,12,.22);
+  border-left:0;
+  border-radius:0 9px 9px 0;
+  background:linear-gradient(165deg,#f3d979 0%,#e9c55c 100%);
+}
+.b01-fridge-surface{
+  width:100%;
+  margin:0;
+  padding:34px 28px 30px 68px;
+  border:1px solid rgba(58,105,116,.22);
+  border-right:0;
+  border-radius:9px 0 0 9px;
+  background:linear-gradient(160deg,#dceef1 0%,#c5e1e6 100%);
+}
+.b01-furniture-kicker{font-size:12px;letter-spacing:.14em}
+.b01-edge-tab{
+  top:32%;
+  width:48px;
+  min-height:132px;
+  padding:12px 8px;
+  border:1px solid rgba(44,46,46,.22);
+  border-radius:0;
+  box-shadow:none;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.b01-edge-tab--left{right:0;border-left:0;border-radius:0 5px 5px 0}
+.b01-edge-tab--right{left:0;border-right:0;border-radius:5px 0 0 5px;transform:rotate(180deg)}
+
+/* Bottom furniture rises from below without changing book geometry. */
+.b01-task-owner{
+  z-index:8;
+  left:50%;
+  bottom:0;
+  width:min(84%,860px);
+  height:48px;
+  transform:translate(-50%,0);
+}
+.b01-task-owner[data-state='open']{height:clamp(260px,34vh,360px);transform:translate(-50%,calc(100% - 48px))}
+.b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:48px}
+.b01-task-tab{
+  min-width:164px;
+  min-height:48px;
+  border:1px solid rgba(74,52,30,.28);
+  border-bottom:0;
+  border-radius:5px 5px 0 0;
+  background:#c49a6c;
+  font-size:13px;
+  letter-spacing:.08em;
+}
+.b01-task-surface{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  padding:68px 28px 28px;
+  border:1px solid rgba(74,52,30,.25);
+  border-radius:7px 7px 0 0;
+  background:linear-gradient(180deg,#caa474,#bc8f5e);
+  box-shadow:0 -12px 30px -28px rgba(44,46,46,.8);
+}
+.b05-clean-up{top:4px;left:auto;right:14px;border:0;border-bottom:1px solid rgba(44,46,46,.28);border-radius:0;background:transparent;font-size:13px}
+
+/* Calendar controls recede behind the working surface. */
+.calendar-view-choices{border-radius:3px;box-shadow:0 12px 22px -20px rgba(44,46,46,.65)}
+.view-choice{border-radius:0}
+
+/* Planner grids should read as paper rules, not tiles. */
+.calendar-day-cell,.planning-week-day,.planning-month-day{
+  border-color:rgba(44,46,46,.13)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background-color:transparent;
+}
+
+@media(max-width:1280px){
+  .b01-furniture-composition{--book-width:min(900px,72vw)}
+  .b01-settings-owner{width:330px}.b01-fridge-owner{width:350px}
+  .b01-settings-owner[data-state='open']{transform:translateX(-105px)}
+  .b01-fridge-owner[data-state='open']{transform:translateX(115px)}
+}
+
+@media(max-width:800px){
+  html,body,.arc-shell{background:var(--arc-paper)}
+  .arc-header{height:52px;padding:4px 14px}
+  .arc-layout{min-height:calc(100dvh - 52px)}
+  .arc-calendar-stage{padding:0 10px 20px}
+  .calendar-stage-header{grid-template-columns:1fr;width:100%;min-height:70px;padding:0 4px 6px;gap:4px}
+  .b01-furniture-composition{--book-width:100%;width:100%;display:flex;flex-direction:column;overflow:visible;padding-bottom:48px}
+  .b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 138px);border-radius:2px;box-shadow:0 1px 0 rgba(44,46,46,.12)}
+  .calendar-canvas::after{display:none}
+  .b01-side-owner[data-state='open'],.b01-settings-owner[data-state='open'],.b01-fridge-owner[data-state='open']{transform:none}
+  .b01-settings-owner[data-state='open'],.b01-fridge-owner[data-state='open']{position:relative;inset:auto;width:100%;height:min(68vh,520px);margin-top:10px}
+  .b01-side-owner[data-state='open'] .b01-furniture-surface{padding:22px 18px;border:1px solid rgba(44,46,46,.18);border-radius:4px}
+  .b01-side-owner[data-state='open'] .b01-edge-tab{position:relative;width:100%;min-height:44px;top:auto;left:auto;right:auto;writing-mode:horizontal-tb;transform:none;border-radius:4px 4px 0 0}
+  .b01-task-owner[data-state='open']{position:relative;inset:auto;width:100%;height:min(58vh,480px);margin-top:10px;transform:none}
+  .b01-task-owner[data-state='open'] .b01-task-tab{position:relative;left:auto;width:100%;transform:none}
+  .b01-task-owner[data-state='open'] .b01-task-surface{height:calc(100% - 48px);padding:18px 12px;border-radius:0 0 4px 4px}
+}
+
+@media(prefers-reduced-motion:reduce){.b01-side-owner,.b01-task-owner{transition:none}}
