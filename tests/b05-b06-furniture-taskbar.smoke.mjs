@@ -90,6 +90,9 @@ try {
 
   await tasks.click()
   assert(sameRect(baseline, await documentRect(calendar, page)), 'B05: opening Task Bar reflowed calendar.')
+  const taskSurfaceRect = await documentRect(page.locator('.b01-task-surface'), page)
+  const taskPanelRect = await documentRect(page.locator('.taskbar-panel'), page)
+  assert(taskSurfaceRect && taskPanelRect && taskPanelRect.width >= taskSurfaceRect.width * .8, `B05: Task Bar content does not own the furniture width. surface=${JSON.stringify(taskSurfaceRect)} panel=${JSON.stringify(taskPanelRect)}`)
   await capture(page, '01-taskbar-empty-1440')
 
   const mustAdd = page.locator('.taskbar-lane--must').getByRole('button', { name: '+ Add task', exact: true })
@@ -195,7 +198,7 @@ try {
   assert(parseFloat(transition) <= 0.01, `B06: reduced-motion Task Bar transition remains active (${transition}).`)
   await reduced.close()
 
-  console.log('B05/B06 primary gate passed: Task Bar CRUD/priority/Important/completion/persistence, focus lifecycle, Clean Up non-mutation, fixed furniture geometry, 1280 targets/overflow, reduced motion, and runtime cleanliness.')
+  console.log('B05/B06 primary gate passed: Task Bar full-width composition, CRUD/priority/Important/completion/persistence, focus lifecycle, Clean Up non-mutation, fixed furniture geometry, 1280 targets/overflow, reduced motion, and runtime cleanliness.')
 } finally {
   await browser.close()
 }
