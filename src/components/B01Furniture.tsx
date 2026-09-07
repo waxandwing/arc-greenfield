@@ -8,17 +8,26 @@ type Props = {
   settings: ReactNode
   fridge?: ReactNode
   tasks?: ReactNode
+  onCleanUpFocus?: () => void
   children: ReactNode
 }
 
-export function B01Furniture({ settings, fridge, tasks, children }: Props) {
-  const [open, setOpen] = useState<Record<DrawerName, boolean>>({ settings: false, fridge: false, tasks: false })
+const ALL_CLOSED: Record<DrawerName, boolean> = { settings: false, fridge: false, tasks: false }
+
+export function B01Furniture({ settings, fridge, tasks, onCleanUpFocus, children }: Props) {
+  const [open, setOpen] = useState<Record<DrawerName, boolean>>(ALL_CLOSED)
   const settingsButton = useRef<HTMLButtonElement>(null)
   const fridgeButton = useRef<HTMLButtonElement>(null)
   const tasksButton = useRef<HTMLButtonElement>(null)
+  const anyOpen = open.settings || open.fridge || open.tasks
 
   function toggle(name: DrawerName) {
     setOpen((current) => ({ ...current, [name]: !current[name] }))
+  }
+
+  function cleanUp() {
+    setOpen(ALL_CLOSED)
+    requestAnimationFrame(() => onCleanUpFocus?.())
   }
 
   useEffect(() => {
@@ -57,6 +66,7 @@ export function B01Furniture({ settings, fridge, tasks, children }: Props) {
 
       <aside className="b01-task-owner" data-state={open.tasks ? 'open' : 'closed'} aria-label="Task Bar furniture">
         <button ref={tasksButton} className="b01-task-tab" type="button" aria-expanded={open.tasks} aria-controls="b01-task-surface" onClick={() => toggle('tasks')}>Tasks</button>
+        {anyOpen ? <button type="button" className="b05-clean-up" onClick={cleanUp}>Clean Up</button> : null}
         <div id="b01-task-surface" className="b01-furniture-surface b01-task-surface" inert={!open.tasks ? true : undefined}>
           {tasks ?? <><div><strong>Must</strong></div><div><strong>Should</strong></div><div><strong>Could</strong></div></>}
         </div>
