@@ -32,13 +32,13 @@
   box-shadow: none;
   color: var(--ink);
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: .005em;
   line-height: 1.25;
 }
 
-/* Scheduled Lesson: paper-planner entry, quieter than Unit. */
+/* Scheduled Lesson: paper-planner entry, quieter than Unit by material and framing—not illegibly small copy. */
 .planning-lesson {
   gap: 3px;
   padding: 7px 8px 8px;
@@ -52,31 +52,31 @@
 .planning-lesson-parent {
   margin-bottom: 1px;
   color: var(--soft-charcoal);
-  font-size: 10.5px;
+  font-size: 13px;
   font-weight: 650;
-  letter-spacing: .025em;
+  letter-spacing: .015em;
   line-height: 1.2;
 }
 
 .planning-lesson-title {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.28;
 }
 
 .planning-lesson-anchor,
 .planning-lesson-meta {
-  font-size: 10.5px;
+  font-size: 13px;
   line-height: 1.25;
 }
 
 .planning-lesson-anchor {
-  letter-spacing: .045em;
+  letter-spacing: .035em;
 }
 
 .planning-resume-note {
   padding-top: 5px;
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.35;
 }
 
@@ -99,7 +99,7 @@
 
 .planning-note-text {
   color: var(--ink);
-  font-size: 11.5px;
+  font-size: 16px;
   line-height: 1.35;
 }
 
@@ -107,7 +107,7 @@
   padding-top: 5px;
   border-top-color: rgba(44, 46, 46, .08);
   color: var(--arc-object-pencil);
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.25;
 }
 
@@ -132,12 +132,12 @@
   transform: rotate(.9deg);
 }
 
-/* Add control: a restrained pencil-margin affordance rather than app chrome. */
+/* Add control: quiet visually, but keeps the canonical 44px interaction target. */
 .planning-quick-add-trigger {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   margin-top: 3px;
   border: 0;
   border-radius: 50%;
@@ -168,13 +168,13 @@
 }
 
 .planning-context-toolbar button {
-  min-height: 32px;
-  padding: 4px 7px;
+  min-height: 44px;
+  padding: 4px 8px;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: var(--soft-charcoal);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
   letter-spacing: .01em;
 }
@@ -191,8 +191,8 @@
 }
 
 .planning-context-dismiss {
-  min-width: 32px !important;
-  min-height: 32px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
   font-size: 16px !important;
 }
 
@@ -203,7 +203,7 @@
 }
 
 @media (max-width: 700px) {
-  .planning-unit-object .planning-unit-span { font-size: 13px; }
-  .planning-lesson-title { font-size: 11.5px; }
-  .planning-note-text { font-size: 11px; }
+  .planning-unit-object .planning-unit-span { font-size: 14px; }
+  .planning-lesson-title { font-size: 16px; }
+  .planning-note-text { font-size: 16px; }
 }
