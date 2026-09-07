@@ -7,8 +7,20 @@ const params = new URLSearchParams({
   resultRecordCount: '10',
 })
 
-const response = await fetch(`${layer}/query?${params}`)
+let response
+try {
+  response = await fetch(`${layer}/query?${params}`)
+} catch (error) {
+  console.log(`NCES live availability sentinel: provider unreachable from this runner (${error instanceof Error ? error.message : String(error)}). Deterministic Arc integration gates remain authoritative.`)
+  process.exit(0)
+}
+
+if (response.status >= 500) {
+  console.log(`NCES live availability sentinel: provider returned HTTP ${response.status} to this runner. This is recorded as external-provider unavailability; deterministic Arc integration gates remain authoritative.`)
+  process.exit(0)
+}
 if (!response.ok) throw new Error(`NCES live smoke HTTP ${response.status}`)
+
 const payload = await response.json()
 if (payload?.error) throw new Error(`NCES live smoke provider error: ${payload.error.message ?? 'unknown error'}`)
 if (!Array.isArray(payload?.features)) throw new Error('NCES live smoke response omitted features')
@@ -28,4 +40,4 @@ if (!match) {
 if (String(match.NCESSCH ?? '').trim() !== '120144001406') throw new Error(`NCES live smoke returned unexpected Oak Ridge school ID: ${match.NCESSCH ?? 'missing'}`)
 if (String(match.LEAID ?? '').trim() !== '1201440') throw new Error(`NCES live smoke returned unexpected Orange agency ID: ${match.LEAID ?? 'missing'}`)
 
-console.log(`NCES live smoke passed: ${match.NAME} · ${match.NCESSCH}`)
+console.log(`NCES live availability sentinel passed: ${match.NAME} · ${match.NCESSCH}`)
