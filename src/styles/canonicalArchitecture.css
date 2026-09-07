@@ -11,8 +11,8 @@
   --arc-ink:#2c2e2e;
 }
 
+html,body,#root,.arc-shell{max-width:100%;overflow-x:clip}
 html,body{background:var(--arc-environment)}
-body{overflow-x:hidden}
 .arc-shell{
   min-height:100dvh;
   background:
