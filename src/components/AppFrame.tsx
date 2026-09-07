@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { B01Furniture } from './B01Furniture'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { CalendarViewPreferences } from './CalendarViewPreferences'
+import { TaskBarPanel } from './TaskBarPanel'
 import { WorkspaceStage } from './WorkspaceStage'
 import { useArcWorkspace } from '../app/useArcWorkspace'
+import { useTaskBar } from '../app/useTaskBar'
 import { useWeekPlanningActions } from '../app/useWeekPlanningActions'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
@@ -19,6 +21,7 @@ export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
   const workspace = useArcWorkspace(workspaceMode.close)
   const weekPlanning = useWeekPlanningActions(workspace, workspaceMode.open)
+  const taskBar = useTaskBar()
   const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
@@ -62,6 +65,18 @@ export function AppFrame() {
     </div>
   ) : <p className="b01-furniture-empty">Fridge is available in calendar mode.</p>
 
+  const taskContent = (
+    <TaskBarPanel
+      workspace={taskBar.workspace}
+      onAdd={taskBar.add}
+      onRename={taskBar.rename}
+      onMove={taskBar.move}
+      onSetImportant={taskBar.setImportant}
+      onSetCompleted={taskBar.setCompleted}
+      onRemove={taskBar.remove}
+    />
+  )
+
   return (
     <div className="arc-shell">
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
@@ -71,7 +86,8 @@ export function AppFrame() {
           <CalendarStageHeader activeView={workspace.activeView} mode={workspaceMode.mode} calendar={workspace.calendar} anchorDate={workspace.anchorDate} previousTarget={workspace.previousTarget} nextTarget={workspace.nextTarget} todayTarget={workspace.todayTarget} hasTerms={workspace.hasTerms} hasClasses={workspace.hasClasses} hasUnits={workspace.hasUnits} hasLessons={workspace.hasLessons} recoveryCount={workspace.recoveryCount} undoAvailable={Boolean(workspace.shiftState?.undo)} stageTitle={stageTitle} viewSelectionDisabled={workspaceBusy} availabilityFor={workspace.viewAvailability} onSelectView={selectView} onMovePrevious={() => workspace.movePeriod('previous')} onMoveNext={() => workspace.movePeriod('next')} onToday={workspace.goToday} onOpenCalendarSetup={() => workspaceMode.open('calendar-setup')} onOpenTerms={() => workspaceMode.open('terms')} onOpenClasses={() => workspaceMode.open('classes')} onOpenUnits={() => workspaceMode.open('units')} onOpenLessons={() => workspaceMode.open('lessons')} onOpenRecovery={() => workspaceMode.open('recovery')} onUndoShift={workspace.undoLastShift} />
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
           {weekPlanning.contextNotice && <p className="storage-notice b03-context-notice" role="status">{weekPlanning.contextNotice}</p>}
-          <B01Furniture settings={workspace.calendar && workspaceMode.mode === 'calendar' ? <CalendarViewPreferences preferences={viewPreferences} onChange={updateViewPreferences} /> : <p className="b01-furniture-empty">Calendar settings are available in calendar mode.</p>} fridge={fridgeContent}>
+          {taskBar.storageNotice && <p className="storage-notice" role="status">{taskBar.storageNotice}</p>}
+          <B01Furniture settings={workspace.calendar && workspaceMode.mode === 'calendar' ? <CalendarViewPreferences preferences={viewPreferences} onChange={updateViewPreferences} /> : <p className="b01-furniture-empty">Calendar settings are available in calendar mode.</p>} fridge={fridgeContent} tasks={taskContent}>
             <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
               <WorkspaceStage mode={workspaceMode.mode} activeView={workspace.activeView} showWeekends={viewPreferences.showWeekends} calendar={workspace.calendar} calendarInput={workspace.calendarInput} anchorDate={workspace.anchorDate} planningWorkspace={workspace.planningWorkspace} planningInput={workspace.planningInput} unitWorkspace={workspace.unitWorkspace} unitInput={workspace.unitInput} lessonWorkspace={workspace.lessonWorkspace} lessonInput={workspace.lessonInput} shiftState={workspace.shiftState} protectedCourseIds={workspace.protectedCourseIds} protectedUnitIds={workspace.protectedUnitIds} protectedSectionIds={workspace.protectedSectionIds} weekObjectActions={weekPlanning.weekObjectActions} onUseCalendar={workspace.useCalendar} onUseTerms={workspace.useTerms} onUseClasses={workspace.useClasses} onUseUnits={workspace.useUnits} onUseLessons={workspace.useLessons} onApplyRecoveryShift={workspace.applyRecoveryShift} onCloseMode={workspaceMode.close} />
             </section>
