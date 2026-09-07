@@ -78,3 +78,54 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .projection-range{display:grid;grid-template-columns:repeat(7,minmax(100px,1fr));min-width:700px}
 .projection-range--compact{grid-template-columns:repeat(7,minmax(42px,1fr));min-width:700px}
 .calendar-day-cell{position:relative;min-height:104px;padding:10px;border-right:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle);background:var(--paper-raised)}
+.calendar-day-cell--compact{min-height:42px;padding:6px}
+.calendar-day-date{display:block;font-size:13px;font-weight:700}
+.calendar-day-label,.calendar-day-status{display:block;margin-top:6px;font-size:12px;line-height:1.25;color:var(--soft-charcoal)}
+.calendar-day-cell--weekend{background:rgba(74,73,69,.05)}
+.calendar-day-cell--outside-year{opacity:.42}
+.calendar-day-cell--no-school,.calendar-day-cell--holiday,.calendar-day-cell--break,.calendar-day-cell--teacher-workday{background:rgba(124,156,173,.08)}
+.calendar-day-cell--unknown{background:repeating-linear-gradient(135deg,rgba(44,46,46,.025) 0,rgba(44,46,46,.025) 6px,transparent 6px,transparent 12px)}
+.projection-empty-state{margin:0;padding:var(--space-4);color:var(--soft-charcoal)}
+.calendar-unconfigured{padding:var(--space-4)}
+
+@media (max-width:800px){
+  .arc-header{height:64px;padding-inline:var(--mobile-gutter)}
+  .arc-layout{min-height:calc(100dvh - 64px)}
+  .arc-calendar-stage{padding:0 var(--mobile-gutter) var(--mobile-gutter)}
+  .calendar-stage-header{align-items:end;grid-template-columns:1fr;gap:var(--space-2);min-height:88px}
+  .calendar-canvas{min-height:calc(100dvh - 164px)}
+  .projection-section{padding:var(--space-3)}
+  .calendar-setup{padding:var(--space-6)}
+  .setup-field-grid{grid-template-columns:1fr 1fr}
+  .setup-field-grid label:first-child{grid-column:1/-1}
+  .exception-row{grid-template-columns:1fr 1fr}
+  .exception-label-field{grid-column:1/-1}
+  .exception-row .text-button{justify-self:start}
+}
+
+@media (max-width:520px){
+  html,body,.arc-shell{background:var(--paper)}
+  .arc-header{grid-template-columns:1fr;background:var(--paper)}
+  .arc-wordmark::after{display:none}
+  .arc-layout{overflow:visible;background:var(--paper)}
+  .arc-calendar-stage{padding:0 var(--space-3) var(--space-3)}
+  .view-title{font-size:34px}
+  .calendar-view-choices{max-width:calc(100vw - (2 * var(--space-3)))}
+  .calendar-canvas{border-radius:var(--radius-sm);box-shadow:0 1px 0 rgba(44,46,46,.04)}
+  .calendar-canvas::before{display:none}
+  .month-week,.projection-range{min-width:644px}
+  .projection-day-strip{min-width:720px}
+  .projection-day-strip--single{min-width:0}
+  .calendar-setup{padding:var(--space-4)}
+  .calendar-setup-intro h2{font-size:26px}
+  .setup-field-grid,.exception-row{grid-template-columns:1fr}
+  .setup-field-grid label:first-child,.exception-label-field{grid-column:auto}
+  .exceptions-heading,.setup-actions{align-items:stretch;flex-direction:column}
+  .exceptions-heading{display:flex}
+  .setup-actions{display:flex}
+  .primary-button{width:100%}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
