@@ -22,6 +22,7 @@ type Props = {
 export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new Set(), protectedSectionIds = new Set(), onSave, onCancel }: Props) {
   const [courses, setCourses] = useState<Course[]>(() => initialValue?.courses.map((course) => ({ ...course })) ?? [])
   const [sections, setSections] = useState<Section[]>(() => initialValue?.sections.map((section) => ({ ...section })) ?? [])
+  const notes = initialValue?.notes?.map((note) => ({ ...note })) ?? []
   const [errors, setErrors] = useState<string[]>([])
 
   function addCourse() { setCourses((current) => [...current, { id: createCourseId(), title: '' }]) }
@@ -58,6 +59,7 @@ export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new 
         calendarId,
         courses: courses.map((course) => ({ ...course, title: course.title.trim() })),
         sections: sections.map((section) => ({ ...section, name: section.name.trim(), calendarId })),
+        notes,
       }
       const workspace = hydratePlanningWorkspace(input)
       setErrors([])
@@ -75,7 +77,7 @@ export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new 
       <div className="class-course-list">
         {courses.length === 0 && <div className="class-empty-state"><p>No classes yet.</p><button type="button" className="primary-button" onClick={addCourse}>Add a course</button></div>}
         {courses.map((course) => {
-          const courseSections = sectionsForWorkspaceCourse({ calendarId, courses, sections }, course.id)
+          const courseSections = sectionsForWorkspaceCourse({ calendarId, courses, sections, notes: [] }, course.id)
           const protectedByUnit = protectedCourseIds.has(course.id)
           return (
             <section className="class-course" key={course.id} aria-labelledby={`${course.id}-label`}>
