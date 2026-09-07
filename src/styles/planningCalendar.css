@@ -83,7 +83,7 @@
 .planning-day-slot--no-school,.planning-day-slot--holiday,.planning-day-slot--break,.planning-day-slot--teacher-workday{background:rgba(74,73,69,.045)}
 .planning-day-slot--unknown{background:repeating-linear-gradient(135deg,rgba(74,73,69,.04),rgba(74,73,69,.04) 6px,transparent 6px,transparent 12px)}
 .planning-lesson{display:grid;gap:5px;padding:9px 10px 10px;border:1px solid var(--line-subtle);border-left:4px solid var(--dusty-blue);border-radius:4px;background:rgba(243,235,221,.82);color:var(--ink)}
-.planning-lesson-parent{display:block;min-width:0;overflow:hidden;color:var(--terracotta-text);font-size:14px;font-weight:800;letter-spacing:.06em;line-height:1.15;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}
+.planning-lesson-parent{display:block;min-width:0;overflow-wrap:anywhere;color:var(--terracotta-text);font-size:10px;font-weight:800;letter-spacing:.06em;line-height:1.15;text-transform:uppercase;white-space:normal}
 .planning-lesson--in-progress{border-left-color:var(--mustard)}
 .planning-lesson--completed{background:rgba(154,170,137,.09)}
 .planning-lesson--skipped{background:rgba(74,73,69,.05);text-decoration:line-through}
