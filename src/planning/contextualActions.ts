@@ -1,16 +1,78 @@
-import { createLesson, lessonsForUnit } from './lessons'
+import { createLesson, lessonsForUnit, validateLessonAgainstUnit } from './lessons'
 import type { LessonWorkspace } from './lessonWorkspace'
 import { createPlanningNote, type PlanningNote, type PlanningNotePlacement } from './notes'
-import { createUnit } from './units'
+import { createUnit, placeUnit } from './units'
 import type { UnitWorkspace } from './unitWorkspace'
 import type { PlanningWorkspace } from './workspace'
-import type { ISODate } from '../calendar/types'
+import type { ISODate, SchoolCalendar } from '../calendar/types'
 
 function newId(prefix: string): string {
   const token = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`
   return `${prefix}-${token}`
+}
+
+export function createUnitOnWeek(input: {
+  calendar: SchoolCalendar
+  workspace: UnitWorkspace
+  courseId: string
+  title: string
+  startDate: ISODate
+  endDate: ISODate
+}): UnitWorkspace {
+  const unit = placeUnit(createUnit({
+    id: newId('unit'),
+    calendarId: input.calendar.id,
+    courseId: input.courseId,
+    title: input.title,
+  }), input.calendar, { startDate: input.startDate, endDate: input.endDate })
+  return { ...input.workspace, units: [...input.workspace.units, unit] }
+}
+
+export function createLessonOnWeek(input: {
+  calendar: SchoolCalendar
+  units: UnitWorkspace
+  workspace: LessonWorkspace
+  unitId: string
+  title: string
+  plannedDate: ISODate
+}): LessonWorkspace {
+  const unit = input.units.units.find((candidate) => candidate.id === input.unitId)
+  if (!unit) throw new Error(`Cannot create Lesson. Unit does not exist: ${input.unitId}.`)
+  const siblings = lessonsForUnit(input.workspace.lessons, unit.id)
+  const lesson = createLesson({
+    id: newId('lesson'),
+    calendarId: input.calendar.id,
+    courseId: unit.courseId,
+    unitId: unit.id,
+    title: input.title,
+    sequence: Math.max(0, ...siblings.map((candidate) => candidate.sequence)) + 1,
+    plannedDate: input.plannedDate,
+    datePolicy: 'flexible',
+  })
+  const errors = validateLessonAgainstUnit(lesson, unit, input.calendar)
+  if (errors.length > 0) throw new Error(`Cannot create Lesson. ${errors.join(' ')}`)
+  return { ...input.workspace, lessons: [...input.workspace.lessons, lesson] }
+}
+
+export function createPlanningNoteOnWeek(input: {
+  workspace: PlanningWorkspace
+  calendarId: string
+  date: ISODate
+  text: string
+  placement?: PlanningNotePlacement
+  important?: boolean
+}): PlanningWorkspace {
+  const note = createPlanningNote({
+    id: newId('note'),
+    calendarId: input.calendarId,
+    date: input.date,
+    text: input.text,
+    placement: input.placement,
+    important: input.important,
+  })
+  return { ...input.workspace, notes: [...(input.workspace.notes ?? []), note] }
 }
 
 export function copyUnitForLater(workspace: UnitWorkspace, unitId: string): UnitWorkspace {
