@@ -1,0 +1,97 @@
+name: Group 5 QA preview steward
+
+on:
+  push:
+    branches:
+      - group5/qa-preview-steward
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-review-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Record exact head
+        run: |
+          mkdir -p artifacts/group5-review-pack
+          git rev-parse HEAD | tee artifacts/group5-review-pack/exact-head.txt
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Chromium audit runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Build non-Vercel browser target
+        run: npm run build
+      - name: Start local Vite preview
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/arc-group5-preview.log 2>&1 &
+          echo $! > /tmp/arc-group5-preview.pid
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/arc-group5-preview.log
+          exit 1
+      - name: Browser accessibility and reflow gate
+        env:
+          ARC_BASE_URL: http://127.0.0.1:4173
+        run: node tests/browser-a11y.smoke.mjs
+      - name: B01 furniture gate
+        env:
+          ARC_BASE_URL: http://127.0.0.1:4173
+        run: node tests/b01-furniture.smoke.mjs
+      - name: B01 independent furniture gate
+        env:
+          ARC_BASE_URL: http://127.0.0.1:4173
+        run: node tests/b01-furniture-independent.mjs
+      - name: B05 B06 furniture and Task Bar gate
+        env:
+          ARC_BASE_URL: http://127.0.0.1:4173
+        run: node tests/b05-b06-furniture-taskbar.smoke.mjs
+      - name: B05 B06 independent gate
+        env:
+          ARC_BASE_URL: http://127.0.0.1:4173
+        run: node tests/b05-b06-furniture-taskbar-independent.mjs
+      - name: B07 interaction engine gate
+        env:
+          ARC_BASE_URL: http://127.0.0.1:4173
+        run: node tests/b07-interaction-engine.smoke.mjs
+      - name: B07 independent interaction gate
+        env:
+          ARC_BASE_URL: http://127.0.0.1:4173
+        run: node tests/b07-interaction-engine-independent.mjs
+      - name: Capture 1440 1280 390 populated Week review pack
+        env:
+          ARC_BASE_URL: http://127.0.0.1:4173
+        run: node tests/group5-review-pack.mjs
+      - name: Stop preview
+        if: always()
+        run: |
+          if [ -f /tmp/arc-group5-preview.pid ]; then kill "$(cat /tmp/arc-group5-preview.pid)" || true; fi
+      - name: Publish Group 5 exact-head evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-group5-qa-review-pack
+          path: |
+            artifacts/group5-review-pack/**
+            artifacts/b01-furniture/**
+            artifacts/b01-furniture-independent/**
+            artifacts/b05-b06/**
+            artifacts/b05-b06-independent/**
+            artifacts/b07-interaction-engine/**
+            artifacts/b07-interaction-engine-independent/**
+            artifacts/phase1-shell-1280.png
+            /tmp/arc-group5-preview.log
+          if-no-files-found: warn
+          retention-days: 14
