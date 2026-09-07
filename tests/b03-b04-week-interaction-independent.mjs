@@ -134,6 +134,21 @@ async function pass20GeometryAndTargets(page) {
   }
 }
 
+async function pass21RejectedMoveStaysInContext(page) {
+  await page.setViewportSize({ width:1366,height:768 })
+  const p2 = page.locator('.planning-section-row').filter({ hasText:'Period 2' })
+  await p2.getByRole('button', { name:/Select Old Kingdom/ }).click()
+  await p2.getByRole('toolbar', { name:'Old Kingdom actions' }).getByRole('button', { name:'Move', exact:true }).click()
+  const editor = p2.getByRole('group', { name:'Move Lesson shared plan' })
+  await editor.getByRole('textbox', { name:'Lesson planned date' }).fill('2026-09-19')
+  await editor.getByRole('button', { name:'Move Lesson', exact:true }).click()
+  await page.getByText(/Cannot move Lesson/).waitFor({ state:'visible' })
+  check(await editor.count() === 1, 'Pass 21: rejected Lesson Move must keep the editor open for correction.')
+  check(await p2.getByRole('button', { name:/Select Old Kingdom/ }).getAttribute('aria-pressed') === 'true', 'Pass 21: rejected Lesson Move must retain selection ownership.')
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('Escape')
+}
+
 await fs.mkdir(outDir, { recursive:true })
 const browser = await chromium.launch({ headless:true })
 try {
@@ -150,9 +165,10 @@ try {
   await pass18InvalidRange(page)
   await pass19SingleSelectionOwner(page)
   await pass20GeometryAndTargets(page)
+  await pass21RejectedMoveStaysInContext(page)
   await page.setViewportSize({ width:1366,height:768 })
   await page.screenshot({ path:`${outDir}/independent-final-1366.png`, fullPage:true })
   check(errors.length === 0, `Independent B03/B04 runtime errors: ${errors.join(' | ')}`)
-  console.log('B03/B04 independent audit passes 14-20 passed.')
+  console.log('B03/B04 independent audit passes 14-21 passed.')
   await context.close()
 } finally { await browser.close() }
