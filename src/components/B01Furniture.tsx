@@ -19,6 +19,7 @@ export function B01Furniture({ settings, fridge, tasks, onCleanUpFocus, children
   const settingsButton = useRef<HTMLButtonElement>(null)
   const fridgeButton = useRef<HTMLButtonElement>(null)
   const tasksButton = useRef<HTMLButtonElement>(null)
+  const cleanUpFocusPending = useRef(false)
   const anyOpen = open.settings || open.fridge || open.tasks
 
   function toggle(name: DrawerName) {
@@ -26,9 +27,15 @@ export function B01Furniture({ settings, fridge, tasks, onCleanUpFocus, children
   }
 
   function cleanUp() {
+    cleanUpFocusPending.current = true
     setOpen(ALL_CLOSED)
-    requestAnimationFrame(() => onCleanUpFocus?.())
   }
+
+  useEffect(() => {
+    if (anyOpen || !cleanUpFocusPending.current) return
+    cleanUpFocusPending.current = false
+    onCleanUpFocus?.()
+  }, [anyOpen, onCleanUpFocus])
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
