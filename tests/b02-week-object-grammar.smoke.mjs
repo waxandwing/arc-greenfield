@@ -40,6 +40,8 @@ async function createPlanningTruth(page) {
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('AP Art History')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
   await page.getByRole('textbox', { name: 'Period or section', exact: true }).fill('Period 2')
+  await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Period or section', exact: true }).last().fill('Period 5')
   await page.getByRole('button', { name: 'Save classes', exact: true }).click()
 
   await headerAction(page, 'Add Units').click()
@@ -99,17 +101,21 @@ async function goToTargetWeek(page) {
 async function assertB02Grammar(page) {
   assert(await page.getByRole('heading', { level: 1, name: 'Week', exact: true }).count() === 1, 'B02: Week must retain exactly one H1.')
   assert(await page.getByRole('heading', { level: 2, name: 'AP Art History', exact: true }).count() === 1, 'B02: Course must own the teaching hierarchy once.')
-  assert(await page.getByText('Period 2', { exact: true }).count() === 1, 'B02: Section identity must remain visible in the class gutter.')
+
+  const p2Row = page.locator('.planning-section-row').filter({ hasText: 'Period 2' })
+  const p5Row = page.locator('.planning-section-row').filter({ hasText: 'Period 5' })
+  assert(await p2Row.count() === 1 && await p5Row.count() === 1, 'B02: at least two distinct Section rows must remain visible under one Course.')
 
   const unit = page.locator('.planning-unit-span').filter({ hasText: 'Ancient Egypt' })
   assert(await unit.count() === 1, 'B02: Unit must render once as a continuous Course span, not once per day/Section.')
   const unitBox = await unit.boundingBox()
   assert(unitBox && unitBox.width > 300, `B02: Unit span must visibly cross multiple day columns (width ${unitBox?.width ?? 0}).`)
 
-  const lessonSlot = page.locator('.planning-day-slot').filter({ hasText: 'Temple lesson' })
-  assert(await lessonSlot.count() === 1, 'B02: Temple lesson must belong to exactly one visible day/Section slot.')
-  assert(await lessonSlot.getByText('Image comparison', { exact: true }).count() === 1, 'B02: multiple same-day Lessons must coexist in the same canonical slot.')
-  assert(await lessonSlot.getByText('Ancient Egypt', { exact: true }).count() === 2, 'B02: each same-day Lesson must retain its explicit parent Unit cue.')
+  const p2LessonSlot = p2Row.locator('.planning-day-slot').filter({ hasText: 'Temple lesson' })
+  const p5LessonSlot = p5Row.locator('.planning-day-slot').filter({ hasText: 'Temple lesson' })
+  assert(await p2LessonSlot.count() === 1 && await p5LessonSlot.count() === 1, 'B02: shared Course Lessons must project into both Section rows without duplicating canonical Lesson identity.')
+  assert(await p2LessonSlot.getByText('Image comparison', { exact: true }).count() === 1, 'B02: multiple same-day Lessons must coexist in the same canonical Section/day slot.')
+  assert(await p2LessonSlot.getByText('Ancient Egypt', { exact: true }).count() === 2, 'B02: each same-day Lesson must retain its explicit parent Unit cue.')
 
   const notesLane = page.getByRole('region', { name: 'Notes', exact: true })
   assert(await notesLane.count() === 1, 'B02: calendar Notes must own one independent Notes lane.')
@@ -122,10 +128,19 @@ async function assertB02Grammar(page) {
 
   const important = afterSchool.getByLabel('Important', { exact: true })
   assert(await important.count() >= 1, 'B02: Important must expose explicit accessible semantics, not color alone.')
-  const importantMark = afterSchool.locator('.planning-important-mark')
-  assert(await importantMark.count() === 1, 'B02: Important must render one circular semantic mark.')
-  const markBox = await importantMark.boundingBox()
-  assert(markBox && Math.abs(markBox.width - markBox.height) <= 2, 'B02: Important mark must remain visually circular.')
+  const importantNote = afterSchool.locator('.planning-note--important')
+  assert(await importantNote.count() === 1, 'B02: Important must belong to the Note itself rather than a separate status object.')
+  const circle = await importantNote.evaluate((element) => {
+    const style = getComputedStyle(element, '::after')
+    return { borderStyle: style.borderTopStyle, borderWidth: Number.parseFloat(style.borderTopWidth), content: style.content }
+  })
+  assert(circle.borderStyle === 'solid' && circle.borderWidth >= 2 && circle.content !== 'none', 'B02: Important must use the canonical visible red-circle treatment around the paper object.')
+
+  const noteTextSize = Number.parseFloat(await notesLane.locator('.planning-note-text').first().evaluate((element) => getComputedStyle(element).fontSize))
+  const noteSourceSize = Number.parseFloat(await afterSchool.locator('.planning-note-source').evaluate((element) => getComputedStyle(element).fontSize))
+  const lessonParentSize = Number.parseFloat(await p2LessonSlot.locator('.planning-lesson-parent').first().evaluate((element) => getComputedStyle(element).fontSize))
+  assert(noteTextSize >= 16, `B02: Note body text must meet the canonical 16px body floor (got ${noteTextSize}px).`)
+  assert(noteSourceSize >= 14 && lessonParentSize >= 14, `B02: secondary metadata must meet the canonical 14px floor (source ${noteSourceSize}px, Unit cue ${lessonParentSize}px).`)
 
   const notesBox = await notesLane.boundingBox()
   const courseBox = await page.locator('.planning-course').first().boundingBox()
