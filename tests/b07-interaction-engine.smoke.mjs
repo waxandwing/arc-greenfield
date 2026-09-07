@@ -79,6 +79,25 @@ async function rejectSharedMoveWithoutFalseSuccess(page) {
   await page.keyboard.press('Escape')
 }
 
+async function rejectQuickAddAndKeepDraft(page) {
+  await page.getByRole('button', { name:'Next Week', exact:true }).click()
+  const trigger = page.getByRole('button', { name:/Add work on .*September 21, 2026/ })
+  await trigger.click()
+  const dialog = page.getByRole('dialog', { name:/Add work on .*September 21, 2026/ })
+  await dialog.getByRole('textbox', { name:'Lesson title', exact:true }).fill('Collision Lesson')
+  await dialog.getByRole('button', { name:'Add Lesson', exact:true }).click()
+
+  const rejection = page.locator('.storage-notice').filter({ hasText:/Section schedule/ }).first()
+  await rejection.waitFor({ state:'visible' })
+  check(await dialog.count() === 1, 'Rejected Week quick-add must remain open for correction rather than pretending creation completed.')
+  check(await dialog.getByRole('textbox', { name:'Lesson title', exact:true }).inputValue() === 'Collision Lesson', 'Rejected Week quick-add must preserve the teacher draft.')
+  check(await page.locator('.b03-context-notice').filter({ hasText:/Lesson added from the Week calendar/ }).count() === 0, 'Rejected Week quick-add must not emit or retain a success message.')
+  check(await page.getByText('Collision Lesson', { exact:true }).count() === 0, 'Rejected Week quick-add must not project an uncommitted Lesson.')
+  await page.keyboard.press('Escape')
+  await trigger.waitFor({ state:'visible' })
+  await page.getByRole('button', { name:'Previous Week', exact:true }).click()
+}
+
 async function rejectFridgeScheduleAndPreserveRealUndo(page) {
   await page.getByRole('button', { name:'Fridge', exact:true }).click()
   const fridge = page.getByRole('complementary', { name:'Fridge furniture' })
@@ -86,7 +105,7 @@ async function rejectFridgeScheduleAndPreserveRealUndo(page) {
   await returnDetails.locator('summary').click()
   await returnDetails.getByRole('button', { name:'First Lesson', exact:true }).click()
   await fridge.getByRole('button', { name:'Undo last Fridge move', exact:true }).waitFor({ state:'visible' })
-  await fridge.getByRole('textbox', { name:'Send Lesson to date' }).fill('2026-09-21')
+  await fridge.getByLabel('Send Lesson to date').fill('2026-09-21')
   const firstCard = fridge.locator('.b01-fridge-card').filter({ hasText:'First Lesson' })
   await firstCard.getByRole('button', { name:'Send to week', exact:true }).click()
 
@@ -129,6 +148,7 @@ try {
   await seed(page)
   await applySectionShift(page)
   await rejectSharedMoveWithoutFalseSuccess(page)
+  await rejectQuickAddAndKeepDraft(page)
   await rejectFridgeScheduleAndPreserveRealUndo(page)
   await proveCrossViewReload(page)
   await page.screenshot({ path:`${outDir}/b07-final-1440.png`, fullPage:true })
