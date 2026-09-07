@@ -132,12 +132,13 @@ async function reloadProof(page) {
 }
 
 async function narrowTouchProof(browser) {
-  const context = await browser.newContext({ viewport:{ width:390,height:844 }, hasTouch:true })
+  const context = await browser.newContext({ viewport:{ width:1280,height:720 }, hasTouch:true })
   const page = await context.newPage()
   const errors = []
   page.on('pageerror', (error) => errors.push(error.message))
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()) })
   await seed(page)
+  await page.setViewportSize({ width:390, height:844 })
   const studio = page.locator('.planning-section-row').filter({ hasText:'Studio A' })
   const critique = studio.getByRole('button', { name:/Select Critique/ })
   await critique.tap()
