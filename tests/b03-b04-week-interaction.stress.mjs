@@ -77,7 +77,10 @@ async function stressShiftUndo(page) {
     const toolbar = row.getByRole('toolbar', { name:'Lesson 1 actions' })
     await toolbar.getByRole('button', { name:'Shift this class', exact:true }).click()
     const editor = row.getByRole('group', { name:'Shift Lesson for this class' })
-    await row.getByRole('textbox', { name:'Shift destination date' }).fill('2026-09-18')
+    // Use an otherwise empty confirmed instructional day. September 18 already contains
+    // shared Lessons, so shifting there correctly requires same-day collision approval and
+    // is not a valid durability fixture for repeated ordinary Shift/Undo.
+    await row.getByRole('textbox', { name:'Shift destination date' }).fill('2026-09-21')
     await row.getByRole('button', { name:'Preview Shift', exact:true }).click()
     await row.getByRole('button', { name:'Apply Shift', exact:true }).click()
     await page.getByText(/Section Shift applied/).waitFor({ state:'visible' })
