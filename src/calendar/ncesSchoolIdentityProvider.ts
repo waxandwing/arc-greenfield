@@ -40,7 +40,9 @@ export async function searchNcesPublicSchools(
     return { status: 'invalid', candidates: [], message: queryErrors.join(' ') }
   }
 
-  const url = buildNcesSchoolSearchUrl(normalized, options.maxCandidates ?? 25)
+  const url = options.fetchImpl
+    ? buildNcesSchoolSearchUrl(normalized, options.maxCandidates ?? 25)
+    : buildNcesRuntimeSearchUrl(normalized, options.maxCandidates ?? 25)
   const fetchImpl = options.fetchImpl ?? fetch
 
   let response: Response
@@ -88,6 +90,21 @@ export async function searchNcesPublicSchools(
   }
 
   return normalizeOfficialSourceSearchResult({ candidates: parsed.candidates })
+}
+
+export function buildNcesRuntimeSearchUrl(query: SchoolIdentityQuery, maxCandidates = 25): string {
+  if (typeof window === 'undefined') return buildNcesSchoolSearchUrl(query, maxCandidates)
+  const normalized = normalizeSchoolIdentityQuery(query)
+  const errors = validateSchoolIdentityQuery(normalized)
+  if (errors.length > 0) throw new Error(errors.join(' '))
+  const params = new URLSearchParams({
+    schoolName: normalized.schoolName,
+    maxCandidates: String(clampCandidateLimit(maxCandidates)),
+  })
+  if (normalized.city) params.set('city', normalized.city)
+  if (normalized.state) params.set('state', normalized.state)
+  if (normalized.districtName) params.set('districtName', normalized.districtName)
+  return `/api/nces?${params.toString()}`
 }
 
 export function buildNcesSchoolSearchUrl(query: SchoolIdentityQuery, maxCandidates = 25): string {
