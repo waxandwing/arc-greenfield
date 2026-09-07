@@ -28,6 +28,7 @@ const units = createUnitOnWeek({ calendar, workspace: emptyUnits, courseId: cour
 assert(units.units.length === 1, 'Week quick-add must create exactly one Unit.')
 assert(units.units[0].id.startsWith('unit-'), 'Week quick-add Unit must receive a stable Unit identity.')
 assert(units.units[0].placement?.startDate === '2026-09-14' && units.units[0].placement?.endDate === '2026-09-18', 'Week quick-add Unit must use the requested range.')
+expectThrow(() => createUnitOnWeek({ calendar, workspace: { calendarId: 'other-calendar', units: [] }, courseId: course.id, title: 'Wrong owner', startDate: '2026-09-14', endDate: '2026-09-18' }), 'different school calendar')
 
 const lessons = createLessonOnWeek({ calendar, units, workspace: emptyLessons, unitId: units.units[0].id, title: 'Mixing lab', plannedDate: '2026-09-16' })
 assert(lessons.lessons.length === 1, 'Week quick-add must create exactly one Lesson.')
@@ -35,6 +36,8 @@ assert(lessons.lessons[0].id.startsWith('lesson-'), 'Week quick-add Lesson must 
 assert(lessons.lessons[0].courseId === course.id && lessons.lessons[0].unitId === units.units[0].id, 'Week quick-add Lesson must inherit Course/Unit ownership.')
 assert(lessons.lessons[0].plannedDate === '2026-09-16', 'Week quick-add Lesson must use the requested day.')
 expectThrow(() => createLessonOnWeek({ calendar, units, workspace: lessons, unitId: units.units[0].id, title: 'Saturday', plannedDate: '2026-09-19' }), 'confirmed instructional day')
+expectThrow(() => createLessonOnWeek({ calendar, units: { ...units, calendarId: 'other-calendar' }, workspace: emptyLessons, unitId: units.units[0].id, title: 'Wrong owner', plannedDate: '2026-09-16' }), 'different school calendar')
+expectThrow(() => createLessonOnWeek({ calendar, units, workspace: { ...emptyLessons, calendarId: 'other-calendar' }, unitId: units.units[0].id, title: 'Wrong owner', plannedDate: '2026-09-16' }), 'different school calendar')
 
 const withNote = createPlanningNoteOnWeek({ workspace: planning, calendarId: calendar.id, date: '2026-09-17', text: 'Make copies', placement: 'calendar', important: true })
 const note = withNote.notes?.[0]
@@ -43,5 +46,6 @@ assert(note?.text === 'Make copies' && note.important, 'Week quick-add Note must
 const moved = movePlanningNote(withNote, note!.id, '2026-09-18', 'after-school')
 assert(moved.notes?.[0].id === note!.id, 'Move Note must preserve stable identity.')
 assert(moved.notes?.[0].date === '2026-09-18' && moved.notes?.[0].placement === 'after-school', 'Move Note must change date/placement only.')
+expectThrow(() => createPlanningNoteOnWeek({ workspace: planning, calendarId: 'other-calendar', date: '2026-09-17', text: 'Wrong owner' }), 'different school calendar')
 
 console.log('Contextual Week action contract passed')
