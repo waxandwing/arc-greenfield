@@ -62,6 +62,14 @@ export function unplaceUnitFromCalendar(input: UnitActionContext & { unitId: str
   }
 }
 
+export function sendUnitToFridge(input: UnitActionContext & { unitId: string }): UnitWorkspace {
+  return unplaceUnitFromCalendar(input)
+}
+
+export function scheduleUnitFromFridge(input: UnitActionContext & { unitId: string; placement: UnitPlacement }): UnitWorkspace {
+  return moveUnit(input)
+}
+
 export function deleteUnit(input: UnitActionContext & { unitId: string }): UnitWorkspace {
   const { units, lessons, unitId } = input
   requireUnit(units, unitId)
@@ -85,6 +93,10 @@ export function moveLesson(input: LessonActionContext & { lessonId: string; plan
   }
 }
 
+export function scheduleLessonFromFridge(input: LessonActionContext & { lessonId: string; plannedDate: ISODate }): LessonWorkspace {
+  return moveLesson(input)
+}
+
 export function unplaceLessonFromCalendar(input: LessonActionContext & { lessonId: string }): LessonUnplaceResult {
   const { lessons, overrides, lessonId } = input
   const lesson = requireLesson(lessons, lessonId)
@@ -98,6 +110,10 @@ export function unplaceLessonFromCalendar(input: LessonActionContext & { lessonI
     overrides: overrides.filter((override) => override.lessonId !== lessonId),
     removedOverrides,
   }
+}
+
+export function sendLessonToFridge(input: LessonActionContext & { lessonId: string }): LessonUnplaceResult {
+  return unplaceLessonFromCalendar(input)
 }
 
 export function deleteLesson(input: LessonActionContext & { lessonId: string }): LessonWorkspace {
