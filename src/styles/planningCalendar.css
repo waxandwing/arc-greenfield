@@ -7,7 +7,7 @@
 .planning-grid{
   display:grid;
   gap:var(--space-4);
-  min-width:920px;
+  min-width:min(920px,100%);
   overflow:visible;
 }
 
@@ -99,4 +99,4 @@
 .planning-day-empty{font-size:14px}
 .planning-grid--day{min-width:0}
 .planning-grid--day .planning-section-row{min-height:120px}
-@media (max-width:900px){.planning-grid:not(.planning-grid--day){min-width:820px}}
+@media (max-width:900px){.planning-grid:not(.planning-grid--day){min-width:min(820px,100%)}}
