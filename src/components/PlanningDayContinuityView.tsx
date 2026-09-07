@@ -2,12 +2,25 @@ import type { ProjectedDay } from '../calendar/projections'
 import type { DayContinuityLesson, DayContinuityProjection } from '../planning/dayContinuityProjection'
 import { formatShortDate } from './dateLabels'
 
+export type LiveClassroomLaunchContext = {
+  date: ProjectedDay['date']
+  courseId: string
+  sectionId: string
+  lessonId: string
+}
+
+export type LiveClassroomExtension = {
+  open: (context: LiveClassroomLaunchContext) => void
+}
+
 export function PlanningDayContinuityView({
   day,
   continuity,
+  liveClassroomExtension,
 }: {
   day: ProjectedDay
   continuity: DayContinuityProjection
+  liveClassroomExtension?: LiveClassroomExtension
 }) {
   if (continuity.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -49,7 +62,12 @@ export function PlanningDayContinuityView({
                       <section className="day-continuity-held" aria-label={`${section.sectionName} unfinished teaching`}>
                         <p className="day-continuity-kicker">Arc is holding your place</p>
                         {section.carryovers.map((lesson) => (
-                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} carryover />
+                          <ContinuityLesson
+                            key={lesson.lessonId}
+                            lesson={lesson}
+                            carryover
+                            onOpenLiveClassroom={liveClassroomExtension ? () => liveClassroomExtension.open({ date: day.date, courseId: course.courseId, sectionId: section.sectionId, lessonId: lesson.lessonId }) : undefined}
+                          />
                         ))}
                       </section>
                     ) : null}
@@ -58,7 +76,11 @@ export function PlanningDayContinuityView({
                       <p className="day-continuity-kicker">Today’s plan</p>
                       {section.scheduledLessons.length > 0 ? (
                         section.scheduledLessons.map((lesson) => (
-                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} />
+                          <ContinuityLesson
+                            key={lesson.lessonId}
+                            lesson={lesson}
+                            onOpenLiveClassroom={liveClassroomExtension ? () => liveClassroomExtension.open({ date: day.date, courseId: course.courseId, sectionId: section.sectionId, lessonId: lesson.lessonId }) : undefined}
+                          />
                         ))
                       ) : (
                         <p className="day-continuity-empty">No Lesson placed for this class.</p>
@@ -75,7 +97,15 @@ export function PlanningDayContinuityView({
   )
 }
 
-function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuityLesson; carryover?: boolean }) {
+function ContinuityLesson({
+  lesson,
+  carryover = false,
+  onOpenLiveClassroom,
+}: {
+  lesson: DayContinuityLesson
+  carryover?: boolean
+  onOpenLiveClassroom?: () => void
+}) {
   const status = humanizeStatus(lesson.deliveryStatus)
   const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
   const accessible = [
@@ -109,6 +139,7 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</p>
       ) : null}
+      {onOpenLiveClassroom ? <button type="button" className="day-continuity-live-classroom" onClick={onOpenLiveClassroom}>Live Classroom</button> : null}
     </article>
   )
 }
