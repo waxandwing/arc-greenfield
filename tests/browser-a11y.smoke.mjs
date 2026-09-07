@@ -23,6 +23,29 @@ async function configureCalendar(page, { label = '2026–27', first = '2026-09-0
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 }
 
+async function openSettings(page) {
+  const settings = page.getByRole('button', { name: 'Settings' })
+  assert(await settings.count() === 1, 'B01 furniture: Settings tab is missing or duplicated.')
+  assert(await settings.getAttribute('aria-expanded') === 'false', 'B01 furniture: Settings must begin closed.')
+  assert(await page.getByRole('navigation', { name: 'Calendar views' }).count() === 0, 'B01 furniture: closed Settings leaked Calendar views into the accessibility tree.')
+  await settings.click()
+  assert(await settings.getAttribute('aria-expanded') === 'true', 'B01 furniture: Settings tab did not expose its open state.')
+  const navigation = page.getByRole('navigation', { name: 'Calendar views' })
+  assert(await navigation.count() === 1 && await navigation.isVisible(), 'B01 furniture: opening Settings must expose the named Calendar views navigation.')
+  return navigation
+}
+
+async function closeSettings(page) {
+  await page.getByRole('button', { name: 'Close Settings' }).click()
+  assert(await page.getByRole('navigation', { name: 'Calendar views' }).count() === 0, 'B01 furniture: closing Settings must remove its controls from the accessibility tree.')
+}
+
+async function selectViewFromSettings(page, view) {
+  await openSettings(page)
+  await page.getByRole('button', { name: view, exact: true }).click()
+  await closeSettings(page)
+}
+
 async function auditDesktop(browser) {
   const context = await browser.newContext({ viewport: { width: 1024, height: 900 } })
   const page = await context.newPage()
@@ -30,14 +53,20 @@ async function auditDesktop(browser) {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
 
   assert(await page.getByRole('main').count() === 1, 'Desktop: expected exactly one main landmark.')
-  assert(await page.getByRole('navigation', { name: 'Calendar views' }).count() === 1, 'Desktop: Calendar views navigation lost its accessible name.')
   assert(await page.getByRole('heading', { name: 'Tell Arc which days are actually yours.' }).count() === 1, 'Desktop: calendar setup heading is missing or duplicated.')
+  assert(await page.getByRole('button', { name: 'Settings' }).count() === 1, 'Desktop: Settings furniture tab is missing.')
+  assert(await page.getByRole('button', { name: 'Fridge' }).count() === 1, 'Desktop: Fridge furniture tab is missing.')
+  assert(await page.getByRole('button', { name: 'Task Bar' }).count() === 1, 'Desktop: Task Bar furniture tab is missing.')
+  assert(await page.getByRole('navigation', { name: 'Calendar views' }).count() === 0, 'Desktop: closed Settings must not expose Calendar views.')
 
   await page.keyboard.press('Tab')
   const skip = page.getByRole('link', { name: 'Skip to calendar' })
   assert(await skip.evaluate((node) => document.activeElement === node), 'Keyboard: first Tab must reach Skip to calendar.')
   await page.keyboard.press('Enter')
   assert(await page.locator('#calendar-stage').evaluate((node) => document.activeElement === node), 'Keyboard: Skip to calendar must move focus to main calendar stage.')
+
+  await openSettings(page)
+  await closeSettings(page)
 
   const save = page.getByRole('button', { name: 'Use this calendar' })
   await save.click()
@@ -78,8 +107,9 @@ async function auditShellHierarchyAndZoom(browser) {
   assert(await page.getByRole('region', { name: /calendar grid$/ }).count() === 1, 'Shell semantics: Month grid must expose a named region.')
   assert(await page.locator('div[aria-label]:not([role])').count() === 0, 'Shell semantics: generic divs must not rely on aria-label without a semantic role.')
 
+  await openSettings(page)
   const options = page.getByText('View options', { exact: true })
-  assert(await options.count() === 1, 'Shell hierarchy: View options disclosure is missing or duplicated.')
+  assert(await options.count() === 1 && await options.isVisible(), 'Shell hierarchy: View options disclosure is missing, duplicated, or unavailable inside Settings.')
 
   mkdirSync('artifacts', { recursive: true })
   await page.screenshot({ path: 'artifacts/phase1-shell-1280.png', fullPage: true })
@@ -88,12 +118,13 @@ async function auditShellHierarchyAndZoom(browser) {
   const zoom200 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(zoom200.scroll <= zoom200.width + 1, `200% zoom: document overflowed horizontally (${zoom200.scroll} > ${zoom200.width}).`)
   assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '200% zoom: primary workspace heading became unavailable.')
-  assert(await page.getByRole('navigation', { name: 'Calendar views' }).isVisible(), '200% zoom: calendar-view navigation became unavailable.')
+  assert(await page.getByRole('navigation', { name: 'Calendar views' }).isVisible(), '200% zoom: open Settings calendar-view navigation became unavailable.')
 
   await page.evaluate(() => { document.documentElement.style.zoom = '4' })
   const zoom400 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(zoom400.scroll <= zoom400.width + 1, `400% zoom: document overflowed horizontally (${zoom400.scroll} > ${zoom400.width}).`)
   assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '400% zoom: primary workspace heading became unavailable.')
+  assert(await page.getByRole('navigation', { name: 'Calendar views' }).isVisible(), '400% zoom: open Settings calendar-view navigation became unavailable.')
 
   assert(runtimeErrors.length === 0, `Shell hierarchy/zoom runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
@@ -106,7 +137,7 @@ async function auditCalendarEditPreservesContext(browser) {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await configureCalendar(page)
 
-  await page.getByRole('button', { name: 'Week' }).click()
+  await selectViewFromSettings(page, 'Week')
   await page.getByRole('button', { name: 'Next Week' }).click()
   const beforeRange = await page.locator('.projection-section').first().getAttribute('aria-label')
   assert(Boolean(beforeRange), 'Calendar edit continuity: Week range did not expose its current anchored range.')
@@ -130,7 +161,7 @@ async function auditMondayFirstAlignment(browser) {
 
   await configureCalendar(page, { first: '2026-09-02', last: '2026-09-13' })
 
-  await page.getByRole('button', { name: 'Year Map' }).click()
+  await selectViewFromSettings(page, 'Year Map')
   const yearMap = page.getByRole('region', { name: '2026–27 year map' })
   assert(await yearMap.count() === 1, 'Monday-first: Year Map did not render after calendar setup.')
 
@@ -165,6 +196,10 @@ async function auditTouchAndReflow(browser) {
   const save = page.getByRole('button', { name: 'Use this calendar' })
   const box = await save.boundingBox()
   assert(box && box.width >= 44 && box.height >= 44, `Touch: primary setup action is smaller than 44px (${box?.width}×${box?.height}).`)
+  for (const name of ['Settings', 'Fridge', 'Task Bar']) {
+    const furnitureBox = await page.getByRole('button', { name }).boundingBox()
+    assert(furnitureBox && furnitureBox.width >= 44 && furnitureBox.height >= 44, `Touch: ${name} furniture tab is smaller than 44px (${furnitureBox?.width}×${furnitureBox?.height}).`)
+  }
 
   const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(geometry.scroll <= geometry.width + 1, `390px: document overflowed horizontally (${geometry.scroll} > ${geometry.width}).`)
@@ -206,7 +241,7 @@ try {
   await auditTouchAndReflow(browser)
   await auditMinimumWidth(browser)
   await auditReducedMotion(browser)
-  console.log('Arc browser accessibility smoke gate passed: landmarks, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
+  console.log('Arc browser accessibility smoke gate passed: landmarks, B01 furniture ownership and closed-state semantics, Settings-owned calendar navigation, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch targets, 320/390 reflow, reduced motion, overflow, and runtime errors.')
 } finally {
   await browser.close()
 }
