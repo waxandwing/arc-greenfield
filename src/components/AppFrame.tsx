@@ -144,7 +144,7 @@ export function AppFrame() {
       <button className="furniture-tab furniture-tab-fridge" type="button" aria-expanded={fridgeOpen} aria-controls="fridge-furniture" onClick={() => setFridgeOpen((open) => !open)}>Fridge</button>
       <button className="furniture-tab furniture-tab-task" type="button" aria-expanded={taskOpen} aria-controls="task-furniture" onClick={() => setTaskOpen((open) => !open)}>Task Bar</button>
 
-      <aside id="settings-furniture" className={`furniture-surface furniture-settings ${settingsOpen ? 'is-open' : ''}`} aria-hidden={!settingsOpen}>
+      <aside id="settings-furniture" className={`furniture-surface furniture-settings ${settingsOpen ? 'is-open' : ''}`} hidden={!settingsOpen}>
         <div className="furniture-heading"><strong>Settings</strong><button type="button" onClick={() => setSettingsOpen(false)} aria-label="Close Settings">×</button></div>
         <nav className="furniture-view-grid" aria-label="Calendar views">
           {CALENDAR_VIEWS.map((view) => {
@@ -163,7 +163,7 @@ export function AppFrame() {
         </div>
       </aside>
 
-      <aside id="fridge-furniture" className={`furniture-surface furniture-fridge ${fridgeOpen ? 'is-open' : ''}`} aria-hidden={!fridgeOpen}>
+      <aside id="fridge-furniture" className={`furniture-surface furniture-fridge ${fridgeOpen ? 'is-open' : ''}`} hidden={!fridgeOpen}>
         <div className="furniture-heading"><strong>Fridge</strong><button type="button" onClick={() => setFridgeOpen(false)} aria-label="Close Fridge">×</button></div>
         <p className="furniture-help">Ideas live here until they have a date. Moving a Lesson is reversible.</p>
         <label className="fridge-date"><span>Send to date</span><input type="date" value={fridgeDate} onChange={(event) => setFridgeDate(event.target.value)} /></label>
@@ -181,7 +181,7 @@ export function AppFrame() {
         {scheduledLessons.length > 0 && <details className="fridge-return-list"><summary>Return a scheduled Lesson to Fridge</summary>{scheduledLessons.map((lesson) => <button key={lesson.id} type="button" onClick={() => sendLessonBackToFridge(lesson.id)}>{lesson.title}</button>)}</details>}
       </aside>
 
-      <aside id="task-furniture" className={`furniture-surface furniture-task ${taskOpen ? 'is-open' : ''}`} aria-hidden={!taskOpen}>
+      <aside id="task-furniture" className={`furniture-surface furniture-task ${taskOpen ? 'is-open' : ''}`} hidden={!taskOpen}>
         <div className="furniture-heading"><strong>Task Bar</strong><button type="button" onClick={() => setTaskOpen(false)} aria-label="Close Task Bar">×</button></div>
         <form className="task-note-composer" onSubmit={(event) => { event.preventDefault(); addTaskNote() }}>
           <input value={taskDraft} onChange={(event) => setTaskDraft(event.target.value)} placeholder="Add a note" aria-label="Add Task Bar note" />
