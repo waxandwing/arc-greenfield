@@ -1,129 +1,90 @@
-export type TaskPriority = 'must' | 'should' | 'could'
+import { createPlanningNote, type PlanningNote, type PlanningNotePriority } from './notes'
+import type { PlanningWorkspace } from './workspace'
 
-export type TaskBarItem = {
-  id: string
-  text: string
-  priority: TaskPriority
-  completed: boolean
-  important: boolean
-  createdAt: string
-  completedAt: string | null
-}
-
-export type TaskBarWorkspace = {
-  version: 1
-  items: TaskBarItem[]
-}
-
-export const EMPTY_TASK_BAR: TaskBarWorkspace = { version: 1, items: [] }
+export type TaskPriority = PlanningNotePriority
+export type TaskBarItem = PlanningNote
+export type TaskBarWorkspace = PlanningWorkspace
 
 export function createTaskBarItem(
+  calendarId: string,
   text: string,
   priority: TaskPriority,
   now = new Date(),
   id = createTaskId(),
 ): TaskBarItem {
-  const cleaned = normalizeTaskText(text)
-  if (!cleaned) throw new Error('Task text is required.')
-  return {
+  return createPlanningNote({
     id,
-    text: cleaned,
+    calendarId,
+    date: null,
+    text,
+    placement: 'task-bar',
     priority,
-    completed: false,
     important: false,
-    createdAt: now.toISOString(),
+    completed: false,
     completedAt: null,
-  }
+    sourceLabel: null,
+    sourceLocator: null,
+  })
 }
 
 export function addTask(workspace: TaskBarWorkspace, item: TaskBarItem): TaskBarWorkspace {
-  if (workspace.items.some((candidate) => candidate.id === item.id)) throw new Error('Task IDs must remain unique.')
-  return { ...workspace, items: [...workspace.items, item] }
+  if (item.placement !== 'task-bar') throw new Error('Only Notes placed in Task Bar can be added to Task Bar.')
+  const notes = workspace.notes ?? []
+  if (notes.some((candidate) => candidate.id === item.id)) throw new Error('Note IDs must remain unique.')
+  return { ...workspace, notes: [...notes, item] }
 }
 
-export function renameTask(workspace: TaskBarWorkspace, taskId: string, text: string): TaskBarWorkspace {
+export function renameTask(workspace: TaskBarWorkspace, noteId: string, text: string): TaskBarWorkspace {
   const cleaned = normalizeTaskText(text)
   if (!cleaned) throw new Error('Task text is required.')
-  return replaceTask(workspace, taskId, (task) => ({ ...task, text: cleaned }))
+  return replaceTask(workspace, noteId, (task) => ({ ...task, text: cleaned }))
 }
 
-export function moveTaskPriority(workspace: TaskBarWorkspace, taskId: string, priority: TaskPriority): TaskBarWorkspace {
-  return replaceTask(workspace, taskId, (task) => ({ ...task, priority }))
+export function moveTaskPriority(workspace: TaskBarWorkspace, noteId: string, priority: TaskPriority): TaskBarWorkspace {
+  return replaceTask(workspace, noteId, (task) => ({ ...task, priority }))
 }
 
-export function setTaskImportant(workspace: TaskBarWorkspace, taskId: string, important: boolean): TaskBarWorkspace {
-  return replaceTask(workspace, taskId, (task) => ({ ...task, important }))
+export function setTaskImportant(workspace: TaskBarWorkspace, noteId: string, important: boolean): TaskBarWorkspace {
+  return replaceTask(workspace, noteId, (task) => ({ ...task, important }))
 }
 
 export function setTaskCompleted(
   workspace: TaskBarWorkspace,
-  taskId: string,
+  noteId: string,
   completed: boolean,
   now = new Date(),
 ): TaskBarWorkspace {
-  return replaceTask(workspace, taskId, (task) => ({
+  return replaceTask(workspace, noteId, (task) => ({
     ...task,
     completed,
     completedAt: completed ? now.toISOString() : null,
   }))
 }
 
-export function removeTask(workspace: TaskBarWorkspace, taskId: string): TaskBarWorkspace {
-  if (!workspace.items.some((task) => task.id === taskId)) throw new Error('Task does not exist.')
-  return { ...workspace, items: workspace.items.filter((task) => task.id !== taskId) }
+export function deleteTask(workspace: TaskBarWorkspace, noteId: string): TaskBarWorkspace {
+  const notes = workspace.notes ?? []
+  const task = notes.find((candidate) => candidate.id === noteId && candidate.placement === 'task-bar')
+  if (!task) throw new Error('Task Bar Note does not exist.')
+  return { ...workspace, notes: notes.filter((candidate) => candidate.id !== noteId) }
 }
 
 export function tasksForPriority(workspace: TaskBarWorkspace, priority: TaskPriority): TaskBarItem[] {
-  return workspace.items.filter((task) => task.priority === priority)
-}
-
-export function isTaskPriority(value: unknown): value is TaskPriority {
-  return value === 'must' || value === 'should' || value === 'could'
-}
-
-export function normalizeTaskBarWorkspace(value: unknown): TaskBarWorkspace {
-  if (!value || typeof value !== 'object') return EMPTY_TASK_BAR
-  const candidate = value as { version?: unknown; items?: unknown }
-  if (candidate.version !== 1 || !Array.isArray(candidate.items)) return EMPTY_TASK_BAR
-
-  const seen = new Set<string>()
-  const items: TaskBarItem[] = []
-  for (const raw of candidate.items) {
-    if (!raw || typeof raw !== 'object') continue
-    const task = raw as Partial<TaskBarItem>
-    if (typeof task.id !== 'string' || !task.id || seen.has(task.id)) continue
-    if (typeof task.text !== 'string' || !normalizeTaskText(task.text)) continue
-    if (!isTaskPriority(task.priority)) continue
-    if (typeof task.completed !== 'boolean') continue
-    if (typeof task.createdAt !== 'string' || Number.isNaN(Date.parse(task.createdAt))) continue
-    if (task.completedAt !== null && task.completedAt !== undefined && (typeof task.completedAt !== 'string' || Number.isNaN(Date.parse(task.completedAt)))) continue
-    seen.add(task.id)
-    items.push({
-      id: task.id,
-      text: normalizeTaskText(task.text),
-      priority: task.priority,
-      completed: task.completed,
-      important: task.important === true,
-      createdAt: task.createdAt,
-      completedAt: task.completed ? task.completedAt ?? task.createdAt : null,
-    })
-  }
-  return { version: 1, items }
+  return (workspace.notes ?? []).filter((note) => note.placement === 'task-bar' && note.priority === priority)
 }
 
 function replaceTask(
   workspace: TaskBarWorkspace,
-  taskId: string,
+  noteId: string,
   update: (task: TaskBarItem) => TaskBarItem,
 ): TaskBarWorkspace {
   let found = false
-  const items = workspace.items.map((task) => {
-    if (task.id !== taskId) return task
+  const notes = (workspace.notes ?? []).map((note) => {
+    if (note.id !== noteId || note.placement !== 'task-bar') return note
     found = true
-    return update(task)
+    return update(note)
   })
-  if (!found) throw new Error('Task does not exist.')
-  return { ...workspace, items }
+  if (!found) throw new Error('Task Bar Note does not exist.')
+  return { ...workspace, notes }
 }
 
 function normalizeTaskText(text: string): string {
@@ -134,5 +95,5 @@ function createTaskId(): string {
   const token = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-  return `task-${token}`
+  return `note-task-${token}`
 }
