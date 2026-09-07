@@ -27,9 +27,9 @@ export type PlanningWeekObjectActions = {
   moveNote?: (noteId: string, date: ISODate, placement: PlanningNotePlacement) => void
   copyNote?: (noteId: string) => void
   deleteNote?: (noteId: string) => void
-  createUnit?: (courseId: string, title: string, startDate: ISODate, endDate: ISODate) => void
-  createLesson?: (unitId: string, title: string, plannedDate: ISODate) => void
-  createNote?: (date: ISODate, text: string, placement: PlanningNotePlacement, important: boolean) => void
+  createUnit?: (courseId: string, title: string, startDate: ISODate, endDate: ISODate) => boolean
+  createLesson?: (unitId: string, title: string, plannedDate: ISODate) => boolean
+  createNote?: (date: ISODate, text: string, placement: PlanningNotePlacement, important: boolean) => boolean
 }
 
 type Selection =
@@ -143,11 +143,12 @@ function QuickAddComposer({ date, actions, onDismiss }: { date: ISODate; actions
   function submit() {
     const cleaned = title.trim()
     if (!cleaned || disabled) return
-    if (kind === 'unit' && actions?.createUnit) actions.createUnit(courseId, cleaned, date, endDate)
-    else if (kind === 'lesson' && actions?.createLesson) actions.createLesson(unitId, cleaned, date)
-    else if (kind === 'note' && actions?.createNote) actions.createNote(date, cleaned, placement, important)
+    let accepted = false
+    if (kind === 'unit' && actions?.createUnit) accepted = actions.createUnit(courseId, cleaned, date, endDate)
+    else if (kind === 'lesson' && actions?.createLesson) accepted = actions.createLesson(unitId, cleaned, date)
+    else if (kind === 'note' && actions?.createNote) accepted = actions.createNote(date, cleaned, placement, important)
     else return
-    onDismiss()
+    if (accepted) onDismiss()
   }
 
   return (
