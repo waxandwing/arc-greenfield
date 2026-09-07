@@ -22,13 +22,11 @@ const schoolPayload = {
       attributes: {
         NCESSCH: '120144001406',
         LEAID: '1201440',
-        LEA_NAME: 'Orange',
-        SCH_NAME: 'Oak Ridge High',
-        LSTREET1: '700 W Oak Ridge Rd',
-        LCITY: 'Orlando',
-        LSTATE: 'FL',
-        LZIP: '32809',
-        SY_STATUS_TEXT: 'Open',
+        NAME: 'Oak Ridge High',
+        STREET: '700 W Oak Ridge Rd',
+        CITY: 'Orlando',
+        STATE: 'FL',
+        ZIP: '32809',
       },
     },
   ],
@@ -41,11 +39,11 @@ const runtimeErrors = trackRuntimeErrors(page)
 let ncesRequests = 0
 let calendarSourceRequests = 0
 
-await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWith('/MapServer/1/query'), async (route) => {
+await page.route('**/api/nces?**', async (route) => {
   ncesRequests += 1
   await route.fulfill({
     status: 200,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(schoolPayload),
   })
 })
@@ -60,7 +58,7 @@ await page.getByLabel('City').fill('Orlando')
 await page.getByLabel('State').fill('FL')
 await page.getByRole('button', { name: 'Find my school' }).click()
 await page.getByText('One official record found.').waitFor({ state: 'visible' })
-assert(ncesRequests === 1, `School identity lookup used ${ncesRequests} NCES requests, expected 1.`)
+assert(ncesRequests === 1, `School identity lookup used ${ncesRequests} NCES proxy requests, expected 1.`)
 
 const choose = page.getByRole('button', { name: 'This is my school' })
 await choose.focus()

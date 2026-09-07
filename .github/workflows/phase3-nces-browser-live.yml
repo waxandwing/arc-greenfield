@@ -31,9 +31,11 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Build browser target
         run: npm run build
-      - name: Run live browser NCES gate
+      - name: Record live NCES availability
+        run: node tests/nces-live-smoke.mjs
+      - name: Run browser NCES integration gate through same-origin proxy
         run: |
-          npm run preview -- --host 127.0.0.1 > /tmp/arc-preview-phase3-nces-browser-live.log 2>&1 &
+          NCES_FIXTURE=1 node tests/phase3-nces-live-server.mjs > /tmp/arc-phase3-nces-live-server.log 2>&1 &
           PREVIEW_PID=$!
           trap 'kill $PREVIEW_PID || true' EXIT
           for attempt in {1..30}; do
@@ -41,4 +43,6 @@ jobs:
             sleep 1
           done
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          curl --fail --silent 'http://127.0.0.1:4173/api/nces?schoolName=Oak%20Ridge&city=Orlando&state=FL' > /tmp/nces-proxy-response.json
+          grep -q '120144001406' /tmp/nces-proxy-response.json
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/phase3-nces-browser-live.mjs

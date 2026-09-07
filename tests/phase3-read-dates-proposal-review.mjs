@@ -21,13 +21,11 @@ const schoolPayload = {
     attributes: {
       NCESSCH: '120144001406',
       LEAID: '1201440',
-      LEA_NAME: 'Orange',
-      SCH_NAME: 'Oak Ridge High',
-      LSTREET1: '700 W Oak Ridge Rd',
-      LCITY: 'Orlando',
-      LSTATE: 'FL',
-      LZIP: '32809',
-      SY_STATUS_TEXT: 'Open',
+      NAME: 'Oak Ridge High',
+      STREET: '700 W Oak Ridge Rd',
+      CITY: 'Orlando',
+      STATE: 'FL',
+      ZIP: '32809',
     },
   }],
 }
@@ -87,11 +85,11 @@ let extractorRequests = 0
 let extractorPreflights = 0
 let extractorRouteError = ''
 
-await page.route((url) => url.hostname === 'nces.ed.gov' && url.pathname.endsWith('/MapServer/1/query'), async (route) => {
+await page.route('**/api/nces?**', async (route) => {
   ncesRequests += 1
   await route.fulfill({
     status: 200,
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(schoolPayload),
   })
 })
