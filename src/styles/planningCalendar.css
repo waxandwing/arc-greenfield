@@ -134,16 +134,20 @@
 .planning-shift-preview{margin:0;padding:8px;border-left:3px solid var(--sage);background:rgba(154,170,137,.1);font-size:14px;line-height:1.35}
 .planning-shift-preview--blocked{border-left-color:var(--terracotta);background:rgba(201,104,69,.1)}
 
-/* Unit controls must remain inside the Unit row instead of floating over Section Lessons. */
-.planning-unit-object > .planning-context-toolbar{box-sizing:border-box;position:relative;z-index:8;top:auto;right:auto;width:100%;max-width:100%;margin:6px 0 2px}
-.planning-unit-object > .planning-inline-editor{box-sizing:border-box;position:relative;z-index:9;top:auto;right:auto;width:100%;max-width:100%;margin:6px 0 2px}
+/* Contextual controls stay in their selected object flow so they never cover neighboring planner truth. */
+.planning-unit-object > .planning-context-toolbar,
+.planning-lesson > .planning-context-toolbar,
+.planning-note > .planning-context-toolbar{box-sizing:border-box;position:relative;z-index:8;top:auto;right:auto;width:100%;max-width:100%;margin:6px 0 2px}
+.planning-unit-object > .planning-inline-editor,
+.planning-lesson > .planning-inline-editor,
+.planning-note > .planning-inline-editor{box-sizing:border-box;position:relative;z-index:9;top:auto;right:auto;width:100%;max-width:100%;margin:6px 0 2px}
 
 @media (max-width:900px){
   .planning-grid:not(.planning-grid--day){min-width:min(820px,100%)}
   .planning-row-label,.planning-date-heading,.planning-day-slot,.planning-note-slot{padding:10px 8px}
   .planning-context-toolbar{max-width:min(300px,76vw)}
   .planning-inline-editor{width:min(280px,76vw)}
-  .planning-unit-object > .planning-context-toolbar,.planning-unit-object > .planning-inline-editor{max-width:100%;width:100%}
+  .planning-unit-object > .planning-context-toolbar,.planning-unit-object > .planning-inline-editor,.planning-lesson > .planning-context-toolbar,.planning-lesson > .planning-inline-editor,.planning-note > .planning-context-toolbar,.planning-note > .planning-inline-editor{max-width:100%;width:100%}
 }
 
 @media (max-width:700px){
