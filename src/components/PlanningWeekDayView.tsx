@@ -50,9 +50,9 @@ function PlanningCourse({
   single: boolean
 }) {
   return (
-    <section className="planning-course" aria-label={`${course.course.title} planning`}>
+    <section className="planning-course" aria-labelledby={`planning-course-${course.course.id}`}>
       <div className="planning-course-heading">
-        <h2>{course.course.title}</h2>
+        <h2 id={`planning-course-${course.course.id}`}>{course.course.title}</h2>
       </div>
       {course.unitSpans.length > 0 ? (
         <div className="planning-unit-stack" aria-label={`${course.course.title} Unit spans`}>
@@ -60,9 +60,11 @@ function PlanningCourse({
             <div className="planning-unit-grid" style={gridTemplate(days.length)} key={unit.unitId}>
               <span className="planning-row-label planning-row-label--unit">{index === 0 ? 'Unit' : ''}</span>
               <div
+                id={unitSpanId(course.course.id, unit.unitId)}
                 className="planning-unit-span"
                 style={{ gridColumn: `${unit.startIndex + 2} / ${unit.endIndex + 3}` }}
                 title={`${unit.title}: ${unit.startDate} through ${unit.endDate}`}
+                aria-label={`Unit ${unit.title}, ${formatLongDate(unit.startDate)} through ${formatLongDate(unit.endDate)}`}
               >
                 {unit.title}
               </div>
@@ -83,8 +85,11 @@ function PlanningCourse({
                 key={slot.date}
                 className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}`}
                 aria-label={`${row.section.name}, ${formatLongDate(slot.date)}`}
+                role={slot.lessons.length > 0 ? 'list' : undefined}
               >
-                {slot.lessons.map((lesson) => <LessonTile key={lesson.lessonId} lesson={lesson} />)}
+                {slot.lessons.map((lesson) => (
+                  <LessonTile key={lesson.lessonId} lesson={lesson} courseId={course.course.id} />
+                ))}
                 {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
               </div>
             ))}
@@ -95,13 +100,14 @@ function PlanningCourse({
   )
 }
 
-function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
+function LessonTile({ lesson, courseId }: { lesson: PlanningLessonPlacement; courseId: string }) {
   const statusLabel = humanizeStatus(lesson.deliveryStatus)
   const taughtLabel = lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate
     ? `Taught ${formatShortDate(lesson.taughtDate)}`
     : null
   const accessible = [
     lesson.title,
+    `Lesson in Unit ${lesson.unitTitle}`,
     lesson.datePolicy === 'fixed' ? 'fixed date' : 'flexible date',
     lesson.isSectionOverride ? 'Section-specific date' : 'shared Course plan',
     statusLabel,
@@ -113,7 +119,10 @@ function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
     <article
       className={`planning-lesson planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}`}
       aria-label={accessible}
+      aria-describedby={unitSpanId(courseId, lesson.unitId)}
+      role="listitem"
     >
+      <span className="planning-lesson-parent">{lesson.unitTitle}</span>
       <div className="planning-lesson-title-row">
         <span className="planning-lesson-title">{lesson.title}</span>
         {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title="Fixed date">Fixed</span> : null}
@@ -128,6 +137,10 @@ function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
       ) : null}
     </article>
   )
+}
+
+function unitSpanId(courseId: string, unitId: string): string {
+  return `planning-unit-${courseId}-${unitId}`
 }
 
 function gridTemplate(dayCount: number): { gridTemplateColumns: string } {
