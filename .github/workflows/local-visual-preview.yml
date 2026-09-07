@@ -43,8 +43,11 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
 
-      - name: Capture architecture and visual states
+      - name: Capture shell architecture states
         run: ARC_BASE_URL=http://127.0.0.1:4173 node tests/local-preview-capture.mjs
+
+      - name: Capture populated canonical Week
+        run: ARC_BASE_URL=http://127.0.0.1:4173 node tests/b02-week-object-grammar.smoke.mjs
 
       - name: Run browser and accessibility gate
         run: ARC_BASE_URL=http://127.0.0.1:4173 node tests/browser-a11y.smoke.mjs
@@ -62,6 +65,7 @@ jobs:
           path: |
             artifacts/local-preview/*.png
             artifacts/local-preview/manifest.json
+            artifacts/b02-week-object-grammar/*.png
             artifacts/phase1-shell-1280.png
           if-no-files-found: warn
           retention-days: 14
