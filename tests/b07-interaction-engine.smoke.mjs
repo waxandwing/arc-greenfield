@@ -126,11 +126,16 @@ async function proveCrossViewReload(page) {
 
   await chooseView(page, 'Day')
   for (let i = 0; i < 3; i += 1) await page.getByRole('button', { name:'Next Day', exact:true }).click()
-  await page.locator('.planning-date-heading').filter({ hasText:/Sep 17|9\/17|17/ }).first().waitFor({ state:'visible' })
+  await page.getByRole('button', { name:/Add work on .*September 17, 2026/ }).waitFor({ state:'visible' })
   await page.getByRole('button', { name:/Select First Lesson/ }).first().waitFor({ state:'visible' })
 
+  await chooseView(page, 'Week')
+  const beforeReloadP2 = page.locator('.planning-section-row').filter({ hasText:'Period 2' })
+  const beforeReloadP7 = page.locator('.planning-section-row').filter({ hasText:'Period 7' })
+  check(await beforeReloadP2.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Cross-view proof must return Period 2 to the week containing First Lesson before reload.')
+  check(await beforeReloadP7.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Cross-view proof must return Period 7 to the week containing First Lesson before reload.')
+
   await page.reload({ waitUntil:'networkidle' })
-  await goTargetWeek(page)
   const p2 = page.locator('.planning-section-row').filter({ hasText:'Period 2' })
   const p7 = page.locator('.planning-section-row').filter({ hasText:'Period 7' })
   check(await p2.getByRole('button', { name:/Select First Lesson/ }).count() === 1, 'Reload must preserve First Lesson on its restored shared date for Period 2.')
