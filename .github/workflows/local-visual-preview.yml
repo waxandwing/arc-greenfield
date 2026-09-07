@@ -1,0 +1,76 @@
+name: Local visual preview
+
+on:
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  local-visual-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Install pinned Chromium preview runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Strict build
+        run: npm run build
+
+      - name: Start local Vite preview
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/arc-local-preview.log 2>&1 &
+          echo $! > /tmp/arc-local-preview.pid
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+
+      - name: Capture architecture and visual states
+        run: ARC_BASE_URL=http://127.0.0.1:4173 node tests/local-preview-capture.mjs
+
+      - name: Run browser and accessibility gate
+        run: ARC_BASE_URL=http://127.0.0.1:4173 node tests/browser-a11y.smoke.mjs
+
+      - name: Stop local preview
+        if: always()
+        run: |
+          if [ -f /tmp/arc-local-preview.pid ]; then kill "$(cat /tmp/arc-local-preview.pid)" || true; fi
+
+      - name: Publish non-Vercel visual review pack
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-local-visual-preview
+          path: |
+            artifacts/local-preview/*.png
+            artifacts/local-preview/manifest.json
+            artifacts/phase1-shell-1280.png
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publish local built site
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-local-built-site
+          path: dist
+          if-no-files-found: error
+          retention-days: 14
