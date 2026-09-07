@@ -57,11 +57,15 @@ async function stressUnitRanges(page) {
   for (let index=0; index<12; index++) {
     const unit = page.getByRole('button', { name:/Select Unit Sculpture/ })
     await unit.click()
-    await page.getByRole('toolbar', { name:'Sculpture actions' }).getByRole('button', { name:'Move / resize', exact:true }).click()
+    const toolbar = page.getByRole('toolbar', { name:'Sculpture actions' })
+    await toolbar.getByRole('button', { name:'Move / resize', exact:true }).click()
+    const editor = page.getByRole('group', { name:'Move or resize Unit' })
     await page.getByRole('textbox', { name:'Unit end date' }).fill(index % 2 ? '2026-09-30' : '2026-09-25')
     await page.getByRole('button', { name:'Apply range', exact:true }).click()
     await page.getByText(/Unit range updated/).waitFor({ state:'visible' })
+    await editor.waitFor({ state:'hidden' })
     await page.keyboard.press('Escape')
+    await toolbar.waitFor({ state:'hidden' })
   }
 }
 
@@ -70,14 +74,18 @@ async function stressShiftUndo(page) {
     const row = page.locator('.planning-section-row').filter({ hasText:'Period 1' })
     const lesson = row.getByRole('button', { name:/Select Lesson 1/ })
     await lesson.click()
-    await row.getByRole('toolbar', { name:'Lesson 1 actions' }).getByRole('button', { name:'Shift this class', exact:true }).click()
+    const toolbar = row.getByRole('toolbar', { name:'Lesson 1 actions' })
+    await toolbar.getByRole('button', { name:'Shift this class', exact:true }).click()
+    const editor = row.getByRole('group', { name:'Shift Lesson for this class' })
     await row.getByRole('textbox', { name:'Shift destination date' }).fill('2026-09-18')
     await row.getByRole('button', { name:'Preview Shift', exact:true }).click()
     await row.getByRole('button', { name:'Apply Shift', exact:true }).click()
     await page.getByText(/Section Shift applied/).waitFor({ state:'visible' })
+    await editor.waitFor({ state:'hidden' })
     await action(page, 'Undo last Shift').click()
     await page.getByText(/Undid the last Shift/).waitFor({ state:'visible' })
     await page.keyboard.press('Escape')
+    await toolbar.waitFor({ state:'hidden' })
   }
 }
 
