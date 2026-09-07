@@ -1,6 +1,8 @@
-import { createLesson, lessonsForUnit, type LessonWorkspace } from './lessons'
+import { createLesson, lessonsForUnit } from './lessons'
+import type { LessonWorkspace } from './lessonWorkspace'
 import { createPlanningNote, type PlanningNote, type PlanningNotePlacement } from './notes'
-import { createUnit, type UnitWorkspace } from './units'
+import { createUnit } from './units'
+import type { UnitWorkspace } from './unitWorkspace'
 import type { PlanningWorkspace } from './workspace'
 import type { ISODate } from '../calendar/types'
 
@@ -42,10 +44,7 @@ export function copyLessonForLater(workspace: LessonWorkspace, lessonId: string)
 
 export function copyPlanningNote(workspace: PlanningWorkspace, noteId: string): PlanningWorkspace {
   const source = requireNote(workspace, noteId)
-  const copy = createPlanningNote({
-    ...source,
-    id: newId('note'),
-  })
+  const copy = createPlanningNote({ ...source, id: newId('note') })
   return { ...workspace, notes: [...(workspace.notes ?? []), copy] }
 }
 
@@ -57,10 +56,7 @@ export function movePlanningNote(
 ): PlanningWorkspace {
   const source = requireNote(workspace, noteId)
   const next = createPlanningNote({ ...source, date, placement: placement ?? source.placement })
-  return {
-    ...workspace,
-    notes: (workspace.notes ?? []).map((note) => note.id === noteId ? next : note),
-  }
+  return { ...workspace, notes: (workspace.notes ?? []).map((note) => note.id === noteId ? next : note) }
 }
 
 export function deletePlanningNote(workspace: PlanningWorkspace, noteId: string): PlanningWorkspace {
