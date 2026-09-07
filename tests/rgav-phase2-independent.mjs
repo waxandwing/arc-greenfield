@@ -30,6 +30,12 @@ async function selectCalendarView(page, view) {
   await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
 }
 
+async function openViewOptions(page) {
+  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
+  await page.getByText('View options', { exact: true }).click()
+}
+
 async function configure(page) {
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-02')
@@ -37,7 +43,7 @@ async function configure(page) {
   await page.getByRole('button', { name: 'Use this calendar', exact: true }).click()
   await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
 
-  await page.getByText('View options', { exact: true }).click()
+  await openViewOptions(page)
   const weekends = page.getByRole('checkbox', { name: /weekends/i })
   if (await weekends.count()) await weekends.check()
 }
@@ -102,7 +108,6 @@ try {
   await makeClasses(page)
   await makePlan(page)
 
-  // Prove one source of truth across horizons before introducing divergence.
   assert((await page.locator('body').innerText()).includes('Color intro'), 'RGAV B: Month did not project saved Lesson truth.')
   await moveToTargetWeek(page)
   assert((await titlesInRow(page, 'Period 1')).includes('Color intro'), 'RGAV B: Week lost Color intro for Period 1.')
@@ -110,7 +115,6 @@ try {
   await selectCalendarView(page, 'Day')
   assert(await page.getByRole('heading', { level: 1, name: 'Day', exact: true }).count() === 1, 'RGAV B: Day projection did not open.')
 
-  // Mutate the shared plan by keyboard, then prove reload persistence.
   await press(headerAction(page, 'Edit Lessons'))
   await press(page.getByRole('button', { name: /^Mixing lab/ }))
   const plannedDate = page.getByRole('textbox', { name: 'Planned date', exact: true })
@@ -121,7 +125,6 @@ try {
   await press(page.getByRole('button', { name: /^Mixing lab/ }))
   assert(await page.getByRole('textbox', { name: 'Planned date', exact: true }).inputValue() === '2026-09-17', 'RGAV B: shared Lesson move did not survive reload.')
 
-  // Create Section divergence on Period 4 only.
   await press(page.getByRole('button', { name: /^Color intro/ }))
   const p4 = page.locator('.delivery-row').filter({ hasText: 'Period 4' })
   await p4.getByRole('combobox', { name: 'Status', exact: true }).selectOption('in-progress')
@@ -146,7 +149,6 @@ try {
   await press(recovery.getByRole('button', { name: 'Apply Shift', exact: true }))
   assert(await headerAction(page, 'Undo last Shift').count() === 1, 'RGAV B: Apply Shift did not expose Undo.')
 
-  // Check Section isolation after recovery, then consume Undo and prove it stays consumed.
   await moveToTargetWeek(page)
   const p1Titles = await titlesInRow(page, 'Period 1')
   const p4Titles = await titlesInRow(page, 'Period 4')
@@ -158,14 +160,13 @@ try {
   await page.reload({ waitUntil: 'networkidle' })
   assert(await headerAction(page, 'Undo last Shift').count() === 0, 'RGAV B: consumed Undo token returned after reload.')
 
-  // No drag-only mutation route and no page overflow/runtime breakage.
   assert(await page.locator('[draggable="true"]').count() === 0, 'RGAV B: a drag-required planning mutation route appeared.')
   const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(geometry.scroll <= geometry.width + 1, `RGAV B: document overflowed horizontally (${geometry.scroll} > ${geometry.width}).`)
   assert(runtimeErrors.length === 0, `RGAV B runtime errors: ${runtimeErrors.join(' | ')}`)
 
   await context.close()
-  console.log('Independent Phase 2 RGAV B passed: alternate teacher story/viewport verified title-based cross-view truth, keyboard move + reload, Section divergence, recovery/fixed-anchor context, Section isolation, Apply/Undo persistence, no drag-only route, overflow, and runtime cleanliness.')
+  console.log('Independent Phase 2 RGAV B passed: Settings-owned preferences, title-based cross-view truth, keyboard move + reload, Section divergence, recovery/fixed-anchor context, Section isolation, Apply/Undo persistence, no drag-only route, overflow, and runtime cleanliness.')
 } finally {
   await browser.close()
 }
