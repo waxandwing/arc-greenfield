@@ -18,11 +18,13 @@ async function run() {
   assert(url.origin + url.pathname === `${NCES_PUBLIC_SCHOOL_LAYER}/query`, 'NCES query must target only the declared public-school layer.')
   assert(url.searchParams.get('returnGeometry') === 'false', 'School identity lookup must not request unnecessary geometry.')
   assert(url.searchParams.get('resultRecordCount') === '50', 'Candidate limit must clamp to the provider-safe maximum.')
+  assert(url.searchParams.get('orderByFields') === null, 'NCES identity lookup must avoid nonessential server-side ordering that can destabilize the public endpoint.')
   const where = url.searchParams.get('where') ?? ''
-  assert(where.includes("O''BRIEN HIGH"), 'NCES query must escape apostrophes in school names.')
-  assert(where.includes("UPPER(LSTATE) = 'FL'"), 'NCES query must normalize state filtering.')
-  assert(where.includes("UPPER(LCITY) = 'ORLANDO'"), 'NCES query must constrain supplied city identity.')
-  assert(where.includes('EXAMPLE DISTRICT'), 'NCES query must constrain supplied district identity.')
+  assert(!where.includes('UPPER('), 'NCES query must avoid function-wrapped fields that the live public endpoint rejects intermittently.')
+  assert(where.includes("SCH_NAME LIKE '%O''Brien High%'"), 'NCES query must escape apostrophes in school names.')
+  assert(where.includes("LSTATE = 'FL'"), 'NCES query must normalize state filtering.')
+  assert(where.includes("LCITY LIKE 'Orlando'"), 'NCES query must constrain supplied city identity.')
+  assert(where.includes("LEA_NAME LIKE '%Example District%'"), 'NCES query must constrain supplied district identity.')
 
   const fixturePayload = {
     features: [
