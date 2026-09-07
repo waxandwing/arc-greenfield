@@ -1,6 +1,9 @@
 name: B03 B04 Week interaction
 
 on:
+  push:
+    branches:
+      - design/b03-object-selection-context-actions
   pull_request:
     branches:
       - develop
@@ -15,7 +18,7 @@ jobs:
       - name: Check out exact commit
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Use repository Node version
         uses: actions/setup-node@v7
         with:
