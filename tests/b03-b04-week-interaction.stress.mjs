@@ -87,8 +87,13 @@ async function stressShiftUndo(page) {
     await editor.waitFor({ state:'hidden' })
     await action(page, 'Undo last Shift').click()
     await page.getByText(/Undid the last Shift/).waitFor({ state:'visible' })
-    await page.keyboard.press('Escape')
+    // Undo lives outside the selected planner object, so a page-level Escape would be handled
+    // by that current focus owner rather than the object toolbar. Explicitly close the toolbar
+    // and prove the B03 focus-return contract before beginning the next durability cycle.
+    await toolbar.getByRole('button', { name:'Close object actions' }).click()
     await toolbar.waitFor({ state:'hidden' })
+    await page.waitForFunction((label) => document.activeElement?.getAttribute('aria-label') === label, await lesson.getAttribute('aria-label'))
+    check(await lesson.evaluate((element) => document.activeElement === element), `Stress Shift/Undo ${index}: closing actions must return focus to the Lesson trigger.`)
   }
 }
 
