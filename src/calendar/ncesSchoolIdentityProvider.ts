@@ -113,10 +113,10 @@ export function buildNcesSchoolSearchUrl(query: SchoolIdentityQuery, maxCandidat
   if (errors.length > 0) throw new Error(errors.join(' '))
 
   const where = [
-    `UPPER(SCH_NAME) LIKE '%${escapeSqlLike(normalized.schoolName.toUpperCase())}%'`,
-    normalized.state ? `UPPER(LSTATE) = '${escapeSql(normalized.state)}'` : null,
-    normalized.city ? `UPPER(LCITY) = '${escapeSql(normalized.city.toUpperCase())}'` : null,
-    normalized.districtName ? `UPPER(LEA_NAME) LIKE '%${escapeSqlLike(normalized.districtName.toUpperCase())}%'` : null,
+    `SCH_NAME LIKE '%${escapeSqlLike(normalized.schoolName)}%'`,
+    normalized.state ? `LSTATE = '${escapeSql(normalized.state)}'` : null,
+    normalized.city ? `LCITY LIKE '${escapeSqlLike(normalized.city)}'` : null,
+    normalized.districtName ? `LEA_NAME LIKE '%${escapeSqlLike(normalized.districtName)}%'` : null,
   ].filter((part): part is string => Boolean(part)).join(' AND ')
 
   const params = new URLSearchParams({
@@ -124,7 +124,6 @@ export function buildNcesSchoolSearchUrl(query: SchoolIdentityQuery, maxCandidat
     where,
     outFields: OUT_FIELDS,
     returnGeometry: 'false',
-    orderByFields: 'SCH_NAME ASC, LEA_NAME ASC, LCITY ASC',
     resultRecordCount: String(clampCandidateLimit(maxCandidates)),
   })
 
