@@ -5,6 +5,10 @@ const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const outDir = 'artifacts/b07-interaction-engine-independent'
 function check(condition, message) { if (!condition) throw new Error(message) }
 function action(page, text) { return page.locator('.calendar-context-actions button').filter({ hasText:text }) }
+async function assertNoPageOverflow(page, label) {
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
+  check(overflow <= 1, `${label}: page horizontal overflow ${overflow}px.`)
+}
 
 async function chooseView(page, name) {
   await page.getByRole('button', { name:/Change calendar view, current/ }).click()
@@ -127,6 +131,53 @@ async function reloadProof(page) {
   check(await page.getByText('Blocked studio add', { exact:true }).count() === 0, 'Independent B07: rejected draft must remain absent after reload.')
 }
 
+async function narrowTouchProof(browser) {
+  const context = await browser.newContext({ viewport:{ width:390,height:844 }, hasTouch:true })
+  const page = await context.newPage()
+  const errors = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()) })
+  await seed(page)
+  const studio = page.locator('.planning-section-row').filter({ hasText:'Studio A' })
+  const critique = studio.getByRole('button', { name:/Select Critique/ })
+  await critique.tap()
+  await studio.getByRole('toolbar', { name:'Critique actions' }).waitFor({ state:'visible' })
+  const addFriday = page.getByRole('button', { name:/Add work on .*September 18, 2026/ })
+  await addFriday.tap()
+  const dialog = page.getByRole('dialog', { name:/Add work on .*September 18, 2026/ })
+  await dialog.getByRole('button', { name:'Note', exact:true }).tap()
+  await dialog.getByRole('textbox', { name:'Note text' }).fill('Touch pickup')
+  await dialog.getByRole('combobox', { name:'Note placement' }).selectOption('after-school')
+  await dialog.getByLabel('Important', { exact:true }).check()
+  await dialog.getByRole('button', { name:'Add Note', exact:true }).tap()
+  await page.getByRole('region', { name:'After School', exact:true }).getByText('Touch pickup', { exact:true }).waitFor({ state:'visible' })
+  check(await page.getByRole('button', { name:/Select Important\. After School note\. Touch pickup/ }).count() === 1, 'Independent B07: narrow touch Quick Add must preserve Important + After School semantics.')
+  await assertNoPageOverflow(page, 'Independent B07 390×844 touch')
+  await page.screenshot({ path:`${outDir}/b07-independent-390-touch.png`, fullPage:true })
+  check(errors.length === 0, `Independent B07 narrow touch runtime errors: ${errors.join(' | ')}`)
+  await context.close()
+}
+
+async function highZoomProof(browser) {
+  const context = await browser.newContext({ viewport:{ width:1280,height:720 } })
+  const page = await context.newPage()
+  const errors = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()) })
+  await seed(page)
+  await page.evaluate(() => { document.documentElement.style.zoom = '2' })
+  await assertNoPageOverflow(page, 'Independent B07 200% zoom')
+  const studio = page.locator('.planning-section-row').filter({ hasText:'Studio A' })
+  await studio.getByRole('button', { name:/Select Critique/ }).click()
+  await studio.getByRole('toolbar', { name:'Critique actions' }).waitFor({ state:'visible' })
+  await page.evaluate(() => { document.documentElement.style.zoom = '4' })
+  await assertNoPageOverflow(page, 'Independent B07 400% zoom')
+  check(await studio.getByRole('toolbar', { name:'Critique actions' }).isVisible(), 'Independent B07: selected Lesson actions must remain reachable at 400% zoom.')
+  await page.screenshot({ path:`${outDir}/b07-independent-400-percent-zoom.png`, fullPage:true })
+  check(errors.length === 0, `Independent B07 high-zoom runtime errors: ${errors.join(' | ')}`)
+  await context.close()
+}
+
 await fs.mkdir(outDir, { recursive:true })
 const browser = await chromium.launch({ headless:true })
 try {
@@ -142,12 +193,14 @@ try {
   await successfulNoteAfterRejection(page)
   await guardedUnitRange(page)
   await reloadProof(page)
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)
-  check(overflow <= 1, `Independent B07: 1280×720 must not introduce page horizontal overflow; got ${overflow}px.`)
+  await assertNoPageOverflow(page, 'Independent B07 1280×720')
   await page.screenshot({ path:`${outDir}/b07-independent-1280.png`, fullPage:true })
   check(errors.length === 0, `Independent B07 runtime errors: ${errors.join(' | ')}`)
-  console.log('B07 independent interaction audit passed.')
   await context.close()
+
+  await narrowTouchProof(browser)
+  await highZoomProof(browser)
+  console.log('B07 independent interaction audit passed: canonical rejection truth, Section divergence/reload, keyboard focus, touch Quick Add, Important After School semantics, 1280, 390, 200%/400% zoom, and runtime cleanliness.')
 } finally {
   await browser.close()
 }
