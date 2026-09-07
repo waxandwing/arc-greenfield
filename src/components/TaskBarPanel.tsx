@@ -15,7 +15,7 @@ type Props = {
   onMove: (taskId: string, priority: TaskPriority) => void
   onSetImportant: (taskId: string, important: boolean) => void
   onSetCompleted: (taskId: string, completed: boolean) => void
-  onRemove: (taskId: string) => void
+  onDelete: (taskId: string) => void
 }
 
 export function TaskBarPanel(props: Props) {
@@ -38,7 +38,7 @@ function TaskLane({
   onMove,
   onSetImportant,
   onSetCompleted,
-  onRemove,
+  onDelete,
 }: Props & { priority: TaskPriority; label: string; hint: string }) {
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState('')
@@ -89,7 +89,7 @@ function TaskLane({
             onMove={onMove}
             onSetImportant={onSetImportant}
             onSetCompleted={onSetCompleted}
-            onRemove={onRemove}
+            onDelete={onDelete}
           />
         ))}
       </div>
@@ -124,14 +124,14 @@ function TaskRow({
   onMove,
   onSetImportant,
   onSetCompleted,
-  onRemove,
+  onDelete,
 }: {
   task: TaskBarItem
   onRename: (taskId: string, text: string) => void
   onMove: (taskId: string, priority: TaskPriority) => void
   onSetImportant: (taskId: string, important: boolean) => void
   onSetCompleted: (taskId: string, completed: boolean) => void
-  onRemove: (taskId: string) => void
+  onDelete: (taskId: string) => void
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(task.text)
@@ -187,13 +187,13 @@ function TaskRow({
         <button type="button" aria-pressed={task.important} className="taskbar-important-toggle" onClick={() => onSetImportant(task.id, !task.important)}>{task.important ? 'Important ✓' : 'Important'}</button>
         <label>
           <span className="sr-only">Move {task.text} priority</span>
-          <select value={task.priority} aria-label={`Move ${task.text} priority`} onChange={(event) => onMove(task.id, event.target.value as TaskPriority)}>
+          <select value={task.priority ?? 'could'} aria-label={`Move ${task.text} priority`} onChange={(event) => onMove(task.id, event.target.value as TaskPriority)}>
             <option value="must">Must</option>
             <option value="should">Should</option>
             <option value="could">Could</option>
           </select>
         </label>
-        <button type="button" className="taskbar-remove" onClick={() => onRemove(task.id)} aria-label={`Delete task ${task.text}`}>Delete</button>
+        <button type="button" className="taskbar-remove" onClick={() => onDelete(task.id)} aria-label={`Delete task ${task.text}`}>Delete</button>
       </div>
     </article>
   )
