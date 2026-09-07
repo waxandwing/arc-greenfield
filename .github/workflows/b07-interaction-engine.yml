@@ -55,3 +55,43 @@ jobs:
           path: artifacts/b07-interaction-engine/*.png
           if-no-files-found: warn
           retention-days: 7
+
+  b07-interaction-independent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned Chromium audit runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Build browser target
+        run: npm run build
+      - name: Run independent B07 interaction audit
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/arc-preview-b07-independent.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:4173/ > /dev/null
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/b07-interaction-engine-independent.mjs
+      - name: Publish independent B07 render
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc-b07-interaction-engine-independent
+          path: artifacts/b07-interaction-engine-independent/*.png
+          if-no-files-found: warn
+          retention-days: 7
