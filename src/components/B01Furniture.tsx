@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import '../styles/b01-furniture.css'
 
 type DrawerName = 'settings' | 'fridge' | 'tasks'
 
