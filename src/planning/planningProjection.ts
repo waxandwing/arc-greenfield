@@ -21,6 +21,7 @@ export type PlanningUnitSpan = {
 export type PlanningLessonPlacement = {
   lessonId: string
   unitId: string
+  unitTitle: string
   courseId: string
   title: string
   sequence: number
@@ -71,6 +72,7 @@ export function projectPlanningRange(input: {
   const firstDate = dates[0]
   const lastDate = dates[dates.length - 1]
   const unitList = units?.units ?? []
+  const unitTitles = new Map(unitList.map((unit) => [unit.id, unit.title]))
   const lessonList = lessons?.lessons ?? []
   const deliveryStates = lessons?.deliveryStates ?? []
 
@@ -81,7 +83,7 @@ export function projectPlanningRange(input: {
       unitSpans: projectUnitSpans(unitList, course.id, firstDate, lastDate, dateIndexes),
       sections: planning.sections
         .filter((section) => section.courseId === course.id)
-        .map((section) => projectSectionRow(section, course.id, dates, lessonList, deliveryStates, overrides)),
+        .map((section) => projectSectionRow(section, course.id, dates, lessonList, unitTitles, deliveryStates, overrides)),
     })),
   }
 }
@@ -118,6 +120,7 @@ function projectSectionRow(
   courseId: string,
   dates: ISODate[],
   lessons: Lesson[],
+  unitTitles: Map<string, string>,
   deliveryStates: LessonDeliveryState[],
   overrides: SectionLessonDateOverride[],
 ): PlanningSectionRow {
@@ -132,6 +135,7 @@ function projectSectionRow(
     dayMap.get(effectiveDate)!.push({
       lessonId: lesson.id,
       unitId: lesson.unitId,
+      unitTitle: unitTitles.get(lesson.unitId) ?? 'Unassigned Unit',
       courseId: lesson.courseId,
       title: lesson.title,
       sequence: lesson.sequence,
