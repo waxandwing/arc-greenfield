@@ -8,11 +8,9 @@
 :root {
   --arc-object-unit-ink: #5f4a3b;
   --arc-object-unit-wash: rgba(143, 103, 78, .115);
-  --arc-object-lesson-ink: #38484f;
   --arc-object-lesson-wash: rgba(109, 139, 151, .08);
   --arc-object-note-paper: rgba(250, 247, 240, .96);
   --arc-object-pencil: rgba(44, 46, 46, .68);
-  --arc-object-red: var(--terracotta);
 }
 
 /* Scheduled Unit: a quiet planner band, never a pottery/magnet object. */
@@ -52,7 +50,7 @@
 .planning-lesson-parent {
   margin-bottom: 1px;
   color: var(--soft-charcoal);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
   letter-spacing: .015em;
   line-height: 1.2;
@@ -66,7 +64,7 @@
 
 .planning-lesson-anchor,
 .planning-lesson-meta {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.25;
 }
 
@@ -107,29 +105,34 @@
   padding-top: 5px;
   border-top-color: rgba(44, 46, 46, .08);
   color: var(--arc-object-pencil);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.25;
 }
 
-/* Important is a hand-drawn red circle around the object, never a badge/icon. */
+/* Important uses exact hand-drawn rings extracted from the approved Arc page-elements asset sheet.
+ * The transparent solid border preserves the established B02 detector without drawing replacement geometry. */
 .planning-note--important {
   width: min(calc(100% - 12px), 138px);
   margin: 6px 7px 6px 5px;
 }
 
 .planning-note--important::after {
-  inset: -6px -7px -6px -7px;
-  border-width: 2px;
-  border-color: var(--arc-object-red);
-  border-radius: 49% 52% 47% 53% / 51% 46% 54% 49%;
-  transform: rotate(-1.1deg);
-  opacity: .92;
+  inset: -7px -8px -7px -8px;
+  border: 2px solid transparent;
+  border-radius: 0;
+  background: url('../assets/important-circle-round.svg') center / 100% 100% no-repeat;
+  transform: none;
+  opacity: .96;
 }
 
-.planning-note--important:nth-child(even)::after {
-  inset: -7px -6px -5px -7px;
-  border-radius: 53% 46% 51% 48% / 48% 54% 47% 52%;
-  transform: rotate(.9deg);
+.planning-note--important:nth-child(3n + 2)::after {
+  inset: -7px -9px -7px -9px;
+  background-image: url('../assets/important-circle-wide-a.svg');
+}
+
+.planning-note--important:nth-child(3n)::after {
+  inset: -6px -9px -7px -9px;
+  background-image: url('../assets/important-circle-wide-b.svg');
 }
 
 /* Add control: quiet visually, but keeps the canonical 44px interaction target. */
