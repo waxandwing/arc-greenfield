@@ -122,10 +122,12 @@ async function rejectFridgeScheduleAndPreserveRealUndo(page) {
 
 async function proveCrossViewReload(page) {
   await chooseView(page, 'Month')
-  await page.getByText('First Lesson', { exact:true }).first().waitFor({ state:'visible' })
+  await page.locator('.planning-month-signal').filter({ hasText:'First Lesson' }).first().waitFor({ state:'visible' })
+
   await chooseView(page, 'Day')
   for (let i = 0; i < 3; i += 1) await page.getByRole('button', { name:'Next Day', exact:true }).click()
-  await page.getByText('First Lesson', { exact:true }).first().waitFor({ state:'visible' })
+  await page.locator('.planning-date-heading').filter({ hasText:/Sep 17|9\/17|17/ }).first().waitFor({ state:'visible' })
+  await page.getByRole('button', { name:/Select First Lesson/ }).first().waitFor({ state:'visible' })
 
   await page.reload({ waitUntil:'networkidle' })
   await goTargetWeek(page)
