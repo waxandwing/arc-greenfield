@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test:contracts": "tsc -p tsconfig.contracts.json && node tests/run-contracts.mjs",
+    "test:contracts": "tsc -p tsconfig.contracts.json && node tests/run-contracts.mjs && node tests/b01-shell.mjs",
     "typecheck": "tsc -b",
     "build:bundle": "vite build",
     "build": "npm run test:contracts && npm run typecheck && npm run build:bundle",
