@@ -1,12 +1,11 @@
 :root{scrollbar-gutter:stable}
 
-/* Integrated furniture contract: the planner is fixed; all furniture lives in the surrounding workspace. */
+/* Integrated furniture contract: planner geometry is fixed; furniture owns only exterior workspace. */
 .b01-furniture-composition{position:relative;isolation:isolate;width:min(1000px,69.4444vw);margin:0 auto;overflow:visible}
 .b01-calendar-owner{position:relative;z-index:10}
 .b01-side-owner,.b01-task-owner{position:absolute;pointer-events:none;z-index:20}
 .b01-furniture-surface{pointer-events:auto;overflow:auto;box-sizing:border-box}
 
-/* Left and right owners occupy exterior territory, not the journal edge. */
 .b01-side-owner{top:8%;height:74%;width:max(190px,calc((100vw - 100%)/2 - 26px))}
 .b01-settings-owner{right:calc(100% + 26px)}
 .b01-fridge-owner{left:calc(100% + 26px)}
@@ -17,8 +16,67 @@
 .b01-settings-owner[data-state='closed'] .b01-settings-surface{transform:translateX(calc(-100% - 24px));opacity:0;visibility:hidden;pointer-events:none}
 .b01-fridge-owner[data-state='closed'] .b01-fridge-surface{transform:translateX(calc(100% + 24px));opacity:0;visibility:hidden;pointer-events:none}
 
-/* Exact approved closed-tab art from the supplied Arc interface asset set. */
-.b01-edge-tab{position:absolute;z-index:30;top:40%;width:46px;height:104px;border:0;padding:0;background-color:transparent;background-position:center;background-repeat:no-repeat;background-size:contain;cursor:pointer;pointer-events:auto;filter:none;box-shadow:none}
+/* Approved supplied tab artwork. Buttons remain semantic; labels are visually hidden. */
+.b01-edge-tab{position:absolute;z-index:30;top:40%;width:54px;height:122px;border:0;padding:0;background-color:transparent;background-position:center;background-repeat:no-repeat;background-size:contain;cursor:pointer;pointer-events:auto;filter:none;box-shadow:none}
 .b01-edge-tab>span,.b01-task-tab>span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-.b01-edge-tab--left{right:calc(100% + 8px);background-image:url('data:image/png;base64,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')}
-.b01-edge-tab--right{left:calc(100% + 8px);background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAqCAYAAACpxZteAAAFO0lEQVR42u2XS3NcRxXHf6cf9955aEYea6QoDhg7sZ34IVuS5ZJdSTkKrlAFFFRYZZEvwCaLfBe+gjcp+BABFrKzSBUGUqaAWOVEyciah+5oZu6rm8WMBhkIwZZSxSL/Vd9H9a/P6T6PFsZaAn4J/BzoAk8AK0qJtRZBSJIRh3Xt+nXe/snPWL35Bs2FpvfeZ8PBoOm9zNrA/sZ4/6s76yt/MpP/NVAFQqCKSKZErHNO0iQBIKpUmG00mJmp0TjR4OKVKzQXFgmswRd458msDapa27Aosqo3WgMcAAKgOYGUlEjZWmvTNBXvPQA/OH+etVuv89qrFznZmKNSrRKEIUEUUbjc40mjqFwpVcqm/aTVFEJ7GGCBmogESimKoiglk5W/9P3TnH7lHFdv3GB5bZ3Ll5eo1+oko4R4r0de5DjnKPLclcplVZup0X2yU8M7cxjgASdKEQQho9Ew996bmXqNd959j1tvvkWpXEJESJOEbqdDUeTkeY5zBc458BSuKFRRFHiPyycTTwGiVO6Kwg+HA4D81PdOy+r6unrjrTssrayyH+/R2v6SuNfFe4+IQmuNiCAiDiHP89zkeQ6Q64lvx2YYgyglWZoKQP1EQ37x7nty+87bsrC4yM5XX+KdQ1uDODUBCCJycKgEkIlAmH4wohQASmvCMKRxco7ltRu8vvFDLi5dZXenRWt7myCKsNb+68TfKGOMQSuFB+ZfWORHP/4pt26/SXO+Sbu9S5alhKXS1B3PKiWiGI1GJMMhWmsuXV1mdf0WxhpaX20zGo2wNkBNLH1mgHdu+mCtJSyVsFEJYwO0UpNVe55XxjnHhQuXCCPL2s2bzNTrdDs90jSd+vwoMs4VvP/")[...truncated by system for tool safety...]
+.b01-edge-tab--left{right:calc(100% + 8px);background-image:url('/assets/b01-settings-tab.png')}
+.b01-edge-tab--right{left:calc(100% + 8px);background-image:url('/assets/b01-fridge-tab.png')}
+.b01-edge-tab:focus-visible,.b01-task-tab:focus-visible,.b05-clean-up:focus-visible{outline:3px solid var(--dusty-blue);outline-offset:3px}
+
+/* Bottom owner is fully outside the planner. Its exact art is a separate exterior layer. */
+.b01-task-owner{left:50%;bottom:-190px;width:min(850px,59.0278vw);height:310px;transform:translateX(-50%);pointer-events:none}
+.b01-task-owner::before{content:'';position:absolute;inset:0;background:url('/assets/b01-taskbar.svg') center top/100% auto no-repeat;pointer-events:none;z-index:0}
+.b01-task-tab{position:absolute;z-index:30;top:0;left:50%;width:150px;height:54px;transform:translateX(-50%);border:0;background:transparent;cursor:pointer;pointer-events:auto}
+.b01-task-surface{position:absolute;z-index:2;left:7%;right:7%;top:74px;height:212px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;padding:20px 24px 22px;background:rgba(245,220,187,.96);border:1px solid rgba(95,68,39,.14);border-radius:8px;box-shadow:none;transition:opacity 160ms ease,transform 180ms ease}
+.b01-task-owner[data-state='closed'] .b01-task-surface{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(26px)}
+.b01-task-owner[data-state='open'] .b01-task-surface{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+.b01-task-surface>div{min-width:0;padding:5px 18px;border-right:1px solid rgba(74,52,30,.16);font-size:16px;letter-spacing:.03em}
+.b01-task-surface>div:last-child{border-right:0}
+
+.b05-clean-up{position:absolute;z-index:31;top:4px;left:calc(50% + 82px);min-height:44px;padding:7px 14px;border:1px solid rgba(44,46,46,.16);border-radius:5px;background:rgba(247,241,229,.96);color:var(--ink);font:700 14px/1.1 var(--font-ui);cursor:pointer;pointer-events:auto}
+.b01-furniture-kicker{margin:0 0 18px;font:700 14px/1.2 var(--font-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--soft-charcoal)}
+.b01-furniture-empty{margin:0;color:var(--soft-charcoal);font-size:16px;line-height:1.4}
+.b01-settings-owner .view-preferences{border:0;background:transparent;padding:0}
+.b01-settings-owner .view-preferences>summary{font-size:16px;font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.b01-settings-owner .view-preferences-panel{display:grid;gap:14px;padding-top:8px}
+.b01-settings-owner .view-preferences-panel label{display:grid;gap:6px;font-size:16px;font-weight:700}
+.b01-settings-owner .view-preferences-panel select{min-height:44px;width:100%;box-sizing:border-box;font:inherit}
+.b01-settings-owner .view-preferences-check{grid-template-columns:auto 1fr;align-items:center;min-height:44px;cursor:pointer}
+.b01-settings-owner .view-preferences-check input{min-height:auto}
+
+@media(max-width:1280px){
+  .b01-furniture-composition{width:min(900px,70.3125vw)}
+  .b01-side-owner{width:max(156px,calc((100vw - 100%)/2 - 22px))}
+  .b01-settings-owner{right:calc(100% + 22px)}
+  .b01-fridge-owner{left:calc(100% + 22px)}
+  .b01-edge-tab--left{right:calc(100% + 6px)}
+  .b01-edge-tab--right{left:calc(100% + 6px)}
+  .b01-task-owner{width:min(760px,59.375vw);bottom:-172px;height:286px}
+  .b01-task-surface{top:68px;height:194px}
+}
+
+@media(max-width:800px){
+  .b01-furniture-composition{width:100%;overflow:visible}
+  .b01-side-owner{position:fixed;top:20%;height:56vh;width:min(88vw,360px);z-index:50}
+  .b01-settings-owner{right:auto;left:0}
+  .b01-fridge-owner{left:auto;right:0}
+  .b01-edge-tab{position:fixed;top:36%;width:46px;height:104px}
+  .b01-edge-tab--left{left:0;right:auto}
+  .b01-edge-tab--right{right:0;left:auto}
+  .b01-settings-surface{inset:0 auto 0 0;width:100%;transform:none}
+  .b01-fridge-surface{inset:0 0 0 auto;width:100%;transform:none}
+  .b01-settings-owner[data-state='closed'] .b01-settings-surface{transform:translateX(calc(-100% - 12px))}
+  .b01-fridge-owner[data-state='closed'] .b01-fridge-surface{transform:translateX(calc(100% + 12px))}
+  .b01-task-owner{position:fixed;z-index:50;left:16px;right:16px;bottom:-230px;width:auto;height:300px;transform:none}
+  .b01-task-owner[data-state='open']{bottom:0}
+  .b01-task-owner::before{background-size:100% auto}
+  .b01-task-surface{top:64px;height:220px;padding:18px 12px}
+  .b01-task-tab{top:2px}
+}
+
+@media(max-width:520px){
+  .b01-task-surface>div{padding-inline:8px;font-size:14px}
+  .b05-clean-up{left:auto;right:4px;padding-inline:10px}
+}
+
+@media(prefers-reduced-motion:reduce){.b01-settings-surface,.b01-fridge-surface,.b01-task-surface{transition:none}}
