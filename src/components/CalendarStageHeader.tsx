@@ -67,25 +67,33 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
   } = props
 
   const isCalendarMode = mode === 'calendar'
+  const dateHeading = calendar && isCalendarMode && anchorDate ? plannerDateHeading(anchorDate, activeView) : null
 
   return (
     <header className="calendar-stage-header">
-      <div>
-        <p className="section-label">Calendar</p>
-        {calendar && isCalendarMode ? (
+      <div className="canonical-heading-owner">
+        {dateHeading ? (
+          <div className="canonical-date-heading">
+            <p className="canonical-month-title">{dateHeading.title}</p>
+            <p className="canonical-week-context">{dateHeading.context}</p>
+          </div>
+        ) : (
+          <>
+            <p className="section-label">Calendar</p>
+            <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
+          </>
+        )}
+      </div>
+
+      {calendar && isCalendarMode && anchorDate && (
+        <div className="calendar-header-tools">
           <CalendarViewSwitcher
             activeView={activeView}
             disabled={viewSelectionDisabled}
             availabilityFor={availabilityFor}
             onSelect={onSelectView}
           />
-        ) : (
-          <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
-        )}
-      </div>
 
-      {calendar && isCalendarMode && anchorDate && (
-        <div className="calendar-header-tools">
           <div className="period-controls" role="group" aria-label={`${activeView} date navigation`}>
             <button type="button" className="quiet-button period-button" disabled={!previousTarget} onClick={onMovePrevious} aria-label={`Previous ${activeView}`}>←</button>
             <button type="button" className="quiet-button today-button" disabled={!todayTarget} onClick={onToday}>Today</button>
@@ -108,4 +116,19 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
       )}
     </header>
   )
+}
+
+function plannerDateHeading(anchorDate: ISODate, activeView: CalendarView) {
+  const anchor = new Date(`${anchorDate}T12:00:00`)
+  const month = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(anchor)
+  if (activeView !== 'week') return { title: month, context: activeView.toUpperCase() }
+
+  const end = new Date(anchor)
+  end.setDate(anchor.getDate() + 6)
+  const monthShort = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(anchor).toUpperCase()
+  const weekOfMonth = Math.max(1, Math.ceil(anchor.getDate() / 7))
+  return {
+    title: month,
+    context: `WEEK ${weekOfMonth} · ${monthShort} ${anchor.getDate()} · ${end.getDate()}`,
+  }
 }

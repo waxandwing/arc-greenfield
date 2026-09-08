@@ -1,0 +1,230 @@
+/* Canonical Arc planner shell — visual restoration against founder-approved Week reference.
+ * This layer restores the fixed notebook composition without changing planning state or drag logic.
+ */
+
+.arc-shell{
+  min-height:100dvh;
+  background:
+    radial-gradient(circle at 20% 8%,rgba(255,255,255,.52),transparent 28%),
+    linear-gradient(180deg,#f1eadf 0%,#e9e1d4 100%);
+}
+
+.arc-header{display:none}
+.arc-layout{min-height:100dvh;overflow:hidden}
+.arc-calendar-stage{position:relative;min-height:100dvh;padding:0 24px 24px}
+
+.calendar-stage-header{
+  position:absolute;
+  z-index:30;
+  top:84px;
+  left:50%;
+  width:min(1000px,69.4444vw);
+  min-height:94px;
+  margin:0;
+  padding:20px 34px 12px 150px;
+  transform:translateX(-50%);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;
+  gap:24px;
+  pointer-events:none;
+}
+
+.canonical-heading-owner,.calendar-header-tools,.calendar-view-switcher,.canonical-view-strip{pointer-events:auto}
+.section-label{display:none}
+.canonical-date-heading{display:grid;gap:2px;align-content:start}
+.canonical-month-title{margin:0;font:400 56px/.95 Georgia,'Times New Roman',serif;letter-spacing:-.035em;color:#5d5851}
+.canonical-week-context{margin:5px 0 0;font:700 14px/1.2 var(--font-ui);letter-spacing:.22em;color:#666159}
+
+.calendar-header-tools{display:flex;align-items:flex-start;justify-content:flex-end;gap:10px;min-width:0}
+.calendar-view-switcher{display:block;max-width:none}
+.canonical-view-strip{display:flex;align-items:center;gap:8px;padding-top:25px;white-space:nowrap}
+.canonical-view-choice{
+  min-width:44px;
+  min-height:44px;
+  padding:0 2px;
+  border:0;
+  background:transparent;
+  color:#595650;
+  font:800 16px/1 var(--font-ui);
+  letter-spacing:-.03em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.canonical-view-choice[aria-current='page']{color:#2f2d2a}
+.canonical-view-choice[aria-disabled='true']{opacity:.42;cursor:not-allowed}
+.canonical-view-choice:focus-visible{outline:2px solid var(--dusty-blue);outline-offset:2px}
+
+/* Keep the legacy dropdown trigger available to assistive technology and regression contracts,
+ * while the canonical inline strip is the visible control. */
+.canonical-view-fallback{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0 0 0 0)!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
+}
+.canonical-view-menu-fallback{position:absolute;top:70px;right:0}
+
+/* Date navigation remains operable but does not compete with the approved visual hierarchy. */
+.period-controls{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+.period-controls .period-button{
+  position:absolute;
+  top:48px;
+  width:44px;
+  height:44px;
+  min-width:44px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:transparent;
+  pointer-events:auto;
+  opacity:.04;
+}
+.period-controls .period-button:first-child{left:8px}
+.period-controls .period-button:last-child{right:8px}
+.period-controls .period-button:hover,.period-controls .period-button:focus-visible{color:#5f5a53;opacity:1;background:rgba(255,255,255,.48)}
+.period-controls .today-button{
+  position:absolute;
+  top:62px;
+  left:50%;
+  width:1px;
+  height:1px;
+  min-height:1px;
+  padding:0;
+  border:0;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  clip-path:inset(50%);
+  white-space:nowrap;
+}
+.calendar-context-group{
+  position:absolute;
+  width:1px;
+  height:1px;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  clip-path:inset(50%);
+  white-space:nowrap;
+}
+
+.b01-furniture-composition{
+  width:min(1000px,69.4444vw);
+  margin:62px auto 0;
+  padding-bottom:58px;
+  overflow:visible;
+}
+
+.b01-calendar-owner>.calendar-canvas{
+  min-height:min(720px,calc(100dvh - 110px));
+  overflow:hidden;
+  border:0;
+  border-radius:24px 24px 18px 18px;
+  padding:128px 34px 42px;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,0) 49.45%,rgba(103,91,75,.12) 49.8%,rgba(91,78,61,.18) 50%,rgba(255,255,255,0) 50.55%),
+    radial-gradient(circle at 21% 16%,rgba(255,255,255,.78),transparent 34%),
+    linear-gradient(90deg,#f8f3e9 0 49.7%,#f4eee3 50.3% 100%);
+  box-shadow:
+    0 0 0 5px rgba(43,48,49,.94),
+    0 0 0 10px rgba(67,73,73,.92),
+    0 18px 38px -22px rgba(39,36,32,.62),
+    inset 18px 0 24px -28px rgba(73,61,49,.35),
+    inset -18px 0 24px -28px rgba(73,61,49,.35);
+}
+.b01-calendar-owner>.calendar-canvas::before{
+  content:'';
+  position:absolute;
+  z-index:-1;
+  inset:8px;
+  height:auto;
+  border-radius:20px;
+  background:
+    repeating-linear-gradient(0deg,rgba(77,68,57,.012) 0 1px,transparent 1px 4px),
+    repeating-linear-gradient(90deg,rgba(77,68,57,.009) 0 1px,transparent 1px 6px);
+  pointer-events:none;
+}
+
+/* Canonical Week grid: crisp paper table, no SaaS cards. */
+.planning-scroll-frame{overflow-x:auto}
+.planning-grid{gap:0;min-width:min(920px,100%);background:transparent}
+.planning-date-header{position:relative;top:auto;background:transparent;border-top:1px solid rgba(80,76,69,.14);border-bottom:1px solid rgba(80,76,69,.18)}
+.planning-row-label,.planning-date-heading,.planning-day-slot,.planning-note-slot{padding:8px 8px}
+.planning-row-label{border-right:1px solid rgba(80,76,69,.12)}
+.planning-row-label--header{color:transparent;font-size:1px}
+.planning-date-heading{min-height:62px;align-content:start;justify-items:center;border-right:1px solid rgba(80,76,69,.12);font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400}
+.planning-date-weekday{font:700 10px/1.1 var(--font-ui);letter-spacing:.06em;text-transform:uppercase;color:#6a665f}
+.planning-date-kind{max-width:88px;font:700 10px/1.15 Georgia,'Times New Roman',serif;text-align:center;color:#5f5b55;text-transform:none}
+.planning-quick-add-trigger{position:absolute;inset:auto 2px 2px auto;opacity:0}
+.planning-date-heading:hover .planning-quick-add-trigger,.planning-quick-add-trigger:focus-visible{opacity:.6}
+
+.planning-course{gap:0;padding-top:0;border-top:1px solid rgba(80,76,69,.16)}
+.planning-course-heading{min-height:64px;padding:10px 0 8px;border-bottom:1px solid rgba(80,76,69,.10)}
+.planning-course-heading h2{font:600 24px/1 Georgia,'Times New Roman',serif;letter-spacing:-.02em}
+.planning-unit-stack{gap:0}
+.planning-unit-grid{min-height:54px}
+.planning-section-list{border-top:0}
+.planning-section-row{min-height:74px;border-bottom:1px solid rgba(80,76,69,.14)}
+.planning-section-row>.planning-row-label{font:400 12px/1.25 Georgia,'Times New Roman',serif;color:#5f5b55}
+.planning-day-slot{gap:3px;border-right:1px solid rgba(80,76,69,.12);background:transparent}
+.planning-day-slot--no-school,.planning-day-slot--holiday,.planning-day-slot--break,.planning-day-slot--teacher-workday{background:rgba(124,156,173,.045)}
+
+/* Furniture owns the exterior territory and never squeezes the notebook. */
+.b01-side-owner{top:54px;height:min(560px,38.8889vw)}
+.b01-settings-owner{left:max(-260px,-18.0556vw)}
+.b01-fridge-owner{right:max(-260px,-18.0556vw)}
+.b01-settings-surface{
+  width:260px;
+  padding:58px 44px 28px 18px;
+  border:0;
+  border-radius:0 22px 22px 0;
+  background:#f0d279;
+  box-shadow:0 10px 24px -18px rgba(44,46,46,.48),inset -4px 0 12px rgba(134,101,35,.08);
+}
+.b01-fridge-surface{background:#b9dbe0}
+.b01-edge-tab{top:11%;width:48px;min-height:158px;border:0;box-shadow:none;font-size:16px;color:#665f58}
+.b01-edge-tab--left{right:0;border-radius:0 7px 7px 0;background:#f0d279}
+.b01-edge-tab--right{left:0;border-radius:7px 0 0 7px;background:#b9dbe0}
+.b01-settings-owner[data-state='open']{left:-260px}
+.b01-settings-owner[data-state='open'] .b01-settings-surface{width:260px}
+.b01-settings-owner .view-preferences{font-family:Georgia,'Times New Roman',serif}
+.b01-settings-owner .view-preferences>summary{font-size:18px;font-weight:600}
+.b01-settings-owner .view-preferences-panel label{font-size:16px;font-weight:500}
+
+.b01-task-owner{bottom:-2px;width:min(850px,59.0278vw);height:58px}
+.b01-task-tab{left:0;min-width:250px;min-height:58px;transform:none;border:0;border-radius:18px 18px 0 0;background:#e7b275;color:#625b55;font-size:20px;letter-spacing:.04em}
+.b01-task-owner[data-state='open']{height:min(260px,18vw)}
+.b05-clean-up{top:5px;left:auto;right:0;border:0;background:transparent;text-transform:uppercase;color:#625d57}
+
+@media (max-width:1280px){
+  .calendar-stage-header,.b01-furniture-composition{width:min(900px,70.3125vw)}
+  .calendar-stage-header{top:72px;padding-left:126px}
+  .canonical-month-title{font-size:48px}
+  .b01-furniture-composition{margin-top:54px}
+  .b01-calendar-owner>.calendar-canvas{padding:116px 28px 36px;min-height:min(650px,calc(100dvh - 92px))}
+  .b01-settings-owner{left:-220px}
+  .b01-settings-surface{width:220px;padding-right:38px}
+  .b01-settings-owner[data-state='open']{left:-220px}
+  .b01-settings-owner[data-state='open'] .b01-settings-surface{width:220px}
+  .canonical-view-strip{gap:5px}
+  .canonical-view-choice{font-size:15px}
+}
+
+@media (max-width:800px){
+  .arc-layout{overflow:visible}
+  .arc-calendar-stage{padding:0 12px 20px}
+  .calendar-stage-header{position:relative;top:auto;left:auto;width:100%;min-height:92px;padding:18px 10px 8px;transform:none;grid-template-columns:1fr}
+  .calendar-header-tools{justify-content:flex-start}
+  .canonical-view-strip{padding-top:0}
+  .canonical-month-title{font-size:42px}
+  .b01-furniture-composition{width:100%;margin-top:0}
+  .b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 130px);padding:18px 14px 30px;border-radius:14px;box-shadow:0 0 0 3px rgba(43,48,49,.9),0 12px 26px -20px rgba(39,36,32,.55)}
+}

@@ -35,6 +35,12 @@ export function CalendarViewSwitcher({
     setOpen(false)
   }, [activeView])
 
+  function choose(view: CalendarView) {
+    const availability = availabilityFor(view)
+    if (disabled || !availability.available || view === activeView) return
+    onSelect(view)
+  }
+
   function closeAndRestoreFocus() {
     setOpen(false)
     triggerRef.current?.focus()
@@ -50,7 +56,29 @@ export function CalendarViewSwitcher({
         closeAndRestoreFocus()
       }}
     >
-      <h1 className="view-title" aria-live="polite" aria-label={activeView}>
+      <nav className="canonical-view-strip" aria-label="Calendar views">
+        {CALENDAR_VIEWS.map((view) => {
+          const availability = availabilityFor(view)
+          const unavailable = disabled || !availability.available
+          const isCurrent = view === activeView
+          return (
+            <button
+              key={view}
+              type="button"
+              className="canonical-view-choice"
+              aria-current={isCurrent ? 'page' : undefined}
+              aria-disabled={unavailable ? 'true' : undefined}
+              aria-label={unavailable && availability.reason ? `${view}. ${availability.reason}` : view}
+              title={unavailable ? availability.reason : undefined}
+              onClick={() => choose(view)}
+            >
+              {view}
+            </button>
+          )
+        })}
+      </nav>
+
+      <h1 className="view-title canonical-view-fallback" aria-live="polite" aria-label={activeView}>
         <button
           ref={triggerRef}
           type="button"
@@ -67,7 +95,7 @@ export function CalendarViewSwitcher({
       </h1>
 
       {open && (
-        <nav id="calendar-view-choices" className="calendar-view-choices" aria-label="Calendar views">
+        <nav id="calendar-view-choices" className="calendar-view-choices canonical-view-menu-fallback" aria-label="Calendar views menu">
           {CALENDAR_VIEWS.map((view) => {
             const availability = availabilityFor(view)
             const unavailable = !availability.available
