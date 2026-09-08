@@ -72,6 +72,7 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
   const isCalendarMode = mode === 'calendar'
   const monthLabel = anchorDate ? plannerMonth(anchorDate) : null
   const rangeLabel = anchorDate ? plannerRange(activeView, anchorDate, calendar?.schoolYearLabel) : null
+  const nonPlannerTitle = !calendar && isCalendarMode ? 'Calendar setup' : stageTitle
 
   return (
     <header className="calendar-stage-header">
@@ -91,7 +92,7 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
             />
           </>
         ) : (
-          <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
+          <h1 className="view-title" aria-live="polite">{nonPlannerTitle}</h1>
         )}
       </div>
 
