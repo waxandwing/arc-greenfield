@@ -3,6 +3,7 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto'
 const COOKIE_NAME = 'arc_beta_access'
 const EXPECTED_PASSWORD_HASH = '02960e0be166e38c3f854ece834f50973db2f54fb8f3b969a8978ebf722dc280'
 const THIRTY_DAYS = 60 * 60 * 24 * 30
+const TOKEN_MESSAGE = 'arc-beta-access-v1'
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex')
@@ -14,9 +15,13 @@ function safeEqual(left, right) {
   return a.length === b.length && timingSafeEqual(a, b)
 }
 
-function signedAccessToken() {
-  const secret = process.env.ARC_BETA_COOKIE_SECRET || EXPECTED_PASSWORD_HASH
-  return createHmac('sha256', secret).update('arc-beta-access-v1').digest('hex')
+function betaCookieSecret() {
+  const secret = process.env.ARC_BETA_COOKIE_SECRET?.trim()
+  return secret && secret.length >= 32 ? secret : null
+}
+
+function signedAccessToken(secret) {
+  return createHmac('sha256', secret).update(TOKEN_MESSAGE).digest('hex')
 }
 
 function parseCookies(header = '') {
@@ -53,9 +58,14 @@ export default async function handler(req, res) {
     return send(res, 405, { unlocked: false, reason: 'method' }, { allow: 'GET, POST, DELETE' })
   }
 
+  const secret = betaCookieSecret()
+  if (!secret) {
+    return send(res, 503, { unlocked: false, error: 'Arc beta access is unavailable right now.' })
+  }
+
   if (req.method === 'GET') {
     const storedToken = parseCookies(req.headers.cookie)[COOKIE_NAME] ?? ''
-    return send(res, 200, { unlocked: safeEqual(storedToken, signedAccessToken()) })
+    return send(res, 200, { unlocked: safeEqual(storedToken, signedAccessToken(secret)) })
   }
 
   if (req.method === 'POST') {
@@ -73,7 +83,7 @@ export default async function handler(req, res) {
     }
 
     const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
-    const cookie = `${COOKIE_NAME}=${encodeURIComponent(signedAccessToken())}; Path=/; Max-Age=${THIRTY_DAYS}; HttpOnly; SameSite=Lax${secure}`
+    const cookie = `${COOKIE_NAME}=${encodeURIComponent(signedAccessToken(secret))}; Path=/; Max-Age=${THIRTY_DAYS}; HttpOnly; SameSite=Lax${secure}`
     return send(res, 200, { unlocked: true }, { 'set-cookie': cookie })
   }
 
