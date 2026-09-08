@@ -1,0 +1,9 @@
+/* BUG 023 — small-laptop Task Bar clearance.
+   Keep the calendar box fixed while reserving exterior space for the open Task Bar.
+   This is deliberately scoped to desktop/small-laptop widths; mobile furniture uses
+   the existing in-flow composition below the calendar. */
+@media (min-width: 801px) and (max-width: 1280px) {
+  .b01-furniture-composition:has(.b01-task-owner[data-state='open']) {
+    padding-bottom: calc(min(240px, 16.6667vw) + 24px);
+  }
+}

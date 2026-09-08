@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
+import '../styles/bug023-taskbar-clearance.css'
 
 type DrawerName = 'settings' | 'fridge' | 'tasks'
 
