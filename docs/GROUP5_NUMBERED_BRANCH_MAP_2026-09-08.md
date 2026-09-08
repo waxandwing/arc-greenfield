@@ -24,9 +24,9 @@ Use this file for manual GitHub cleanup. Branches are not numbered by GitHub, so
 - ARCHIVE-007 `feature/architecture-verification-run` — retained representative for duplicate SHA `f36e6af...` until historical verification cleanup completes.
 - ARCHIVE-008 `feature/recovery-shift-operation` — retained representative for duplicate SHA `3660ec...` until donor review completes.
 
-## DELETE — VERIFIED FIRST BATCH
+## DELETE — VERIFIED
 
-These are exact duplicate refs or temporary refs where another retained branch points to the same commit. Delete only the branch name shown; do not delete the retained representative.
+Delete only the branch name shown. Every item below is either an exact duplicate ref or its full head is already contained in protected `develop`.
 
 - DELETE-001 `codex/ignore-this-backup` — duplicate of retained `codex/merge-safety-backup` at `7da6b5...`.
 - DELETE-002 `codex/merge-safety-backup-2` — duplicate at `7da6b5...`.
@@ -50,6 +50,8 @@ These are exact duplicate refs or temporary refs where another retained branch p
 - DELETE-020 `preview/phase-1` — duplicate of retained `archive/pre-frame-reset-2026-09-02` at `fadb208...`.
 - DELETE-021 `deployment/audit-current` — exact duplicate of protected `develop` at `224e66a...`.
 - DELETE-022 `noop-temp-check` — exact duplicate of protected `develop` at `224e66a...`.
+- DELETE-023 `docs/classroom-naming-contract` — ancestry check: branch head is fully contained in current `develop` (`behind_by=0`).
+- DELETE-024 `feature/calendar-hydration` — ancestry check: branch head is fully contained in current `develop` (`behind_by=0`).
 
 ## REVIEW BEFORE DELETE — NOT YET SAFE
 
@@ -61,10 +63,11 @@ Do not delete these merely because an older manifest called them safe. Several h
 - `design/b02-week-planning-object-hierarchy`
 - `design/b03-object-selection-context-actions`
 - `design/b05-b06-furniture-taskbar-hardening`
-- `audit/day-interface-hostile-two-pass-final`
+- `audit/day-interface-hostile-two-pass-final` — rechecked; currently diverged and carries 24 commits not in `develop`, so do not delete yet.
 - `audit/phase2-final-independent-rgav`
 - `audit/phase3-ocps-pdf-fetch-architecture`
 - `audit/principal-engineering-round2-2026-09-06`
+- `docs/feature-creation-protocol` — rechecked; currently diverged and carries 2 commits not in `develop`, so do not delete yet.
 - `deploy/beta-vertical-slice`
 - `deploy/beta-vertical-slice-repair`
 - all `release/*` branches
@@ -82,9 +85,11 @@ Closed as superseded/failed: PR #98, #100, #101.
 
 ## Current code-prune findings
 
-Current `develop` still has a single canonical `AppFrame` composition path and the expected workspace/domain hooks. The code audit is now focusing on CSS layering, component-local imports, stale assets, deployment seams, and duplicate workflows rather than assuming filenames are dead.
+Current `develop` still has a single canonical `AppFrame` composition path and the expected workspace/domain hooks. The code audit is focusing on CSS layering, component-local imports, stale assets, deployment seams, and duplicate workflows rather than assuming filenames are dead.
 
 `src/main.tsx` imports global/calendar/setup styles only. Furniture and Task Bar styles are owned by their components rather than the global entrypoint, so an unused-file decision must follow the component import graph before deletion.
+
+Current `develop` no longer contains the retired `CalendarViewRail`; compare evidence shows that legacy rail was removed upstream. This is good: the no-left-rail rule is not being undermined by a live duplicate component on `develop`.
 
 ## Rule
 
