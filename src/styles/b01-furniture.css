@@ -25,10 +25,10 @@
 .b01-edge-tab--right{left:-12px;background-image:url('/assets/b01-fridge-tab.png');background-size:auto 122px;background-position:left center}
 .b01-edge-tab:focus-visible,.b01-task-tab:focus-visible,.b05-clean-up:focus-visible{outline:3px solid var(--dusty-blue);outline-offset:3px}
 
-/* Task Bar lives after the planner in document geometry. The decorative folder can rise visually, but the interactive surface never overlaps the calendar. */
+/* Task Bar lives after the planner in document geometry. The trigger itself stays in viewport so keyboard focus cannot scroll/reposition the planner. */
 .b01-task-owner{left:50%;top:calc(100% + 12px);bottom:auto;width:min(850px,59.0278vw);height:auto;aspect-ratio:465/309;transform:translateX(-50%);pointer-events:none}
 .b01-task-owner::before{content:'';position:absolute;inset:0;background:url('/assets/b01-taskbar.svg') center top/100% 100% no-repeat;pointer-events:none;z-index:0}
-.b01-task-tab{position:absolute;z-index:30;top:0;left:15%;width:150px;min-height:54px;transform:translateX(-50%);border:0;background:transparent;cursor:pointer;pointer-events:auto}
+.b01-task-tab{position:fixed;z-index:60;left:50vw;bottom:10px;top:auto;width:150px;min-height:54px;transform:translateX(-50%);border:0;background:transparent;cursor:pointer;pointer-events:auto}
 .b01-task-surface{position:absolute;z-index:2;left:7%;right:7%;top:18%;height:62%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;padding:20px 24px 22px;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:auto;transition:opacity 160ms ease,transform 180ms ease}
 .b01-task-owner[data-state='closed'] .b01-task-surface{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(44px)}
 .b01-task-owner[data-state='open'] .b01-task-surface{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
