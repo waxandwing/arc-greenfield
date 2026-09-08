@@ -16,7 +16,6 @@ import './styles/lessonSetup.css'
 import './styles/recoveryReview.css'
 import './styles/sourceCalendarReview.css'
 import './styles/schoolIdentitySearch.css'
-import './styles/canonicalArchitecture.css'
 
 const isLocalHost = ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname)
 const localEntryPreview = isLocalHost && new URLSearchParams(window.location.search).has('entry')
