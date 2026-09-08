@@ -68,7 +68,7 @@ export function B01Furniture({ settings, fridge, tasks, onCleanUpFocus, children
   return (
     <div className="b01-furniture-composition" data-testid="b01-furniture-composition">
       <aside className="b01-side-owner b01-settings-owner" data-b01-owner="settings" data-state={open.settings ? 'open' : 'closed'} aria-label="Settings furniture">
-        <button ref={settingsButton} className="b01-edge-tab b01-edge-tab--left" type="button" aria-expanded={open.settings} aria-controls="b01-settings-surface" onClick={() => toggle('settings')}><span>Settings</span></button>
+        <button ref={settingsButton} className="b01-edge-tab b01-edge-tab--left" type="button" aria-label="Settings" aria-expanded={open.settings} aria-controls="b01-settings-surface" onClick={() => toggle('settings')}><span aria-hidden="true">Settings</span></button>
         <div id="b01-settings-surface" className="b01-furniture-surface b01-settings-surface" inert={!open.settings ? true : undefined}>
           <p className="b01-furniture-kicker">Settings</p>
           {settings}
@@ -76,7 +76,7 @@ export function B01Furniture({ settings, fridge, tasks, onCleanUpFocus, children
       </aside>
 
       <aside className="b01-side-owner b01-fridge-owner" data-b01-owner="fridge" data-state={open.fridge ? 'open' : 'closed'} aria-label="Fridge furniture">
-        <button ref={fridgeButton} className="b01-edge-tab b01-edge-tab--right" type="button" aria-expanded={open.fridge} aria-controls="b01-fridge-surface" onClick={() => toggle('fridge')}><span>Fridge</span></button>
+        <button ref={fridgeButton} className="b01-edge-tab b01-edge-tab--right" type="button" aria-label="Fridge" aria-expanded={open.fridge} aria-controls="b01-fridge-surface" onClick={() => toggle('fridge')}><span aria-hidden="true">Fridge</span></button>
         <div id="b01-fridge-surface" className="b01-furniture-surface b01-fridge-surface" inert={!open.fridge ? true : undefined}>
           <p className="b01-furniture-kicker">Fridge</p>
           {fridge ?? <p className="b01-furniture-empty">No loose planning objects yet.</p>}
@@ -86,7 +86,7 @@ export function B01Furniture({ settings, fridge, tasks, onCleanUpFocus, children
       <div className="b01-calendar-owner">{children}</div>
 
       <aside className="b01-task-owner" data-b01-owner="tasks" data-state={open.tasks ? 'open' : 'closed'} aria-label="Task Bar furniture">
-        <button ref={tasksButton} className="b01-task-tab" type="button" aria-expanded={open.tasks} aria-controls="b01-task-surface" onClick={() => toggle('tasks')}><span>Tasks</span></button>
+        <button ref={tasksButton} className="b01-task-tab" type="button" aria-label="Task Bar" aria-expanded={open.tasks} aria-controls="b01-task-surface" onClick={() => toggle('tasks')}><span aria-hidden="true">Task Bar</span></button>
         {anyOpen ? <button type="button" className="b05-clean-up" onClick={cleanUp}>Clean Up</button> : null}
         <div id="b01-task-surface" className="b01-furniture-surface b01-task-surface" inert={!open.tasks ? true : undefined}>
           {tasks ?? <><div><strong>Must</strong></div><div><strong>Should</strong></div><div><strong>Could</strong></div></>}
