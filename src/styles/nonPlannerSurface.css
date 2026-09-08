@@ -26,6 +26,11 @@
   width:min(1120px,calc(100% - 32px));
   aspect-ratio:auto;
 }
+/* Furniture belongs to the planner composition. Setup/editor flows keep only their content owner. */
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-side-owner,
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-task-owner{
+  display:none;
+}
 .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-calendar-owner>.calendar-canvas{
   width:100%;
   max-width:none;
