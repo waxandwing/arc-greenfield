@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arc — Plan the way you think.</title>
+  <style>
+    :root{--paper:#f7f3e8;--ink:#29342e;--muted:#5e6b63;--coral:#a94f33;--blue:#c7e7f3}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink)}
+    body{font-family:Montserrat,Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:auto}
+    .entry{min-height:100dvh;display:grid;place-items:center;padding:24px 20px;background:var(--paper)}
+    .content{width:min(900px,100%);display:grid;justify-items:center;text-align:center}
+    .reel-wrap{position:relative;width:min(760px,88vw,68svh);aspect-ratio:1;margin-bottom:clamp(4px,1vh,12px);overflow:hidden;background:var(--paper);-webkit-mask-image:linear-gradient(to right,transparent,#000 5%,#000 95%,transparent),linear-gradient(to bottom,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(to right,transparent,#000 5%,#000 95%,transparent),linear-gradient(to bottom,transparent,#000 5%,#000 95%,transparent);-webkit-mask-composite:source-in;mask-composite:intersect}
+    .reel{display:block;width:100%;height:100%;object-fit:contain;background:transparent;transform:scale(var(--reel-scale,1.10));transform-origin:50% 50%}
+    .reel-fallback{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+    .reel-wrap.media-failed .reel{display:none}
+    .reel-wrap.media-failed .reel-fallback{display:block}
+    .copy{width:min(760px,100%);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity 220ms ease,transform 220ms ease}
+    .content.ready .copy{opacity:1;visibility:visible;transform:translateY(0)}
+    .eyebrow{margin:0 0 13px;color:var(--coral);font-size:clamp(10px,1.1vw,13px);font-weight:800;letter-spacing:.18em}
+    h1{margin:0;color:var(--ink);font:400 clamp(40px,4.5vw,58px)/.98 Georgia,serif;letter-spacing:-.05em}
+    .intro{display:block;width:100%;max-width:620px;margin:15px auto 0;color:var(--muted);font:clamp(15px,1.35vw,19px)/1.4 Georgia,serif;text-align:center}
+    .actions{display:flex;justify-content:center;align-items:center;gap:10px;width:100%;margin:27px auto 0}
+    .actions a{width:210px;max-width:100%;min-height:44px;padding:8px 14px;border-radius:8px;display:grid;place-items:center;text-decoration:none;font-size:11px;font-weight:800;transition:transform 150ms ease}
+    .actions a:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+    .actions a:hover{transform:translateY(-1px)}
+    .primary{color:#fff;background:var(--ink)}
+    .secondary{color:var(--ink);background:var(--blue)}
+    @media (max-width:600px){.entry{padding-block:18px}.reel-wrap{width:min(520px,100%,56svh);margin-bottom:10px}h1{font-size:clamp(40px,11vw,56px)}.intro{margin-top:14px}.actions{display:grid;justify-items:center;margin:22px auto 0;width:100%}}
+    @media (prefers-reduced-motion:reduce){.copy,.actions a{transition:none}}
+    .content{--reel-size:min(760px,88vw,68svh);--reel-gap:clamp(4px,1vh,12px)}
+    .reel-wrap{width:var(--reel-size);margin-top:calc(var(--reel-size) * var(--reel-top-trim,0));margin-bottom:var(--reel-gap);background:transparent}
+    .copy{margin-top:calc(var(--reel-size) * -.1238 - var(--reel-gap) * .5)}
+    @media (max-width:600px){.content{--reel-size:min(520px,calc(100vw - 40px),56svh);--reel-gap:10px}}
+  </style>
+</head>
+<body>
+  <main class="entry" aria-labelledby="page-title">
+    <section class="content">
+      <div class="reel-wrap" role="img" aria-label="Arc logo animation resolving from a busy teacher planning week">
+        <video class="reel" id="reel" aria-hidden="true" autoplay muted playsinline preload="auto" poster="/arc-motion-final-transparent.png">
+          <source src="/Arc_Motion_Transparent.webm" type="video/webm">
+        </video>
+        <img class="reel-fallback" src="/arc-motion-final-transparent.png" alt="">
+      </div>
+      <div class="copy">
+        <p class="eyebrow">PLAN THE WAY YOU THINK.</p>
+        <h1 id="page-title">Making it make sense.</h1>
+        <p class="intro">A teacher planner built for what actually happens.</p>
+        <nav class="actions" aria-label="Beta access options">
+          <a class="primary" href="/beta">Enter the beta</a>
+          <a class="secondary" href="/interest">Join the interest list</a>
+        </nav>
+      </div>
+    </section>
+  </main>
+  <script>
+    (()=>{
+      const content=document.querySelector('.content');
+      const reelWrap=document.querySelector('.reel-wrap');
+      const reel=document.getElementById('reel');
+      const copy=content.querySelector('.copy');
+      const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const settleStart=3.28, settleEnd=6.65, revealAt=7.08;
+      let animationFrame=0, failed=false;
+      function sync(){
+        const t=reel.currentTime || 0;
+        const p=reduced || failed ? 1 : Math.max(0,Math.min(1,(t-settleStart)/(settleEnd-settleStart)));
+        const ease=p*p*p*(p*(p*6-15)+10);
+        reel.style.setProperty('--reel-scale',String(1.10+(.68-1.10)*ease));
+        content.style.setProperty('--reel-top-trim',String(-.4010*ease));
+        const ready=reduced || failed || t>=revealAt;
+        content.classList.toggle('ready',ready);
+        copy.inert=!ready;
+      }
+      function stop(){cancelAnimationFrame(animationFrame);animationFrame=0;sync()}
+      function tick(){sync();if(!reel.paused && !reel.ended)animationFrame=requestAnimationFrame(tick);else animationFrame=0}
+      reel.addEventListener('play',()=>{cancelAnimationFrame(animationFrame);tick()});
+      ['timeupdate','seeking','seeked','ratechange'].forEach(event=>reel.addEventListener(event,sync));
+      ['pause','ended'].forEach(event=>reel.addEventListener(event,stop));
+      reel.addEventListener('loadedmetadata',()=>{
+        if(reduced && Number.isFinite(reel.duration)){reel.pause();reel.currentTime=Math.max(0,reel.duration-.04)}
+        sync();
+      });
+      function failOpen(){failed=true;reelWrap.classList.add('media-failed');stop()}
+      reel.addEventListener('error',failOpen);
+      if(reduced){reel.autoplay=false;reel.pause()}
+      sync();
+      if(!reel.paused && !reel.ended)tick();
+      if(!reduced && typeof reel.play==='function'){
+        const playAttempt=reel.play();
+        if(playAttempt && typeof playAttempt.catch==='function')playAttempt.catch(failOpen);
+      }
+    })();
+  </script>
+</body>
+</html>
