@@ -3,7 +3,23 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "git": {
-    "deploymentEnabled": false
-  }
+  "git": { "deploymentEnabled": false },
+  "rewrites": [
+    { "source": "/", "destination": "/entry.html" },
+    { "source": "/interest", "destination": "/interest.html" },
+    { "source": "/beta", "destination": "/beta/index.html" },
+    { "source": "/sync", "destination": "/sync/index.html" },
+    { "source": "/auth/callback", "destination": "/auth/callback/index.html" },
+    { "source": "/auth/callback/", "destination": "/auth/callback/index.html" },
+    { "source": "/core/planner", "has": [{ "type": "cookie", "key": "arc_beta_access", "value": "f71a2c00d75bf02eb1116c85a124c46f7f209c51cd063be144cfd9121e6574ea" }], "destination": "/index.html" },
+    { "source": "/core/planner/", "has": [{ "type": "cookie", "key": "arc_beta_access", "value": "f71a2c00d75bf02eb1116c85a124c46f7f209c51cd063be144cfd9121e6574ea" }], "destination": "/index.html" },
+    { "source": "/core/planner", "destination": "/beta/index.html" },
+    { "source": "/core/planner/", "destination": "/beta/index.html" }
+  ],
+  "headers": [
+    { "source": "/beta(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/sync(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/core(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "/auth/callback(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
+  ]
 }
