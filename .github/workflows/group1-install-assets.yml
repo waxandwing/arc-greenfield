@@ -19,12 +19,14 @@ jobs:
         id: decode
         shell: bash
         run: |
-          if [ ! -f public/assets/arc-journal-exact-q82.webp.b64 ] || [ ! -f public/assets/arc-workspace-background-q65.webp.b64 ]; then
+          if [ ! -f public/assets/arc-journal-1366-q85.webp.b64 ] || [ ! -f public/assets/arc-workspace-background-1600-q80.webp.b64 ]; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          base64 -d public/assets/arc-journal-exact-q82.webp.b64 > public/assets/arc-journal.webp
-          base64 -d public/assets/arc-workspace-background-q65.webp.b64 > public/assets/arc-workspace-background.webp
+          base64 -d public/assets/arc-journal-1366-q85.webp.b64 > public/assets/arc-journal.webp
+          base64 -d public/assets/arc-workspace-background-1600-q80.webp.b64 > public/assets/arc-workspace-background.webp
+          rm -f public/assets/arc-journal-1366-q85.webp.b64
+          rm -f public/assets/arc-workspace-background-1600-q80.webp.b64
           rm -f public/assets/arc-journal-exact-q82.webp.b64
           rm -f public/assets/arc-workspace-background-q65.webp.b64
           rm -f public/assets/arc-journal-exact-q82.webp.b64.ready
