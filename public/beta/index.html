@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Arc — Beta access</title>
+<style>
+:root{--paper:#f7f3e8;--ink:#29342e;--muted:#5e6b63;--coral:#a94f33;--blue:#c7e7f3;--line:#cfc8b8}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink)}
+body{font-family:Montserrat,Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{min-height:100dvh;display:grid;place-items:center;padding:28px 20px}
+.sheet{width:min(520px,100%);text-align:center}.mark{margin:0 0 34px;font:400 54px/.9 Georgia,serif;letter-spacing:-.06em}
+.kicker{margin:0 0 12px;color:var(--coral);font-size:11px;font-weight:800;letter-spacing:.18em}.title{margin:0;font:400 clamp(34px,8vw,48px)/1 Georgia,serif;letter-spacing:-.045em}
+.copy{margin:15px auto 28px;max-width:430px;color:var(--muted);font:16px/1.55 Georgia,serif}
+form{display:grid;gap:11px;text-align:left;max-width:390px;margin:0 auto}.label{font-size:12px;font-weight:800;letter-spacing:.02em}
+input{width:100%;min-height:48px;padding:10px 13px;border:1px solid var(--line);border-radius:4px;background:#fffdf7;color:var(--ink);font:16px/1.2 inherit;outline:none}input:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+button{min-height:48px;border:1px solid var(--ink);border-radius:4px;background:var(--ink);color:white;font:800 12px/1 inherit;letter-spacing:.03em;cursor:pointer}button:disabled{cursor:wait;opacity:.68}
+.sync{display:flex;align-items:flex-start;gap:9px;margin:4px 0 2px;color:var(--muted);font-size:12px;font-weight:600;line-height:1.35}.sync input{width:16px;min-height:16px;height:16px;margin:0;accent-color:var(--ink)}
+.error{min-height:20px;margin:3px 0 0;color:#913f35;font-size:13px;line-height:1.4}.back{display:inline-block;margin-top:26px;color:var(--muted);font-size:12px;text-underline-offset:3px}
+@media(max-width:480px){main{place-items:start center;padding-top:11svh}.mark{margin-bottom:28px}}
+</style>
+</head>
+<body><main><section class="sheet" aria-labelledby="title"><div class="mark" aria-label="Arc">Arc</div><p class="kicker">BETA ACCESS</p><h1 class="title" id="title">Come on in.</h1><p class="copy">Arc is in a small beta while we keep refining the planner. Enter the shared password to open it.</p>
+<form id="form"><label class="label" for="password">Beta password</label><input id="password" name="password" type="password" autocomplete="current-password" required aria-describedby="error"><label class="sync"><input id="sync" type="checkbox"> <span>Connect Google after I enter <span style="font-weight:400">(optional — Arc access does not require Google)</span></span></label><button id="submit" type="submit">Enter Arc</button><p class="error" id="error" role="alert" aria-live="polite"></p></form><a class="back" href="/">← Back to Arc</a></section></main>
+<script>
+(()=>{const form=document.getElementById('form'),password=document.getElementById('password'),sync=document.getElementById('sync'),submit=document.getElementById('submit'),error=document.getElementById('error');
+async function alreadyUnlocked(){try{const r=await fetch('/api/beta-access',{cache:'no-store'});const j=await r.json();if(j.unlocked)location.replace('/core/planner');}catch{}}
+alreadyUnlocked();
+form.addEventListener('submit',async e=>{e.preventDefault();error.textContent='';if(!password.value.trim()){error.textContent='Enter the beta password to continue.';password.focus();return}submit.disabled=true;submit.textContent='Checking…';try{const r=await fetch('/api/beta-access',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:password.value})});const j=await r.json();if(!r.ok||!j.unlocked){error.textContent=j.error||'Beta access could not be verified.';password.select();return}password.value='';location.replace(sync.checked?'/sync':'/core/planner')}catch{error.textContent='We couldn’t verify access right now. Please try again.'}finally{submit.disabled=false;submit.textContent='Enter Arc'}})})();
+</script></body></html>
