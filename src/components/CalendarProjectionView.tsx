@@ -62,16 +62,16 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
     }
     case 'Quarter': {
       const projection = projectQuarter(calendar, anchorDate)
-      return projection ? <RangeProjection title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} /> : <MissingBoundary label="Quarter dates are not configured for this part of the school year." />
+      return projection ? <RangeProjection className="projection-section--quarter" title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} /> : <MissingBoundary label="Quarter dates are not configured for this part of the school year." />
     }
     case 'Semester': {
       const projection = projectSemester(calendar, anchorDate)
-      return projection ? <RangeProjection title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} /> : <MissingBoundary label="Semester dates are not configured for this part of the school year." />
+      return projection ? <RangeProjection className="projection-section--semester" title={projection.label} subtitle={formatDateRange(projection.startDate, projection.endDate)} days={projection.days} /> : <MissingBoundary label="Semester dates are not configured for this part of the school year." />
     }
     case 'Year Map': {
       const projection = projectYearMap(calendar)
       return (
-        <section className="projection-section" aria-label={`${calendar.schoolYearLabel} year map`}>
+        <section className="projection-section projection-section--year" aria-label={`${calendar.schoolYearLabel} year map`}>
           <div className="projection-heading-row projection-heading-row--year"><div><p className="projection-range-label">{calendar.schoolYearLabel}</p><p className="projection-subtitle">{formatDateRange(projection.startDate, projection.endDate)}</p></div><TermContext quarters={projection.quarters} semesters={projection.semesters} detailed /></div>
           <WeekdayAlignedRange days={projection.days} compact />
         </section>
@@ -82,7 +82,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
 
 function PlanningDayStrip({ title, day, planningContext, termContext }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
   return (
-    <section className="projection-section" aria-label={title}>
+    <section className="projection-section projection-section--day" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
       {planningContext ? <PlanningDayContinuityView day={day} continuity={projectDayContinuity({ date: day.date, planning: planningContext.planning, units: planningContext.units, lessons: planningContext.lessons, overrides: planningContext.shiftState?.overrides ?? [] })} /> : <div className="projection-day-strip projection-day-strip--single"><CalendarDayCell day={day} showWeekday /></div>}
     </section>
@@ -91,7 +91,7 @@ function PlanningDayStrip({ title, day, planningContext, termContext }: { title:
 
 function PlanningWeekStrip({ title, days, planningContext, termContext, actions }: { title: string; days: ProjectedDay[]; planningContext?: PlanningContext | null; termContext?: ReactNode; actions?: PlanningWeekObjectActions }) {
   return (
-    <section className="projection-section" aria-label={title}>
+    <section className="projection-section projection-section--week" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
       {planningContext ? <div className="planning-scroll-frame"><PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} actions={actions} /></div> : <div className="projection-day-strip">{days.map((day) => <CalendarDayCell key={day.date} day={day} showWeekday />)}</div>}
     </section>

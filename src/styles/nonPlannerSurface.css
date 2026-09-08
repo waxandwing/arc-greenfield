@@ -1,0 +1,82 @@
+/* BUG 025 — setup/editor surfaces must not inherit the fixed journal geometry.
+   The planner sketchbook remains authoritative only when CalendarStageHeader renders
+   planner-header-primary. Longer setup/editor flows use the surrounding Arc workspace. */
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)){
+  padding-top:112px;
+  padding-bottom:64px;
+}
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .calendar-stage-header{
+  position:relative;
+  top:auto;
+  left:auto;
+  right:auto;
+  width:min(1120px,calc(100% - 32px));
+  min-height:0;
+  margin:0 auto 14px;
+  padding:0 24px 12px;
+  box-sizing:border-box;
+  background:transparent;
+  border-bottom:1px solid rgba(83,79,73,.19);
+  pointer-events:auto;
+}
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .calendar-stage-header>.calendar-header-tools{
+  display:none;
+}
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-furniture-composition{
+  width:min(1120px,calc(100% - 32px));
+  aspect-ratio:auto;
+}
+/* Furniture belongs to the planner composition. Setup/editor flows keep only their content owner. */
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-side-owner,
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-task-owner{
+  display:none;
+}
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-calendar-owner>.calendar-canvas{
+  width:100%;
+  max-width:none;
+  min-height:0;
+  height:auto;
+  aspect-ratio:auto;
+  margin:0;
+  padding:0 24px 80px;
+  overflow:visible;
+  background-color:transparent;
+  background-image:none;
+  box-shadow:none;
+}
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-calendar-owner>.calendar-canvas::before,
+.arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-calendar-owner>.calendar-canvas::after{
+  display:none!important;
+  content:none!important;
+}
+
+@media(max-width:800px){
+  .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)){
+    padding:76px 12px 40px;
+  }
+  .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .calendar-stage-header{
+    width:100%;
+    margin-bottom:10px;
+    padding:0 8px 12px 58px;
+    background:transparent;
+  }
+  .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-furniture-composition{
+    width:100%;
+    margin-bottom:0;
+  }
+  .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .b01-calendar-owner>.calendar-canvas{
+    min-height:0;
+    padding:0 0 56px;
+    overflow:visible;
+    background:transparent;
+  }
+  .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .calendar-setup,
+  .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .class-setup,
+  .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .unit-setup,
+  .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .lesson-setup,
+  .arc-calendar-stage:not(:has(.calendar-stage-header .planner-header-primary)) .recovery-review{
+    max-width:100%;
+    padding-inline:8px;
+    box-sizing:border-box;
+  }
+}

@@ -1,0 +1,60 @@
+/* Desktop authority: exact 16:9 Arc export geometry around one immutable planner rectangle. */
+@media (min-width:801px){
+  .b01-furniture-composition{
+    --planner-left:17.13%;
+    --planner-width:69.73%;
+    --planner-right:86.86%;
+    box-sizing:border-box;left:50%;width:min(1440px,100vw);min-height:calc(100dvh - 190px);
+    margin:0;padding-bottom:44px;transform:translateX(-50%);overflow:visible
+  }
+  .b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:min(190px,13.1944vw)}
+  .b01-calendar-owner{position:relative;z-index:10;width:var(--planner-width);margin-left:var(--planner-left)}
+
+  .b01-side-owner,.b01-task-owner{position:absolute;z-index:4;inset:0;width:auto;height:auto;pointer-events:none}
+  .b01-settings-owner{left:0}.b01-fridge-owner{right:0}
+  .b01-furniture-art{position:absolute;z-index:1;top:0;left:0;display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:fill;pointer-events:none;user-select:none}
+  .b01-furniture-surface{position:absolute;z-index:12;box-sizing:border-box;height:auto;overflow:auto;pointer-events:auto;background:transparent;border:0;box-shadow:none}
+
+  /* Interactive content stays exterior; the supplied art occupies the full side territories behind the journal. */
+  .b01-settings-surface{top:14%;left:1.5%;width:calc(var(--planner-left) - 3%);height:68%;padding:22px 18px 24px}
+  .b01-fridge-surface{top:14%;left:calc(var(--planner-right) + 1.25%);right:1.25%;width:auto;height:68%;margin:0;padding:22px 18px 24px}
+  .b01-settings-owner[data-state='closed'] .b01-furniture-surface,.b01-fridge-owner[data-state='closed'] .b01-furniture-surface{visibility:hidden;opacity:0;pointer-events:none}
+  .b01-settings-owner[data-state='open'] .b01-furniture-surface,.b01-fridge-owner[data-state='open'] .b01-furniture-surface{visibility:visible;opacity:1;pointer-events:auto}
+
+  /* Controls overlay labels already printed in the exact SVG assets. */
+  .b01-edge-tab,.b01-task-tab{position:absolute;z-index:18;border:0;padding:0;background:transparent;box-shadow:none;cursor:pointer;pointer-events:auto}
+  .b01-edge-tab>span,.b01-task-tab>span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  .b01-edge-tab{top:41%;width:54px;min-height:124px;writing-mode:horizontal-tb;transform:none}
+  .b01-settings-owner[data-state='closed'] .b01-edge-tab--left{left:0;right:auto}
+  .b01-settings-owner[data-state='open'] .b01-edge-tab--left{left:calc(var(--planner-left) - 28px);right:auto}
+  .b01-fridge-owner[data-state='closed'] .b01-edge-tab--right{right:0;left:auto}
+  .b01-fridge-owner[data-state='open'] .b01-edge-tab--right{right:calc(100% - var(--planner-right) - 28px);left:auto}
+  .b01-edge-tab:focus-visible,.b01-task-tab:focus-visible,.b05-clean-up:focus-visible{outline:3px solid var(--dusty-blue);outline-offset:3px}
+
+  /* Task art may rise behind the journal, but its live content starts after the immutable planner rectangle. */
+  .b01-task-owner{z-index:auto;transform:none}
+  .b01-task-tab{left:12%;top:calc(100dvh - 224px);width:164px;min-width:0;min-height:52px;transform:none}
+  .b01-task-surface{left:3.4%;right:auto;top:calc(min(682px,47.375vw) + 18px);width:58.5%;height:min(188px,13.0556vw);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;padding:18px 24px 22px;border:0;border-radius:0;background:transparent;box-shadow:none}
+  .b01-task-owner[data-state='closed'] .b01-task-surface{visibility:hidden;opacity:0;pointer-events:none}
+  .b01-task-owner[data-state='open'] .b01-task-surface{visibility:visible;opacity:1;pointer-events:auto}
+  .b05-clean-up{left:calc(12% + 174px);right:auto;top:calc(min(682px,47.375vw) + 24px);bottom:auto;border-radius:5px;border:1px solid rgba(44,46,46,.18);font-size:14px}
+
+  .b01-furniture-kicker{margin-bottom:14px;font-size:13px}
+  .b01-furniture-empty{font-size:15px;line-height:1.35}
+  .b01-settings-owner .view-preferences>summary{font-size:15px}
+  .b01-settings-owner .view-preferences-panel{gap:12px}
+  .b01-settings-owner .view-preferences-panel label{font-size:14px}
+}
+
+@media (max-width:1280px) and (min-width:801px){
+  .b01-furniture-composition{width:100vw}
+  .b01-furniture-composition:has(.b01-task-owner[data-state='open']){padding-bottom:166px}
+  .b01-edge-tab{width:48px;min-height:112px}
+  .b01-settings-owner[data-state='open'] .b01-edge-tab--left{left:calc(var(--planner-left) - 25px)}
+  .b01-fridge-owner[data-state='open'] .b01-edge-tab--right{right:calc(100% - var(--planner-right) - 25px)}
+  .b01-task-tab{top:calc(100dvh - 215px);min-height:48px}
+  .b01-task-surface{top:calc(47.375vw + 18px);height:166px;padding:16px 18px 18px}
+  .b05-clean-up{top:calc(47.375vw + 24px)}
+}
+
+@media (max-width:800px){.b01-furniture-art{display:none}}

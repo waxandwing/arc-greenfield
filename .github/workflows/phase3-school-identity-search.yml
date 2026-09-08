@@ -42,11 +42,11 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:4173/ > /dev/null
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/phase3-school-identity-search.mjs
-      - name: Publish exact school identity screenshot
+      - name: Publish exact school identity screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: arc-phase3-school-identity-search-1280
-          path: artifacts/phase3-school-identity-search/school-identity-search-1280.png
+          name: arc-phase3-school-identity-search-responsive
+          path: artifacts/phase3-school-identity-search/
           if-no-files-found: warn
           retention-days: 7

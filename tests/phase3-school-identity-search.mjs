@@ -16,6 +16,13 @@ function trackRuntimeErrors(page) {
   return errors
 }
 
+async function assertInsideViewport(locator, viewportWidth, label) {
+  const box = await locator.boundingBox()
+  assert(box, `${label} is not rendered.`)
+  assert(box.x >= -1, `${label} escapes the left viewport edge (${box.x}).`)
+  assert(box.x + box.width <= viewportWidth + 1, `${label} escapes the right viewport edge (${box.x + box.width} > ${viewportWidth}).`)
+}
+
 const candidatesPayload = {
   features: [
     { attributes: { NCESSCH: '120144001406', LEAID: '1201440', NAME: 'Oak Ridge High', STREET: '700 W Oak Ridge Rd', CITY: 'Orlando', STATE: 'FL', ZIP: '32809' } },
@@ -42,6 +49,9 @@ await page.route('**/api/nces?**', async (route) => {
 })
 
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
+assert(await page.getByRole('heading', { name: 'Calendar setup', level: 1 }).count() === 1, 'First-time setup still exposes a planner-view heading instead of Calendar setup.')
+assert(await page.getByRole('heading', { name: 'Month', exact: true }).count() === 0, 'First-time setup still exposes the Month planner heading.')
+assert(await page.locator('.b01-side-owner:visible, .b01-task-owner:visible').count() === 0, 'Planner furniture is visibly leaking into first-time setup.')
 assert(await page.getByRole('heading', { name: 'Let Arc look for the official school record first.' }).count() === 1, 'School identity search is missing from first-time calendar setup.')
 assert(await page.getByText('This step does not add school-calendar dates.').count() >= 1, 'Identity/date truth separation is not visible.')
 
@@ -64,6 +74,8 @@ assert(renderedCandidateCount === 2, `Multiple official candidates were not kept
 assert((renderedResultText ?? '').includes('2 official records found.'), `Candidate summary is incorrect: ${renderedResultText}`)
 assert((renderedResultText ?? '').includes('Choose the school yourself. Arc will not guess.'), 'Candidate chooser does not state the no-guess rule.')
 assert(await page.getByText('Source: NCES Common Core of Data — Public School Locations 2024–25').count() === 2, 'NCES source labeling is missing from candidates.')
+await assertInsideViewport(page.getByLabel('District or agency optional'), 1280, 'District or agency field at 1280px')
+await assertInsideViewport(page.getByRole('button', { name: 'This is my school' }).last(), 1280, 'School candidate action at 1280px')
 
 const firstChoice = page.getByRole('button', { name: 'This is my school' }).first()
 await firstChoice.focus()
@@ -95,6 +107,9 @@ assert((await providerAlert.textContent())?.includes('Nothing was selected or sa
 await page.setViewportSize({ width: 390, height: 844 })
 const geometry = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
 assert(geometry.scroll <= geometry.width + 1, `School identity search overflowed at 390px (${geometry.scroll} > ${geometry.width}).`)
+assert(await page.locator('.b01-side-owner:visible, .b01-task-owner:visible').count() === 0, 'Planner furniture is visibly leaking into first-time setup at 390px.')
+await assertInsideViewport(page.getByLabel('District or agency optional'), 390, 'District or agency field at 390px')
+await page.screenshot({ path: 'artifacts/phase3-school-identity-search/school-identity-search-390.png', fullPage: true })
 assert(runtimeErrors.length === 0, `School identity search runtime errors: ${runtimeErrors.join(' | ')}`)
 
 await context.close()
