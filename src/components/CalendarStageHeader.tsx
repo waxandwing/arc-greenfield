@@ -69,31 +69,30 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
   } = props
 
   const isCalendarMode = mode === 'calendar'
-  const monthLabel = anchorDate ? plannerMonth(anchorDate) : stageTitle
-  const rangeLabel = anchorDate ? plannerRange(activeView, anchorDate, calendar?.schoolYearLabel) : stageTitle
+  const monthLabel = anchorDate ? plannerMonth(anchorDate) : null
+  const rangeLabel = anchorDate ? plannerRange(activeView, anchorDate, calendar?.schoolYearLabel) : null
 
   return (
     <header className="calendar-stage-header">
-      <div className={calendar && isCalendarMode ? 'planner-date-lockup' : undefined}>
+      <div className={calendar && isCalendarMode ? 'planner-header-primary' : undefined}>
         <p className="section-label">Calendar</p>
         {calendar && isCalendarMode ? (
           <>
-            <h1 className="planner-month" aria-live="polite">{monthLabel}</h1>
-            <p className="planner-range">{rangeLabel}</p>
+            <div className="planner-date-lockup" aria-hidden="true">
+              <p className="planner-month">{monthLabel}</p>
+              <p className="planner-range">{rangeLabel}</p>
+            </div>
+            <CalendarViewSwitcher
+              activeView={activeView}
+              disabled={viewSelectionDisabled}
+              availabilityFor={availabilityFor}
+              onSelect={onSelectView}
+            />
           </>
         ) : (
           <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
         )}
       </div>
-
-      {calendar && isCalendarMode && (
-        <CalendarViewSwitcher
-          activeView={activeView}
-          disabled={viewSelectionDisabled}
-          availabilityFor={availabilityFor}
-          onSelect={onSelectView}
-        />
-      )}
 
       {calendar && isCalendarMode && anchorDate && (
         <div className="calendar-header-tools">

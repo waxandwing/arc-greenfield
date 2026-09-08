@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { CALENDAR_VIEWS, type CalendarView } from '../navigation/calendarViews'
 
 type ViewAvailability = { available: boolean; reason?: string }
@@ -9,38 +10,93 @@ type CalendarViewSwitcherProps = {
   onSelect: (view: CalendarView) => void
 }
 
-/* Canonical product navigation is range-based: Day / Week / Month / Quarter / Year.
-   Semester remains in the domain model for term context, but is not a primary product tab. */
-const PRESENTATION_ORDER: readonly CalendarView[] = ['Day', 'Week', 'Month', 'Quarter', 'Year Map']
+export function CalendarViewSwitcher({
+  activeView,
+  disabled,
+  availabilityFor,
+  onSelect,
+}: CalendarViewSwitcherProps) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
-export function CalendarViewSwitcher({ activeView, disabled, availabilityFor, onSelect }: CalendarViewSwitcherProps) {
+  useEffect(() => {
+    if (!open) return
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
+  }, [open])
+
+  useEffect(() => {
+    setOpen(false)
+  }, [activeView])
+
+  function closeAndRestoreFocus() {
+    setOpen(false)
+    triggerRef.current?.focus()
+  }
+
   return (
-    <nav className="calendar-view-switcher" aria-label="Calendar views">
-      {PRESENTATION_ORDER.filter((view) => CALENDAR_VIEWS.includes(view)).map((view) => {
-        const availability = availabilityFor(view)
-        const isCurrent = view === activeView
-        const displayLabel = view === 'Year Map' ? 'Year' : view
-        const unavailable = disabled || !availability.available
+    <div
+      ref={rootRef}
+      className="calendar-view-switcher"
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape' || !open) return
+        event.preventDefault()
+        closeAndRestoreFocus()
+      }}
+    >
+      <h1 className="view-title" aria-live="polite" aria-label={activeView}>
+        <button
+          ref={triggerRef}
+          type="button"
+          className="view-title-trigger"
+          aria-label={`Change calendar view, current ${activeView}`}
+          aria-expanded={open}
+          aria-controls="calendar-view-choices"
+          disabled={disabled}
+          onClick={() => setOpen((value) => !value)}
+        >
+          <span>{activeView}</span>
+          <span className="view-title-chevron" aria-hidden="true">⌄</span>
+        </button>
+      </h1>
 
-        return (
-          <button
-            key={view}
-            type="button"
-            className="view-nav-item"
-            aria-current={isCurrent ? 'page' : undefined}
-            aria-disabled={unavailable ? 'true' : undefined}
-            aria-label={!availability.available && availability.reason ? `${displayLabel}. ${availability.reason}` : displayLabel}
-            title={!availability.available ? availability.reason : undefined}
-            disabled={disabled}
-            onClick={() => {
-              if (!availability.available || isCurrent) return
-              onSelect(view)
-            }}
-          >
-            {displayLabel}
-          </button>
-        )
-      })}
-    </nav>
+      {open && (
+        <nav id="calendar-view-choices" className="calendar-view-choices" aria-label="Calendar views">
+          {CALENDAR_VIEWS.map((view) => {
+            const availability = availabilityFor(view)
+            const unavailable = !availability.available
+            const isCurrent = view === activeView
+
+            return (
+              <button
+                key={view}
+                type="button"
+                className="view-choice"
+                aria-current={isCurrent ? 'page' : undefined}
+                aria-disabled={unavailable ? 'true' : undefined}
+                aria-label={unavailable ? `${view}. ${availability.reason}` : view}
+                title={unavailable ? availability.reason : undefined}
+                onClick={() => {
+                  if (unavailable) return
+                  if (isCurrent) {
+                    closeAndRestoreFocus()
+                    return
+                  }
+                  onSelect(view)
+                }}
+              >
+                {view}
+              </button>
+            )
+          })}
+        </nav>
+      )}
+    </div>
   )
 }
