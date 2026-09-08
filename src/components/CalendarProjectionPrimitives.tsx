@@ -13,9 +13,9 @@ export function ProjectionHeading({ title, termContext }: { title: string; termC
   )
 }
 
-export function RangeProjection({ title, subtitle, days }: { title: string; subtitle: string; days: ProjectedDay[] }) {
+export function RangeProjection({ title, subtitle, days, className }: { title: string; subtitle: string; days: ProjectedDay[]; className?: string }) {
   return (
-    <section className="projection-section" aria-label={title}>
+    <section className={['projection-section', className].filter(Boolean).join(' ')} aria-label={title}>
       <div className="projection-heading-row">
         <div>
           <p className="projection-range-label">{title}</p>

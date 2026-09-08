@@ -2,6 +2,8 @@ import type { ISODate, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import { CalendarViewSwitcher } from './CalendarViewSwitcher'
+import '../styles/calendarShell.css'
+import '../styles/calendarShellAsset.css'
 
 type ViewAvailability = { available: boolean; reason?: string }
 
@@ -67,22 +69,31 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
   } = props
 
   const isCalendarMode = mode === 'calendar'
+  const monthLabel = anchorDate ? plannerMonth(anchorDate) : stageTitle
+  const rangeLabel = anchorDate ? plannerRange(activeView, anchorDate, calendar?.schoolYearLabel) : stageTitle
 
   return (
     <header className="calendar-stage-header">
-      <div>
+      <div className={calendar && isCalendarMode ? 'planner-date-lockup' : undefined}>
         <p className="section-label">Calendar</p>
         {calendar && isCalendarMode ? (
-          <CalendarViewSwitcher
-            activeView={activeView}
-            disabled={viewSelectionDisabled}
-            availabilityFor={availabilityFor}
-            onSelect={onSelectView}
-          />
+          <>
+            <h1 className="planner-month" aria-live="polite">{monthLabel}</h1>
+            <p className="planner-range">{rangeLabel}</p>
+          </>
         ) : (
           <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
         )}
       </div>
+
+      {calendar && isCalendarMode && (
+        <CalendarViewSwitcher
+          activeView={activeView}
+          disabled={viewSelectionDisabled}
+          availabilityFor={availabilityFor}
+          onSelect={onSelectView}
+        />
+      )}
 
       {calendar && isCalendarMode && anchorDate && (
         <div className="calendar-header-tools">
@@ -108,4 +119,33 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
       )}
     </header>
   )
+}
+
+function plannerMonth(date: ISODate): string {
+  return new Intl.DateTimeFormat(undefined, { month: 'long', timeZone: 'UTC' }).format(toUTCDate(date))
+}
+
+function plannerRange(view: CalendarView, date: ISODate, schoolYearLabel?: string): string {
+  const anchor = toUTCDate(date)
+  const upperMonthDay = (value: Date) => new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(value).toUpperCase()
+
+  if (view === 'Week') {
+    const weekday = anchor.getUTCDay()
+    const mondayOffset = weekday === 0 ? -6 : 1 - weekday
+    const monday = new Date(anchor)
+    monday.setUTCDate(anchor.getUTCDate() + mondayOffset)
+    const friday = new Date(monday)
+    friday.setUTCDate(monday.getUTCDate() + 4)
+    return `WEEK · ${upperMonthDay(monday)} · ${upperMonthDay(friday)}`
+  }
+  if (view === 'Day') return `DAY · ${upperMonthDay(anchor)}`
+  if (view === 'Month') return new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(anchor).toUpperCase()
+  if (view === 'Quarter') return `QUARTER · ${upperMonthDay(anchor)}`
+  if (view === 'Year Map') return `YEAR · ${(schoolYearLabel || String(anchor.getUTCFullYear())).toUpperCase()}`
+  return `${view.toUpperCase()} · ${upperMonthDay(anchor)}`
+}
+
+function toUTCDate(date: ISODate): Date {
+  const [year, month, day] = date.split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, day))
 }
