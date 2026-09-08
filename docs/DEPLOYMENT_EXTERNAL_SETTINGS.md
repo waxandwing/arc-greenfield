@@ -24,8 +24,11 @@ Add to the **Preview** environment (not Production for this stage):
 
 - `SUPABASE_URL` = API URL of the existing Supabase project `arc`
 - `SUPABASE_PUBLISHABLE_KEY` = active modern publishable key of that same project
+- `ARC_BETA_COOKIE_SECRET` = a server-only unpredictable secret of at least 32 characters used only to sign the beta-access cookie
 
-Do not add a Supabase `service_role`/secret key to the Vite client or runtime config endpoint.
+`ARC_BETA_COOKIE_SECRET` is mandatory. If it is missing or too short, `/api/beta-access` must fail closed and must not issue or validate beta-access cookies.
+
+Do not add a Supabase `service_role`/secret key to the Vite client or runtime config endpoint. Do not expose `ARC_BETA_COOKIE_SECRET` through `/api/runtime-config`, Vite environment variables, or client bundles.
 
 ## Supabase Auth
 
@@ -39,4 +42,4 @@ Keep the eventual production Arc domain separate until preview is Green.
 
 ## Preview release rule
 
-This configuration authorizes only a Vercel Preview deployment. It does not authorize production target deployment, domain promotion, or merging PR #100.
+This configuration authorizes only a Vercel Preview deployment after the founder explicitly requests one. It does not authorize automatic Git deployment, production target deployment, domain promotion, or merging PR #100.
