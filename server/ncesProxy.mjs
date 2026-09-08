@@ -20,15 +20,10 @@ export function buildNcesTargetUrl(params) {
 
 export function buildNcesFallbackTargetUrl(params) {
   const schoolName = clean(params.schoolName)
-  const city = clean(params.city)
   const state = clean(params.state).toUpperCase()
   if (!schoolName) throw new Error('School name is required.')
   if (state && !/^[A-Z]{2}$/.test(state)) throw new Error('State must be a two-letter abbreviation.')
-  const where = [
-    `SCH_NAME LIKE '%${escapeSqlLike(schoolName)}%'`,
-    state ? `LSTATE = '${escapeSql(state)}'` : null,
-    city ? `LCITY LIKE '${escapeSqlLike(city)}'` : null,
-  ].filter(Boolean).join(' AND ')
+  const where = `UPPER(SCH_NAME) LIKE '%${escapeSqlLike(schoolName.toUpperCase())}%'`
   const query = new URLSearchParams({ f: 'json', where, outFields: ADMIN_OUT_FIELDS, returnGeometry: 'false', resultRecordCount: String(clampLimit(params.maxCandidates)) })
   return `${NCES_PUBLIC_SCHOOL_ADMIN_LAYER}/query?${query.toString()}`
 }
@@ -41,7 +36,7 @@ export async function fetchNcesProxy(params, fetchImpl = fetch) {
 
   const fallback = await fetchText(fetchImpl, buildNcesFallbackTargetUrl(params))
   if (fallback.response.ok) {
-    const normalized = normalizeAdminPayload(fallback.text)
+    const normalized = normalizeAdminPayload(fallback.text, params)
     if (normalized) return asProxyResult(fallback.response, normalized)
   }
 
@@ -66,13 +61,14 @@ function hasCandidates(text) {
   }
 }
 
-function normalizeAdminPayload(text) {
+function normalizeAdminPayload(text, params) {
   try {
     const payload = JSON.parse(text)
     if (payload?.error || !Array.isArray(payload?.features)) return null
-    return JSON.stringify({
-      ...payload,
-      features: payload.features.map((feature) => ({
+    const wantedCity = clean(params.city).toUpperCase()
+    const wantedState = clean(params.state).toUpperCase()
+    const features = payload.features
+      .map((feature) => ({
         ...feature,
         attributes: {
           NCESSCH: feature?.attributes?.NCESSCH,
@@ -83,8 +79,13 @@ function normalizeAdminPayload(text) {
           STATE: feature?.attributes?.LSTATE,
           ZIP: feature?.attributes?.LZIP,
         },
-      })),
-    })
+      }))
+      .filter((feature) => {
+        const city = clean(feature?.attributes?.CITY).toUpperCase()
+        const state = clean(feature?.attributes?.STATE).toUpperCase()
+        return (!wantedCity || city === wantedCity) && (!wantedState || state === wantedState)
+      })
+    return JSON.stringify({ ...payload, features })
   } catch {
     return null
   }
