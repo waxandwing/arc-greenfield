@@ -17,16 +17,17 @@
 .b01-furniture-kicker{margin:0 0 18px;font:700 14px/1.2 var(--font-ui);letter-spacing:.1em;text-transform:uppercase;color:var(--soft-charcoal)}
 .b01-furniture-empty{margin:0;color:var(--soft-charcoal);font-size:16px;line-height:1.4}
 
+/* Furniture bodies remain exterior; labeled handles intentionally tuck a few pixels over the planner edge. */
 .b01-edge-tab{position:absolute;z-index:6;top:44%;display:flex;align-items:center;justify-content:center;width:46px;min-height:116px;padding:12px 8px;border:1px solid rgba(44,46,46,.2);background:var(--furniture-settings-tab);box-shadow:0 7px 18px -16px rgba(44,46,46,.7);font-size:16px;line-height:1;font-weight:800;letter-spacing:.06em;text-transform:uppercase;writing-mode:vertical-rl;cursor:pointer;pointer-events:auto}
-.b01-edge-tab--left{right:min(80px,5.5556vw);border-radius:0 5px 5px 0}
-.b01-edge-tab--right{left:min(80px,5.5556vw);border-radius:5px 0 0 5px;background:var(--furniture-fridge-tab);transform:rotate(180deg)}
+.b01-edge-tab--left{right:calc(min(80px,5.5556vw) - 18px);border-radius:0 5px 5px 0}
+.b01-edge-tab--right{left:calc(min(80px,5.5556vw) - 18px);border-radius:5px 0 0 5px;background:var(--furniture-fridge-tab);transform:rotate(180deg)}
 .b01-settings-owner[data-state='closed'] .b01-furniture-surface,.b01-fridge-owner[data-state='closed'] .b01-furniture-surface{visibility:hidden;opacity:0;pointer-events:none}
 .b01-settings-owner[data-state='open'] .b01-furniture-surface,.b01-fridge-owner[data-state='open'] .b01-furniture-surface{visibility:visible;opacity:1;pointer-events:auto}
 
-/* Task Bar owns the lower exterior. Its open reserve grows outside the calendar rect, so the calendar never squeezes or reflows. */
+/* Task Bar owns the lower exterior. Its surface starts below the calendar while only the labeled tab overlaps the edge. */
 .b01-task-owner{z-index:8;left:50%;bottom:0;width:min(850px,59.0278vw);height:44px;transform:translateX(-50%);pointer-events:auto}
 .b01-task-owner[data-state='open']{height:min(290px,20.1389vw)}
-.b01-task-tab{position:absolute;z-index:6;top:0;left:50%;min-width:148px;min-height:44px;transform:translateX(-50%);border:1px solid rgba(44,46,46,.2);border-bottom:0;border-radius:5px 5px 0 0;background:var(--furniture-task-tab);padding:7px 20px;font-size:16px;line-height:1.1;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;pointer-events:auto}
+.b01-task-tab{position:absolute;z-index:6;top:-18px;left:50%;min-width:148px;min-height:44px;transform:translateX(-50%);border:1px solid rgba(44,46,46,.2);border-bottom:0;border-radius:5px 5px 0 0;background:var(--furniture-task-tab);padding:7px 20px;font-size:16px;line-height:1.1;font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;pointer-events:auto}
 .b05-clean-up{position:absolute;z-index:7;top:0;left:calc(50% + 82px);min-height:44px;padding:7px 14px;border:1px solid rgba(44,46,46,.2);border-bottom:0;border-radius:5px 5px 0 0;background:rgba(247,241,229,.96);color:var(--ink);font:700 16px/1.1 var(--font-ui);cursor:pointer;pointer-events:auto}
 .b05-clean-up:focus-visible{outline:3px solid var(--dusty-blue);outline-offset:2px}
 .b01-task-surface{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;height:100%;padding:58px 30px 24px;border:1px solid rgba(44,46,46,.2);border-radius:14px;background:linear-gradient(180deg,var(--furniture-task-light),var(--furniture-task-deep));box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 18px 34px -28px rgba(44,46,46,.55);transition:opacity 180ms ease}
@@ -51,8 +52,8 @@
   .b01-fridge-owner{right:-190px}
   .b01-settings-surface,.b01-fridge-surface{width:190px}
   .b01-fridge-surface{margin-left:70px}
-  .b01-edge-tab--left{right:70px}
-  .b01-edge-tab--right{left:70px}
+  .b01-edge-tab--left{right:52px}
+  .b01-edge-tab--right{left:52px}
   .b01-task-owner{width:min(760px,59.375vw)}
   .b01-task-owner[data-state='open']{height:260px}
 }
