@@ -3,6 +3,7 @@
    Current develop interaction/state semantics remain authoritative. */
 :root{
   --arc-shell-max:1000px;
+  --arc-shell-half:500px;
   --arc-book-edge:#292723;
   --arc-book-paper:#f3ecdf;
   --arc-book-paper-right:#f0e7d8;
@@ -13,15 +14,16 @@
 }
 
 .arc-shell{min-height:100dvh;background:#eee8dd;color:var(--arc-book-ink)}
-.arc-header{position:absolute;z-index:24;top:42px;left:50%;width:var(--arc-shell-max);height:0;padding:0;transform:translateX(-50%);background:transparent;pointer-events:none}
+/* Auto width between bounded insets is intentional: unlike a fixed/vw width it remains inside the zoomed layout viewport. */
+.arc-header{position:absolute;z-index:24;top:42px;left:max(12px,calc(50% - var(--arc-shell-half)));right:max(12px,calc(50% - var(--arc-shell-half)));width:auto;height:0;padding:0;transform:none;background:transparent;pointer-events:none}
 .arc-wordmark{position:absolute;top:0;left:42px;width:72px;height:72px;min-width:72px;padding:0;border:0;border-radius:0;background:transparent;color:transparent;font-size:0;box-shadow:none;cursor:pointer;pointer-events:auto}
 .arc-wordmark:focus-visible{outline:3px solid var(--dusty-blue);outline-offset:4px}
 .arc-header-space{display:none}
 .arc-layout{min-height:100dvh;overflow-x:hidden;overflow-y:auto;background:transparent}
 .arc-calendar-stage{position:relative;min-width:0;padding:0 0 56px}
 
-/* Canonical cream date header with retained double blue rule. */
-.calendar-stage-header{position:absolute;z-index:20;top:42px;left:50%;width:min(880px,61.1111vw);min-height:116px;margin:0;padding:10px 10px 14px 112px;transform:translateX(-50%);display:grid;grid-template-columns:1fr;grid-template-rows:auto auto;align-items:start;gap:8px;border-bottom:4px double var(--arc-book-blue);background:rgba(243,236,223,.96);pointer-events:none}
+/* Canonical cream date header with retained double blue rule. Auto width protects 200%/400% zoom from document overflow. */
+.calendar-stage-header{position:absolute;z-index:20;top:42px;left:max(24px,calc(50% - 440px));right:max(24px,calc(50% - 440px));width:auto;min-width:0;min-height:116px;margin:0;padding:10px 10px 14px 112px;transform:none;display:grid;grid-template-columns:1fr;grid-template-rows:auto auto;align-items:start;gap:8px;border-bottom:4px double var(--arc-book-blue);background:rgba(243,236,223,.96);pointer-events:none}
 .calendar-stage-header>*{pointer-events:auto}
 .calendar-stage-header>.planner-header-primary{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:18px;width:100%;min-width:0}
 .calendar-stage-header .section-label{display:none}
@@ -54,7 +56,7 @@
 .calendar-context-actions .text-button+.text-button::before{color:rgba(74,73,69,.25)}
 
 /* Calendar owner only. Furniture geometry remains owned outside Group 1. */
-.b01-calendar-owner>.calendar-canvas{position:relative;min-height:720px;overflow:auto;padding-top:174px;border:0;border-radius:3px;background:linear-gradient(90deg,var(--arc-book-paper) 0%,#f4ede2 48.85%,rgba(111,96,77,.19) 49.48%,rgba(83,72,60,.28) 49.82%,rgba(255,255,255,.25) 50.08%,#eee5d7 50.46%,var(--arc-book-paper-right) 100%);box-shadow:0 0 0 7px var(--arc-book-edge),0 2px 0 8px rgba(255,255,255,.34),0 17px 28px rgba(52,46,40,.23)}
+.b01-calendar-owner>.calendar-canvas{position:relative;min-width:0;min-height:720px;overflow:auto;padding-top:174px;border:0;border-radius:3px;background:linear-gradient(90deg,var(--arc-book-paper) 0%,#f4ede2 48.85%,rgba(111,96,77,.19) 49.48%,rgba(83,72,60,.28) 49.82%,rgba(255,255,255,.25) 50.08%,#eee5d7 50.46%,var(--arc-book-paper-right) 100%);box-shadow:0 0 0 7px var(--arc-book-edge),0 2px 0 8px rgba(255,255,255,.34),0 17px 28px rgba(52,46,40,.23)}
 .b01-calendar-owner>.calendar-canvas::before{content:'';position:absolute;z-index:2;top:0;bottom:0;left:50%;width:18px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(83,70,55,.13) 38%,rgba(255,255,255,.24) 53%,transparent);pointer-events:none}
 .b01-calendar-owner>.calendar-canvas::after{content:'';position:absolute;z-index:1;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.13),transparent 8%,transparent 92%,rgba(91,74,58,.05)),linear-gradient(180deg,rgba(255,255,255,.08),transparent 16%,transparent 88%,rgba(68,57,46,.045));pointer-events:none}
 .b01-calendar-owner>.calendar-canvas>*{position:relative;z-index:3}
@@ -67,18 +69,18 @@
 .projection-section--quarter .projection-subtitle,.projection-section--year .projection-subtitle{color:var(--arc-book-muted)}
 
 @media(max-width:1280px){
-  .arc-header{width:min(900px,70.3125vw);top:38px}
+  .arc-header{top:38px;left:max(12px,calc(50% - 450px));right:max(12px,calc(50% - 450px))}
   .arc-wordmark{left:34px;width:62px;height:62px;min-width:62px}
-  .calendar-stage-header{top:38px;width:min(790px,61.71875vw);padding-left:96px}
+  .calendar-stage-header{top:38px;left:max(24px,calc(50% - 395px));right:max(24px,calc(50% - 395px));padding-left:96px}
   .planner-date-lockup{padding-left:22px}
   .b01-calendar-owner>.calendar-canvas{min-height:650px;padding-top:164px}
   .calendar-context-actions .text-button{padding-inline:4px;font-size:8px}
 }
 @media(max-width:800px){
-  .arc-header{position:absolute;top:18px;left:18px;width:auto;transform:none}
+  .arc-header{position:absolute;top:18px;left:18px;right:auto;width:auto;transform:none}
   .arc-wordmark{position:relative;left:0;top:0;width:54px;height:54px;min-width:54px}
   .arc-calendar-stage{padding:0 12px 24px}
-  .calendar-stage-header{position:relative;top:auto;left:auto;width:100%;min-height:146px;padding:18px 6px 12px 72px;transform:none;border-bottom:4px double var(--arc-book-blue);background:var(--arc-book-paper)}
+  .calendar-stage-header{position:relative;top:auto;left:auto;right:auto;width:100%;min-height:146px;padding:18px 6px 12px 72px;transform:none;border-bottom:4px double var(--arc-book-blue);background:var(--arc-book-paper)}
   .calendar-stage-header>.planner-header-primary{grid-template-columns:1fr;align-items:start;gap:6px}
   .planner-date-lockup{padding-left:16px}
   .calendar-view-switcher{justify-self:start}
