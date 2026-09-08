@@ -14,7 +14,7 @@ html,body{margin:0;background:#eee7dc}
   background-image:url('/assets/arc-workspace-background.webp');
   background-position:center top;background-repeat:no-repeat;background-size:cover;
 }
-.arc-layout{min-height:100dvh;overflow-x:hidden;overflow-y:auto;background:transparent}
+.arc-layout{min-height:100dvh;overflow-x:hidden;overflow-y:visible;background:transparent}
 .arc-calendar-stage{position:relative;min-width:0;padding:34px 0 56px;outline:none}
 
 /* Arc mark remains the existing home button; only its visual placement is owned here. */
