@@ -6,6 +6,7 @@
 .b01-side-owner,.b01-task-owner{position:absolute;pointer-events:none;z-index:20}
 .b01-furniture-surface{pointer-events:auto;overflow:auto;box-sizing:border-box}
 
+/* Owners fill only the workspace territory beside the planner. */
 .b01-side-owner{top:8%;height:74%;width:max(190px,calc((100vw - 100%)/2 - 26px))}
 .b01-settings-owner{right:calc(100% + 26px)}
 .b01-fridge-owner{left:calc(100% + 26px)}
@@ -16,15 +17,16 @@
 .b01-settings-owner[data-state='closed'] .b01-settings-surface{transform:translateX(calc(-100% - 24px));opacity:0;visibility:hidden;pointer-events:none}
 .b01-fridge-owner[data-state='closed'] .b01-fridge-surface{transform:translateX(calc(100% + 24px));opacity:0;visibility:hidden;pointer-events:none}
 
-/* Approved supplied tab artwork. Buttons remain semantic; labels are visually hidden. */
+/* Exact supplied closed-tab artwork. The hit target sits on the planner-facing edge of exterior territory. */
 .b01-edge-tab{position:absolute;z-index:30;top:40%;width:54px;height:122px;border:0;padding:0;background-color:transparent;background-position:center;background-repeat:no-repeat;background-size:contain;cursor:pointer;pointer-events:auto;filter:none;box-shadow:none}
 .b01-edge-tab>span,.b01-task-tab>span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-.b01-edge-tab--left{right:calc(100% + 8px);background-image:url('/assets/b01-settings-tab.png')}
-.b01-edge-tab--right{left:calc(100% + 8px);background-image:url('/assets/b01-fridge-tab.png')}
+.b01-edge-tab--left{right:0;background-image:url('/assets/b01-settings-tab.png')}
+.b01-edge-tab--right{left:0;background-image:url('/assets/b01-fridge-tab.png')}
 .b01-edge-tab:focus-visible,.b01-task-tab:focus-visible,.b05-clean-up:focus-visible{outline:3px solid var(--dusty-blue);outline-offset:3px}
 
-/* Bottom owner is fully outside the planner. Its exact art is a separate exterior layer. */
-.b01-task-owner{left:50%;bottom:-190px;width:min(850px,59.0278vw);height:310px;transform:translateX(-50%);pointer-events:none}
+/* Bottom furniture remains independent of planner geometry and rises from below when opened. */
+.b01-task-owner{left:50%;bottom:-190px;width:min(850px,59.0278vw);height:310px;transform:translateX(-50%);pointer-events:none;transition:bottom 180ms ease}
+.b01-task-owner[data-state='open']{bottom:-18px}
 .b01-task-owner::before{content:'';position:absolute;inset:0;background:url('/assets/b01-taskbar.svg') center top/100% auto no-repeat;pointer-events:none;z-index:0}
 .b01-task-tab{position:absolute;z-index:30;top:0;left:50%;width:150px;height:54px;transform:translateX(-50%);border:0;background:transparent;cursor:pointer;pointer-events:auto}
 .b01-task-surface{position:absolute;z-index:2;left:7%;right:7%;top:74px;height:212px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;padding:20px 24px 22px;background:rgba(245,220,187,.96);border:1px solid rgba(95,68,39,.14);border-radius:8px;box-shadow:none;transition:opacity 160ms ease,transform 180ms ease}
@@ -49,9 +51,10 @@
   .b01-side-owner{width:max(156px,calc((100vw - 100%)/2 - 22px))}
   .b01-settings-owner{right:calc(100% + 22px)}
   .b01-fridge-owner{left:calc(100% + 22px)}
-  .b01-edge-tab--left{right:calc(100% + 6px)}
-  .b01-edge-tab--right{left:calc(100% + 6px)}
+  .b01-edge-tab--left{right:0}
+  .b01-edge-tab--right{left:0}
   .b01-task-owner{width:min(760px,59.375vw);bottom:-172px;height:286px}
+  .b01-task-owner[data-state='open']{bottom:-16px}
   .b01-task-surface{top:68px;height:194px}
 }
 
@@ -79,4 +82,4 @@
   .b05-clean-up{left:auto;right:4px;padding-inline:10px}
 }
 
-@media(prefers-reduced-motion:reduce){.b01-settings-surface,.b01-fridge-surface,.b01-task-surface{transition:none}}
+@media(prefers-reduced-motion:reduce){.b01-settings-surface,.b01-fridge-surface,.b01-task-surface,.b01-task-owner{transition:none}}
