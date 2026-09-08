@@ -50,6 +50,7 @@ const contracts = [
 
 assertManifestComplete()
 for (const contract of contracts) run(process.execPath, [contract])
+run(process.execPath, ['tests/beta-access-contract.mjs'])
 
 function assertManifestComplete() {
   const discovered = [
