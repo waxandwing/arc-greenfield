@@ -4,6 +4,7 @@ import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import { CalendarViewSwitcher } from './CalendarViewSwitcher'
 import '../styles/calendarShell.css'
 import '../styles/calendarShellAsset.css'
+import '../styles/nonPlannerSurface.css'
 
 type ViewAvailability = { available: boolean; reason?: string }
 
