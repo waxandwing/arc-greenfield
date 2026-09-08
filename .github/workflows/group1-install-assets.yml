@@ -1,0 +1,33 @@
+name: Group 1 install exact assets
+
+on:
+  push:
+    branches:
+      - group1/calendar-shell-current-visuals
+
+permissions:
+  contents: write
+
+jobs:
+  install-assets:
+    if: ${{ hashFiles('public/assets/arc-journal-exact-q82.webp.b64') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: group1/calendar-shell-current-visuals
+      - name: Decode approved planner assets
+        run: |
+          base64 -d public/assets/arc-journal-exact-q82.webp.b64 > public/assets/arc-journal.webp
+          base64 -d public/assets/arc-workspace-background-q65.webp.b64 > public/assets/arc-workspace-background.webp
+          rm -f public/assets/arc-journal-exact-q82.webp.b64
+          rm -f public/assets/arc-workspace-background-q65.webp.b64
+          rm -f public/assets/arc-journal-exact-q82.webp.b64.ready
+          rm -f public/assets/README.placeholder
+      - name: Commit decoded assets
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/assets
+          git commit -m 'Group 1: install approved journal and workspace assets'
+          git push origin HEAD:group1/calendar-shell-current-visuals
