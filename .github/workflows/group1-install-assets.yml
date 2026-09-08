@@ -10,21 +10,28 @@ permissions:
 
 jobs:
   install-assets:
-    if: ${{ hashFiles('public/assets/arc-journal-exact-q82.webp.b64') != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           ref: group1/calendar-shell-current-visuals
       - name: Decode approved planner assets
+        id: decode
+        shell: bash
         run: |
+          if [ ! -f public/assets/arc-journal-exact-q82.webp.b64 ] || [ ! -f public/assets/arc-workspace-background-q65.webp.b64 ]; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           base64 -d public/assets/arc-journal-exact-q82.webp.b64 > public/assets/arc-journal.webp
           base64 -d public/assets/arc-workspace-background-q65.webp.b64 > public/assets/arc-workspace-background.webp
           rm -f public/assets/arc-journal-exact-q82.webp.b64
           rm -f public/assets/arc-workspace-background-q65.webp.b64
           rm -f public/assets/arc-journal-exact-q82.webp.b64.ready
           rm -f public/assets/README.placeholder
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
       - name: Commit decoded assets
+        if: steps.decode.outputs.changed == 'true'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
