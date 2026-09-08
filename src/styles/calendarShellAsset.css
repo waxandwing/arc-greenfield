@@ -1,0 +1,5 @@
+/* Group 1 asset binding. Uses the founder-provided current planner mark reference. */
+.arc-wordmark{
+  background:transparent url('/assets/arc-planner-mark.svg') center/contain no-repeat;
+}
+.arc-wordmark::before,.arc-wordmark::after{display:none!important;content:none!important}
