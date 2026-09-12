@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { CalendarView } from '../navigation/calendarViews'
+import { VISIBLE_CALENDAR_VIEWS, calendarViewLabel, type CalendarView } from '../navigation/calendarViews'
 
 type ViewAvailability = { available: boolean; reason?: string }
 
@@ -8,12 +8,6 @@ type CalendarViewSwitcherProps = {
   disabled: boolean
   availabilityFor: (view: CalendarView) => ViewAvailability
   onSelect: (view: CalendarView) => void
-}
-
-const PLANNER_VIEWS: readonly CalendarView[] = ['Day', 'Week', 'Month', 'Year Map']
-
-function viewLabel(view: CalendarView) {
-  return view === 'Year Map' ? 'Year' : view
 }
 
 export function CalendarViewSwitcher({
@@ -46,7 +40,7 @@ export function CalendarViewSwitcher({
     triggerRef.current?.focus()
   }
 
-  const activeLabel = viewLabel(activeView)
+  const activeLabel = calendarViewLabel(activeView)
 
   return (
     <div
@@ -76,11 +70,11 @@ export function CalendarViewSwitcher({
 
       {open && (
         <nav id="calendar-view-choices" className="calendar-view-choices" aria-label="Calendar views">
-          {PLANNER_VIEWS.map((view) => {
+          {VISIBLE_CALENDAR_VIEWS.map((view) => {
             const availability = availabilityFor(view)
             const unavailable = !availability.available
             const isCurrent = view === activeView
-            const label = viewLabel(view)
+            const label = calendarViewLabel(view)
 
             return (
               <button
