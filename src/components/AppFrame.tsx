@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { B01Furniture } from './B01Furniture'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { SettingsFurnitureContent } from './SettingsFurnitureContent'
+import { TaskBarPanel } from './TaskBarPanel'
 import { WorkspaceStage } from './WorkspaceStage'
 import { useArcWorkspace } from '../app/useArcWorkspace'
+import { useTaskBar } from '../app/useTaskBar'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
 import {
@@ -25,6 +27,7 @@ import type { ISODate } from '../calendar'
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
   const workspace = useArcWorkspace(workspaceMode.close)
+  const taskBar = useTaskBar(workspace)
   const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
   const [fridgeDate, setFridgeDate] = useState('')
   const [fridgeUndo, setFridgeUndo] = useState<FridgeRoundTripReceipt | null>(null)
@@ -139,6 +142,18 @@ export function AppFrame() {
     />
   ) : <p className="b01-furniture-empty">Settings are available from the planner.</p>
 
+  const taskContent = taskBar.workspace ? (
+    <TaskBarPanel
+      workspace={taskBar.workspace}
+      onAdd={taskBar.add}
+      onRename={taskBar.rename}
+      onMove={taskBar.move}
+      onSetImportant={taskBar.setImportant}
+      onSetCompleted={taskBar.setCompleted}
+      onDelete={taskBar.delete}
+    />
+  ) : <p className="b01-furniture-empty">Tasks become available after the school calendar is set.</p>
+
   return (
     <div className="arc-shell">
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
@@ -173,7 +188,7 @@ export function AppFrame() {
 
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
-          <B01Furniture settings={settingsContent} fridge={fridgeContent}>
+          <B01Furniture settings={settingsContent} fridge={fridgeContent} tasks={taskContent}>
             <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
               <WorkspaceStage
                 mode={workspaceMode.mode}
