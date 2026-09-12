@@ -1,4 +1,4 @@
-import { CALENDAR_VIEWS, type CalendarView } from '../navigation/calendarViews'
+import { VISIBLE_CALENDAR_VIEWS, calendarViewLabel, type CalendarView } from '../navigation/calendarViews'
 import type { ViewPreferences } from '../navigation/viewPreferences'
 
 type Props = {
@@ -7,7 +7,12 @@ type Props = {
 }
 
 export function CalendarViewPreferences({ preferences, onChange }: Props) {
-  const fixedHome = preferences.home.mode === 'fixed' ? preferences.home.view : preferences.lastUsedView
+  const fallbackHome: CalendarView = VISIBLE_CALENDAR_VIEWS.includes(preferences.lastUsedView as (typeof VISIBLE_CALENDAR_VIEWS)[number])
+    ? preferences.lastUsedView
+    : 'Month'
+  const fixedHome = preferences.home.mode === 'fixed' && VISIBLE_CALENDAR_VIEWS.includes(preferences.home.view as (typeof VISIBLE_CALENDAR_VIEWS)[number])
+    ? preferences.home.view
+    : fallbackHome
 
   return (
     <details className="view-preferences">
@@ -34,13 +39,13 @@ export function CalendarViewPreferences({ preferences, onChange }: Props) {
           <label>
             <span>Home view</span>
             <select
-              value={preferences.home.view}
+              value={fixedHome}
               onChange={(event) => onChange({
                 ...preferences,
                 home: { mode: 'fixed', view: event.target.value as CalendarView },
               })}
             >
-              {CALENDAR_VIEWS.map((view) => <option key={view} value={view}>{view}</option>)}
+              {VISIBLE_CALENDAR_VIEWS.map((view) => <option key={view} value={view}>{calendarViewLabel(view)}</option>)}
             </select>
           </label>
         )}
