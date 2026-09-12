@@ -142,10 +142,6 @@ export function AppFrame() {
             previousTarget={workspace.previousTarget}
             nextTarget={workspace.nextTarget}
             todayTarget={workspace.todayTarget}
-            hasTerms={workspace.hasTerms}
-            hasClasses={workspace.hasClasses}
-            hasUnits={workspace.hasUnits}
-            hasLessons={workspace.hasLessons}
             recoveryCount={workspace.recoveryCount}
             undoAvailable={Boolean(workspace.shiftState?.undo)}
             stageTitle={stageTitle}
@@ -155,11 +151,6 @@ export function AppFrame() {
             onMovePrevious={() => workspace.movePeriod('previous')}
             onMoveNext={() => workspace.movePeriod('next')}
             onToday={workspace.goToday}
-            onOpenCalendarSetup={() => workspaceMode.open('calendar-setup')}
-            onOpenTerms={() => workspaceMode.open('terms')}
-            onOpenClasses={() => workspaceMode.open('classes')}
-            onOpenUnits={() => workspaceMode.open('units')}
-            onOpenLessons={() => workspaceMode.open('lessons')}
             onOpenRecovery={() => workspaceMode.open('recovery')}
             onUndoShift={workspace.undoLastShift}
           />
