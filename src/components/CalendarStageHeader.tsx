@@ -13,10 +13,6 @@ type CalendarStageHeaderProps = {
   previousTarget: ISODate | null
   nextTarget: ISODate | null
   todayTarget: ISODate | null
-  hasTerms: boolean
-  hasClasses: boolean
-  hasUnits: boolean
-  hasLessons: boolean
   recoveryCount: number
   undoAvailable: boolean
   stageTitle: string
@@ -26,11 +22,6 @@ type CalendarStageHeaderProps = {
   onMovePrevious: () => void
   onMoveNext: () => void
   onToday: () => void
-  onOpenCalendarSetup: () => void
-  onOpenTerms: () => void
-  onOpenClasses: () => void
-  onOpenUnits: () => void
-  onOpenLessons: () => void
   onOpenRecovery: () => void
   onUndoShift: () => void
 }
@@ -44,10 +35,6 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     previousTarget,
     nextTarget,
     todayTarget,
-    hasTerms,
-    hasClasses,
-    hasUnits,
-    hasLessons,
     recoveryCount,
     undoAvailable,
     stageTitle,
@@ -57,11 +44,6 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     onMovePrevious,
     onMoveNext,
     onToday,
-    onOpenCalendarSetup,
-    onOpenTerms,
-    onOpenClasses,
-    onOpenUnits,
-    onOpenLessons,
     onOpenRecovery,
     onUndoShift,
   } = props
@@ -95,11 +77,6 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
           <div className="calendar-context-group">
             <p className="calendar-context">{calendar.schoolYearLabel}</p>
             <div className="calendar-context-actions">
-              <button type="button" className="text-button" onClick={onOpenCalendarSetup}>Edit dates</button>
-              <button type="button" className="text-button" onClick={onOpenTerms}>{hasTerms ? 'Edit terms' : 'Set terms'}</button>
-              <button type="button" className="text-button" onClick={onOpenClasses}>{hasClasses ? 'Edit classes' : 'Set classes'}</button>
-              {hasClasses && <button type="button" className="text-button" onClick={onOpenUnits}>{hasUnits ? 'Edit Units' : 'Add Units'}</button>}
-              {hasUnits && <button type="button" className="text-button" onClick={onOpenLessons}>{hasLessons ? 'Edit Lessons' : 'Add Lessons'}</button>}
               {recoveryCount > 0 && <button type="button" className="text-button recovery-review-trigger" onClick={onOpenRecovery}>Review recovery ({recoveryCount})</button>}
               {undoAvailable && <button type="button" className="text-button" onClick={onUndoShift}>Undo last Shift</button>}
             </div>
