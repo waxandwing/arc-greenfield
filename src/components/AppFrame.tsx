@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { B01Furniture } from './B01Furniture'
 import { CalendarStageHeader } from './CalendarStageHeader'
-import { CalendarViewPreferences } from './CalendarViewPreferences'
+import { SettingsFurnitureContent } from './SettingsFurnitureContent'
 import { WorkspaceStage } from './WorkspaceStage'
 import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
@@ -123,6 +123,22 @@ export function AppFrame() {
     </div>
   ) : <p className="b01-furniture-empty">Fridge is available in calendar mode.</p>
 
+  const settingsContent = workspace.calendar && workspaceMode.mode === 'calendar' ? (
+    <SettingsFurnitureContent
+      preferences={viewPreferences}
+      hasTerms={workspace.hasTerms}
+      hasClasses={workspace.hasClasses}
+      hasUnits={workspace.hasUnits}
+      hasLessons={workspace.hasLessons}
+      onChangePreferences={updateViewPreferences}
+      onOpenCalendarSetup={() => workspaceMode.open('calendar-setup')}
+      onOpenTerms={() => workspaceMode.open('terms')}
+      onOpenClasses={() => workspaceMode.open('classes')}
+      onOpenUnits={() => workspaceMode.open('units')}
+      onOpenLessons={() => workspaceMode.open('lessons')}
+    />
+  ) : <p className="b01-furniture-empty">Settings are available from the planner.</p>
+
   return (
     <div className="arc-shell">
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
@@ -157,12 +173,7 @@ export function AppFrame() {
 
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
-          <B01Furniture
-            settings={workspace.calendar && workspaceMode.mode === 'calendar'
-              ? <CalendarViewPreferences preferences={viewPreferences} onChange={updateViewPreferences} />
-              : <p className="b01-furniture-empty">Calendar settings are available in calendar mode.</p>}
-            fridge={fridgeContent}
-          >
+          <B01Furniture settings={settingsContent} fridge={fridgeContent}>
             <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
               <WorkspaceStage
                 mode={workspaceMode.mode}
@@ -208,7 +219,7 @@ function resolveAvailableHomeView(
 function stageTitleFor(mode: ReturnType<typeof useWorkspaceMode>['mode'], activeView: string) {
   if (mode === 'recovery') return 'Recovery review'
   if (mode === 'terms') return 'Terms'
-  if (mode === 'classes') return 'Classes'
+  if (mode === 'classes') return 'Courses & sections'
   if (mode === 'units') return 'Units'
   if (mode === 'lessons') return 'Lessons'
   if (mode === 'calendar-setup') return 'Calendar'
