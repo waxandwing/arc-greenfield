@@ -10,6 +10,7 @@ export function PlanStateHeader(props: {
   date: ISODate | null
   weekRange?: string | null
   monthLabel?: string | null
+  yearLabel?: string | null
   courseId?: string | null
   sectionId?: string | null
   lessonId?: string | null
@@ -59,6 +60,9 @@ function primaryLine(props: {
   if (props.view === 'Month') {
     return props.courseTitle ? `${props.courseTitle} · This Month` : 'This Month'
   }
+  if (props.view === 'Year Map') {
+    return props.courseTitle ? `${props.courseTitle} · School Year` : 'School Year · All Courses'
+  }
   if (props.focus === 'lesson' && props.lessonTitle) return props.lessonTitle
   if (props.focus === 'class' && props.blockType === 'planning') return props.blockLabel ?? 'Planning time'
   if (props.focus === 'class' && props.blockType === 'non-teaching') return props.blockLabel ?? 'Non-teaching time'
@@ -76,9 +80,11 @@ function secondaryLine(props: {
   unitTitle?: string | null
   weekRange?: string | null
   monthLabel?: string | null
+  yearLabel?: string | null
 }, dateLabel: string | null) {
   if (props.view === 'Week') return props.weekRange ?? dateLabel
   if (props.view === 'Month') return props.monthLabel ?? dateLabel
+  if (props.view === 'Year Map') return props.yearLabel ?? dateLabel
   if (props.focus === 'lesson') {
     return [props.sectionName, props.courseTitle, props.unitTitle, dateLabel].filter(Boolean).join(' · ')
   }

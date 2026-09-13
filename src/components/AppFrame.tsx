@@ -9,7 +9,7 @@ import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useTaskBar } from '../app/useTaskBar'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import { useArcTableSession } from '../app/useArcTableSession'
-import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
+import { DEFAULT_HOME_VIEW, calendarViewLabel, type CalendarView } from '../navigation/calendarViews'
 import {
   loadViewPreferences,
   recordLastUsedView,
@@ -30,7 +30,7 @@ import {
   type ShiftPersistenceInput,
 } from '../planning'
 import { projectWeek, type ISODate } from '../calendar'
-import { formatMonth, formatPlanHeaderWeekRange } from './dateLabels'
+import { formatMonth, formatPlanHeaderDate, formatPlanHeaderWeekRange } from './dateLabels'
 import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfaces'
 import { WorkspacePanel } from './WorkspacePanel'
 import { ArcOnboarding } from './ArcOnboarding'
@@ -294,11 +294,12 @@ export function AppFrame() {
               {workspaceMode.mode === 'calendar' && workspace.calendar && workspace.anchorDate ? (
                 <PlanStateHeader
                   view={workspace.activeView}
-                  viewLabel={workspace.activeView === 'Day' ? 'Teaching Day' : workspace.activeView}
+                  viewLabel={workspace.activeView === 'Day' ? 'Teaching Day' : calendarViewLabel(workspace.activeView)}
                   focus={workspace.planContext?.focus ?? 'day'}
                   date={workspace.anchorDate}
                   weekRange={weekRangeLabel(workspace, viewPreferences.showWeekends)}
                   monthLabel={monthLabel(workspace)}
+                  yearLabel={yearLabel(workspace)}
                   courseId={workspace.planContext?.courseId}
                   sectionId={workspace.planContext?.sectionId}
                   lessonId={workspace.planContext?.lessonId}
@@ -413,4 +414,9 @@ function weekRangeLabel(workspace: ReturnType<typeof useArcWorkspace>, showWeeke
 function monthLabel(workspace: ReturnType<typeof useArcWorkspace>) {
   if (workspace.activeView !== 'Month' || !workspace.anchorDate) return null
   return formatMonth(workspace.anchorDate)
+}
+
+function yearLabel(workspace: ReturnType<typeof useArcWorkspace>) {
+  if (workspace.activeView !== 'Year Map' || !workspace.calendar || !workspace.anchorDate) return null
+  return `${workspace.calendar.schoolYearLabel} · ${formatPlanHeaderDate(workspace.anchorDate)}`
 }

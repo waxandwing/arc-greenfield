@@ -142,7 +142,34 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
     case 'Year Map': {
       const projection = projectYearMap(calendar)
       if (planningContext) {
-        return <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} onSelectUnit={(date) => onSelectDate?.(date, 'Month')} />
+        return (
+          <section
+            className="projection-section year-section planning-year-stage"
+            aria-label={`${calendar.schoolYearLabel} course and unit progression`}
+            data-plan-view="Year Map"
+            data-plan-date={anchorDate}
+            data-plan-course={planContext?.courseId ?? ''}
+            data-plan-section={planContext?.sectionId ?? ''}
+            data-plan-unit={planContext?.unitId ?? ''}
+            data-plan-lesson={planContext?.lessonId ?? ''}
+          >
+            <div className="projection-heading-row projection-heading-row--year">
+              <div>
+                <p className="projection-range-label">{calendar.schoolYearLabel}</p>
+                <p className="projection-subtitle">{formatDateRange(projection.startDate, projection.endDate)}</p>
+              </div>
+              <TermContext quarters={projection.quarters} semesters={projection.semesters} detailed />
+            </div>
+            {onOpenWorkspace ? (
+              <p className="planning-week-actions">
+                <button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button>
+              </p>
+            ) : null}
+            <div className="planning-scroll-frame">
+              <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} onSelectUnit={(date) => onSelectDate?.(date, 'Month')} />
+            </div>
+          </section>
+        )
       }
       return (
         <section className="projection-section" aria-label={`${calendar.schoolYearLabel} year map`}>

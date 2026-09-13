@@ -56,7 +56,11 @@ export function resolvePlanContext(context: PlanNavigationContext, authority: Pl
 
   const lesson = next.lessonId && lessons ? lessons.lessons.find((item) => item.id === next.lessonId) : null
   if (next.lessonId && !lesson) {
+    const preservedUnitId = next.unitId
     next = { ...next, lessonId: undefined, unitId: undefined, focus: next.sectionId ? 'class' : 'day' }
+    if (next.view === 'Year Map' && preservedUnitId && units?.units.some((item) => item.id === preservedUnitId && (!next.courseId || item.courseId === next.courseId))) {
+      next = { ...next, unitId: preservedUnitId }
+    }
   } else if (lesson) {
     if (next.courseId && lesson.courseId !== next.courseId) {
       next = { ...next, lessonId: undefined, unitId: undefined, focus: next.sectionId ? 'class' : 'day' }
@@ -143,7 +147,7 @@ export function goPlanHome(context: PlanNavigationContext): PlanNavigationContex
 
 export function enterPlanView(context: PlanNavigationContext, view: CalendarView, date?: PlanNavigationContext['anchorDate']): PlanNavigationContext {
   const anchorDate = date ?? context.anchorDate
-  if (view === 'Week' || view === 'Month') {
+  if (view === 'Week' || view === 'Month' || view === 'Year Map') {
     return enterCalendarDepth(context, view, anchorDate)
   }
   if (view === 'Day') {
@@ -204,13 +208,16 @@ function pruneDayFocus(context: PlanNavigationContext): PlanNavigationContext {
 
 function pruneCalendarDepth(context: PlanNavigationContext, units: UnitWorkspace | null): PlanNavigationContext {
   const unit = context.unitId && units ? units.units.find((item) => item.id === context.unitId) : null
-  return {
+  const next = {
     ...context,
     lessonId: undefined,
     teachingBlockId: undefined,
     unitId: unit && (!context.courseId || unit.courseId === context.courseId) ? unit.id : undefined,
-    focus: context.sectionId ? 'class' : 'day',
   }
+  if (context.view === 'Year Map') {
+    return { ...next, sectionId: undefined, focus: 'day' }
+  }
+  return { ...next, focus: context.sectionId ? 'class' : 'day' }
 }
 
 function dropToDay(context: PlanNavigationContext): PlanNavigationContext {

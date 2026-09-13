@@ -138,6 +138,45 @@ assert(staleMonthLesson.view === 'Month' && staleMonthLesson.courseId === course
 const staleMonthSection = resolvePlanContext(createPlanNavigationContext({ calendarId: calendar.id, view: 'Month', anchorDate: '2026-09-16', focus: 'class', courseId: course.id, sectionId: 'section-missing' }), authority)
 assert(staleMonthSection.view === 'Month' && staleMonthSection.focus === 'day' && staleMonthSection.anchorDate === '2026-09-16' && !staleMonthSection.sectionId, 'Stale Month Section must fall back to a valid Month rather than crash.')
 
+const yearFromDay = resolvePlanContext(enterPlanView(day, 'Year Map'), authority)
+assert(yearFromDay.view === 'Year Map' && yearFromDay.anchorDate === '2026-09-16' && yearFromDay.focus === 'day' && !yearFromDay.sectionId && !yearFromDay.lessonId && !yearFromDay.teachingBlockId, 'Day → Year must keep the same anchor date without inventing Class context.')
+
+const yearFromClass = resolvePlanContext(enterPlanView(classFocus, 'Year Map'), authority)
+assert(yearFromClass.view === 'Year Map' && yearFromClass.anchorDate === '2026-09-16' && yearFromClass.courseId === course.id && yearFromClass.focus === 'day' && !yearFromClass.sectionId && !yearFromClass.lessonId && !yearFromClass.teachingBlockId, 'Class → Year must keep date + Course and drop Section plus teachingBlockId.')
+
+const yearFromLesson = resolvePlanContext(enterPlanView(lessonFocus, 'Year Map'), authority)
+assert(yearFromLesson.view === 'Year Map' && yearFromLesson.anchorDate === '2026-09-16' && yearFromLesson.courseId === course.id && yearFromLesson.unitId === unit.id && yearFromLesson.focus === 'day' && !yearFromLesson.sectionId && !yearFromLesson.lessonId && !yearFromLesson.teachingBlockId, 'Lesson → Year must keep Course/Unit and drop Lesson, Section, plus teachingBlockId.')
+
+const yearFromMonth = resolvePlanContext(enterPlanView(monthFromLesson, 'Year Map'), authority)
+assert(yearFromMonth.view === 'Year Map' && yearFromMonth.anchorDate === '2026-09-16' && yearFromMonth.courseId === course.id && yearFromMonth.unitId === unit.id && !yearFromMonth.sectionId && !yearFromMonth.lessonId && !yearFromMonth.teachingBlockId, 'Month → Year must keep Course/Unit and drop Section, Lesson, and teachingBlockId.')
+
+const monthFromYear = resolvePlanContext(enterPlanView(yearFromLesson, 'Month', '2026-09-14'), authority)
+assert(monthFromYear.view === 'Month' && monthFromYear.anchorDate === '2026-09-14' && monthFromYear.focus === 'day' && monthFromYear.courseId === course.id && monthFromYear.unitId === unit.id && !monthFromYear.sectionId && !monthFromYear.lessonId && !monthFromYear.teachingBlockId, 'Year → Month must use the selected date and keep valid Course/Unit without Section.')
+
+const homeFromYear = resolvePlanContext(goPlanHome(yearFromLesson), authority)
+assert(homeFromYear.view === 'Day' && homeFromYear.focus === 'day' && homeFromYear.anchorDate === '2026-09-16' && !homeFromYear.sectionId, 'Year → Home must keep the anchor date and drop to Teaching Day.')
+
+const restoredYear = resolvePlanContext(createPlanNavigationContext({
+  calendarId: calendar.id,
+  view: 'Year Map',
+  anchorDate: '2026-09-16',
+  focus: 'lesson',
+  courseId: course.id,
+  sectionId: section.id,
+  unitId: unit.id,
+  lessonId: lesson.id,
+  teachingBlockId: 'block-p6',
+}), authority)
+assert(restoredYear.view === 'Year Map' && restoredYear.focus === 'day' && restoredYear.anchorDate === '2026-09-16' && restoredYear.courseId === course.id && restoredYear.unitId === unit.id && !restoredYear.sectionId && !restoredYear.lessonId && !restoredYear.teachingBlockId, 'Persisted Year must restore valid Course/Unit without Section, Lesson, or teachingBlockId.')
+
+const staleYearLesson = resolvePlanContext({ ...yearFromLesson, focus: 'lesson' as const, lessonId: 'lesson-missing' }, authority)
+assert(staleYearLesson.view === 'Year Map' && staleYearLesson.courseId === course.id && staleYearLesson.unitId === unit.id && !staleYearLesson.lessonId && !staleYearLesson.teachingBlockId, 'A stale Lesson ID on Year must fail safely without Lesson focus.')
+
+const staleYearCourse = resolvePlanContext(createPlanNavigationContext({ calendarId: calendar.id, view: 'Year Map', anchorDate: '2026-09-16', focus: 'day', courseId: 'course-missing', unitId: unit.id }), authority)
+assert(staleYearCourse.view === 'Year Map' && staleYearCourse.focus === 'day' && staleYearCourse.anchorDate === '2026-09-16' && !staleYearCourse.courseId && !staleYearCourse.unitId, 'Stale Year Course/Unit must fail safely without invalid IDs.')
+
+assert(monthFromClass.sectionId === section.id, 'Month must still preserve Section for divergence signals after Year work.')
+
 const staleLesson = resolvePlanContext({ ...lessonFocus, lessonId: 'lesson-missing' }, authority)
 assert(staleLesson.focus === 'class' && staleLesson.sectionId === section.id && !staleLesson.lessonId, 'A stale Lesson ID must fail safely to Class.')
 
