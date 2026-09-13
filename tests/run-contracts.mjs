@@ -32,6 +32,7 @@ const contracts = [
   'tests/generated/src/planning/easelSessionProjection.contract.js',
   'tests/generated/src/planning/easelTeachingOutcome.contract.js',
   'tests/generated/src/planning/easelCoreLoop.hostile.contract.js',
+  'tests/generated/src/planning/arcTableLiveState.contract.js',
   'tests/generated/src/planning/objectActions.contract.js',
   'tests/generated/src/planning/fridgeRoundTrip.contract.js',
   'tests/generated/src/planning/recoveryPreview.contract.js',
