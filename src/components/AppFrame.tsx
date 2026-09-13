@@ -29,7 +29,8 @@ import {
   type FridgeRoundTripReceipt,
   type ShiftPersistenceInput,
 } from '../planning'
-import type { ISODate } from '../calendar'
+import { projectWeek, type ISODate } from '../calendar'
+import { formatPlanHeaderWeekRange } from './dateLabels'
 import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfaces'
 import { WorkspacePanel } from './WorkspacePanel'
 import { ArcOnboarding } from './ArcOnboarding'
@@ -82,8 +83,8 @@ export function AppFrame() {
   }
 
   function deepenTo(date: ISODate, view: CalendarView) {
-    workspace.selectDate(date)
-    selectView(view)
+    workspace.setActiveView(view, date)
+    updateViewPreferences(recordLastUsedView(viewPreferences, view))
   }
 
   function returnHome() {
@@ -292,9 +293,14 @@ export function AppFrame() {
               {workspaceMode.mode === 'calendar' && minimumPlanningSetupEstablished(setupCapabilities) && showFirstCapturePrompt && !onboardingDraft.firstCapturePromptDismissed ? <FirstCapturePrompt onSave={workspace.addCapture} onPlace={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }); setWorkspaceOpenToken((token) => token + 1) }} onDismiss={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }) }} /> : null}
               {workspaceMode.mode === 'calendar' && workspace.calendar && workspace.anchorDate ? (
                 <PlanStateHeader
+                  view={workspace.activeView}
                   viewLabel={workspace.activeView === 'Day' ? 'Teaching Day' : workspace.activeView}
                   focus={workspace.planContext?.focus ?? 'day'}
                   date={workspace.anchorDate}
+                  weekRange={weekRangeLabel(workspace, viewPreferences.showWeekends)}
+                  courseId={workspace.planContext?.courseId}
+                  sectionId={workspace.planContext?.sectionId}
+                  lessonId={workspace.planContext?.lessonId}
                   courseTitle={headerCourseTitle(workspace)}
                   sectionName={headerSectionName(workspace)}
                   unitTitle={headerUnitTitle(workspace)}
@@ -392,4 +398,13 @@ function headerBlock(workspace: ReturnType<typeof useArcWorkspace>) {
   const id = workspace.planContext?.teachingBlockId
   if (!id) return null
   return workspace.planningWorkspace?.teachingDay?.blocks.find((block) => block.id === id) ?? null
+}
+
+function weekRangeLabel(workspace: ReturnType<typeof useArcWorkspace>, showWeekends: boolean) {
+  if (workspace.activeView !== 'Week' || !workspace.calendar || !workspace.anchorDate) return null
+  const projection = projectWeek(workspace.calendar, workspace.anchorDate)
+  const days = showWeekends ? projection.days : projection.days.filter((day) => !day.isWeekend)
+  const start = days[0]?.date ?? projection.startDate
+  const end = days[days.length - 1]?.date ?? projection.endDate
+  return formatPlanHeaderWeekRange(start, end)
 }

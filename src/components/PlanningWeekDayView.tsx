@@ -21,7 +21,7 @@ export function PlanningWeekDayView({
   }
 
   return (
-    <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'}>
+    <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'} data-focus-date={focusDate ?? ''}>
       <PlanningDateHeader days={days} single={single} focusDate={focusDate} onSelectDate={onSelectDate} />
       {planning.courses.map((course) => (
         <PlanningCourse key={course.course.id} course={course} days={days} single={single} focusDate={focusDate} />
@@ -35,7 +35,7 @@ function PlanningDateHeader({ days, single, focusDate, onSelectDate }: { days: P
     <div className="planning-date-header" style={gridTemplate(days, focusDate)}>
       <span className="planning-row-label planning-row-label--header" aria-hidden="true">Class</span>
       {days.map((day) => (
-        <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}`} aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>
+        <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}${day.date === focusDate ? ' planning-date-heading--focus' : ''}`} aria-current={day.date === focusDate ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>
           {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
           <span>{formatShortDate(day.date)}</span>
           {day.kind !== 'instructional' ? <span className="planning-date-kind">{day.label || humanizeKind(day.kind)}</span> : null}

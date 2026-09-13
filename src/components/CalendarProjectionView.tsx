@@ -78,9 +78,11 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
         <PlanningWeekStrip
           title={formatDateRange(visibleDays[0]?.date ?? projection.startDate, visibleDays[visibleDays.length - 1]?.date ?? projection.endDate)}
           days={visibleDays}
-          focusDate={anchorDate}
+          focusDate={planContext?.anchorDate ?? anchorDate}
           planningContext={planningContext}
+          planContext={planContext}
           onSelectDate={(date) => onSelectDate?.(date, 'Day')}
+          onOpenWorkspace={onOpenWorkspace}
           onAddNote={onAddNote}
           onDeleteNote={onDeleteNote}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
@@ -192,10 +194,34 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   )
 }
 
-function PlanningWeekStrip({ title, days, focusDate, planningContext, termContext, onSelectDate, onAddNote, onDeleteNote }: { title: string; days: ProjectedDay[]; focusDate: ISODate; planningContext?: PlanningContext | null; termContext?: ReactNode; onSelectDate?: (date: ISODate) => void; onAddNote?: (date: ISODate, text: string) => boolean; onDeleteNote?: (noteId: string) => void }) {
+function PlanningWeekStrip({ title, days, focusDate, planningContext, planContext, termContext, onSelectDate, onOpenWorkspace, onAddNote, onDeleteNote }: {
+  title: string
+  days: ProjectedDay[]
+  focusDate: ISODate
+  planningContext?: PlanningContext | null
+  planContext?: PlanNavigationContext | null
+  termContext?: ReactNode
+  onSelectDate?: (date: ISODate) => void
+  onOpenWorkspace?: () => void
+  onAddNote?: (date: ISODate, text: string) => boolean
+  onDeleteNote?: (noteId: string) => void
+}) {
   return (
-    <section className="projection-section" aria-label={title}>
+    <section
+      className="projection-section planning-week"
+      aria-label={title}
+      data-plan-view="Week"
+      data-plan-date={focusDate}
+      data-plan-course={planContext?.courseId ?? ''}
+      data-plan-section={planContext?.sectionId ?? ''}
+      data-plan-lesson={planContext?.lessonId ?? ''}
+    >
       <ProjectionHeading title={title} termContext={termContext} />
+      {onOpenWorkspace ? (
+        <p className="planning-week-actions">
+          <button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button>
+        </p>
+      ) : null}
       {planningContext ? (
         <><PlanningNotes notes={planningContext.planning.notes ?? []} dates={days.map((day) => day.date)} focusDate={focusDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} focusDate={focusDate} onSelectDate={onSelectDate} /></div></>
       ) : (

@@ -67,6 +67,18 @@
   cursor:pointer;
 }
 
+.planning-date-heading--focus{
+  font-weight:800;
+}
+
+.planning-week-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:0 0 var(--space-3);
+}
+
 .planning-date-weekday,
 .planning-date-kind{
   font-size:14px;

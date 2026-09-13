@@ -16,6 +16,15 @@ export function formatPlanHeaderDate(date: ISODate): string {
   return dateFormatter({ weekday: 'long', month: 'short', day: 'numeric' }).format(toUTCDate(date))
 }
 
+export function formatPlanHeaderWeekRange(start: ISODate, end: ISODate): string {
+  const startDate = toUTCDate(start)
+  const endDate = toUTCDate(end)
+  const sameMonth = startDate.getUTCMonth() === endDate.getUTCMonth() && startDate.getUTCFullYear() === endDate.getUTCFullYear()
+  const startLabel = dateFormatter({ month: 'short', day: 'numeric' }).format(startDate)
+  const endLabel = dateFormatter(sameMonth ? { day: 'numeric' } : { month: 'short', day: 'numeric' }).format(endDate)
+  return `${startLabel}–${endLabel}`
+}
+
 export function formatMonthKey(monthKey: `${number}-${number}`): string {
   return dateFormatter({ month: 'long', year: 'numeric' }).format(new Date(`${monthKey}-01T00:00:00Z`))
 }
