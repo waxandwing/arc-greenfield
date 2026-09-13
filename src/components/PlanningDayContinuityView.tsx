@@ -34,9 +34,11 @@ export function PlanningDayContinuityView({
 }) {
   const periodRail = buildTeachingDayRail(planning, continuity)
   const selectedRail = periodRail.find((item) => item.id === selectedBlockId) ?? null
-  const selectedSection = selectedRail?.course && selectedRail.sectionId
-    ? selectedRail.course.sections.find((section) => section.sectionId === selectedRail.sectionId) ?? null
+  const surfaceRail = planFocus === 'day' ? periodRail[0] ?? null : selectedRail
+  const surfaceSection = surfaceRail?.course && surfaceRail.sectionId
+    ? surfaceRail.course.sections.find((section) => section.sectionId === surfaceRail.sectionId) ?? null
     : null
+  const classFocused = planFocus === 'class' || planFocus === 'lesson'
 
   if (continuity.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -54,62 +56,60 @@ export function PlanningDayContinuityView({
       {periodRail.length > 0 ? (
         <nav className="day-period-rail" aria-label="Teaching day periods">
           {periodRail.map((item) => item.course && item.sectionId ? (
-            <button type="button" className={`day-period-button${item.id === selectedRail?.id && planFocus !== 'day' ? ' is-selected' : ''}`} aria-current={item.id === selectedRail?.id && planFocus !== 'day' ? 'true' : undefined} onClick={() => onSelectBlock?.(item)} key={item.id}>
+            <button type="button" className={`day-period-button${item.id === selectedRail?.id && classFocused ? ' is-selected' : ''}`} aria-current={item.id === selectedRail?.id && classFocused ? 'true' : undefined} onClick={() => onSelectBlock?.(item)} key={item.id}>
               <span>{item.label}{blockTimes(item.block)}</span><strong>{item.courseTitle}</strong>
             </button>
           ) : (
-            <button type="button" className={`day-period-gap${item.id === selectedRail?.id && planFocus !== 'day' ? ' is-selected' : ''}`} aria-current={item.id === selectedRail?.id && planFocus !== 'day' ? 'true' : undefined} aria-label={`${item.label}, ${item.type === 'planning' ? 'planning time' : 'non-teaching time'}`} onClick={() => onSelectBlock?.(item)} key={item.id}>
+            <button type="button" className={`day-period-gap${item.id === selectedRail?.id && classFocused ? ' is-selected' : ''}`} aria-current={item.id === selectedRail?.id && classFocused ? 'true' : undefined} aria-label={`${item.label}, ${item.type === 'planning' ? 'planning time' : 'non-teaching time'}`} onClick={() => onSelectBlock?.(item)} key={item.id}>
               <span>{item.label}{blockTimes(item.block)}</span><strong>{item.type === 'planning' ? 'Planning time' : 'Lunch / other'}</strong>
             </button>
           ))}
         </nav>
       ) : null}
 
-      {planFocus === 'day' || !selectedRail ? (
-        <p className="day-continuity-empty">Select a class to look closer. Teaching Day keeps every period in order, including Planning time.</p>
-      ) : planFocus === 'lesson' && selectedSection ? (
+      {planFocus === 'lesson' && surfaceSection ? (
         <LessonFocus
           lessonId={selectedLessonId}
-          section={selectedSection}
-          courseTitle={selectedRail.courseTitle ?? ''}
+          section={surfaceSection}
+          courseTitle={surfaceRail?.courseTitle ?? ''}
           canonical={lessons.lessons}
           onStartClass={onStartClass}
           onRetreat={onRetreat}
           onOpenWorkspace={onOpenWorkspace}
         />
-      ) : selectedSection && selectedRail.course ? (
-        <section className="day-continuity-course day-continuity-course--focus" aria-label={`${selectedRail.course.courseTitle} today`}>
-          {onRetreat ? <button type="button" className="plan-back-link" onClick={onRetreat}>Back to Teaching Day</button> : null}
+      ) : surfaceSection && surfaceRail?.course ? (
+        <section className="day-continuity-course day-continuity-course--focus" aria-label={`${surfaceRail.course.courseTitle} today`}>
+          {classFocused && onRetreat ? <button type="button" className="plan-back-link" onClick={onRetreat}>Back to Teaching Day</button> : null}
           <header className="day-continuity-course-heading">
-            <div><p className="day-continuity-kicker">Focused teaching moment · {selectedSection.sectionName}</p><h2>{selectedRail.course.courseTitle}</h2></div>
-            {selectedRail.course.activeUnits.length > 0 ? (
+            <div><p className="day-continuity-kicker">{classFocused ? `Focused teaching moment · ${surfaceSection.sectionName}` : `${surfaceSection.sectionName}`}</p><h2>{surfaceRail.course.courseTitle}</h2></div>
+            {surfaceRail.course.activeUnits.length > 0 ? (
               <p className="day-continuity-units">
                 <span>Unit</span>
-                <strong>{selectedRail.course.activeUnits.map((unit) => unit.title).join(' · ')}</strong>
+                <strong>{surfaceRail.course.activeUnits.map((unit) => unit.title).join(' · ')}</strong>
               </p>
             ) : null}
           </header>
-          {onOpenWorkspace ? <p className="day-continuity-lesson-actions"><button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button></p> : null}
+          {classFocused && onOpenWorkspace ? <p className="day-continuity-lesson-actions"><button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button></p> : null}
 
           <div className="day-continuity-sections">
             <article className="day-continuity-section">
               <header className="day-continuity-section-heading">
-                <h3>{selectedSection.sectionName}</h3>
+                <h3>{surfaceSection.sectionName}</h3>
               </header>
               <div className="day-continuity-work">
-                {selectedSection.carryovers.length > 0 ? (
-                  <section className="day-continuity-held" aria-label={`${selectedSection.sectionName} unfinished teaching`}>
+                {surfaceSection.carryovers.length > 0 ? (
+                  <section className="day-continuity-held" aria-label={`${surfaceSection.sectionName} unfinished teaching`}>
                     <p className="day-continuity-kicker">Arc is holding your place</p>
-                    {selectedSection.carryovers.map((lesson) => (
-                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={selectedSection.sectionId} onStartClass={onStartClass} onSelectLesson={onSelectLesson} carryover />
+                    {surfaceSection.carryovers.map((lesson) => (
+                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} carryover />
                     ))}
                   </section>
                 ) : null}
-                <section className="day-continuity-planned" aria-label={`${selectedSection.sectionName} plan for today`}>
+                <section className="day-continuity-planned" aria-label={`${surfaceSection.sectionName} plan for today`}>
                   <p className="day-continuity-kicker">Today’s plan</p>
-                  {selectedSection.scheduledLessons.length > 0 ? (
-                    selectedSection.scheduledLessons.map((lesson) => (
-                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={selectedSection.sectionId} onStartClass={onStartClass} onSelectLesson={onSelectLesson} />
+                  {surfaceSection.scheduledLessons.length > 0 ? (
+                    surfaceSection.scheduledLessons.map((lesson) => (
+                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} />
                     ))
                   ) : (
                     <p className="day-continuity-empty">No Lesson placed for this class.</p>
@@ -119,10 +119,12 @@ export function PlanningDayContinuityView({
             </article>
           </div>
         </section>
-      ) : selectedRail.type === 'planning' ? (
-        <PlanningPeriodLens label={selectedRail.label} date={day.date} continuity={continuity} lessons={lessons} onRetreat={onRetreat} onOpenWorkspace={onOpenWorkspace} />
+      ) : surfaceRail?.type === 'planning' ? (
+        <PlanningPeriodLens label={surfaceRail.label} date={day.date} continuity={continuity} lessons={lessons} onRetreat={classFocused ? onRetreat : undefined} onOpenWorkspace={classFocused ? onOpenWorkspace : undefined} />
+      ) : surfaceRail ? (
+        <NonTeachingLens label={surfaceRail.label} onRetreat={classFocused ? onRetreat : undefined} />
       ) : (
-        <NonTeachingLens label={selectedRail.label} onRetreat={onRetreat} />
+        <p className="day-continuity-empty">Select a class to look closer. Teaching Day keeps every period in order, including Planning time.</p>
       )}
     </div>
   )

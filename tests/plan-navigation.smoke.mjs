@@ -115,7 +115,7 @@ async function withPage(browser, seed, run) {
   page.on('pageerror', (error) => runtimeErrors.push(`pageerror: ${error.message}`))
   page.on('console', (message) => { if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`) })
   await page.addInitScript((entries) => {
-    localStorage.clear()
+    if (localStorage.getItem('arc.calendar.v1') !== null) return
     for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value)
   }, seed)
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
@@ -181,6 +181,7 @@ try {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
     await page.reload({ waitUntil: 'networkidle' })
+    await page.locator('.day-continuity[data-plan-focus="lesson"]').waitFor({ timeout: 5000 })
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'lesson', 'Refresh did not restore persisted Lesson Focus.')
     assert(await page.locator('[data-lesson-focus="lesson-2d-5"]').count() === 1, 'Refresh did not restore the same Lesson.')
     assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).overlay === undefined, 'Plan navigation persistence stored Workspace overlay state.')

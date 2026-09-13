@@ -32,7 +32,7 @@ async function selectCalendarView(page, view) {
 
 async function waitForCalendarAfterLessonSave(page, context) {
   try {
-    await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible', timeout: 5000 })
+    await page.getByRole('button', { name: /Change calendar view, current/ }).waitFor({ state: 'visible', timeout: 5000 })
   } catch {
     const alerts = await page.locator('[role="alert"]').allTextContents()
     const notices = await page.locator('.storage-notice').allTextContents()

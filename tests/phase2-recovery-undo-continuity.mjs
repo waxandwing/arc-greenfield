@@ -184,7 +184,7 @@ try {
   assert(await fixedTiles.count() === 0, 'Fixed checkpoint should remain outside the Sep 14 Week rather than being pulled into recovery movement.')
 
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
+  await page.getByRole('button', { name: /Change calendar view, current/ }).waitFor({ state: 'visible' })
   assert(await headerAction(page, 'Undo last Shift').count() === 1, 'Reload lost the persisted Recovery Undo token.')
   await moveToWeekOfSeptember14(page)
   await assertShiftedWeek(page)
@@ -197,7 +197,7 @@ try {
   await assertRestoredWeek(page)
 
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
+  await page.getByRole('button', { name: /Change calendar view, current/ }).waitFor({ state: 'visible' })
   assert(await headerAction(page, 'Undo last Shift').count() === 0, 'Consumed Undo token returned after reload.')
   await moveToWeekOfSeptember14(page)
   await assertRestoredWeek(page)

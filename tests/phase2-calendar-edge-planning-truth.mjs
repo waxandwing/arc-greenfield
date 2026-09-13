@@ -153,7 +153,10 @@ try {
   assert(await calendarSurface.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: hiding weekends mutated/deleted Saturday planning data.')
 
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
+  await page.getByRole('button', { name: /Change calendar view, current/ }).waitFor({ state: 'visible' })
+  if (await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).count() === 0) {
+    await selectCalendarView(page, 'Month')
+  }
   assert(await page.locator('.planning-month-unit-band').filter({ hasText: 'Span Unit' }).count() >= 1, 'Phase 2 calendar edge: multi-day Unit did not survive reload.')
   assert(await page.locator('.planning-month-day').filter({ hasText: 'Faculty meeting' }).count() === 1, 'Phase 2 calendar edge: no-school exception did not survive reload.')
   assert(await page.locator('.planning-month-signal').filter({ hasText: 'Saturday studio lesson' }).count() === 1, 'Phase 2 calendar edge: Saturday Lesson did not survive reload.')
