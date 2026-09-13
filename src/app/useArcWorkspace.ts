@@ -45,6 +45,7 @@ import {
   type CurriculumImportProposal,
   type CurriculumImportReceipt,
   commitCurriculumImport,
+  enterPlanView,
   focusLesson,
   focusTeachingBlock,
   goPlanHome,
@@ -139,20 +140,17 @@ export function useArcWorkspace(onCloseMode: () => void) {
     savePlanNavigationContext(resolved)
   }
 
-  function setActiveView(view: CalendarView) {
+  function setActiveView(view: CalendarView, date?: ISODate) {
     if (!calendar) {
       setActiveViewState(view)
       return
     }
     const current = planContext ?? createPlanNavigationContext({
       calendarId: calendar.id,
-      anchorDate: anchorDate ?? calendar.firstDay,
+      anchorDate: date ?? anchorDate ?? calendar.firstDay,
       view,
     })
-    const leavingDay = current.view === 'Day' && view !== 'Day'
-    commitPlan(leavingDay
-      ? createPlanNavigationContext({ calendarId: calendar.id, anchorDate: current.anchorDate, view, focus: 'day' })
-      : { ...current, view })
+    commitPlan(enterPlanView(current, view, date ?? current.anchorDate))
   }
 
   function useCalendar(nextCalendar: SchoolCalendar, input: CalendarHydrationInput) {

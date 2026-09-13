@@ -95,10 +95,24 @@ export function resolvePlanContext(context: PlanNavigationContext, authority: Pl
     }
   }
 
+  if (view === 'Week') {
+    const unit = next.unitId && units ? units.units.find((item) => item.id === next.unitId) : null
+    next = {
+      ...next,
+      focus: 'day',
+      lessonId: undefined,
+      unitId: unit && (!next.courseId || unit.courseId === next.courseId) ? unit.id : undefined,
+    }
+  }
+
   if (next.focus === 'lesson' && !next.lessonId) next = { ...next, focus: next.sectionId || next.teachingBlockId ? 'class' : 'day' }
   if (next.focus === 'class' && !next.sectionId && !next.teachingBlockId) next = dropToDay(next)
   if (next.focus === 'day') {
-    next = { ...next, courseId: next.view === 'Day' ? undefined : next.courseId, sectionId: next.view === 'Day' ? undefined : next.sectionId, unitId: undefined, lessonId: undefined, teachingBlockId: next.view === 'Day' ? undefined : next.teachingBlockId }
+    if (next.view === 'Day') {
+      next = { ...next, courseId: undefined, sectionId: undefined, unitId: undefined, lessonId: undefined, teachingBlockId: undefined }
+    } else {
+      next = { ...next, lessonId: undefined }
+    }
   }
   if (next.focus !== 'lesson') {
     next = { ...next, unitId: next.focus === 'class' ? undefined : next.unitId, lessonId: undefined }
@@ -147,6 +161,40 @@ export function goPlanHome(context: PlanNavigationContext): PlanNavigationContex
     view: 'Day',
     anchorDate: context.anchorDate,
     focus: 'day',
+  })
+}
+
+export function enterPlanView(context: PlanNavigationContext, view: CalendarView, date?: PlanNavigationContext['anchorDate']): PlanNavigationContext {
+  const anchorDate = date ?? context.anchorDate
+  if (view === 'Week') {
+    return sparsePlanContext({
+      ...context,
+      view: 'Week',
+      anchorDate,
+      focus: 'day',
+      lessonId: undefined,
+    })
+  }
+  if (view === 'Day') {
+    if (context.view === 'Day') {
+      return sparsePlanContext({ ...context, view: 'Day', anchorDate })
+    }
+    return createPlanNavigationContext({
+      calendarId: context.calendarId,
+      view: 'Day',
+      anchorDate,
+      focus: 'day',
+    })
+  }
+  if (context.view === 'Day') {
+    return createPlanNavigationContext({ calendarId: context.calendarId, anchorDate, view, focus: 'day' })
+  }
+  return sparsePlanContext({
+    ...context,
+    view,
+    anchorDate,
+    focus: context.focus === 'lesson' ? 'day' : context.focus,
+    lessonId: undefined,
   })
 }
 
