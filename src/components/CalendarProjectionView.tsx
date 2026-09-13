@@ -9,6 +9,7 @@ import type { LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, UnitWor
 import { PlanningDayContinuityView } from './PlanningDayContinuityView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
+import { PlanningYearView } from './PlanningYearView'
 import { CalendarDayCell, MissingBoundary, ProjectionHeading, RangeProjection, TermContext, WeekdayAlignedRange } from './CalendarProjectionPrimitives'
 import { formatDateRange, formatLongDate, formatMonth } from './dateLabels'
 
@@ -25,11 +26,12 @@ type Props = {
   anchorDate: ISODate | null
   planningContext?: PlanningContext | null
   showWeekends?: boolean
+  onStartClass?: (sectionId: string, lessonId: string) => void
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false, onStartClass }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -47,6 +49,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           title={formatLongDate(projection.date)}
           day={projection.day}
           planningContext={planningContext}
+          onStartClass={onStartClass}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
         />
       )
@@ -58,6 +61,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
         <PlanningWeekStrip
           title={formatDateRange(visibleDays[0]?.date ?? projection.startDate, visibleDays[visibleDays.length - 1]?.date ?? projection.endDate)}
           days={visibleDays}
+          focusDate={anchorDate}
           planningContext={planningContext}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
         />
@@ -104,6 +108,9 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
     }
     case 'Year Map': {
       const projection = projectYearMap(calendar)
+      if (planningContext) {
+        return <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} />
+      }
       return (
         <section className="projection-section" aria-label={`${calendar.schoolYearLabel} year map`}>
           <div className="projection-heading-row projection-heading-row--year">
@@ -120,7 +127,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, termContext }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
+function PlanningDayStrip({ title, day, planningContext, termContext, onStartClass }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode; onStartClass?: (sectionId: string, lessonId: string) => void }) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
@@ -134,6 +141,7 @@ function PlanningDayStrip({ title, day, planningContext, termContext }: { title:
             lessons: planningContext.lessons,
             overrides: planningContext.shiftState?.overrides ?? [],
           })}
+          onStartClass={onStartClass}
         />
       ) : (
         <div className="projection-day-strip projection-day-strip--single">
@@ -144,13 +152,13 @@ function PlanningDayStrip({ title, day, planningContext, termContext }: { title:
   )
 }
 
-function PlanningWeekStrip({ title, days, planningContext, termContext }: { title: string; days: ProjectedDay[]; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
+function PlanningWeekStrip({ title, days, focusDate, planningContext, termContext }: { title: string; days: ProjectedDay[]; focusDate: ISODate; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
       {planningContext ? (
         <div className="planning-scroll-frame">
-          <PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} />
+          <PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} focusDate={focusDate} />
         </div>
       ) : (
         <div className="projection-day-strip">

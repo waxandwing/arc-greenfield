@@ -6,10 +6,12 @@ export function PlanningWeekDayView({
   days,
   planning,
   single = false,
+  focusDate,
 }: {
   days: ProjectedDay[]
   planning: PlanningRangeProjection
   single?: boolean
+  focusDate?: string
 }) {
   if (planning.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -17,17 +19,17 @@ export function PlanningWeekDayView({
 
   return (
     <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'}>
-      <PlanningDateHeader days={days} single={single} />
+      <PlanningDateHeader days={days} single={single} focusDate={focusDate} />
       {planning.courses.map((course) => (
-        <PlanningCourse key={course.course.id} course={course} days={days} single={single} />
+        <PlanningCourse key={course.course.id} course={course} days={days} single={single} focusDate={focusDate} />
       ))}
     </div>
   )
 }
 
-function PlanningDateHeader({ days, single }: { days: ProjectedDay[]; single: boolean }) {
+function PlanningDateHeader({ days, single, focusDate }: { days: ProjectedDay[]; single: boolean; focusDate?: string }) {
   return (
-    <div className="planning-date-header" style={gridTemplate(days.length)} aria-hidden="true">
+    <div className="planning-date-header" style={gridTemplate(days, focusDate)} aria-hidden="true">
       <span className="planning-row-label planning-row-label--header">Class</span>
       {days.map((day) => (
         <span key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}`}>
@@ -44,10 +46,12 @@ function PlanningCourse({
   course,
   days,
   single,
+  focusDate,
 }: {
   course: PlanningCourseGroup
   days: ProjectedDay[]
   single: boolean
+  focusDate?: string
 }) {
   return (
     <section className="planning-course" aria-label={`${course.course.title} planning`}>
@@ -57,7 +61,7 @@ function PlanningCourse({
       {course.unitSpans.length > 0 ? (
         <div className="planning-unit-stack" aria-label={`${course.course.title} Unit spans`}>
           {course.unitSpans.map((unit, index) => (
-            <div className="planning-unit-grid" style={gridTemplate(days.length)} key={unit.unitId}>
+            <div className="planning-unit-grid" style={gridTemplate(days, focusDate)} key={unit.unitId}>
               <span className="planning-row-label planning-row-label--unit">{index === 0 ? 'Unit' : ''}</span>
               <div
                 className="planning-unit-span"
@@ -74,7 +78,7 @@ function PlanningCourse({
         {course.sections.length === 0 ? (
           <p className="planning-course-empty">No Sections are attached to this Course yet.</p>
         ) : course.sections.map((row) => (
-          <div className="planning-section-row" style={gridTemplate(days.length)} key={row.section.id}>
+          <div className="planning-section-row" style={gridTemplate(days, focusDate)} key={row.section.id}>
             <div className="planning-row-label">
               <strong>{row.section.name}</strong>
             </div>
@@ -130,8 +134,9 @@ function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
   )
 }
 
-function gridTemplate(dayCount: number): { gridTemplateColumns: string } {
-  return { gridTemplateColumns: `minmax(104px, .8fr) repeat(${dayCount}, minmax(112px, 1fr))` }
+function gridTemplate(days: ProjectedDay[], focusDate?: string): { gridTemplateColumns: string } {
+  const columns = days.map((day) => day.date === focusDate ? 'minmax(180px,1.7fr)' : 'minmax(104px,.78fr)')
+  return { gridTemplateColumns: `minmax(104px,.8fr) ${columns.join(' ')}` }
 }
 
 function humanizeKind(kind: ProjectedDay['kind']): string {

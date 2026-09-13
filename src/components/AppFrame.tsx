@@ -7,6 +7,7 @@ import { WorkspaceStage } from './WorkspaceStage'
 import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useTaskBar } from '../app/useTaskBar'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
+import { useArcTableSession } from '../app/useArcTableSession'
 import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
 import {
   loadViewPreferences,
@@ -18,16 +19,23 @@ import {
 import {
   moveLessonFromFridge,
   moveLessonToFridge,
+  applyArcTableTeachingOutcome,
+  elapsedLiveMinutes,
+  projectArcTableSession,
+  projectDayContinuity,
+  type ArcTableTeachingOutcome,
   undoFridgeRoundTrip,
   type FridgeRoundTripReceipt,
   type ShiftPersistenceInput,
 } from '../planning'
 import type { ISODate } from '../calendar'
+import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfaces'
 
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
   const workspace = useArcWorkspace(workspaceMode.close)
   const taskBar = useTaskBar(workspace)
+  const arcTable = useArcTableSession()
   const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
   const [fridgeDate, setFridgeDate] = useState('')
   const [fridgeUndo, setFridgeUndo] = useState<FridgeRoundTripReceipt | null>(null)
@@ -114,17 +122,67 @@ export function AppFrame() {
     setFridgeUndo(null)
   }
 
+  function startClass(sectionId: string, lessonId: string) {
+    if (!workspace.calendar || !workspace.anchorDate || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+    try {
+      const day = projectDayContinuity({
+        date: workspace.anchorDate,
+        planning: workspace.planningWorkspace,
+        units: workspace.unitWorkspace,
+        lessons: workspace.lessonWorkspace,
+        overrides: workspace.shiftState?.overrides ?? [],
+      })
+      arcTable.start(projectArcTableSession({ day, sectionId, lessonId, calendar: workspace.calendar, liveDate: workspace.anchorDate }))
+    } catch (error) {
+      workspace.setStorageNotice(error instanceof Error ? error.message : String(error))
+    }
+  }
+
+  function endClass(outcome: ArcTableTeachingOutcome): string | null {
+    if (!arcTable.live || !workspace.calendar || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace || !workspace.shiftState) {
+      return 'ArcTable cannot end this class because its Arc planning context is unavailable.'
+    }
+    try {
+      const result = applyArcTableTeachingOutcome({
+        session: arcTable.live.session,
+        liveDate: arcTable.live.session.date,
+        calendar: workspace.calendar,
+        planning: workspace.planningWorkspace,
+        units: workspace.unitWorkspace,
+        lessons: workspace.lessonWorkspace,
+        overrides: workspace.shiftState.overrides,
+        outcome,
+      })
+      const deliveryStates = workspace.lessonWorkspace.deliveryStates.filter((state) => state.lessonId !== result.lessonId || state.sectionId !== result.sectionId)
+      const lessons = { ...workspace.lessonWorkspace, deliveryStates: [...deliveryStates, result] }
+      workspace.useLessons(lessons, lessons, workspace.shiftState)
+      arcTable.finish()
+      return null
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
+  }
+
+  if (arcTable.live && arcTable.surface === 'teacher') {
+    return <ArcTableTeacherMonitor live={arcTable.live} onOpenPlan={arcTable.showPlan} onShowTeacher={arcTable.showTeacher} onShowStudent={arcTable.showStudent} onUpdate={arcTable.update} onEnd={endClass} />
+  }
+
+  if (arcTable.live && arcTable.surface === 'student') {
+    return <ArcTableStudentSurface live={arcTable.live} onOpenPlan={arcTable.showPlan} onShowTeacher={arcTable.showTeacher} onShowStudent={arcTable.showStudent} onUpdate={arcTable.update} onEnd={endClass} />
+  }
+
   const homeView = resolveAvailableHomeView(viewPreferences, workspace.viewAvailability)
   const fridgeContent = workspace.calendar && workspaceMode.mode === 'calendar' ? (
     <div className="b01-fridge-content">
-      <p className="b01-furniture-empty">Unscheduled Lessons and Units stay here until you place them.</p>
+      <p className="b01-furniture-empty">Ideas, resources, and unplanned Lessons can wait here before they belong to a date.</p>
       <label className="b01-fridge-date"><span>Send Lesson to date</span><input type="date" value={fridgeDate} onChange={(event) => setFridgeDate(event.target.value)} /></label>
-      {fridgeUndo && <button type="button" className="quiet-button" onClick={undoLastFridgeMove}>Undo last Fridge move</button>}
+      {fridgeUndo && <button type="button" className="quiet-button" onClick={undoLastFridgeMove}>Undo last Workspace move</button>}
       <section aria-labelledby="b01-fridge-lessons"><h2 id="b01-fridge-lessons">Lessons</h2>{unscheduledLessons.length === 0 ? <p className="b01-furniture-empty">No loose Lessons.</p> : unscheduledLessons.map((lesson) => <article className="b01-fridge-card" key={lesson.id}><strong>{lesson.title}</strong><button type="button" className="quiet-button" onClick={() => scheduleLessonFromFridge(lesson.id)}>Send to week</button></article>)}</section>
       <section aria-labelledby="b01-fridge-units"><h2 id="b01-fridge-units">Units</h2>{unscheduledUnits.length === 0 ? <p className="b01-furniture-empty">No loose Units.</p> : unscheduledUnits.map((unit) => <article className="b01-fridge-card b01-fridge-card--unit" key={unit.id}><strong>{unit.title}</strong><button type="button" className="quiet-button" onClick={() => workspaceMode.open('units')}>Place Unit</button></article>)}</section>
-      {scheduledLessons.length > 0 && <details className="b01-fridge-return"><summary>Return a scheduled Lesson to Fridge</summary>{scheduledLessons.map((lesson) => <button key={lesson.id} type="button" className="quiet-button" onClick={() => sendLessonBackToFridge(lesson.id)}>{lesson.title}</button>)}</details>}
+      {scheduledLessons.length > 0 && <details className="b01-fridge-return"><summary>Move a scheduled Lesson into Workspace</summary>{scheduledLessons.map((lesson) => <button key={lesson.id} type="button" className="quiet-button" onClick={() => sendLessonBackToFridge(lesson.id)}>{lesson.title}</button>)}</details>}
+      <button type="button" className="workspace-capture" onClick={() => workspaceMode.open('lessons')}>+ Capture without choosing a Course first</button>
     </div>
-  ) : <p className="b01-furniture-empty">Fridge is available in calendar mode.</p>
+  ) : <p className="b01-furniture-empty">Workspace is available in Plan View.</p>
 
   const settingsContent = workspace.calendar && workspaceMode.mode === 'calendar' ? (
     <SettingsFurnitureContent
@@ -159,8 +217,9 @@ export function AppFrame() {
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
 
       <header className="arc-header" aria-label="Arc application header">
-        <button className="arc-wordmark" type="button" aria-label={`Return to ${homeView} view`} onClick={returnHome}>arc</button>
+        <button className="arc-wordmark" type="button" aria-label={`Return to ${homeView} view`} onClick={returnHome}><img src="/assets/arc/arc-mark.png" alt="Arc" /></button>
         <div className="arc-header-space" aria-hidden="true" />
+        {arcTable.live ? <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}><span>{arcTable.live.session.sectionName} live · {elapsedLiveMinutes(arcTable.live)} min</span><strong>Return to ArcTable</strong></button> : null}
       </header>
 
       <div className="arc-layout">
@@ -188,7 +247,7 @@ export function AppFrame() {
 
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
-          <B01Furniture settings={settingsContent} fridge={fridgeContent} tasks={taskContent}>
+          <B01Furniture settings={settingsContent} workspace={fridgeContent} tasks={taskContent}>
             <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
               <WorkspaceStage
                 mode={workspaceMode.mode}
@@ -213,6 +272,7 @@ export function AppFrame() {
                 onUseUnits={workspace.useUnits}
                 onUseLessons={workspace.useLessons}
                 onApplyRecoveryShift={workspace.applyRecoveryShift}
+                onStartClass={startClass}
                 onCloseMode={workspaceMode.close}
               />
             </section>

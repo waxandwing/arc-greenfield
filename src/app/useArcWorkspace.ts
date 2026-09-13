@@ -339,6 +339,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     lessonInput,
     shiftState,
     storageNotice,
+    setStorageNotice,
     previousTarget,
     nextTarget,
     todayTarget,

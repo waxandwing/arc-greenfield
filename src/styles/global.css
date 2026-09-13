@@ -11,10 +11,11 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .skip-link:focus{width:auto;height:auto;overflow:visible;clip:auto;clip-path:none;white-space:normal;padding:8px 12px;border-radius:var(--radius-sm)}
 
 .arc-shell{min-height:100dvh;background:linear-gradient(180deg,#EEE6D8 0,#E9E0D1 100%);color:var(--ink)}
-.arc-header{height:68px;display:grid;grid-template-columns:96px minmax(0,1fr);align-items:center;padding-inline:var(--page-gutter);background:transparent}
-.arc-wordmark{border:0;background:transparent;padding:8px 0;text-align:left;font:600 32px/1 var(--font-editorial);letter-spacing:-.045em;cursor:pointer}
-.arc-wordmark::after{content:'';display:block;width:22px;height:2px;margin-top:5px;background:var(--terracotta);transform:rotate(-2deg);transform-origin:left center}
+.arc-header{min-height:68px;display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:16px;padding:8px var(--page-gutter);background:transparent}
+.arc-wordmark{width:46px;height:46px;border:0;background:transparent;padding:0;cursor:pointer}
+.arc-wordmark img{display:block;width:46px;height:46px;object-fit:contain}
 .arc-header-space{min-width:0}
+.arc-live-return{display:flex;align-items:center;gap:16px;min-height:44px;padding:8px 16px;border:1px solid rgba(31,75,58,.3);border-radius:999px;background:rgba(228,179,61,.2);cursor:pointer}.arc-live-return span{font-size:13px}.arc-live-return strong{color:#1f4b3a}
 
 .arc-layout{position:relative;min-height:calc(100dvh - 68px);overflow:hidden}
 .arc-calendar-stage{min-width:0;padding:0 var(--page-gutter) var(--page-gutter);outline:none}
@@ -87,9 +88,13 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .calendar-day-cell--unknown{background:repeating-linear-gradient(135deg,rgba(44,46,46,.025) 0,rgba(44,46,46,.025) 6px,transparent 6px,transparent 12px)}
 .projection-empty-state{margin:0;padding:var(--space-4);color:var(--soft-charcoal)}
 .calendar-unconfigured{padding:var(--space-4)}
+.workspace-capture{width:100%;min-height:46px;margin-top:16px;border:1px dashed rgba(31,75,58,.38);border-radius:var(--radius-sm);background:rgba(255,255,255,.2);color:#1f4b3a;font-weight:800;cursor:pointer}
+.planning-year{display:grid;gap:32px;min-width:850px;padding:36px}.planning-year-heading{display:flex;justify-content:space-between;gap:32px;align-items:end}.planning-year-heading h2{margin:4px 0 0;font:500 36px/1.1 var(--font-editorial)}.planning-year-heading>p{max-width:520px;margin:0;color:var(--soft-charcoal)}.planning-year-course{display:grid;grid-template-columns:240px minmax(0,1fr);gap:30px;align-items:center}.planning-year-course-title h3{margin:0 0 5px;font:500 28px/1.1 var(--font-editorial)}.planning-year-course-title span{font-size:13px;color:var(--soft-charcoal)}.planning-year-track{position:relative;display:flex;gap:14px;min-height:150px;padding:28px 18px}.planning-year-underlay{position:absolute;inset:14px 0;border:1px solid rgba(44,46,46,.12);border-radius:24px;background:rgba(228,179,61,.08)}.planning-year-course--1 .planning-year-underlay{background:rgba(154,170,137,.10)}.planning-year-course--2 .planning-year-underlay{background:rgba(170,160,184,.11)}.planning-year-unit{position:relative;z-index:1;display:grid;flex:1;align-content:center;min-width:180px;min-height:100px;padding:16px 18px;border:1px solid rgba(44,46,46,.14);border-radius:18px;background:rgba(247,241,231,.96);box-shadow:0 9px 20px -20px #2c2e2e}.planning-year-unit span,.planning-year-unit small{font-size:12px;color:var(--soft-charcoal)}.planning-year-unit strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px}.planning-year-empty{position:relative;z-index:1;margin:0;padding:32px 24px;color:var(--soft-charcoal)}
+.day-continuity-lesson .primary-button{margin-top:12px;background:#1f4b3a;color:#fff}
 
 @media (max-width:800px){
-  .arc-header{height:64px;padding-inline:var(--mobile-gutter)}
+  .arc-header{min-height:64px;padding-inline:var(--mobile-gutter)}
+  .arc-live-return span{display:none}
   .arc-layout{min-height:calc(100dvh - 64px)}
   .arc-calendar-stage{padding:0 var(--mobile-gutter) var(--mobile-gutter)}
   .calendar-stage-header{align-items:end;grid-template-columns:1fr;gap:var(--space-2);min-height:88px}

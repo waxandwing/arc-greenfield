@@ -169,6 +169,65 @@
   padding-block: var(--space-2);
 }
 
+.day-start-class {
+  justify-self: start;
+  min-height: 44px;
+  margin-top: var(--space-2);
+  padding: 9px 18px;
+  border: 1px solid rgba(31,75,58,.28);
+  border-radius: 999px;
+  background: #1f4b3a;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.day-period-rail {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(118px, 1fr));
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 2px 14px;
+}
+
+.day-period-button {
+  display: grid;
+  min-height: 74px;
+  padding: 12px 14px;
+  border: 1px solid rgba(44, 46, 46, .14);
+  border-radius: 16px;
+  background: rgba(247, 241, 231, .72);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.day-period-button span {
+  color: var(--soft-charcoal);
+  font-size: 12px;
+}
+
+.day-period-button strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-period-button.is-selected {
+  border-color: #1f4b3a;
+  background: #1f4b3a;
+  color: #fff;
+  box-shadow: 0 10px 24px -18px #1f4b3a;
+}
+
+.day-period-button.is-selected span {
+  color: rgba(255, 255, 255, .74);
+}
+
+.day-continuity-course--focus {
+  min-height: 430px;
+}
+
 @media (max-width: 900px) {
   .day-continuity-section {
     grid-template-columns: 1fr;

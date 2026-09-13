@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { DayContinuityLesson, DayContinuityProjection } from '../planning/dayContinuityProjection'
 import { formatShortDate } from './dateLabels'
@@ -5,10 +6,17 @@ import { formatShortDate } from './dateLabels'
 export function PlanningDayContinuityView({
   day,
   continuity,
+  onStartClass,
 }: {
   day: ProjectedDay
   continuity: DayContinuityProjection
+  onStartClass?: (sectionId: string, lessonId: string) => void
 }) {
+  const periods = continuity.courses.flatMap((course) => course.sections.map((section) => ({ course, section })))
+    .sort((a, b) => periodNumber(a.section.sectionName) - periodNumber(b.section.sectionName))
+  const [selectedSectionId, setSelectedSectionId] = useState(periods[0]?.section.sectionId ?? '')
+  const selected = periods.find(({ section }) => section.sectionId === selectedSectionId) ?? periods[0]
+
   if (continuity.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
   }
@@ -22,43 +30,49 @@ export function PlanningDayContinuityView({
         </p>
       ) : null}
 
-      {continuity.courses.map((course) => (
-        <section className="day-continuity-course" aria-label={`${course.courseTitle} today`} key={course.courseId}>
+      {periods.length > 0 ? (
+        <nav className="day-period-rail" aria-label="Teaching day periods">
+          {periods.map(({ course, section }) => (
+            <button type="button" className={`day-period-button${section.sectionId === selected?.section.sectionId ? ' is-selected' : ''}`} aria-current={section.sectionId === selected?.section.sectionId ? 'true' : undefined} onClick={() => setSelectedSectionId(section.sectionId)} key={section.sectionId}>
+              <span>{section.sectionName}</span><strong>{course.courseTitle}</strong>
+            </button>
+          ))}
+        </nav>
+      ) : null}
+
+      {selected ? (
+        <section className="day-continuity-course day-continuity-course--focus" aria-label={`${selected.course.courseTitle} today`} key={selected.course.courseId}>
           <header className="day-continuity-course-heading">
-            <h2>{course.courseTitle}</h2>
-            {course.activeUnits.length > 0 ? (
+            <div><p className="day-continuity-kicker">Focused teaching moment · {selected.section.sectionName}</p><h2>{selected.course.courseTitle}</h2></div>
+            {selected.course.activeUnits.length > 0 ? (
               <p className="day-continuity-units">
                 <span>Unit</span>
-                <strong>{course.activeUnits.map((unit) => unit.title).join(' · ')}</strong>
+                <strong>{selected.course.activeUnits.map((unit) => unit.title).join(' · ')}</strong>
               </p>
             ) : null}
           </header>
 
-          {course.sections.length === 0 ? (
-            <p className="planning-course-empty">No Sections are attached to this Course yet.</p>
-          ) : (
-            <div className="day-continuity-sections">
-              {course.sections.map((section) => (
-                <article className="day-continuity-section" key={section.sectionId}>
+          <div className="day-continuity-sections">
+                <article className="day-continuity-section" key={selected.section.sectionId}>
                   <header className="day-continuity-section-heading">
-                    <h3>{section.sectionName}</h3>
+                    <h3>{selected.section.sectionName}</h3>
                   </header>
 
                   <div className="day-continuity-work">
-                    {section.carryovers.length > 0 ? (
-                      <section className="day-continuity-held" aria-label={`${section.sectionName} unfinished teaching`}>
+                    {selected.section.carryovers.length > 0 ? (
+                      <section className="day-continuity-held" aria-label={`${selected.section.sectionName} unfinished teaching`}>
                         <p className="day-continuity-kicker">Arc is holding your place</p>
-                        {section.carryovers.map((lesson) => (
-                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} carryover />
+                        {selected.section.carryovers.map((lesson) => (
+                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={selected.section.sectionId} onStartClass={onStartClass} carryover />
                         ))}
                       </section>
                     ) : null}
 
-                    <section className="day-continuity-planned" aria-label={`${section.sectionName} plan for today`}>
+                    <section className="day-continuity-planned" aria-label={`${selected.section.sectionName} plan for today`}>
                       <p className="day-continuity-kicker">Today’s plan</p>
-                      {section.scheduledLessons.length > 0 ? (
-                        section.scheduledLessons.map((lesson) => (
-                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} />
+                      {selected.section.scheduledLessons.length > 0 ? (
+                        selected.section.scheduledLessons.map((lesson) => (
+                          <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={selected.section.sectionId} onStartClass={onStartClass} />
                         ))
                       ) : (
                         <p className="day-continuity-empty">No Lesson placed for this class.</p>
@@ -66,16 +80,19 @@ export function PlanningDayContinuityView({
                     </section>
                   </div>
                 </article>
-              ))}
-            </div>
-          )}
+          </div>
         </section>
-      ))}
+      ) : <p className="planning-course-empty">No Sections are attached to these Courses yet.</p>}
     </div>
   )
 }
 
-function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuityLesson; carryover?: boolean }) {
+function periodNumber(label: string): number {
+  const match = label.match(/\d+/)
+  return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER
+}
+
+function ContinuityLesson({ lesson, sectionId, onStartClass, carryover = false }: { lesson: DayContinuityLesson; sectionId: string; onStartClass?: (sectionId: string, lessonId: string) => void; carryover?: boolean }) {
   const status = humanizeStatus(lesson.deliveryStatus)
   const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
   const accessible = [
@@ -108,6 +125,9 @@ function ContinuityLesson({ lesson, carryover = false }: { lesson: DayContinuity
       ) : null}
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</p>
+      ) : null}
+      {onStartClass && (lesson.deliveryStatus === 'not-started' || lesson.deliveryStatus === 'in-progress') ? (
+        <button type="button" className="day-start-class" onClick={() => onStartClass(sectionId, lesson.lessonId)}>{lesson.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
       ) : null}
     </article>
   )

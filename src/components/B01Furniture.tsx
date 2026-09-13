@@ -2,19 +2,19 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
 
-type DrawerName = 'settings' | 'fridge' | 'tasks'
+type DrawerName = 'settings' | 'workspace' | 'tasks'
 
 type Props = {
   settings: ReactNode
-  fridge?: ReactNode
+  workspace?: ReactNode
   tasks?: ReactNode
   children: ReactNode
 }
 
-export function B01Furniture({ settings, fridge, tasks, children }: Props) {
-  const [open, setOpen] = useState<Record<DrawerName, boolean>>({ settings: false, fridge: false, tasks: false })
+export function B01Furniture({ settings, workspace, tasks, children }: Props) {
+  const [open, setOpen] = useState<Record<DrawerName, boolean>>({ settings: false, workspace: false, tasks: false })
   const settingsButton = useRef<HTMLButtonElement>(null)
-  const fridgeButton = useRef<HTMLButtonElement>(null)
+  const workspaceButton = useRef<HTMLButtonElement>(null)
   const tasksButton = useRef<HTMLButtonElement>(null)
 
   function toggle(name: DrawerName) {
@@ -24,11 +24,11 @@ export function B01Furniture({ settings, fridge, tasks, children }: Props) {
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Escape') return
-      const active: DrawerName | null = open.tasks ? 'tasks' : open.fridge ? 'fridge' : open.settings ? 'settings' : null
+      const active: DrawerName | null = open.tasks ? 'tasks' : open.workspace ? 'workspace' : open.settings ? 'settings' : null
       if (!active) return
       event.preventDefault()
       setOpen((current) => ({ ...current, [active]: false }))
-      const owner = active === 'settings' ? settingsButton : active === 'fridge' ? fridgeButton : tasksButton
+      const owner = active === 'settings' ? settingsButton : active === 'workspace' ? workspaceButton : tasksButton
       requestAnimationFrame(() => owner.current?.focus())
     }
     window.addEventListener('keydown', onKeyDown)
@@ -45,11 +45,11 @@ export function B01Furniture({ settings, fridge, tasks, children }: Props) {
         </div>
       </aside>
 
-      <aside className="b01-side-owner b01-fridge-owner" data-state={open.fridge ? 'open' : 'closed'} aria-label="Fridge furniture">
-        <button ref={fridgeButton} className="b01-edge-tab b01-edge-tab--right" type="button" aria-expanded={open.fridge} aria-controls="b01-fridge-surface" onClick={() => toggle('fridge')}>Fridge</button>
-        <div id="b01-fridge-surface" className="b01-furniture-surface b01-fridge-surface" inert={!open.fridge ? true : undefined}>
-          <p className="b01-furniture-kicker">Fridge</p>
-          {fridge ?? <p className="b01-furniture-empty">No loose planning objects yet.</p>}
+      <aside className="b01-side-owner b01-fridge-owner" data-state={open.workspace ? 'open' : 'closed'} aria-label="Workspace furniture">
+        <button ref={workspaceButton} className="b01-edge-tab b01-edge-tab--right" type="button" aria-expanded={open.workspace} aria-controls="b01-fridge-surface" onClick={() => toggle('workspace')}>Workspace</button>
+        <div id="b01-fridge-surface" className="b01-furniture-surface b01-fridge-surface" inert={!open.workspace ? true : undefined}>
+          <p className="b01-furniture-kicker">Workspace</p>
+          {workspace ?? <p className="b01-furniture-empty">No loose planning material yet.</p>}
         </div>
       </aside>
 

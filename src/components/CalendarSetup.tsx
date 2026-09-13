@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useRef, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
   buildManualCalendarInput,
   createManualCalendarId,
@@ -98,6 +98,10 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
   const firstDayInvalid = validationVisible && !firstDay
   const lastDayInvalid = validationVisible && !lastDay
 
+  useEffect(() => {
+    if (errors.length > 0) errorSummaryRef.current?.focus()
+  }, [errors])
+
   function toggleWeekday(day: Weekday) {
     setWeekdays((current) => current.includes(day)
       ? current.filter((value) => value !== day)
@@ -137,7 +141,6 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
 
     if (nextErrors.length > 0) {
       setErrors(nextErrors)
-      requestAnimationFrame(() => errorSummaryRef.current?.focus())
       return
     }
 
