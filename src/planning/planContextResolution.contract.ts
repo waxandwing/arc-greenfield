@@ -3,7 +3,7 @@ import { createPlanNavigationContext } from '../calendar/navigationContext'
 import { createCourse, createSection } from './courses'
 import { hydrateLessonWorkspace } from './lessonWorkspace'
 import { createLesson } from './lessons'
-import { focusLesson, focusTeachingBlock, goPlanHome, enterPlanView, resolvePlanContext, retreatPlanFocus } from './planContextResolution'
+import { focusLesson, focusTeachingBlock, goPlanHome, enterMonthFromYearUnit, enterPlanView, resolvePlanContext, retreatPlanFocus } from './planContextResolution'
 import { hydrateUnitWorkspace } from './unitWorkspace'
 import { hydratePlanningWorkspace } from './workspace'
 
@@ -152,6 +152,9 @@ assert(yearFromMonth.view === 'Year Map' && yearFromMonth.anchorDate === '2026-0
 
 const monthFromYear = resolvePlanContext(enterPlanView(yearFromLesson, 'Month', '2026-09-14'), authority)
 assert(monthFromYear.view === 'Month' && monthFromYear.anchorDate === '2026-09-14' && monthFromYear.focus === 'day' && monthFromYear.courseId === course.id && monthFromYear.unitId === unit.id && !monthFromYear.sectionId && !monthFromYear.lessonId && !monthFromYear.teachingBlockId, 'Year → Month must use the selected date and keep valid Course/Unit without Section.')
+
+const monthFromYearUnit = resolvePlanContext(enterMonthFromYearUnit(yearFromDay, { date: '2026-09-14', courseId: course.id, unitId: unit.id }), authority)
+assert(monthFromYearUnit.view === 'Month' && monthFromYearUnit.anchorDate === '2026-09-14' && monthFromYearUnit.courseId === course.id && monthFromYearUnit.unitId === unit.id && monthFromYearUnit.focus === 'day' && !monthFromYearUnit.sectionId, 'Year unit selection must open Month with the unit’s Course and start date.')
 
 const homeFromYear = resolvePlanContext(goPlanHome(yearFromLesson), authority)
 assert(homeFromYear.view === 'Day' && homeFromYear.focus === 'day' && homeFromYear.anchorDate === '2026-09-16' && !homeFromYear.sectionId, 'Year → Home must keep the anchor date and drop to Teaching Day.')

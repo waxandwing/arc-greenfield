@@ -2,7 +2,7 @@ import type { ISODate, SchoolCalendar } from '../calendar'
 import type { PlanningWorkspace, UnitWorkspace } from '../planning'
 import { formatShortDate } from './dateLabels'
 
-export function PlanningYearView({ calendar, planning, units, onSelectUnit }: { calendar: SchoolCalendar; planning: PlanningWorkspace; units: UnitWorkspace; onSelectUnit?: (date: ISODate) => void }) {
+export function PlanningYearView({ calendar, planning, units, onSelectUnit }: { calendar: SchoolCalendar; planning: PlanningWorkspace; units: UnitWorkspace; onSelectUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void }) {
   return (
     <div className="planning-year" aria-label={`${calendar.schoolYearLabel} Course and Unit progression`}>
       <header className="planning-year-heading">
@@ -20,7 +20,7 @@ export function PlanningYearView({ calendar, planning, units, onSelectUnit }: { 
               {courseUnits.map((unit, index) => {
                 const placement = unit.placement!
                 return (
-                  <button type="button" className="planning-year-unit" key={unit.id} aria-label={`Open ${unit.title} in Month`} onClick={() => onSelectUnit?.(placement.startDate)}>
+                  <button type="button" className="planning-year-unit" key={unit.id} aria-label={`Open ${unit.title} in Month`} onClick={() => onSelectUnit?.({ date: placement.startDate, courseId: course.id, unitId: unit.id })}>
                     <span>Unit {index + 1}</span><strong>{unit.title}</strong><small>{formatShortDate(placement.startDate)}–{formatShortDate(placement.endDate)}</small>
                   </button>
                 )

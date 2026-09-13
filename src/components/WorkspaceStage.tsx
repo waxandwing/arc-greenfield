@@ -53,6 +53,7 @@ type WorkspaceStageProps = {
   onApplyRecoveryShift: (operation: ShiftOperation) => string | null
   onStartClass: (sectionId: string, lessonId: string) => void
   onSelectDate: (date: ISODate, view: CalendarView) => void
+  onSelectYearUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
   onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
   onSelectLesson?: (lesson: DayContinuityLesson) => void
   onRetreatPlanFocus?: () => void
@@ -91,6 +92,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onApplyRecoveryShift,
     onStartClass,
     onSelectDate,
+    onSelectYearUnit,
     onSelectTeachingBlock,
     onSelectLesson,
     onRetreatPlanFocus,
@@ -200,6 +202,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       planContext={planContext}
       onStartClass={onStartClass}
       onSelectDate={onSelectDate}
+      onSelectYearUnit={onSelectYearUnit}
       onSelectTeachingBlock={onSelectTeachingBlock}
       onSelectLesson={onSelectLesson}
       onRetreatPlanFocus={onRetreatPlanFocus}

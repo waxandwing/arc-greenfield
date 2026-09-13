@@ -339,6 +339,7 @@ export function AppFrame() {
                 onApplyRecoveryShift={workspace.applyRecoveryShift}
                 onStartClass={startClass}
                 onSelectDate={deepenTo}
+                onSelectYearUnit={workspace.selectYearUnit}
                 onSelectTeachingBlock={workspace.selectTeachingBlock}
                 onSelectLesson={workspace.selectLesson}
                 onRetreatPlanFocus={workspace.retreatFocus}

@@ -31,6 +31,7 @@ type Props = {
   showWeekends?: boolean
   onStartClass?: (sectionId: string, lessonId: string) => void
   onSelectDate?: (date: ISODate, view: CalendarView) => void
+  onSelectYearUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
   onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
   onSelectLesson?: (lesson: DayContinuityLesson) => void
   onRetreatPlanFocus?: () => void
@@ -41,7 +42,7 @@ type Props = {
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onAddNote, onDeleteNote }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onAddNote, onDeleteNote }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -166,7 +167,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
               </p>
             ) : null}
             <div className="planning-scroll-frame">
-              <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} onSelectUnit={(date) => onSelectDate?.(date, 'Month')} />
+              <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} onSelectUnit={(input) => onSelectYearUnit?.(input)} />
             </div>
           </section>
         )

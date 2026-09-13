@@ -15,6 +15,7 @@
     "test:plan-navigation": "node tests/plan-navigation.smoke.mjs",
     "test:plan-week": "node tests/plan-week.smoke.mjs",
     "test:plan-month": "node tests/plan-month.smoke.mjs",
+    "test:plan-year": "node tests/plan-year.smoke.mjs",
     "test:plan-year": "node tests/plan-year.smoke.mjs"
   },
   "dependencies": {

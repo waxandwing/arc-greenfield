@@ -145,6 +145,17 @@ export function goPlanHome(context: PlanNavigationContext): PlanNavigationContex
   })
 }
 
+export function enterMonthFromYearUnit(
+  context: PlanNavigationContext,
+  input: { date: PlanNavigationContext['anchorDate']; courseId: string; unitId: string },
+): PlanNavigationContext {
+  return sparsePlanContext({
+    ...enterPlanView(context, 'Month', input.date),
+    courseId: input.courseId,
+    unitId: input.unitId,
+  })
+}
+
 export function enterPlanView(context: PlanNavigationContext, view: CalendarView, date?: PlanNavigationContext['anchorDate']): PlanNavigationContext {
   const anchorDate = date ?? context.anchorDate
   if (view === 'Week' || view === 'Month' || view === 'Year Map') {

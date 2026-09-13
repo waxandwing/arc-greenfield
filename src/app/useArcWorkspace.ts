@@ -45,6 +45,7 @@ import {
   type CurriculumImportProposal,
   type CurriculumImportReceipt,
   commitCurriculumImport,
+  enterMonthFromYearUnit,
   enterPlanView,
   focusLesson,
   focusTeachingBlock,
@@ -154,6 +155,16 @@ export function useArcWorkspace(onCloseMode: () => void) {
       view,
     })
     commitPlan(enterPlanView(current, view, date ?? current.anchorDate))
+  }
+
+  function selectYearUnit(input: { date: ISODate; courseId: string; unitId: string }) {
+    if (!calendar) return
+    const current = planContext ?? createPlanNavigationContext({
+      calendarId: calendar.id,
+      anchorDate: input.date,
+      view: 'Year Map',
+    })
+    commitPlan(enterMonthFromYearUnit(current, input))
   }
 
   function useCalendar(nextCalendar: SchoolCalendar, input: CalendarHydrationInput) {
@@ -606,6 +617,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
   return {
     activeView,
     setActiveView,
+    selectYearUnit,
     planContext,
     viewWasPersisted,
     calendar,

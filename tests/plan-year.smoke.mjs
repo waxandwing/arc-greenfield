@@ -141,13 +141,27 @@ try {
 
   await withPage(browser, storageEntries(data, dayContext), async (page, runtimeErrors) => {
     await selectCalendarView(page, 'Year')
-    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Day → Year did not enter Year Map.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Day → Year did not enter Year.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Day → Year did not preserve the anchor date.')
-    assert(await page.locator('.planning-year-stage').getAttribute('data-plan-date') === '2026-09-15', 'Year surface did not keep the temporal anchor.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-focus') === 'day', 'Day → Year invented Class focus.')
+    assert(await page.locator('.planning-year').count() === 1, 'Year surface did not render PlanningYearView.')
     assert(await page.getByText('School Year · All Courses', { exact: true }).isVisible(), 'Year state header did not name School Year · All Courses.')
-    assert(/2026–27/.test((await page.locator('.plan-state-secondary').textContent()) ?? ''), 'Year state header did not name the school year span.')
+    assert(/2026–27/.test((await page.locator('.plan-state-secondary').textContent()) ?? ''), 'Year state header did not name the school year.')
     await shot(page, '01-year-from-day.png')
     assert(runtimeErrors.length === 0, `Day → Year runtime errors: ${runtimeErrors.join(' | ')}`)
+  })
+
+  await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
+    await selectCalendarView(page, 'Year')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Class → Year did not enter Year.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Class → Year did not preserve the date.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Class → Year did not preserve Course.')
+    assert(!await page.locator('.plan-state-header').getAttribute('data-plan-section'), 'Class → Year kept Section at Year depth.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-lesson') === '', 'Class → Year invented Lesson focus.')
+    assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).teachingBlockId === undefined, 'Class → Year kept teachingBlockId as hidden Year return state.')
+    assert(await page.getByText('2D Art 1 · School Year', { exact: true }).isVisible(), 'Class → Year header did not keep Course at Year depth.')
+    await shot(page, '03-year-course-context.png')
   })
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
@@ -155,38 +169,66 @@ try {
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
     await selectCalendarView(page, 'Month')
     await selectCalendarView(page, 'Year')
-    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Month → Year did not enter Year Map.')
-    assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Month → Year did not preserve the date.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Month → Year did not preserve Course.')
-    assert(await page.locator('.planning-year-stage').getAttribute('data-plan-unit') === 'unit-2d-2', 'Month → Year did not preserve Unit.')
-    assert(!await page.locator('.plan-state-header').getAttribute('data-plan-section'), 'Month → Year kept Section as Year state.')
+    assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).unitId === 'unit-2d-2', 'Month → Year did not preserve Unit.')
     await shot(page, '02-year-from-month.png')
-  })
-
-  await withPage(browser, storageEntries(data, dayContext), async (page) => {
-    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
-    await selectCalendarView(page, 'Year')
-    assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Class → Year did not preserve Course.')
-    assert(!await page.locator('.plan-state-header').getAttribute('data-plan-section'), 'Class → Year kept Class-only Section state.')
-    assert(!await page.locator('.plan-state-header').getAttribute('data-plan-lesson'), 'Class → Year invented Lesson focus.')
-    assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).teachingBlockId === undefined, 'Class → Year kept teachingBlockId as hidden Year return state.')
-    assert(await page.getByText('2D Art 1 · School Year', { exact: true }).isVisible(), 'Class → Year header did not name Course · School Year.')
-    await shot(page, '03-year-course-context.png')
   })
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
     await selectCalendarView(page, 'Year')
-    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Lesson → Year did not enter Year Map.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Lesson → Year did not enter Year.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Lesson → Year did not preserve the date.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Lesson → Year dropped Course.')
-    assert(await page.locator('.planning-year-stage').getAttribute('data-plan-unit') === 'unit-2d-2', 'Lesson → Year dropped Unit.')
+    assert(!await page.locator('.plan-state-header').getAttribute('data-plan-section'), 'Lesson → Year kept Section at Year depth.')
     assert(!await page.locator('.plan-state-header').getAttribute('data-plan-lesson'), 'Lesson → Year kept Lesson as active Year state.')
-    const yearCtx = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1')))
-    assert(yearCtx.lessonId === undefined && yearCtx.teachingBlockId === undefined && yearCtx.sectionId === undefined, 'Lesson → Year persisted low-level IDs.')
-    assert(yearCtx.courseId === 'course-2d' && yearCtx.unitId === 'unit-2d-2', 'Lesson → Year dropped useful Course/Unit.')
+    const lessonYear = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1')))
+    assert(lessonYear.lessonId === undefined, 'Lesson → Year persisted a Lesson ID as Year state.')
+    assert(lessonYear.teachingBlockId === undefined, 'Lesson → Year kept teachingBlockId as hidden Year return state.')
+    assert(lessonYear.courseId === 'course-2d' && lessonYear.unitId === 'unit-2d-2', 'Lesson → Year dropped a useful Course/Unit.')
     assert(await page.locator('[data-lesson-focus]').count() === 0, 'Lesson → Year still rendered Lesson Focus.')
     await shot(page, '04-year-unit-context.png')
+  })
+
+  await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await selectCalendarView(page, 'Week')
+    await selectCalendarView(page, 'Year')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Week → Year did not enter Year.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Week → Year did not preserve the anchor date.')
+  })
+
+  await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await selectCalendarView(page, 'Month')
+    await selectCalendarView(page, 'Year')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Month → Year did not enter Year.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Month → Year did not preserve the anchor date.')
+  })
+
+  await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
+    await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
+    await selectCalendarView(page, 'Year')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Lesson → Year did not keep Course for Unit deep link.')
+    assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).unitId === 'unit-2d-2', 'Lesson → Year did not keep Unit for deep link.')
+    await page.getByRole('button', { name: 'Open Value & Form in Month' }).click()
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Month', 'Year → Month did not open Month.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-14', 'Year → Month did not use the Unit start date.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Year → Month dropped Course.')
+    assert(!await page.locator('.plan-state-header').getAttribute('data-plan-lesson'), 'Year → Month kept Lesson focus.')
+    const monthCtx = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1')))
+    assert(monthCtx.unitId === 'unit-2d-2', 'Year → Month did not keep the selected Course Unit.')
+    assert(!monthCtx.sectionId, 'Year → Month resurrected Section at Month depth.')
+    await shot(page, '07-year-back-to-month.png')
+  })
+
+  await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await selectCalendarView(page, 'Year')
+    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Year → Home did not land on Teaching Day.')
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Year → Home moved the anchored date.')
+    assert(await page.getByRole('heading', { level: 1, name: 'Day' }).isVisible(), 'Year → Home did not open the Day view.')
+    assert(await page.getByText('My Teaching Day', { exact: true }).isVisible(), 'Year → Home did not restore the Teaching Day header.')
   })
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
@@ -197,6 +239,7 @@ try {
     assert(await page.getByRole('button', { name: 'Workspace', exact: true }).getAttribute('aria-expanded') === 'true', 'Year did not open Workspace as an overlay.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-overlay') === 'workspace', 'Workspace overlay was not reflected from Year.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Opening Workspace from Year mutated Plan view.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Opening Workspace from Year mutated the date.')
     assert(await page.getByText('Museum label mini-lesson', { exact: true }).isVisible(), 'Workspace did not open over Year.')
     await shot(page, '05-year-workspace.png')
     await page.getByRole('button', { name: 'Close Workspace', exact: true }).click()
@@ -210,41 +253,30 @@ try {
   })
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
-    await selectCalendarView(page, 'Year')
-    await page.getByRole('button', { name: 'Open Line as Language in Month', exact: true }).click()
-    assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Month', 'Year → Month did not open Month.')
-    assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-01', 'Year → Month did not use the unit start date.')
-    assert(await page.locator('.planning-month-stage').getAttribute('data-plan-date') === '2026-09-01', 'Year → Month did not anchor Month to the selected unit.')
-    await shot(page, '07-year-back-to-month.png')
-  })
-
-  await withPage(browser, storageEntries(data, dayContext), async (page) => {
-    await selectCalendarView(page, 'Year')
-    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
-    assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Year → Home did not land on Teaching Day.')
-    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Year → Home moved the anchored date.')
-    assert(await page.getByRole('heading', { level: 1, name: 'Day' }).isVisible(), 'Year → Home did not open the Day view.')
-    assert(await page.getByText('My Teaching Day', { exact: true }).isVisible(), 'Year → Home did not restore the Teaching Day header.')
+    await selectCalendarView(page, 'Month')
+    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
+    assert(await page.getByText('Shifted: Period 6', { exact: true }).count() > 0, 'Section divergence was lost on Month after Year work.')
   })
 
   const yearContext = {
     schemaVersion: 2, calendarId: 'arc-plan-gauntlet-2026', view: 'Year Map', anchorDate: '2026-09-15',
-    focus: 'day', courseId: 'course-2d', unitId: 'unit-2d-2', sectionId: 'section-p6', teachingBlockId: 'section-p6', lessonId: 'lesson-2d-5',
+    focus: 'day', courseId: 'course-2d', unitId: 'unit-2d-2', sectionId: 'section-p6', teachingBlockId: 'section-p6',
   }
   await withPage(browser, storageEntries(data, yearContext), async (page) => {
     await page.locator('.planning-year').waitFor({ timeout: 5000 })
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Refresh did not restore Year view.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Refresh did not restore the Year anchor date.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Refresh did not restore Year Course.')
-    assert(await page.locator('.planning-year-stage').getAttribute('data-plan-unit') === 'unit-2d-2', 'Refresh did not restore Year Unit.')
-    assert(!await page.locator('.plan-state-header').getAttribute('data-plan-lesson'), 'Refresh restored a Lesson as active Year state.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-focus') === 'day', 'Refresh did not drop Year to day focus.')
     assert(!await page.locator('.plan-state-header').getAttribute('data-plan-section'), 'Refresh resurrected Section on Year.')
+    assert(!await page.locator('.plan-state-header').getAttribute('data-plan-lesson'), 'Refresh restored a Lesson as active Year state.')
     assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).teachingBlockId === undefined, 'Year refresh resurrected teachingBlockId.')
   })
 
   const staleYear = {
     schemaVersion: 2, calendarId: 'arc-plan-gauntlet-2026', view: 'Year Map', anchorDate: '2026-09-15',
-    focus: 'lesson', courseId: 'course-2d', unitId: 'unit-2d-2', lessonId: 'lesson-missing', teachingBlockId: 'section-p6',
+    focus: 'lesson', courseId: 'course-2d', unitId: 'unit-2d-2',
+    lessonId: 'lesson-missing', teachingBlockId: 'section-p6',
   }
   await withPage(browser, storageEntries(data, staleYear), async (page) => {
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Stale Year Lesson did not remain on Year.')
@@ -261,13 +293,7 @@ try {
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Year Map', 'Stale Year Course did not fall back to Year.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Stale Year Course moved the date.')
     assert(!await page.locator('.plan-state-header').getAttribute('data-plan-course'), 'Stale Year Course kept an invalid Course.')
-    assert(!await page.locator('.planning-year-stage').getAttribute('data-plan-unit'), 'Stale Year Course kept an invalid Unit.')
-  })
-
-  await withPage(browser, storageEntries(data, dayContext), async (page) => {
-    await selectCalendarView(page, 'Month')
-    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
-    assert(await page.getByText('Shifted: Period 6', { exact: true }).count() > 0, 'Section divergence was lost on Month after Year work.')
+    assert(!await page.locator('.plan-state-header').getAttribute('data-plan-section'), 'Stale Year Course kept Section.')
   })
 
   await withPage(browser, liveSeed, async (page) => {
@@ -284,7 +310,7 @@ try {
     assert(await page.getByRole('button', { name: /Return to ArcTable/ }).count() === 1, 'Year navigation dropped the live ArcTable session.')
   })
 
-  console.log('Arc Plan Year context gate passed: Day/Class/Lesson/Month entry, unit deep link, Workspace overlay, Home, refresh, stale IDs, Month divergence preserved, ArcTable isolation.')
+  console.log('Arc Plan Year context gate passed: Day/Class/Lesson/Week/Month entry, Unit→Month, Workspace overlay, Home, refresh, stale IDs, ArcTable isolation.')
 } finally {
   await browser.close()
 }
