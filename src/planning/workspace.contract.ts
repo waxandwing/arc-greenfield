@@ -14,6 +14,7 @@ const workspace = hydratePlanningWorkspace({
   calendarId: 'calendar-2026-27',
   courses: [course],
   sections: [period2, period5],
+  teachingDay: { blocks: [{ id: 'block-p2', label: 'Period 2', type: 'teaching', order: 1, sectionId: period2.id, startTime: null, endTime: null }, { id: 'block-plan', label: 'Planning', type: 'planning', order: 2, sectionId: null, startTime: null, endTime: null }] },
 })
 assert(workspace.courses.length === 1, 'Workspace must preserve one shared Course.')
 assert(workspace.sections.length === 2, 'Workspace must preserve multiple Sections for one Course.')
@@ -45,6 +46,7 @@ assert(validatePlanningWorkspace(duplicateSection).some((error) => error.include
 const removed = removeCourseFromWorkspace(workspace, course.id)
 assert(removed.courses.length === 0, 'Removing a Course must remove the Course.')
 assert(removed.sections.length === 0, 'Removing a Course must also remove its dependent Sections rather than leaving orphans.')
+assert(removed.teachingDay?.blocks.length === 1 && removed.teachingDay.blocks[0].type === 'planning', 'Removing a Course must remove only its teaching blocks and preserve explicit Planning truth.')
 
 assert(deserializePlanningWorkspace('{bad json') === null, 'Malformed workspace persistence must be rejected.')
 assert(deserializePlanningWorkspace(JSON.stringify({ schemaVersion: 2, input: workspace })) === null, 'Unknown workspace schema versions must be rejected.')

@@ -4,6 +4,7 @@ export type SectionId = string
 export type Course = {
   id: CourseId
   title: string
+  importProvenance?: ImportProvenance
 }
 
 export type Section = {
@@ -21,10 +22,11 @@ export function createSectionId(): SectionId {
   return createPlanningId('section')
 }
 
-export function createCourse(input: { id?: CourseId; title: string }): Course {
+export function createCourse(input: { id?: CourseId; title: string; importProvenance?: ImportProvenance }): Course {
   const course: Course = {
     id: input.id ?? createCourseId(),
     title: input.title.trim(),
+    importProvenance: normalizeImportProvenance(input.importProvenance),
   }
   const errors = validateCourse(course)
   if (errors.length > 0) throw new Error(`Cannot create course. ${errors.join(' ')}`)
@@ -52,6 +54,7 @@ export function validateCourse(course: Course): string[] {
   const errors: string[] = []
   if (!course.id.trim()) errors.push('Course ID is required.')
   if (!course.title.trim()) errors.push('Course title is required.')
+  if (course.importProvenance) errors.push(...validateImportProvenance(course.importProvenance))
   return errors
 }
 
@@ -78,3 +81,4 @@ function createPlanningId(prefix: 'course' | 'section'): string {
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`
   return `${prefix}-${token}`
 }
+import { normalizeImportProvenance, validateImportProvenance, type ImportProvenance } from './importProvenance'

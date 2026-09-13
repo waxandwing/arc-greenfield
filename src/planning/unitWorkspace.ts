@@ -22,6 +22,7 @@ export function hydrateUnitWorkspace(
         calendarId: unit.calendarId,
         courseId: unit.courseId,
         title: unit.title,
+        importProvenance: unit.importProvenance,
       })
       return unit.placement ? placeUnit(base, calendar, unit.placement) : base
     }),

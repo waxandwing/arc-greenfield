@@ -65,6 +65,7 @@ assert(deletedLessonWorkspace.lessons.some((item) => item.id === lesson.id), 'De
 
 const copied = copyLesson({ calendar, units, lessons, overrides, lessonId: lesson.id })
 assert(copied.copy.id !== lesson.id, 'Copy must create a new Lesson identity.')
+assert(copied.copy.importProvenance === undefined, 'A copied Lesson must not share mutable import provenance with its source.')
 assert(copied.copy.plannedDate === null, 'Copy must enter Workspace unscheduled instead of silently colliding with the original date.')
 assert(copied.copy.directions !== lesson.directions && copied.copy.resources !== lesson.resources, 'Copy must not share mutable content collections with the original.')
 copied.copy.directions.push('Only on the copy')

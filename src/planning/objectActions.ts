@@ -142,6 +142,7 @@ export function copyLesson(input: LessonActionContext & { lessonId: string }): {
     materials: [...original.materials],
     phases: [...original.phases],
     resources: original.resources.map((resource) => ({ ...resource, id: createLessonResourceId() })),
+    importProvenance: undefined,
   }
   return { workspace: { ...input.lessons, lessons: [...input.lessons.lessons, copy] }, copy }
 }

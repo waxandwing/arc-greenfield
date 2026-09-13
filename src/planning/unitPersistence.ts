@@ -2,7 +2,7 @@ import type { SchoolCalendar } from '../calendar'
 import type { PlanningWorkspace } from './workspace'
 import { hydrateUnitWorkspace, type UnitWorkspace, type UnitWorkspaceInput } from './unitWorkspace'
 
-const STORAGE_KEY = 'arc.units.v1'
+export const UNIT_STORAGE_KEY = 'arc.units.v1'
 
 type StoredUnits = {
   schemaVersion: 1
@@ -38,7 +38,7 @@ export function deserializeUnits(raw: string): UnitWorkspaceInput | null {
 
 export function saveUnitsToBrowser(input: UnitWorkspaceInput): boolean {
   try {
-    window.localStorage.setItem(STORAGE_KEY, serializeUnits(input))
+    window.localStorage.setItem(UNIT_STORAGE_KEY, serializeUnits(input))
     return true
   } catch {
     return false
@@ -51,7 +51,7 @@ export function loadUnitsFromBrowser(
 ): UnitLoadResult {
   let raw: string | null
   try {
-    raw = window.localStorage.getItem(STORAGE_KEY)
+    raw = window.localStorage.getItem(UNIT_STORAGE_KEY)
   } catch {
     return { status: 'unavailable' }
   }

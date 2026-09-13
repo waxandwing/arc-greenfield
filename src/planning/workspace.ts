@@ -1,11 +1,13 @@
 import { createCourse, createSection, validateCourse, validateSection, validateSectionCourse, type Course, type Section } from './courses'
 import { createPlanningNote, validatePlanningNote, type PlanningNote, type PlanningNoteInput } from './notes'
+import { normalizeTeachingDaySchedule, validateTeachingDaySchedule, type TeachingDaySchedule } from './teachingDay'
 
 export type PlanningWorkspace = {
   calendarId: string
   courses: Course[]
   sections: Section[]
   notes?: PlanningNote[]
+  teachingDay?: TeachingDaySchedule
 }
 
 export type PlanningWorkspaceInput = {
@@ -13,6 +15,7 @@ export type PlanningWorkspaceInput = {
   courses: Course[]
   sections: Section[]
   notes?: PlanningNoteInput[]
+  teachingDay?: TeachingDaySchedule
 }
 
 export function hydratePlanningWorkspace(input: PlanningWorkspaceInput): PlanningWorkspace {
@@ -21,6 +24,7 @@ export function hydratePlanningWorkspace(input: PlanningWorkspaceInput): Plannin
     courses: input.courses.map((course) => createCourse(course)),
     sections: input.sections.map((section) => createSection(section)),
     notes: (input.notes ?? []).map((note) => createPlanningNote(note)),
+    teachingDay: normalizeTeachingDaySchedule(input.teachingDay),
   }
 
   const errors = validatePlanningWorkspace(normalized)
@@ -59,14 +63,18 @@ export function validatePlanningWorkspace(workspace: PlanningWorkspace): string[
     if (note.calendarId !== workspace.calendarId) errors.push(`Note ${note.id} belongs to a different school calendar.`)
   }
 
+  if (workspace.teachingDay) errors.push(...validateTeachingDaySchedule(workspace.teachingDay, workspace.sections))
+
   return unique(errors)
 }
 
 export function removeCourseFromWorkspace(workspace: PlanningWorkspace, courseId: string): PlanningWorkspace {
+  const removedSectionIds = new Set(workspace.sections.filter((section) => section.courseId === courseId).map((section) => section.id))
   return {
     ...workspace,
     courses: workspace.courses.filter((course) => course.id !== courseId),
     sections: workspace.sections.filter((section) => section.courseId !== courseId),
+    teachingDay: workspace.teachingDay ? { blocks: workspace.teachingDay.blocks.filter((block) => !block.sectionId || !removedSectionIds.has(block.sectionId)).map((block, index) => ({ ...block, order: index + 1 })) } : undefined,
   }
 }
 

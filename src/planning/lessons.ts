@@ -1,6 +1,7 @@
 import { getCalendarDay } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Unit } from './units'
+import { normalizeImportProvenance, validateImportProvenance, type ImportProvenance } from './importProvenance'
 
 export type LessonId = string
 export type LessonDatePolicy = 'flexible' | 'fixed'
@@ -26,6 +27,7 @@ export type Lesson = {
   materials: string[]
   phases: string[]
   resources: LessonResource[]
+  importProvenance?: ImportProvenance
 }
 
 export function createLessonId(): LessonId {
@@ -55,6 +57,7 @@ export function createLesson(input: {
   materials?: string[]
   phases?: string[]
   resources?: LessonResource[]
+  importProvenance?: ImportProvenance
 }): Lesson {
   const lesson: Lesson = {
     id: input.id ?? createLessonId(),
@@ -74,6 +77,7 @@ export function createLesson(input: {
       kind: resource.kind,
       source: resource.source.trim(),
     })),
+    importProvenance: normalizeImportProvenance(input.importProvenance),
   }
 
   const errors = validateLesson(lesson)
@@ -101,6 +105,7 @@ export function validateLesson(lesson: Lesson): string[] {
     if (resourceIds.has(resource.id)) errors.push(`Duplicate Lesson resource ID: ${resource.id}.`)
     resourceIds.add(resource.id)
   }
+  if (lesson.importProvenance) errors.push(...validateImportProvenance(lesson.importProvenance))
   return errors
 }
 
