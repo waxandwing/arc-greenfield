@@ -5,6 +5,7 @@ import {
   createLessonDeliveryState,
   createLessonId,
   createLessonResourceId,
+  copyLesson,
   deleteLesson,
   effectiveLessonDeliveryState,
   hydrateLessonWorkspace,
@@ -162,6 +163,18 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
     }
   }
 
+  function copyDraftLesson(lessonId: string) {
+    try {
+      const result = copyLesson({ calendar, units, lessons: currentWorkspace(), overrides, lessonId })
+      setLessons(result.workspace.lessons)
+      setSelectedLessonId(result.copy.id)
+      setErrors([])
+      setActionNotice('Lesson copied into Workspace with a new identity. The original Lesson and class history were not changed.')
+    } catch (error) {
+      reportActionError(error)
+    }
+  }
+
   function changeDelivery(
     lesson: Lesson,
     sectionId: string,
@@ -230,7 +243,7 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
         <div className="lesson-detail">
           {!selectedLesson ? <p className="projection-empty-state">Choose a Lesson or add one.</p> : <>
             <section className="lesson-shared-plan">
-              <div className="lesson-detail-heading"><div><p className="section-label">Shared plan</p><h3>{selectedLesson.title || 'Untitled Lesson'}</h3></div><div>{selectedLesson.plannedDate && <button type="button" className="text-button" onClick={() => unplaceDraftLesson(selectedLesson.id)}>Unplace</button>}<button type="button" className="text-button" onClick={() => deleteDraftLesson(selectedLesson.id)}>Delete</button></div></div>
+              <div className="lesson-detail-heading"><div><p className="section-label">Shared plan</p><h3>{selectedLesson.title || 'Untitled Lesson'}</h3></div><div><button type="button" className="text-button" onClick={() => copyDraftLesson(selectedLesson.id)}>Copy</button>{selectedLesson.plannedDate && <button type="button" className="text-button" onClick={() => unplaceDraftLesson(selectedLesson.id)}>Unplace</button>}<button type="button" className="text-button" onClick={() => deleteDraftLesson(selectedLesson.id)}>Delete</button></div></div>
               <div className="lesson-field-grid lesson-field-grid--schedule">
                 <label><span>Lesson title</span><input value={selectedLesson.title} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, title: event.target.value } : lesson))} /></label>
                 <label><span>Unit</span><select value={selectedLesson.unitId} onChange={(event) => changeUnit(selectedLesson.id, event.target.value)}>{units.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}</select></label>

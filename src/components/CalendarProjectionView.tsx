@@ -10,6 +10,7 @@ import { PlanningDayContinuityView } from './PlanningDayContinuityView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
 import { PlanningYearView } from './PlanningYearView'
+import { PlanningNotes } from './PlanningNotes'
 import { CalendarDayCell, MissingBoundary, ProjectionHeading, RangeProjection, TermContext, WeekdayAlignedRange } from './CalendarProjectionPrimitives'
 import { formatDateRange, formatLongDate, formatMonth } from './dateLabels'
 
@@ -27,11 +28,14 @@ type Props = {
   planningContext?: PlanningContext | null
   showWeekends?: boolean
   onStartClass?: (sectionId: string, lessonId: string) => void
+  onSelectDate?: (date: ISODate, view: CalendarView) => void
+  onAddNote?: (date: ISODate, text: string) => boolean
+  onDeleteNote?: (noteId: string) => void
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false, onStartClass }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false, onStartClass, onSelectDate, onAddNote, onDeleteNote }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -50,6 +54,8 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           day={projection.day}
           planningContext={planningContext}
           onStartClass={onStartClass}
+          onAddNote={onAddNote}
+          onDeleteNote={onDeleteNote}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
         />
       )
@@ -63,6 +69,9 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           days={visibleDays}
           focusDate={anchorDate}
           planningContext={planningContext}
+          onSelectDate={(date) => onSelectDate?.(date, 'Day')}
+          onAddNote={onAddNote}
+          onDeleteNote={onDeleteNote}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
         />
       )
@@ -85,9 +94,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
             <TermContext quarters={projection.quarters} semesters={projection.semesters} />
           </div>
           {monthPlanning ? (
-            <div className="planning-scroll-frame">
-              <PlanningMonthView month={projection} planning={monthPlanning} />
-            </div>
+            <><PlanningNotes notes={planningContext?.planning.notes ?? []} dates={projection.weeks.flatMap((week) => week.days.map((day) => day.date))} focusDate={anchorDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningMonthView month={projection} planning={monthPlanning} onSelectDate={(date) => onSelectDate?.(date, 'Day')} /></div></>
           ) : (
             <CalendarOnlyMonth projection={projection} label={formatMonth(anchorDate)} />
           )}
@@ -109,7 +116,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
     case 'Year Map': {
       const projection = projectYearMap(calendar)
       if (planningContext) {
-        return <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} />
+        return <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} onSelectUnit={(date) => onSelectDate?.(date, 'Month')} />
       }
       return (
         <section className="projection-section" aria-label={`${calendar.schoolYearLabel} year map`}>
@@ -127,12 +134,12 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, termContext, onStartClass }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode; onStartClass?: (sectionId: string, lessonId: string) => void }) {
+function PlanningDayStrip({ title, day, planningContext, termContext, onStartClass, onAddNote, onDeleteNote }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode; onStartClass?: (sectionId: string, lessonId: string) => void; onAddNote?: (date: ISODate, text: string) => boolean; onDeleteNote?: (noteId: string) => void }) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
       {planningContext ? (
-        <PlanningDayContinuityView
+        <><PlanningNotes notes={planningContext.planning.notes ?? []} dates={[day.date]} focusDate={day.date} onAdd={onAddNote} onDelete={onDeleteNote} /><PlanningDayContinuityView
           day={day}
           continuity={projectDayContinuity({
             date: day.date,
@@ -141,8 +148,9 @@ function PlanningDayStrip({ title, day, planningContext, termContext, onStartCla
             lessons: planningContext.lessons,
             overrides: planningContext.shiftState?.overrides ?? [],
           })}
+          lessons={planningContext.lessons}
           onStartClass={onStartClass}
-        />
+        /></>
       ) : (
         <div className="projection-day-strip projection-day-strip--single">
           <CalendarDayCell day={day} showWeekday />
@@ -152,14 +160,12 @@ function PlanningDayStrip({ title, day, planningContext, termContext, onStartCla
   )
 }
 
-function PlanningWeekStrip({ title, days, focusDate, planningContext, termContext }: { title: string; days: ProjectedDay[]; focusDate: ISODate; planningContext?: PlanningContext | null; termContext?: ReactNode }) {
+function PlanningWeekStrip({ title, days, focusDate, planningContext, termContext, onSelectDate, onAddNote, onDeleteNote }: { title: string; days: ProjectedDay[]; focusDate: ISODate; planningContext?: PlanningContext | null; termContext?: ReactNode; onSelectDate?: (date: ISODate) => void; onAddNote?: (date: ISODate, text: string) => boolean; onDeleteNote?: (noteId: string) => void }) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
       {planningContext ? (
-        <div className="planning-scroll-frame">
-          <PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} focusDate={focusDate} />
-        </div>
+        <><PlanningNotes notes={planningContext.planning.notes ?? []} dates={days.map((day) => day.date)} focusDate={focusDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} focusDate={focusDate} onSelectDate={onSelectDate} /></div></>
       ) : (
         <div className="projection-day-strip">
           {days.map((day) => <CalendarDayCell key={day.date} day={day} showWeekday />)}

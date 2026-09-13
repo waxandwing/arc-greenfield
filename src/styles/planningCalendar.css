@@ -54,10 +54,17 @@
 .planning-date-heading{
   display:grid;
   gap:2px;
+  width:100%;
+  padding:0;
+  border:0;
   border-right:1px solid var(--line-subtle);
+  background:transparent;
+  text-align:left;
+  font-family:inherit;
   font-size:16px;
   font-weight:700;
   color:var(--ink);
+  cursor:pointer;
 }
 
 .planning-date-weekday,
@@ -244,6 +251,22 @@
   min-height:120px;
 }
 
+.planning-notes{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;margin:14px 0 22px;padding:12px 0;border-block:1px solid var(--line-subtle)}
+.planning-notes-list{display:flex;align-items:center;flex-wrap:wrap;gap:10px;min-width:0}
+.planning-notes-list>strong{font:800 11px/1 var(--font-ui);letter-spacing:.1em;text-transform:uppercase}
+.planning-notes-list>span{color:var(--soft-charcoal);font-size:13px}
+.planning-notes-list article{display:flex;align-items:center;gap:8px;max-width:440px;padding:7px 10px;background:#fff5b3;box-shadow:0 5px 12px -11px rgba(44,46,46,.7);transform:rotate(-.15deg)}
+.planning-notes-list article>span{flex:none;color:var(--soft-charcoal);font-size:11px;font-weight:800}
+.planning-notes-list article p{margin:0;font-size:13px;line-height:1.35}
+.planning-notes-list article button{min-height:34px;border:0;background:transparent;color:var(--terracotta-text);font:800 11px/1 var(--font-ui);cursor:pointer}
+.planning-note-add{display:flex;align-items:end;gap:7px;flex:none}
+.planning-note-add label{display:grid;gap:3px;font:700 11px/1.2 var(--font-ui)}
+.planning-note-add input{min-height:38px;max-width:180px;border:1px solid var(--line-strong);border-radius:4px;background:rgba(255,255,255,.65);padding:6px 8px;font:500 13px/1.2 var(--font-ui)}
+.planning-note-add button{min-height:38px;border:1px solid rgba(31,75,58,.3);border-radius:4px;background:#1f4b3a;color:#fff;padding:6px 10px;font:800 12px/1 var(--font-ui);cursor:pointer}
+.planning-note-add button:disabled{opacity:.45;cursor:not-allowed}
+
 @media (max-width:900px){
   .planning-grid:not(.planning-grid--day){min-width:820px}
 }
+
+@media(max-width:760px){.planning-notes{align-items:stretch;flex-direction:column}.planning-note-add{display:grid;grid-template-columns:1fr}.planning-note-add input{width:100%;max-width:none;box-sizing:border-box}}

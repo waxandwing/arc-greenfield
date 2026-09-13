@@ -8,6 +8,7 @@ const contracts = [
   'tests/generated/src/calendar/hydration.contract.js',
   'tests/generated/src/calendar/persistence.contract.js',
   'tests/generated/src/calendar/navigation.contract.js',
+  'tests/generated/src/calendar/navigationContext.contract.js',
   'tests/generated/src/calendar/manualSetup.contract.js',
   'tests/generated/src/calendar/calendarProposal.contract.js',
   'tests/generated/src/calendar/sourceAcquisition.contract.js',
@@ -46,6 +47,7 @@ const contracts = [
   'tests/generated/src/planning/shiftOperation.contract.js',
   'tests/generated/src/planning/shiftPersistence.contract.js',
   'tests/generated/src/planning/lessonShiftPersistence.contract.js',
+  'tests/generated/src/planning/captureWorkspace.contract.js',
 ]
 
 assertManifestComplete()

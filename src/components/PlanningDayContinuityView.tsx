@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { DayContinuityLesson, DayContinuityProjection } from '../planning/dayContinuityProjection'
+import type { LessonWorkspace } from '../planning'
 import { formatShortDate } from './dateLabels'
 
 export function PlanningDayContinuityView({
   day,
   continuity,
   onStartClass,
+  lessons,
 }: {
   day: ProjectedDay
   continuity: DayContinuityProjection
   onStartClass?: (sectionId: string, lessonId: string) => void
+  lessons: LessonWorkspace
 }) {
   const periods = continuity.courses.flatMap((course) => course.sections.map((section) => ({ course, section })))
     .sort((a, b) => periodNumber(a.section.sectionName) - periodNumber(b.section.sectionName))
@@ -21,8 +24,8 @@ export function PlanningDayContinuityView({
     const number = firstPeriod + index
     return { number, entry: numberedPeriods.find((candidate) => candidate.number === number)?.entry ?? null }
   })
-  const [selectedSectionId, setSelectedSectionId] = useState(periods[0]?.section.sectionId ?? '')
-  const selected = periods.find(({ section }) => section.sectionId === selectedSectionId) ?? periods[0]
+  const [selectedPeriodNumber, setSelectedPeriodNumber] = useState(firstPeriod)
+  const selected = numberedPeriods.find(({ number }) => number === selectedPeriodNumber)?.entry ?? null
 
   if (continuity.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -40,10 +43,10 @@ export function PlanningDayContinuityView({
       {periods.length > 0 ? (
         <nav className="day-period-rail" aria-label="Teaching day periods">
           {periodRail.map(({ number, entry }) => entry ? (
-            <button type="button" className={`day-period-button${entry.section.sectionId === selected?.section.sectionId ? ' is-selected' : ''}`} aria-current={entry.section.sectionId === selected?.section.sectionId ? 'true' : undefined} onClick={() => setSelectedSectionId(entry.section.sectionId)} key={entry.section.sectionId}>
+            <button type="button" className={`day-period-button${number === selectedPeriodNumber ? ' is-selected' : ''}`} aria-current={number === selectedPeriodNumber ? 'true' : undefined} onClick={() => setSelectedPeriodNumber(number)} key={entry.section.sectionId}>
               <span>{entry.section.sectionName}</span><strong>{entry.course.courseTitle}</strong>
             </button>
-          ) : <div className="day-period-gap" aria-label={`Period ${number}, planning time`} key={`planning-${number}`}><span>Period {number}</span><strong>Planning time</strong></div>)}
+          ) : <button type="button" className={`day-period-gap${number === selectedPeriodNumber ? ' is-selected' : ''}`} aria-current={number === selectedPeriodNumber ? 'true' : undefined} aria-label={`Period ${number}, planning time`} onClick={() => setSelectedPeriodNumber(number)} key={`planning-${number}`}><span>Period {number}</span><strong>Planning time</strong></button>)}
         </nav>
       ) : null}
 
@@ -89,8 +92,25 @@ export function PlanningDayContinuityView({
                 </article>
           </div>
         </section>
-      ) : <p className="planning-course-empty">No Sections are attached to these Courses yet.</p>}
+      ) : <PlanningPeriodLens period={selectedPeriodNumber} date={day.date} continuity={continuity} lessons={lessons} />}
     </div>
+  )
+}
+
+function PlanningPeriodLens({ period, date, continuity, lessons }: { period: number; date: string; continuity: DayContinuityProjection; lessons: LessonWorkspace }) {
+  return (
+    <section className="planning-period-lens" aria-label={`Period ${period} planning time`}>
+      <header><div><p className="day-continuity-kicker">Period {period} · Planning time</p><h2>Pull the week into focus.</h2></div><p>Unfinished teaching, what comes next, and loose Lesson work across every prep.</p></header>
+      <div className="planning-period-courses">
+        {continuity.courses.map((course) => {
+          const courseLessons = lessons.lessons.filter((lesson) => lesson.courseId === course.courseId)
+          const next = courseLessons.filter((lesson) => lesson.plannedDate && lesson.plannedDate >= date).sort((a, b) => (a.plannedDate ?? '').localeCompare(b.plannedDate ?? '') || a.sequence - b.sequence)[0]
+          const unfinished = course.sections.flatMap((section) => section.carryovers.map((lesson) => ({ section: section.sectionName, lesson })))
+          const loose = courseLessons.filter((lesson) => lesson.plannedDate === null)
+          return <article key={course.courseId}><h3>{course.courseTitle}</h3><p className="planning-period-sections">{course.sections.map((section) => section.sectionName).join(' · ')}</p>{unfinished.length ? <p><strong>Pick up:</strong> {unfinished.map((item) => `${item.section} — ${item.lesson.title}`).join('; ')}</p> : <p><strong>Pacing:</strong> Sections are aligned with no unfinished teaching held.</p>}<p><strong>Next:</strong> {next ? `${next.title} · ${formatShortDate(next.plannedDate!)}` : 'No dated Lesson ahead.'}</p>{loose.length ? <p><strong>Workspace:</strong> {loose.map((lesson) => lesson.title).join(', ')}</p> : null}</article>
+        })}
+      </div>
+    </section>
   )
 }
 

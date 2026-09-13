@@ -112,8 +112,11 @@ async function createAndProbeLessons(page) {
 
 async function moveToWeekOfSeptember14(page) {
   await selectCalendarView(page, 'Week')
-  await page.getByRole('button', { name: 'Next Week', exact: true }).click()
-  await page.getByRole('button', { name: 'Next Week', exact: true }).click()
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (await page.getByRole('button', { name: /Open Day for Monday, September 14, 2026/ }).count()) return
+    await page.getByRole('button', { name: 'Next Week', exact: true }).click()
+  }
+  throw new Error('Calendar-edge gate could not navigate to the week of September 14.')
 }
 
 const browser = await chromium.launch({ headless: true })

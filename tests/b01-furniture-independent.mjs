@@ -11,6 +11,12 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function settingsAction(page, text) {
+  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: text, exact: true })
+}
+
 async function selectView(page, view) {
   const switcher = page.getByRole('button', { name: /Change calendar view, current/ })
   await switcher.focus()
@@ -26,7 +32,7 @@ async function seed(page) {
   await page.locator('#last-school-day').fill('2027-05-28')
   await page.getByRole('button', { name: 'Use this calendar', exact: true }).click()
 
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('AP Art History')
   for (const period of ['Period 2', 'Period 5']) {
@@ -35,14 +41,14 @@ async function seed(page) {
   }
   await page.getByRole('button', { name: 'Save classes', exact: true }).click()
 
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('Ancient Egypt')
   await page.getByRole('textbox', { name: 'Start', exact: true }).fill('2026-09-14')
   await page.getByRole('textbox', { name: 'End', exact: true }).fill('2026-09-25')
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   const add = page.getByRole('button', { name: 'Add Lesson', exact: true })
   await add.click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('Temple lesson')
@@ -109,7 +115,7 @@ try {
   const calendarBefore = await documentRect(calendar, page)
   const viewportBefore = await geometrySnapshot(page)
   const settings = page.getByRole('button', { name: 'Settings', exact: true })
-  const fridge = page.getByRole('button', { name: 'Fridge', exact: true })
+  const fridge = page.getByRole('button', { name: 'Workspace', exact: true })
   const tasks = page.getByRole('button', { name: 'Tasks', exact: true })
   const controls = [settings, fridge, tasks]
 

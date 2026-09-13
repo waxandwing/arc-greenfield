@@ -244,6 +244,26 @@
   color: rgba(255, 255, 255, .74);
 }
 
+.day-period-gap.is-selected {
+  border-style:solid;
+  border-color:#7b5a22;
+  background:#fff1bb;
+  box-shadow:0 10px 24px -20px #7b5a22;
+}
+
+.planning-period-lens{display:grid;gap:26px;min-height:430px;padding:26px 0;border-top:1px solid var(--line-strong)}
+.planning-period-lens>header{display:flex;align-items:end;justify-content:space-between;gap:28px}
+.planning-period-lens>header h2{margin:0;font:500 34px/1.08 var(--font-editorial)}
+.planning-period-lens>header>p{max-width:480px;margin:0;color:var(--soft-charcoal);font-size:15px;line-height:1.5}
+.planning-period-courses{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-block:1px solid var(--line-subtle)}
+.planning-period-courses article{display:grid;align-content:start;gap:10px;padding:22px 24px 24px 0}
+.planning-period-courses article+article{padding-left:24px;border-left:1px solid var(--line-subtle)}
+.planning-period-courses h3,.planning-period-courses p{margin:0}
+.planning-period-courses h3{font:600 21px/1.2 var(--font-editorial)}
+.planning-period-courses p{color:var(--soft-charcoal);font-size:14px;line-height:1.45}
+.planning-period-courses p strong{color:var(--ink)}
+.planning-period-courses .planning-period-sections{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+
 .day-continuity-course--focus {
   min-height: 430px;
 }
@@ -253,6 +273,8 @@
     grid-template-columns: 1fr;
     gap: var(--space-3);
   }
+  .planning-period-courses{grid-template-columns:1fr}
+  .planning-period-courses article+article{padding-left:0;border-left:0;border-top:1px solid var(--line-subtle)}
 }
 
 @media (max-width: 680px) {
@@ -268,4 +290,5 @@
   .day-continuity-held {
     padding-left: var(--space-3);
   }
+  .planning-period-lens>header{align-items:flex-start;flex-direction:column}
 }

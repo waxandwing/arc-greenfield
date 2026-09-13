@@ -9,9 +9,10 @@ type Props = {
   workspace?: ReactNode
   tasks?: ReactNode
   children: ReactNode
+  dismissSideDrawers?: boolean
 }
 
-export function B01Furniture({ settings, workspace, tasks, children }: Props) {
+export function B01Furniture({ settings, workspace, tasks, children, dismissSideDrawers = false }: Props) {
   const [open, setOpen] = useState<Record<DrawerName, boolean>>({ settings: false, workspace: false, tasks: false })
   const settingsButton = useRef<HTMLButtonElement>(null)
   const workspaceButton = useRef<HTMLButtonElement>(null)
@@ -34,6 +35,11 @@ export function B01Furniture({ settings, workspace, tasks, children }: Props) {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [open])
+
+  useEffect(() => {
+    if (!dismissSideDrawers) return
+    setOpen((current) => current.settings || current.workspace ? { ...current, settings: false, workspace: false } : current)
+  }, [dismissSideDrawers])
 
   return (
     <div className="b01-furniture-composition" data-testid="b01-furniture-composition">

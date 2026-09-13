@@ -1,8 +1,8 @@
-import type { SchoolCalendar } from '../calendar'
+import type { ISODate, SchoolCalendar } from '../calendar'
 import type { PlanningWorkspace, UnitWorkspace } from '../planning'
 import { formatShortDate } from './dateLabels'
 
-export function PlanningYearView({ calendar, planning, units }: { calendar: SchoolCalendar; planning: PlanningWorkspace; units: UnitWorkspace }) {
+export function PlanningYearView({ calendar, planning, units, onSelectUnit }: { calendar: SchoolCalendar; planning: PlanningWorkspace; units: UnitWorkspace; onSelectUnit?: (date: ISODate) => void }) {
   return (
     <div className="planning-year" aria-label={`${calendar.schoolYearLabel} Course and Unit progression`}>
       <header className="planning-year-heading">
@@ -20,9 +20,9 @@ export function PlanningYearView({ calendar, planning, units }: { calendar: Scho
               {courseUnits.map((unit, index) => {
                 const placement = unit.placement!
                 return (
-                  <article className="planning-year-unit" key={unit.id}>
+                  <button type="button" className="planning-year-unit" key={unit.id} aria-label={`Open ${unit.title} in Month`} onClick={() => onSelectUnit?.(placement.startDate)}>
                     <span>Unit {index + 1}</span><strong>{unit.title}</strong><small>{formatShortDate(placement.startDate)}–{formatShortDate(placement.endDate)}</small>
-                  </article>
+                  </button>
                 )
               })}
               {courseUnits.length === 0 ? <p className="planning-year-empty">Place Units to see this Course’s horizon.</p> : null}

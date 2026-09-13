@@ -30,6 +30,7 @@ import {
 } from '../planning'
 import type { ISODate } from '../calendar'
 import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfaces'
+import { WorkspacePanel } from './WorkspacePanel'
 
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
@@ -37,13 +38,10 @@ export function AppFrame() {
   const taskBar = useTaskBar(workspace)
   const arcTable = useArcTableSession()
   const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
-  const [fridgeDate, setFridgeDate] = useState('')
   const [fridgeUndo, setFridgeUndo] = useState<FridgeRoundTripReceipt | null>(null)
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
-  const unscheduledLessons = workspace.lessonWorkspace?.lessons.filter((lesson) => lesson.plannedDate === null) ?? []
-  const scheduledLessons = workspace.lessonWorkspace?.lessons.filter((lesson) => lesson.plannedDate !== null) ?? []
   const unscheduledUnits = workspace.unitWorkspace?.units.filter((unit) => unit.placement === null) ?? []
 
   useEffect(() => {
@@ -54,10 +52,6 @@ export function AppFrame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(workspace.calendar && workspace.anchorDate)])
 
-  useEffect(() => {
-    if (!fridgeDate && workspace.anchorDate) setFridgeDate(workspace.anchorDate)
-  }, [fridgeDate, workspace.anchorDate])
-
   function updateViewPreferences(next: ViewPreferences) {
     setViewPreferences(next)
     saveViewPreferences(next)
@@ -66,6 +60,11 @@ export function AppFrame() {
   function selectView(view: CalendarView) {
     workspace.setActiveView(view)
     updateViewPreferences(recordLastUsedView(viewPreferences, view))
+  }
+
+  function deepenTo(date: ISODate, view: CalendarView) {
+    workspace.selectDate(date)
+    selectView(view)
   }
 
   function returnHome() {
@@ -97,15 +96,15 @@ export function AppFrame() {
     setFridgeUndo(result.undo)
   }
 
-  function scheduleLessonFromFridge(lessonId: string) {
-    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace || !fridgeDate) return
+  function scheduleLessonFromFridge(lessonId: string, plannedDate: ISODate) {
+    if (!workspace.calendar || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
     const result = moveLessonFromFridge({
       calendar: workspace.calendar,
       units: workspace.unitWorkspace,
       lessons: workspace.lessonWorkspace,
       overrides: workspace.shiftState?.overrides ?? [],
       lessonId,
-      plannedDate: fridgeDate as ISODate,
+      plannedDate,
     })
     const nextShift = shiftWithOverrides(result.overrides)
     if (!nextShift) return
@@ -173,15 +172,21 @@ export function AppFrame() {
 
   const homeView = resolveAvailableHomeView(viewPreferences, workspace.viewAvailability)
   const fridgeContent = workspace.calendar && workspaceMode.mode === 'calendar' ? (
-    <div className="b01-fridge-content">
-      <p className="b01-furniture-empty">Ideas, resources, and unplanned Lessons can wait here before they belong to a date.</p>
-      <label className="b01-fridge-date"><span>Send Lesson to date</span><input type="date" value={fridgeDate} onChange={(event) => setFridgeDate(event.target.value)} /></label>
-      {fridgeUndo && <button type="button" className="quiet-button" onClick={undoLastFridgeMove}>Undo last Workspace move</button>}
-      <section aria-labelledby="b01-fridge-lessons"><h2 id="b01-fridge-lessons">Lessons</h2>{unscheduledLessons.length === 0 ? <p className="b01-furniture-empty">No loose Lessons.</p> : unscheduledLessons.map((lesson) => <article className="b01-fridge-card" key={lesson.id}><strong>{lesson.title}</strong><button type="button" className="quiet-button" onClick={() => scheduleLessonFromFridge(lesson.id)}>Send to week</button></article>)}</section>
-      <section aria-labelledby="b01-fridge-units"><h2 id="b01-fridge-units">Units</h2>{unscheduledUnits.length === 0 ? <p className="b01-furniture-empty">No loose Units.</p> : unscheduledUnits.map((unit) => <article className="b01-fridge-card b01-fridge-card--unit" key={unit.id}><strong>{unit.title}</strong><button type="button" className="quiet-button" onClick={() => workspaceMode.open('units')}>Place Unit</button></article>)}</section>
-      {scheduledLessons.length > 0 && <details className="b01-fridge-return"><summary>Move a scheduled Lesson into Workspace</summary>{scheduledLessons.map((lesson) => <button key={lesson.id} type="button" className="quiet-button" onClick={() => sendLessonBackToFridge(lesson.id)}>{lesson.title}</button>)}</details>}
-      <button type="button" className="workspace-capture" onClick={() => workspaceMode.open('lessons')}>+ Capture without choosing a Course first</button>
-    </div>
+    <WorkspacePanel
+      captures={workspace.captureWorkspace}
+      lessons={workspace.lessonWorkspace?.lessons ?? []}
+      units={workspace.unitWorkspace}
+      unscheduledUnitTitles={unscheduledUnits.map((unit) => ({ id: unit.id, title: unit.title }))}
+      defaultDate={workspace.anchorDate}
+      undoAvailable={Boolean(fridgeUndo)}
+      onAddCapture={workspace.addCapture}
+      onDeleteCapture={workspace.removeCapture}
+      onPromoteCapture={workspace.promoteCapture}
+      onScheduleLesson={scheduleLessonFromFridge}
+      onUnplaceLesson={sendLessonBackToFridge}
+      onUndo={undoLastFridgeMove}
+      onOpenUnits={() => workspaceMode.open('units')}
+    />
   ) : <p className="b01-furniture-empty">Workspace is available in Plan View.</p>
 
   const settingsContent = workspace.calendar && workspaceMode.mode === 'calendar' ? (
@@ -247,7 +252,7 @@ export function AppFrame() {
 
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
-          <B01Furniture settings={settingsContent} workspace={fridgeContent} tasks={taskContent}>
+          <B01Furniture settings={settingsContent} workspace={fridgeContent} tasks={taskContent} dismissSideDrawers={workspaceMode.mode !== 'calendar'}>
             <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
               <WorkspaceStage
                 mode={workspaceMode.mode}
@@ -273,6 +278,9 @@ export function AppFrame() {
                 onUseLessons={workspace.useLessons}
                 onApplyRecoveryShift={workspace.applyRecoveryShift}
                 onStartClass={startClass}
+                onSelectDate={deepenTo}
+                onAddNote={workspace.addCalendarNote}
+                onDeleteNote={workspace.deleteCalendarNote}
                 onCloseMode={workspaceMode.close}
               />
             </section>

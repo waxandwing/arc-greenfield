@@ -5,6 +5,7 @@ import {
   findContainingBoundary,
   hydrateSchoolCalendar,
   moveAnchor,
+  savePlanningAnchor,
   saveCalendarToBrowser,
   todayAnchor,
   type CalendarHydrationInput,
@@ -15,8 +16,12 @@ import {
 import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
 import {
   applyShiftOperation,
+  createPlanningCapture,
+  createPlanningNote,
+  promoteCaptureToLesson,
   courseIdsProtectedByUnits,
   saveLessonAndShiftStateToBrowser,
+  saveCapturesToBrowser,
   savePlanningWorkspaceToBrowser,
   saveShiftStateToBrowser,
   saveUnitsToBrowser,
@@ -34,6 +39,7 @@ import {
   type ShiftPersistenceInput,
   type UnitWorkspace,
   type UnitWorkspaceInput,
+  type CaptureWorkspace,
 } from '../planning'
 import { reconcileShiftState } from './shiftReconciliation'
 import { loadWorkspaceSnapshot } from './workspaceBootstrap'
@@ -44,16 +50,18 @@ export function useArcWorkspace(onCloseMode: () => void) {
   const [snapshot] = useState(loadWorkspaceSnapshot)
   const {
     restoredCalendar,
+    restoredAnchor,
     restoredPlanning,
     restoredUnits,
     restoredLessons,
     restoredShift,
+    restoredCaptures,
   } = snapshot
 
   const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
   const [calendar, setCalendar] = useState<SchoolCalendar | null>(restoredCalendar?.calendar ?? null)
   const [calendarInput, setCalendarInput] = useState<CalendarHydrationInput | null>(restoredCalendar?.input ?? null)
-  const [anchorDate, setAnchorDate] = useState<ISODate | null>(restoredCalendar?.calendar.firstDay ?? null)
+  const [anchorDate, setAnchorDate] = useState<ISODate | null>(restoredAnchor ?? restoredCalendar?.calendar.firstDay ?? null)
   const [planningWorkspace, setPlanningWorkspace] = useState<PlanningWorkspace | null>(restoredPlanning?.workspace ?? null)
   const [planningInput, setPlanningInput] = useState<PlanningWorkspaceInput | null>(restoredPlanning?.input ?? null)
   const [unitWorkspace, setUnitWorkspace] = useState<UnitWorkspace | null>(restoredUnits?.workspace ?? null)
@@ -63,6 +71,9 @@ export function useArcWorkspace(onCloseMode: () => void) {
   const [shiftState, setShiftState] = useState<ShiftPersistenceInput | null>(
     restoredShift?.input
       ?? (restoredCalendar ? { calendarId: restoredCalendar.calendar.id, overrides: [], undo: null } : null),
+  )
+  const [captureWorkspace, setCaptureWorkspace] = useState<CaptureWorkspace | null>(
+    restoredCaptures ?? (restoredCalendar ? { calendarId: restoredCalendar.calendar.id, captures: [] } : null),
   )
   const [storageNotice, setStorageNotice] = useState<string | null>(snapshot.storageNotice)
 
@@ -106,8 +117,14 @@ export function useArcWorkspace(onCloseMode: () => void) {
     const calendarPersisted = saveCalendarToBrowser(input)
     const shiftPersisted = persistReconciledShift(shift.next)
     setCalendar(nextCalendar)
+    if (captureWorkspace?.calendarId !== nextCalendar.id) {
+      const emptyCaptures = { calendarId: nextCalendar.id, captures: [] }
+      setCaptureWorkspace(emptyCaptures)
+      saveCapturesToBrowser(emptyCaptures)
+    }
     setCalendarInput(input)
     setAnchorDate(nextAnchor)
+    savePlanningAnchor(nextCalendar.id, nextAnchor)
     setActiveView(nextView)
     onCloseMode()
     if (!calendarPersisted || !shiftPersisted) setStorageNotice('This change is active for this session, but Arc could not save all related planning state in this browser.')
@@ -197,10 +214,10 @@ export function useArcWorkspace(onCloseMode: () => void) {
     setStorageNotice(persisted ? null : 'These Units are active for this session, but Arc could not save them in this browser.')
   }
 
-  function useLessons(input: LessonWorkspaceInput, workspace: LessonWorkspace, requestedShiftState: ShiftPersistenceInput) {
+  function useLessons(input: LessonWorkspaceInput, workspace: LessonWorkspace, requestedShiftState: ShiftPersistenceInput): boolean {
     if (!calendar || !planningWorkspace || !unitWorkspace) {
       setStorageNotice('Arc cannot save these Lessons because the planning context is incomplete. Nothing changed.')
-      return
+      return false
     }
 
     let candidateShift: ShiftPersistenceInput = {
@@ -211,7 +228,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     let validation = validateShiftPersistenceInput(candidateShift, calendar, planningWorkspace, unitWorkspace, workspace)
     if (validation.scheduleErrors.length > 0) {
       setStorageNotice('That Lesson change would invalidate an existing Section schedule. Resolve the affected Section dates first; Arc has not changed the Lessons.')
-      return
+      return false
     }
 
     let undoDropped = false
@@ -221,7 +238,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
       validation = validateShiftPersistenceInput(candidateShift, calendar, planningWorkspace, unitWorkspace, workspace)
       if (validation.scheduleErrors.length > 0) {
         setStorageNotice('Arc refused this Lesson change because the resulting Section schedule did not pass its integrity check. Nothing changed.')
-        return
+        return false
       }
     }
 
@@ -230,7 +247,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
       setStorageNotice(persisted.rollbackSucceeded
         ? 'Arc could not save the Lesson and Section schedule together, so it restored the previous browser state. Nothing changed.'
         : 'Arc could not save the Lesson and Section schedule together, and browser storage also refused a complete rollback. Do not continue editing in this tab until the stored workspace is checked.')
-      return
+      return false
     }
 
     setLessonWorkspace(workspace)
@@ -240,6 +257,83 @@ export function useArcWorkspace(onCloseMode: () => void) {
     setStorageNotice(undoDropped
       ? 'Lessons updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.'
       : null)
+    return true
+  }
+
+  function saveCaptureWorkspace(next: CaptureWorkspace): boolean {
+    const persisted = saveCapturesToBrowser(next)
+    setCaptureWorkspace(next)
+    setStorageNotice(persisted ? null : 'This Workspace change is active for this session, but Arc could not save it in this browser.')
+    return persisted
+  }
+
+  function addCapture(text: string): string | null {
+    if (!calendar) return null
+    try {
+      const current = captureWorkspace?.calendarId === calendar.id ? captureWorkspace : { calendarId: calendar.id, captures: [] }
+      const capture = createPlanningCapture(calendar.id, text)
+      saveCaptureWorkspace({ ...current, captures: [...current.captures, capture] })
+      return capture.id
+    } catch (error) {
+      setStorageNotice(error instanceof Error ? error.message : String(error))
+      return null
+    }
+  }
+
+  function removeCapture(captureId: string): boolean {
+    if (!captureWorkspace) return false
+    return saveCaptureWorkspace({ ...captureWorkspace, captures: captureWorkspace.captures.filter((capture) => capture.id !== captureId) })
+  }
+
+  function promoteCapture(captureId: string, unitId: string, plannedDate: ISODate | null): boolean {
+    if (!captureWorkspace || !unitWorkspace || !shiftState || !calendar || !planningWorkspace) {
+      setStorageNotice('Create a Course and Unit before turning this Capture into a Lesson. The Capture is still safe in Workspace.')
+      return false
+    }
+    const capture = captureWorkspace.captures.find((candidate) => candidate.id === captureId)
+    if (!capture) return false
+    try {
+      const previousLessons = lessonWorkspace ?? { calendarId: calendar.id, lessons: [], deliveryStates: [] }
+      const promoted = promoteCaptureToLesson({ capture, captures: captureWorkspace, lessons: previousLessons, units: unitWorkspace, unitId, plannedDate })
+      const lessonSaved = useLessons(promoted.lessons, promoted.lessons, shiftState)
+      if (!lessonSaved) return false
+      if (!saveCapturesToBrowser(promoted.captures)) {
+        useLessons(previousLessons, previousLessons, shiftState)
+        setStorageNotice('Arc could not save the Capture conversion atomically, so the original Capture was preserved. Nothing changed.')
+        return false
+      }
+      setCaptureWorkspace(promoted.captures)
+      setStorageNotice(plannedDate
+        ? 'Capture placed as a Lesson. Its identity and text were preserved.'
+        : 'Capture organized as an unscheduled Lesson. Its identity and text were preserved.')
+      return true
+    } catch (error) {
+      setStorageNotice(error instanceof Error ? error.message : String(error))
+      return false
+    }
+  }
+
+  function addCalendarNote(date: ISODate, text: string): boolean {
+    if (!calendar) return false
+    const current = planningWorkspace ?? { calendarId: calendar.id, courses: [], sections: [], notes: [] }
+    try {
+      const token = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      const note = createPlanningNote({ id: `note-${token}`, calendarId: calendar.id, date, text, placement: 'calendar', important: false, sourceLabel: null, sourceLocator: null })
+      const next = { ...current, notes: [...(current.notes ?? []), note] }
+      useClasses(next, next)
+      return true
+    } catch (error) {
+      setStorageNotice(error instanceof Error ? error.message : String(error))
+      return false
+    }
+  }
+
+  function deleteCalendarNote(noteId: string) {
+    if (!planningWorkspace) return
+    const next = { ...planningWorkspace, notes: (planningWorkspace.notes ?? []).filter((note) => note.id !== noteId) }
+    useClasses(next, next)
   }
 
   function applyRecoveryShift(operation: ShiftOperation): string | null {
@@ -300,13 +394,25 @@ export function useArcWorkspace(onCloseMode: () => void) {
   function movePeriod(direction: PeriodDirection) {
     if (!calendar || !anchorDate) return
     const next = moveAnchor(calendar, activeView, anchorDate, direction)
-    if (next) setAnchorDate(next)
+    if (next) {
+      setAnchorDate(next)
+      savePlanningAnchor(calendar.id, next)
+    }
   }
 
   function goToday() {
     if (!calendar) return
     const today = todayAnchor(calendar, currentLocalISODate())
-    if (today) setAnchorDate(today)
+    if (today) {
+      setAnchorDate(today)
+      savePlanningAnchor(calendar.id, today)
+    }
+  }
+
+  function selectDate(date: ISODate) {
+    if (!calendar || compareISODate(date, calendar.firstDay) < 0 || compareISODate(date, calendar.lastDay) > 0) return
+    setAnchorDate(date)
+    savePlanningAnchor(calendar.id, date)
   }
 
   function viewAvailability(view: CalendarView): ViewAvailability {
@@ -338,6 +444,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     lessonWorkspace,
     lessonInput,
     shiftState,
+    captureWorkspace,
     storageNotice,
     setStorageNotice,
     previousTarget,
@@ -357,9 +464,15 @@ export function useArcWorkspace(onCloseMode: () => void) {
     useClasses,
     useUnits,
     useLessons,
+    addCapture,
+    removeCapture,
+    promoteCapture,
+    addCalendarNote,
+    deleteCalendarNote,
     applyRecoveryShift,
     undoLastShift,
     movePeriod,
     goToday,
+    selectDate,
   }
 }

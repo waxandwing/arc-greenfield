@@ -1,4 +1,5 @@
 import type { MonthProjection, ProjectedDay } from '../calendar/projections'
+import type { ISODate } from '../calendar'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
 import { formatLongDate, formatMonthKey, formatShortDate } from './dateLabels'
 
@@ -7,9 +8,11 @@ const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 export function PlanningMonthView({
   month,
   planning,
+  onSelectDate,
 }: {
   month: MonthProjection
   planning: MonthPlanningProjection
+  onSelectDate?: (date: ISODate) => void
 }) {
   return (
     <div className="planning-month" aria-label={`${formatMonthKey(month.monthKey)} planning calendar`}>
@@ -32,6 +35,7 @@ export function PlanningMonthView({
                   day={day}
                   inAnchorMonth={day.date.slice(0, 7) === month.monthKey}
                   signals={planningWeek?.days[dayIndex]?.lessonSignals ?? []}
+                  onSelectDate={onSelectDate}
                 />
               ))}
             </div>
@@ -64,10 +68,12 @@ function MonthDayCell({
   day,
   inAnchorMonth,
   signals,
+  onSelectDate,
 }: {
   day: ProjectedDay
   inAnchorMonth: boolean
   signals: MonthLessonSignal[]
+  onSelectDate?: (date: ISODate) => void
 }) {
   const dayStatus = day.kind === 'instructional' ? null : day.label || humanizeKind(day.kind)
   const classes = [
@@ -81,7 +87,7 @@ function MonthDayCell({
   return (
     <div className={classes} aria-label={`${formatLongDate(day.date)}${dayStatus ? `. ${dayStatus}` : ''}`}>
       <div className="planning-month-day-heading">
-        <span className="planning-month-date">{Number(day.date.slice(8))}</span>
+        <button type="button" className="planning-month-date" aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>{Number(day.date.slice(8))}</button>
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
       </div>
       <div className="planning-month-signals">

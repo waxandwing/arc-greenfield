@@ -131,6 +131,8 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
   .primary-button{width:100%}
 }
 
+.planning-year-unit[type="button"]{text-align:left;font:inherit;color:inherit;cursor:pointer}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }

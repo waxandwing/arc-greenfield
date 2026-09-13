@@ -1,4 +1,5 @@
 import type { ProjectedDay } from '../calendar/projections'
+import type { ISODate } from '../calendar'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
 import { formatLongDate, formatShortDate, formatWeekday } from './dateLabels'
 
@@ -7,11 +8,13 @@ export function PlanningWeekDayView({
   planning,
   single = false,
   focusDate,
+  onSelectDate,
 }: {
   days: ProjectedDay[]
   planning: PlanningRangeProjection
   single?: boolean
   focusDate?: string
+  onSelectDate?: (date: ISODate) => void
 }) {
   if (planning.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -19,7 +22,7 @@ export function PlanningWeekDayView({
 
   return (
     <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'}>
-      <PlanningDateHeader days={days} single={single} focusDate={focusDate} />
+      <PlanningDateHeader days={days} single={single} focusDate={focusDate} onSelectDate={onSelectDate} />
       {planning.courses.map((course) => (
         <PlanningCourse key={course.course.id} course={course} days={days} single={single} focusDate={focusDate} />
       ))}
@@ -27,16 +30,16 @@ export function PlanningWeekDayView({
   )
 }
 
-function PlanningDateHeader({ days, single, focusDate }: { days: ProjectedDay[]; single: boolean; focusDate?: string }) {
+function PlanningDateHeader({ days, single, focusDate, onSelectDate }: { days: ProjectedDay[]; single: boolean; focusDate?: string; onSelectDate?: (date: ISODate) => void }) {
   return (
-    <div className="planning-date-header" style={gridTemplate(days, focusDate)} aria-hidden="true">
-      <span className="planning-row-label planning-row-label--header">Class</span>
+    <div className="planning-date-header" style={gridTemplate(days, focusDate)}>
+      <span className="planning-row-label planning-row-label--header" aria-hidden="true">Class</span>
       {days.map((day) => (
-        <span key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}`}>
+        <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}`} aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>
           {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
           <span>{formatShortDate(day.date)}</span>
           {day.kind !== 'instructional' ? <span className="planning-date-kind">{day.label || humanizeKind(day.kind)}</span> : null}
-        </span>
+        </button>
       ))}
     </div>
   )

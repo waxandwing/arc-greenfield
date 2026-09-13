@@ -1,5 +1,5 @@
 import type { ISODate, SchoolCalendar } from '../calendar/types'
-import { validateLessonAgainstUnit, type Lesson } from './lessons'
+import { createLessonId, createLessonResourceId, validateLessonAgainstUnit, type Lesson } from './lessons'
 import type { LessonWorkspace } from './lessonWorkspace'
 import { placeUnit, unplaceUnit, type UnitPlacement } from './units'
 import type { UnitWorkspace } from './unitWorkspace'
@@ -126,6 +126,24 @@ export function deleteLesson(input: LessonActionContext & { lessonId: string }):
     throw new Error('Cannot delete Lesson. Section-specific schedule placements still reference this Lesson. Unplace them first.')
   }
   return { ...lessons, lessons: lessons.lessons.filter((lesson) => lesson.id !== lessonId) }
+}
+
+export function copyLesson(input: LessonActionContext & { lessonId: string }): { workspace: LessonWorkspace; copy: Lesson } {
+  const original = requireLesson(input.lessons, input.lessonId)
+  const siblings = input.lessons.lessons.filter((lesson) => lesson.unitId === original.unitId)
+  const copy: Lesson = {
+    ...original,
+    id: createLessonId(),
+    title: `${original.title} copy`,
+    sequence: Math.max(0, ...siblings.map((lesson) => lesson.sequence)) + 1,
+    plannedDate: null,
+    datePolicy: 'flexible',
+    directions: [...original.directions],
+    materials: [...original.materials],
+    phases: [...original.phases],
+    resources: original.resources.map((resource) => ({ ...resource, id: createLessonResourceId() })),
+  }
+  return { workspace: { ...input.lessons, lessons: [...input.lessons.lessons, copy] }, copy }
 }
 
 function requireUnit(units: UnitWorkspace, unitId: string) {

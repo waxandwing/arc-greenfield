@@ -64,7 +64,7 @@ try {
   const widths = await page.locator('.planning-date-heading').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width))
   assert(Math.max(...widths) > Math.min(...widths) * 1.25, 'Week must expand the selected instructional day instead of using equal columns.')
   await page.getByRole('button', { name: 'Workspace', exact: true }).click()
-  assert(await page.getByText('Capture without choosing a Course first', { exact: false }).count() === 1, 'Workspace must support capture before Course placement.')
+  assert(await page.getByRole('textbox', { name: 'Quick capture', exact: true }).count() === 1, 'Workspace must expose real capture before Course placement.')
   assert(!(await page.locator('body').innerText()).includes('Fridge'), 'Visible product language must say Workspace while internal fridge compatibility seams remain untouched.')
   await capture(page, '02-week-workspace.png')
   await page.getByRole('button', { name: 'Workspace', exact: true }).click()

@@ -11,6 +11,12 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function settingsAction(page, text) {
+  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: text, exact: true })
+}
+
 async function selectCalendarView(page, view) {
   await page.getByRole('button', { name: /Change calendar view, current/ }).click()
   await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
@@ -22,7 +28,7 @@ async function seedReferenceWeek(page) {
   await page.locator('#last-school-day').fill('2027-05-28')
   await page.getByRole('button', { name: 'Use this calendar', exact: true }).click()
 
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('Studio Art')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
@@ -31,14 +37,14 @@ async function seedReferenceWeek(page) {
   await page.getByRole('textbox', { name: 'Period or section', exact: true }).nth(1).fill('Period 4')
   await page.getByRole('button', { name: 'Save classes', exact: true }).click()
 
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('Color Unit')
   await page.getByRole('textbox', { name: 'Start', exact: true }).fill('2026-09-14')
   await page.getByRole('textbox', { name: 'End', exact: true }).fill('2026-09-25')
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   const add = page.getByRole('button', { name: 'Add Lesson', exact: true })
   await add.click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('Color intro')
@@ -103,7 +109,7 @@ try {
   assert(await page.getByText('Period 1', { exact: true }).count() > 0, 'B01: representative Section row is missing.')
 
   const settings = page.getByRole('button', { name: 'Settings', exact: true })
-  const fridge = page.getByRole('button', { name: 'Fridge', exact: true })
+  const fridge = page.getByRole('button', { name: 'Workspace', exact: true })
   const tasks = page.getByRole('button', { name: 'Tasks', exact: true })
   const settingsSurface = page.locator('.b01-settings-surface')
   const fridgeSurface = page.locator('.b01-fridge-surface')
