@@ -66,22 +66,23 @@ const homeFromWeek = resolvePlanContext(goPlanHome(createPlanNavigationContext({
 assert(homeFromWeek.view === 'Day' && homeFromWeek.focus === 'day' && homeFromWeek.anchorDate === '2026-09-16' && !homeFromWeek.sectionId, 'Week/Month/Year Home must keep the anchor date and drop to Teaching Day.')
 
 const weekFromDay = resolvePlanContext(enterPlanView(day, 'Week'), authority)
-assert(weekFromDay.view === 'Week' && weekFromDay.anchorDate === '2026-09-16' && weekFromDay.focus === 'day' && !weekFromDay.sectionId && !weekFromDay.lessonId, 'Day → Week must keep the same anchor date without inventing Class context.')
+assert(weekFromDay.view === 'Week' && weekFromDay.anchorDate === '2026-09-16' && weekFromDay.focus === 'day' && !weekFromDay.sectionId && !weekFromDay.lessonId && !weekFromDay.teachingBlockId, 'Day → Week must keep the same anchor date without inventing Class context.')
 
 const weekFromClass = resolvePlanContext(enterPlanView(classFocus, 'Week'), authority)
-assert(weekFromClass.view === 'Week' && weekFromClass.anchorDate === '2026-09-16' && weekFromClass.courseId === course.id && weekFromClass.sectionId === section.id && weekFromClass.focus === 'day' && !weekFromClass.lessonId, 'Class → Week must keep date + Course/Section without Lesson focus.')
+assert(weekFromClass.view === 'Week' && weekFromClass.anchorDate === '2026-09-16' && weekFromClass.courseId === course.id && weekFromClass.sectionId === section.id && weekFromClass.focus === 'class' && !weekFromClass.lessonId && !weekFromClass.teachingBlockId, 'Class → Week must keep date + Course/Section and drop teachingBlockId.')
+assert(classFocus.teachingBlockId === 'block-p6', 'Class Focus still owns teachingBlockId before Week pruning.')
 
 const weekFromLesson = resolvePlanContext(enterPlanView(lessonFocus, 'Week'), authority)
-assert(weekFromLesson.view === 'Week' && weekFromLesson.anchorDate === '2026-09-16' && weekFromLesson.courseId === course.id && weekFromLesson.sectionId === section.id && weekFromLesson.unitId === unit.id && !weekFromLesson.lessonId && weekFromLesson.focus === 'day', 'Lesson → Week must keep Course/Section/Unit and drop Lesson as active Week state.')
+assert(weekFromLesson.view === 'Week' && weekFromLesson.anchorDate === '2026-09-16' && weekFromLesson.courseId === course.id && weekFromLesson.sectionId === section.id && weekFromLesson.unitId === unit.id && weekFromLesson.focus === 'class' && !weekFromLesson.lessonId && !weekFromLesson.teachingBlockId, 'Lesson → Week must keep Course/Section/Unit and drop Lesson plus teachingBlockId.')
 
 const dayFromWeek = resolvePlanContext(enterPlanView(weekFromClass, 'Day', '2026-09-18'), authority)
-assert(dayFromWeek.view === 'Day' && dayFromWeek.focus === 'day' && dayFromWeek.anchorDate === '2026-09-18' && !dayFromWeek.sectionId && !dayFromWeek.lessonId, 'Week → Day must use the selected date as Teaching Day.')
+assert(dayFromWeek.view === 'Day' && dayFromWeek.focus === 'day' && dayFromWeek.anchorDate === '2026-09-18' && !dayFromWeek.sectionId && !dayFromWeek.lessonId && !dayFromWeek.teachingBlockId, 'Week → Day must use the selected date as Teaching Day.')
 
 const classFromWeekDay = resolvePlanContext(focusTeachingBlock(dayFromWeek, { id: 'block-p6', courseId: course.id, sectionId: section.id }), authority)
 assert(classFromWeekDay.focus === 'class' && classFromWeekDay.view === 'Day' && classFromWeekDay.anchorDate === '2026-09-18' && classFromWeekDay.sectionId === section.id && classFromWeekDay.courseId === course.id, 'Week → Day → Class must restore valid teaching context on the selected date.')
 
 const staleWeekLesson = resolvePlanContext({ ...weekFromLesson, focus: 'lesson' as const, lessonId: 'lesson-missing' }, authority)
-assert(staleWeekLesson.view === 'Week' && staleWeekLesson.focus === 'day' && staleWeekLesson.sectionId === section.id && !staleWeekLesson.lessonId, 'A stale Lesson ID on Week must fail safely without Lesson focus.')
+assert(staleWeekLesson.view === 'Week' && staleWeekLesson.focus === 'class' && staleWeekLesson.sectionId === section.id && !staleWeekLesson.lessonId && !staleWeekLesson.teachingBlockId, 'A stale Lesson ID on Week must fail safely without Lesson focus or teachingBlockId.')
 
 const staleWeekSection = resolvePlanContext(createPlanNavigationContext({ calendarId: calendar.id, view: 'Week', anchorDate: '2026-09-16', focus: 'day', courseId: course.id, sectionId: 'section-missing' }), authority)
 assert(staleWeekSection.view === 'Week' && staleWeekSection.focus === 'day' && staleWeekSection.anchorDate === '2026-09-16' && !staleWeekSection.sectionId, 'Stale Week Section must fall back to a valid Week rather than crash.')
@@ -96,8 +97,9 @@ const restoredWeek = resolvePlanContext(createPlanNavigationContext({
   unitId: unit.id,
   teachingBlockId: 'block-p6',
 }), authority)
-assert(restoredWeek.view === 'Week' && restoredWeek.focus === 'day' && restoredWeek.anchorDate === '2026-09-16' && restoredWeek.courseId === course.id && restoredWeek.sectionId === section.id && restoredWeek.unitId === unit.id && !restoredWeek.lessonId, 'Persisted Week must restore valid Week context without Lesson focus.')
+assert(restoredWeek.view === 'Week' && restoredWeek.focus === 'class' && restoredWeek.anchorDate === '2026-09-16' && restoredWeek.courseId === course.id && restoredWeek.sectionId === section.id && restoredWeek.unitId === unit.id && !restoredWeek.lessonId && !restoredWeek.teachingBlockId, 'Persisted Week must restore valid Course/Section/Unit without Lesson or teachingBlockId.')
 assert(!JSON.stringify(restoredWeek).includes('timer') && !JSON.stringify(weekFromClass).includes('overlay'), 'Week navigation context must not carry ArcTable live controls or Workspace overlay.')
+assert(!('teachingBlockId' in restoredWeek) && !('lessonId' in restoredWeek), 'Week refresh must not resurrect teachingBlockId or Lesson as hidden return state.')
 
 const staleLesson = resolvePlanContext({ ...lessonFocus, lessonId: 'lesson-missing' }, authority)
 assert(staleLesson.focus === 'class' && staleLesson.sectionId === section.id && !staleLesson.lessonId, 'A stale Lesson ID must fail safely to Class.')

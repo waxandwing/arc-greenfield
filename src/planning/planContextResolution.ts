@@ -95,30 +95,7 @@ export function resolvePlanContext(context: PlanNavigationContext, authority: Pl
     }
   }
 
-  if (view === 'Week') {
-    const unit = next.unitId && units ? units.units.find((item) => item.id === next.unitId) : null
-    next = {
-      ...next,
-      focus: 'day',
-      lessonId: undefined,
-      unitId: unit && (!next.courseId || unit.courseId === next.courseId) ? unit.id : undefined,
-    }
-  }
-
-  if (next.focus === 'lesson' && !next.lessonId) next = { ...next, focus: next.sectionId || next.teachingBlockId ? 'class' : 'day' }
-  if (next.focus === 'class' && !next.sectionId && !next.teachingBlockId) next = dropToDay(next)
-  if (next.focus === 'day') {
-    if (next.view === 'Day') {
-      next = { ...next, courseId: undefined, sectionId: undefined, unitId: undefined, lessonId: undefined, teachingBlockId: undefined }
-    } else {
-      next = { ...next, lessonId: undefined }
-    }
-  }
-  if (next.focus !== 'lesson') {
-    next = { ...next, unitId: next.focus === 'class' ? undefined : next.unitId, lessonId: undefined }
-  }
-
-  return sparsePlanContext(next)
+  return sparsePlanContext(pruneIdsForView(next, units))
 }
 
 export function focusTeachingBlock(context: PlanNavigationContext, block: { id: string; courseId: string | null; sectionId: string | null }): PlanNavigationContext {
@@ -167,13 +144,7 @@ export function goPlanHome(context: PlanNavigationContext): PlanNavigationContex
 export function enterPlanView(context: PlanNavigationContext, view: CalendarView, date?: PlanNavigationContext['anchorDate']): PlanNavigationContext {
   const anchorDate = date ?? context.anchorDate
   if (view === 'Week') {
-    return sparsePlanContext({
-      ...context,
-      view: 'Week',
-      anchorDate,
-      focus: 'day',
-      lessonId: undefined,
-    })
+    return enterCalendarDepth(context, 'Week', anchorDate)
   }
   if (view === 'Day') {
     if (context.view === 'Day') {
@@ -189,13 +160,7 @@ export function enterPlanView(context: PlanNavigationContext, view: CalendarView
   if (context.view === 'Day') {
     return createPlanNavigationContext({ calendarId: context.calendarId, anchorDate, view, focus: 'day' })
   }
-  return sparsePlanContext({
-    ...context,
-    view,
-    anchorDate,
-    focus: context.focus === 'lesson' ? 'day' : context.focus,
-    lessonId: undefined,
-  })
+  return enterCalendarDepth(context, view, anchorDate)
 }
 
 function availableView(view: CalendarView, calendar: SchoolCalendar): CalendarView {
@@ -206,6 +171,46 @@ function availableView(view: CalendarView, calendar: SchoolCalendar): CalendarVi
 
 function inCalendar(date: PlanNavigationContext['anchorDate'], calendar: SchoolCalendar): boolean {
   return compareISODate(date, calendar.firstDay) >= 0 && compareISODate(date, calendar.lastDay) <= 0
+}
+
+function enterCalendarDepth(context: PlanNavigationContext, view: CalendarView, anchorDate: PlanNavigationContext['anchorDate']): PlanNavigationContext {
+  return sparsePlanContext({
+    ...context,
+    view,
+    anchorDate,
+    lessonId: undefined,
+    teachingBlockId: undefined,
+    focus: context.sectionId ? 'class' : 'day',
+  })
+}
+
+function pruneIdsForView(context: PlanNavigationContext, units: UnitWorkspace | null): PlanNavigationContext {
+  if (context.view === 'Day') return pruneDayFocus(context)
+  return pruneCalendarDepth(context, units)
+}
+
+function pruneDayFocus(context: PlanNavigationContext): PlanNavigationContext {
+  let next = context
+  if (next.focus === 'lesson' && !next.lessonId) next = { ...next, focus: next.sectionId || next.teachingBlockId ? 'class' : 'day' }
+  if (next.focus === 'class' && !next.sectionId && !next.teachingBlockId) return dropToDay(next)
+  if (next.focus === 'day') {
+    return { ...next, courseId: undefined, sectionId: undefined, unitId: undefined, lessonId: undefined, teachingBlockId: undefined }
+  }
+  if (next.focus !== 'lesson') {
+    return { ...next, unitId: undefined, lessonId: undefined }
+  }
+  return next
+}
+
+function pruneCalendarDepth(context: PlanNavigationContext, units: UnitWorkspace | null): PlanNavigationContext {
+  const unit = context.unitId && units ? units.units.find((item) => item.id === context.unitId) : null
+  return {
+    ...context,
+    lessonId: undefined,
+    teachingBlockId: undefined,
+    unitId: unit && (!context.courseId || unit.courseId === context.courseId) ? unit.id : undefined,
+    focus: context.sectionId ? 'class' : 'day',
+  }
 }
 
 function dropToDay(context: PlanNavigationContext): PlanNavigationContext {

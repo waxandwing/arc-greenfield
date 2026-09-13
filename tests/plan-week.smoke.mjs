@@ -159,6 +159,7 @@ try {
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Class → Week did not preserve Course.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-section') === 'section-p6', 'Class → Week did not preserve Section.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-lesson') === '', 'Class → Week invented Lesson focus.')
+    assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).teachingBlockId === undefined, 'Class → Week kept teachingBlockId as hidden Week return state.')
     assert(await page.getByText('2D Art 1 · This Week', { exact: true }).isVisible(), 'Class → Week header did not keep Course in teaching context.')
     assert(await page.getByText('Shifted for this class', { exact: true }).count() > 0, 'Section divergence was lost on Week.')
     await shot(page, '02-week-from-class.png')
@@ -173,7 +174,10 @@ try {
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Lesson → Week dropped Course.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-section') === 'section-p6', 'Lesson → Week dropped Section.')
     assert(!await page.locator('.plan-state-header').getAttribute('data-plan-lesson'), 'Lesson → Week kept Lesson as active Week state.')
-    assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).lessonId === undefined, 'Lesson → Week persisted a Lesson ID as Week state.')
+    const lessonWeek = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1')))
+    assert(lessonWeek.lessonId === undefined, 'Lesson → Week persisted a Lesson ID as Week state.')
+    assert(lessonWeek.teachingBlockId === undefined, 'Lesson → Week kept teachingBlockId as hidden Week return state.')
+    assert(lessonWeek.courseId === 'course-2d' && lessonWeek.sectionId === 'section-p6' && lessonWeek.unitId === 'unit-2d-2', 'Lesson → Week dropped a valid Course/Section/Unit.')
     assert(await page.locator('[data-lesson-focus]').count() === 0, 'Lesson → Week still rendered Lesson Focus.')
   })
 
@@ -234,6 +238,7 @@ try {
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Refresh did not restore Week Course.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-section') === 'section-p6', 'Refresh did not restore Week Section.')
     assert(!await page.locator('.plan-state-header').getAttribute('data-plan-lesson'), 'Refresh restored a Lesson as active Week state.')
+    assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).teachingBlockId === undefined, 'Week refresh resurrected teachingBlockId.')
     await shot(page, '03-week-selected-day.png')
   })
 

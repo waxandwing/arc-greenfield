@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   compareISODate,
   currentLocalISODate,
@@ -84,6 +84,9 @@ export function useArcWorkspace(onCloseMode: () => void) {
   })
   const [planContext, setPlanContext] = useState<PlanNavigationContext | null>(initialPlan.context)
   const [viewWasPersisted] = useState(initialPlan.viewWasPersisted)
+  useEffect(() => {
+    if (initialPlan.context) savePlanNavigationContext(initialPlan.context)
+  }, [])
   const [activeView, setActiveViewState] = useState<CalendarView>(initialPlan.context?.view ?? DEFAULT_HOME_VIEW)
   const [calendar, setCalendar] = useState<SchoolCalendar | null>(restoredCalendar?.calendar ?? null)
   const [calendarInput, setCalendarInput] = useState<CalendarHydrationInput | null>(restoredCalendar?.input ?? null)
