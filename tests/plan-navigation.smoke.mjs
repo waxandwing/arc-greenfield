@@ -226,7 +226,65 @@ try {
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'lesson', 'ArcTable Plan return did not keep the Lesson context after navigation.')
   })
 
-  console.log('Arc Plan navigation spine gate passed: Day → Class → Lesson → Workspace return, refresh, stale IDs, Section divergence, ArcTable isolation.')
+  await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
+    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Class → Home did not land on Teaching Day.')
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Class → Home moved the anchored date.')
+    assert(await page.getByRole('heading', { level: 1, name: 'Day' }).isVisible(), 'Class → Home did not open the Day view.')
+    assert(await page.getByText('My Teaching Day', { exact: true }).isVisible(), 'Class → Home did not restore the Teaching Day header.')
+    assert(!await page.locator('.day-continuity').getAttribute('data-plan-section'), 'Class → Home left Class Focus selected.')
+  })
+
+  await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
+    await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
+    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Lesson → Home did not land on Teaching Day.')
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Lesson → Home moved the anchored date.')
+    assert(await page.locator('[data-lesson-focus]').count() === 0, 'Lesson → Home kept Lesson Focus.')
+    assert(await page.getByRole('button', { name: 'Back to class', exact: true }).count() === 0, 'Lesson → Home behaved like Back to Class.')
+  })
+
+  await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
+    await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
+    await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
+    assert(await page.getByRole('button', { name: 'Workspace', exact: true }).getAttribute('aria-expanded') === 'true', 'Workspace did not open before Home.')
+    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    assert(await page.getByRole('button', { name: 'Workspace', exact: true }).getAttribute('aria-expanded') === 'false', 'Home from Workspace did not close the overlay.')
+    assert(await page.locator('.plan-state-header').getAttribute('data-plan-overlay') === 'none', 'Home from Workspace left overlay state on the header.')
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Workspace-from-Lesson → Home did not land on Teaching Day.')
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Workspace-from-Lesson → Home moved the anchored date.')
+  })
+
+  await withPage(browser, liveSeed, async (page) => {
+    await page.getByRole('button', { name: 'Plan View', exact: true }).click()
+    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
+    await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
+    const before = await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))
+    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    const after = await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))
+    assert(before === after, 'Home mutated ArcTable live state.')
+    assert(JSON.parse(after).timer.remainingSeconds === live.timer.remainingSeconds, 'Home changed the ArcTable timer.')
+    assert(await page.getByRole('button', { name: /Return to ArcTable/ }).count() === 1, 'Home from Plan View dropped the live ArcTable session.')
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Home from live Plan View did not land on Teaching Day.')
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Home from live Plan View moved the anchored date.')
+  })
+
+  await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
+    await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
+    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    await page.reload({ waitUntil: 'networkidle' })
+    await page.locator('.day-continuity[data-plan-focus="day"]').waitFor({ timeout: 5000 })
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Refresh after Home did not restore the same Teaching Day date.')
+    assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).view === 'Day', 'Refresh after Home did not persist Day view.')
+    assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).focus === 'day', 'Refresh after Home did not persist Teaching Day focus.')
+    assert(await page.getByRole('heading', { level: 1, name: 'Month' }).count() === 0, 'Refresh after Home restored Month home instead of Teaching Day.')
+  })
+
+  console.log('Arc Plan navigation spine gate passed: Day → Class → Lesson → Workspace return, Home to Teaching Day, refresh, stale IDs, Section divergence, ArcTable isolation.')
 } finally {
   await browser.close()
 }

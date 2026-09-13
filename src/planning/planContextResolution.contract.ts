@@ -3,7 +3,7 @@ import { createPlanNavigationContext } from '../calendar/navigationContext'
 import { createCourse, createSection } from './courses'
 import { hydrateLessonWorkspace } from './lessonWorkspace'
 import { createLesson } from './lessons'
-import { focusLesson, focusTeachingBlock, resolvePlanContext, retreatPlanFocus } from './planContextResolution'
+import { focusLesson, focusTeachingBlock, goPlanHome, resolvePlanContext, retreatPlanFocus } from './planContextResolution'
 import { hydrateUnitWorkspace } from './unitWorkspace'
 import { hydratePlanningWorkspace } from './workspace'
 
@@ -57,6 +57,13 @@ assert(backToClass.focus === 'class' && backToClass.sectionId === section.id && 
 
 const backToDay = resolvePlanContext(retreatPlanFocus(backToClass), authority)
 assert(backToDay.focus === 'day' && backToDay.anchorDate === '2026-09-16' && !backToDay.sectionId && !backToDay.teachingBlockId, 'Class → Back must restore the same Day/date.')
+
+const homeFromLesson = resolvePlanContext(goPlanHome(lessonFocus), authority)
+assert(homeFromLesson.focus === 'day' && homeFromLesson.view === 'Day' && homeFromLesson.anchorDate === '2026-09-16' && !homeFromLesson.sectionId && !homeFromLesson.lessonId, 'Lesson → Home must land on Teaching Day for the same date, not Class Focus.')
+assert(resolvePlanContext(retreatPlanFocus(lessonFocus), authority).focus === 'class', 'Home must stay distinct from Back: Lesson → Back remains Class Focus.')
+
+const homeFromWeek = resolvePlanContext(goPlanHome(createPlanNavigationContext({ calendarId: calendar.id, view: 'Week', anchorDate: '2026-09-16', focus: 'day', courseId: course.id, sectionId: section.id })), authority)
+assert(homeFromWeek.view === 'Day' && homeFromWeek.focus === 'day' && homeFromWeek.anchorDate === '2026-09-16' && !homeFromWeek.sectionId, 'Week/Month/Year Home must keep the anchor date and drop to Teaching Day.')
 
 const staleLesson = resolvePlanContext({ ...lessonFocus, lessonId: 'lesson-missing' }, authority)
 assert(staleLesson.focus === 'class' && staleLesson.sectionId === section.id && !staleLesson.lessonId, 'A stale Lesson ID must fail safely to Class.')

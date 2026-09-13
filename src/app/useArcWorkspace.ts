@@ -47,6 +47,7 @@ import {
   commitCurriculumImport,
   focusLesson,
   focusTeachingBlock,
+  goPlanHome,
   prepareCurriculumCommit,
   resolvePlanContext,
   retreatPlanFocus,
@@ -575,6 +576,16 @@ export function useArcWorkspace(onCloseMode: () => void) {
     commitPlan(retreatPlanFocus(planContext))
   }
 
+  function goHome() {
+    if (!calendar) return
+    const current = planContext ?? createPlanNavigationContext({
+      calendarId: calendar.id,
+      anchorDate: anchorDate ?? calendar.firstDay,
+      view: activeView,
+    })
+    commitPlan(goPlanHome(current))
+  }
+
   function viewAvailability(view: CalendarView): ViewAvailability {
     if (!calendar) return { available: false, reason: 'Set up the school calendar first.' }
     if (view === 'Quarter' && calendar.quarters.length === 0) return { available: false, reason: 'Quarter dates are not configured yet.' }
@@ -640,6 +651,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     selectTeachingBlock,
     selectLesson,
     retreatFocus,
+    goHome,
   }
 }
 

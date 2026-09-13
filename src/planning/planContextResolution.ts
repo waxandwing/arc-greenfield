@@ -141,6 +141,15 @@ export function retreatPlanFocus(context: PlanNavigationContext): PlanNavigation
   return dayOnly(context)
 }
 
+export function goPlanHome(context: PlanNavigationContext): PlanNavigationContext {
+  return createPlanNavigationContext({
+    calendarId: context.calendarId,
+    view: 'Day',
+    anchorDate: context.anchorDate,
+    focus: 'day',
+  })
+}
+
 function availableView(view: CalendarView, calendar: SchoolCalendar): CalendarView {
   if (view === 'Quarter' && calendar.quarters.length === 0) return DEFAULT_HOME_VIEW
   if (view === 'Semester' && calendar.semesters.length === 0) return DEFAULT_HOME_VIEW

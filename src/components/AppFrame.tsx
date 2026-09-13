@@ -88,7 +88,8 @@ export function AppFrame() {
 
   function returnHome() {
     if (workspaceBusy) return
-    workspace.setActiveView(resolveAvailableHomeView(viewPreferences, workspace.viewAvailability))
+    setWorkspaceOverlayOpen(false)
+    workspace.goHome()
   }
 
   function shiftWithOverrides(overrides: ShiftPersistenceInput['overrides']): ShiftPersistenceInput | null {
@@ -193,7 +194,6 @@ export function AppFrame() {
     return <div className="arc-shell onboarding-shell"><a className="skip-link" href="#onboarding-stage">Skip to setup</a><header className="arc-header" aria-label="Arc application header"><div className="arc-wordmark"><img src="/assets/arc/arc-mark.png" alt="Arc" /></div></header><main id="onboarding-stage" className="onboarding-main" tabIndex={-1}><ArcOnboarding draft={onboardingDraft} capabilities={setupCapabilities} calendar={workspace.calendar} calendarInput={workspace.calendarInput} planningInput={workspace.planningInput} onChangeDraft={updateOnboarding} onUseCalendar={workspace.useCalendar} onUseClasses={workspace.useClasses} onLandInDay={() => workspace.setActiveView('Day')} onOpenImport={() => workspaceMode.open('import')} /></main></div>
   }
 
-  const homeView = resolveAvailableHomeView(viewPreferences, workspace.viewAvailability)
   const fridgeContent = workspace.calendar && workspaceMode.mode === 'calendar' ? (
     <WorkspacePanel
       captures={workspace.captureWorkspace}
@@ -248,7 +248,7 @@ export function AppFrame() {
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
 
       <header className="arc-header" aria-label="Arc application header">
-        <button className="arc-wordmark" type="button" aria-label={`Return to ${homeView} view`} onClick={returnHome}><img src="/assets/arc/arc-mark.png" alt="Arc" /></button>
+        <button className="arc-wordmark" type="button" aria-label="Return to Teaching Day" onClick={returnHome}><img src="/assets/arc/arc-mark.png" alt="Arc" /></button>
         <div className="arc-header-space" aria-hidden="true" />
         {arcTable.live ? <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}><span>{arcTable.live.session.sectionName} live · {elapsedLiveMinutes(arcTable.live)} min</span><strong>Return to ArcTable</strong></button> : null}
       </header>
