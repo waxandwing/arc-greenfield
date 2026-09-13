@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
 import type { CalendarView } from '../navigation/calendarViews'
 import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
+import type { PlanNavigationContext } from '../calendar/navigationContext'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import { projectDayContinuity } from '../planning/dayContinuityProjection'
 import { projectPlanningRange } from '../planning/planningProjection'
 import { projectMonthPlanning } from '../planning/monthPlanningProjection'
-import type { LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, UnitWorkspace } from '../planning'
+import type { DayContinuityLesson, LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, TeachingDayRailItem, UnitWorkspace } from '../planning'
 import { PlanningDayContinuityView } from './PlanningDayContinuityView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
@@ -26,16 +27,21 @@ type Props = {
   calendar: SchoolCalendar | null
   anchorDate: ISODate | null
   planningContext?: PlanningContext | null
+  planContext?: PlanNavigationContext | null
   showWeekends?: boolean
   onStartClass?: (sectionId: string, lessonId: string) => void
   onSelectDate?: (date: ISODate, view: CalendarView) => void
+  onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
+  onSelectLesson?: (lesson: DayContinuityLesson) => void
+  onRetreatPlanFocus?: () => void
+  onOpenWorkspace?: () => void
   onAddNote?: (date: ISODate, text: string) => boolean
   onDeleteNote?: (noteId: string) => void
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, showWeekends = false, onStartClass, onSelectDate, onAddNote, onDeleteNote }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onAddNote, onDeleteNote }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -53,7 +59,12 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           title={formatLongDate(projection.date)}
           day={projection.day}
           planningContext={planningContext}
+          planContext={planContext}
           onStartClass={onStartClass}
+          onSelectTeachingBlock={onSelectTeachingBlock}
+          onSelectLesson={onSelectLesson}
+          onRetreatPlanFocus={onRetreatPlanFocus}
+          onOpenWorkspace={onOpenWorkspace}
           onAddNote={onAddNote}
           onDeleteNote={onDeleteNote}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
@@ -134,7 +145,20 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, termContext, onStartClass, onAddNote, onDeleteNote }: { title: string; day: ProjectedDay; planningContext?: PlanningContext | null; termContext?: ReactNode; onStartClass?: (sectionId: string, lessonId: string) => void; onAddNote?: (date: ISODate, text: string) => boolean; onDeleteNote?: (noteId: string) => void }) {
+function PlanningDayStrip({ title, day, planningContext, planContext, termContext, onStartClass, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onAddNote, onDeleteNote }: {
+  title: string
+  day: ProjectedDay
+  planningContext?: PlanningContext | null
+  planContext?: PlanNavigationContext | null
+  termContext?: ReactNode
+  onStartClass?: (sectionId: string, lessonId: string) => void
+  onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
+  onSelectLesson?: (lesson: DayContinuityLesson) => void
+  onRetreatPlanFocus?: () => void
+  onOpenWorkspace?: () => void
+  onAddNote?: (date: ISODate, text: string) => boolean
+  onDeleteNote?: (noteId: string) => void
+}) {
   return (
     <section className="projection-section" aria-label={title}>
       <ProjectionHeading title={title} termContext={termContext} />
@@ -150,6 +174,13 @@ function PlanningDayStrip({ title, day, planningContext, termContext, onStartCla
           })}
           lessons={planningContext.lessons}
           planning={planningContext.planning}
+          planFocus={planContext?.focus ?? 'day'}
+          selectedBlockId={planContext?.teachingBlockId}
+          selectedLessonId={planContext?.lessonId}
+          onSelectBlock={onSelectTeachingBlock}
+          onSelectLesson={onSelectLesson}
+          onRetreat={onRetreatPlanFocus}
+          onOpenWorkspace={onOpenWorkspace}
           onStartClass={onStartClass}
         /></>
       ) : (

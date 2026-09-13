@@ -12,6 +12,10 @@ export function formatLongDate(date: ISODate): string {
   return dateFormatter({ weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(toUTCDate(date))
 }
 
+export function formatPlanHeaderDate(date: ISODate): string {
+  return dateFormatter({ weekday: 'long', month: 'short', day: 'numeric' }).format(toUTCDate(date))
+}
+
 export function formatMonthKey(monthKey: `${number}-${number}`): string {
   return dateFormatter({ month: 'long', year: 'numeric' }).format(new Date(`${monthKey}-01T00:00:00Z`))
 }

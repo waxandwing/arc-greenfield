@@ -5,12 +5,14 @@ import {
   findContainingBoundary,
   hydrateSchoolCalendar,
   moveAnchor,
-  savePlanningAnchor,
+  createPlanNavigationContext,
+  savePlanNavigationContext,
   saveCalendarToBrowser,
   todayAnchor,
   type CalendarHydrationInput,
   type ISODate,
   type PeriodDirection,
+  type PlanNavigationContext,
   type SchoolCalendar,
 } from '../calendar'
 import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
@@ -43,8 +45,13 @@ import {
   type CurriculumImportProposal,
   type CurriculumImportReceipt,
   commitCurriculumImport,
+  focusLesson,
+  focusTeachingBlock,
   prepareCurriculumCommit,
+  resolvePlanContext,
+  retreatPlanFocus,
   type ReimportDecision,
+  type TeachingDayRailItem,
 } from '../planning'
 import { reconcileShiftState } from './shiftReconciliation'
 import { loadWorkspaceSnapshot } from './workspaceBootstrap'
@@ -55,6 +62,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
   const [snapshot] = useState(loadWorkspaceSnapshot)
   const {
     restoredCalendar,
+    restoredPlan,
     restoredAnchor,
     restoredPlanning,
     restoredUnits,
@@ -63,10 +71,21 @@ export function useArcWorkspace(onCloseMode: () => void) {
     restoredCaptures,
   } = snapshot
 
-  const [activeView, setActiveView] = useState<CalendarView>(DEFAULT_HOME_VIEW)
+  const initialPlan = initialPlanContext({
+    calendar: restoredCalendar?.calendar ?? null,
+    restoredPlan,
+    restoredAnchor,
+    planning: restoredPlanning?.workspace ?? null,
+    units: restoredUnits?.workspace ?? null,
+    lessons: restoredLessons?.workspace ?? null,
+    overrides: restoredShift?.input?.overrides ?? [],
+  })
+  const [planContext, setPlanContext] = useState<PlanNavigationContext | null>(initialPlan.context)
+  const [viewWasPersisted] = useState(initialPlan.viewWasPersisted)
+  const [activeView, setActiveViewState] = useState<CalendarView>(initialPlan.context?.view ?? DEFAULT_HOME_VIEW)
   const [calendar, setCalendar] = useState<SchoolCalendar | null>(restoredCalendar?.calendar ?? null)
   const [calendarInput, setCalendarInput] = useState<CalendarHydrationInput | null>(restoredCalendar?.input ?? null)
-  const [anchorDate, setAnchorDate] = useState<ISODate | null>(restoredAnchor ?? restoredCalendar?.calendar.firstDay ?? null)
+  const [anchorDate, setAnchorDate] = useState<ISODate | null>(initialPlan.context?.anchorDate ?? restoredAnchor ?? restoredCalendar?.calendar.firstDay ?? null)
   const [planningWorkspace, setPlanningWorkspace] = useState<PlanningWorkspace | null>(restoredPlanning?.workspace ?? null)
   const [planningInput, setPlanningInput] = useState<PlanningWorkspaceInput | null>(restoredPlanning?.input ?? null)
   const [unitWorkspace, setUnitWorkspace] = useState<UnitWorkspace | null>(restoredUnits?.workspace ?? null)
@@ -86,6 +105,53 @@ export function useArcWorkspace(onCloseMode: () => void) {
     if (!next) return true
     setShiftState(next)
     return saveShiftStateToBrowser(next)
+  }
+
+  function authorityFor(overrides?: {
+    calendar?: SchoolCalendar | null
+    planning?: PlanningWorkspace | null
+    units?: UnitWorkspace | null
+    lessons?: LessonWorkspace | null
+    shift?: ShiftPersistenceInput | null
+  }) {
+    const nextCalendar = overrides?.calendar ?? calendar
+    if (!nextCalendar) return null
+    return {
+      calendar: nextCalendar,
+      planning: overrides?.planning ?? planningWorkspace,
+      units: overrides?.units ?? unitWorkspace,
+      lessons: overrides?.lessons ?? lessonWorkspace,
+      overrides: (overrides?.shift ?? shiftState)?.overrides ?? [],
+    }
+  }
+
+  function commitPlan(draft: PlanNavigationContext | null, overrides?: Parameters<typeof authorityFor>[0]) {
+    const authority = authorityFor(overrides)
+    if (!authority || !draft) {
+      setPlanContext(null)
+      return
+    }
+    const resolved = resolvePlanContext(draft, authority)
+    setPlanContext(resolved)
+    setActiveViewState(resolved.view)
+    setAnchorDate(resolved.anchorDate)
+    savePlanNavigationContext(resolved)
+  }
+
+  function setActiveView(view: CalendarView) {
+    if (!calendar) {
+      setActiveViewState(view)
+      return
+    }
+    const current = planContext ?? createPlanNavigationContext({
+      calendarId: calendar.id,
+      anchorDate: anchorDate ?? calendar.firstDay,
+      view,
+    })
+    const leavingDay = current.view === 'Day' && view !== 'Day'
+    commitPlan(leavingDay
+      ? createPlanNavigationContext({ calendarId: calendar.id, anchorDate: current.anchorDate, view, focus: 'day' })
+      : { ...current, view })
   }
 
   function useCalendar(nextCalendar: SchoolCalendar, input: CalendarHydrationInput) {
@@ -128,9 +194,17 @@ export function useArcWorkspace(onCloseMode: () => void) {
       saveCapturesToBrowser(emptyCaptures)
     }
     setCalendarInput(input)
-    setAnchorDate(nextAnchor)
-    savePlanningAnchor(nextCalendar.id, nextAnchor)
-    setActiveView(nextView)
+    commitPlan(createPlanNavigationContext({
+      calendarId: nextCalendar.id,
+      anchorDate: nextAnchor,
+      view: nextView,
+      focus: nextCalendar.id === planContext?.calendarId ? planContext.focus : 'day',
+      courseId: nextCalendar.id === planContext?.calendarId ? planContext.courseId : undefined,
+      sectionId: nextCalendar.id === planContext?.calendarId ? planContext.sectionId : undefined,
+      unitId: nextCalendar.id === planContext?.calendarId ? planContext.unitId : undefined,
+      lessonId: nextCalendar.id === planContext?.calendarId ? planContext.lessonId : undefined,
+      teachingBlockId: nextCalendar.id === planContext?.calendarId ? planContext.teachingBlockId : undefined,
+    }), { calendar: nextCalendar, shift: shift.next })
     onCloseMode()
     if (!calendarPersisted || !shiftPersisted) setStorageNotice('This change is active for this session, but Arc could not save all related planning state in this browser.')
     else if (shift.undoDropped) setStorageNotice('Calendar updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
@@ -150,13 +224,10 @@ export function useArcWorkspace(onCloseMode: () => void) {
     const shiftPersisted = persistReconciledShift(shift.next)
     setCalendar(nextCalendar)
     setCalendarInput(input)
+    commitPlan((planContext && planContext.calendarId === nextCalendar.id
+      ? { ...planContext, view: activeView === 'Quarter' && !findContainingBoundary(nextCalendar.quarters, planContext.anchorDate) ? DEFAULT_HOME_VIEW : activeView === 'Semester' && !findContainingBoundary(nextCalendar.semesters, planContext.anchorDate) ? DEFAULT_HOME_VIEW : activeView }
+      : createPlanNavigationContext({ calendarId: nextCalendar.id, anchorDate: nextCalendar.firstDay, view: DEFAULT_HOME_VIEW })), { calendar: nextCalendar, shift: shift.next })
     onCloseMode()
-    if (anchorDate) {
-      const quarterStillContainsAnchor = findContainingBoundary(nextCalendar.quarters, anchorDate)
-      const semesterStillContainsAnchor = findContainingBoundary(nextCalendar.semesters, anchorDate)
-      if (activeView === 'Quarter' && !quarterStillContainsAnchor) setActiveView(DEFAULT_HOME_VIEW)
-      if (activeView === 'Semester' && !semesterStillContainsAnchor) setActiveView(DEFAULT_HOME_VIEW)
-    }
     if (!calendarPersisted || !shiftPersisted) setStorageNotice('These term dates are active for this session, but Arc could not save all related planning state in this browser.')
     else if (shift.undoDropped) setStorageNotice('Terms updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
     else setStorageNotice(null)
@@ -179,6 +250,11 @@ export function useArcWorkspace(onCloseMode: () => void) {
       setPlanningWorkspace(workspace)
       setPlanningInput(input)
       onCloseMode()
+      commitPlan(planContext ?? createPlanNavigationContext({
+        calendarId: calendar.id,
+        anchorDate: anchorDate ?? calendar.firstDay,
+        view: activeView,
+      }), { planning: workspace, shift: shift.next })
       if (!classesPersisted || !shiftPersisted) setStorageNotice('These classes are active for this session, but Arc could not save all related planning state in this browser.')
       else if (shift.undoDropped) setStorageNotice('Classes updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
       else setStorageNotice(null)
@@ -188,6 +264,13 @@ export function useArcWorkspace(onCloseMode: () => void) {
     setPlanningWorkspace(workspace)
     setPlanningInput(input)
     onCloseMode()
+    if (calendar) {
+      commitPlan(planContext ?? createPlanNavigationContext({
+        calendarId: calendar.id,
+        anchorDate: anchorDate ?? calendar.firstDay,
+        view: activeView,
+      }), { planning: workspace })
+    }
     setStorageNotice(persisted ? null : 'These classes are active for this session, but Arc could not save them in this browser.')
     return true
   }
@@ -209,6 +292,11 @@ export function useArcWorkspace(onCloseMode: () => void) {
       setUnitWorkspace(workspace)
       setUnitInput(input)
       onCloseMode()
+      commitPlan(planContext ?? createPlanNavigationContext({
+        calendarId: calendar.id,
+        anchorDate: anchorDate ?? calendar.firstDay,
+        view: activeView,
+      }), { units: workspace, shift: shift.next })
       if (!unitsPersisted || !shiftPersisted) setStorageNotice('These Units are active for this session, but Arc could not save all related planning state in this browser.')
       else if (shift.undoDropped) setStorageNotice('Units updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
       else setStorageNotice(null)
@@ -218,6 +306,13 @@ export function useArcWorkspace(onCloseMode: () => void) {
     setUnitWorkspace(workspace)
     setUnitInput(input)
     onCloseMode()
+    if (calendar) {
+      commitPlan(planContext ?? createPlanNavigationContext({
+        calendarId: calendar.id,
+        anchorDate: anchorDate ?? calendar.firstDay,
+        view: activeView,
+      }), { units: workspace })
+    }
     setStorageNotice(persisted ? null : 'These Units are active for this session, but Arc could not save them in this browser.')
   }
 
@@ -261,6 +356,11 @@ export function useArcWorkspace(onCloseMode: () => void) {
     setLessonInput(input)
     setShiftState(candidateShift)
     onCloseMode()
+    commitPlan(planContext ?? createPlanNavigationContext({
+      calendarId: calendar.id,
+      anchorDate: anchorDate ?? calendar.firstDay,
+      view: activeView,
+    }), { lessons: workspace, shift: candidateShift })
     setStorageNotice(undoDropped
       ? 'Lessons updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.'
       : null)
@@ -297,6 +397,11 @@ export function useArcWorkspace(onCloseMode: () => void) {
       setLessonWorkspace(prepared.lessons)
       setLessonInput(prepared.lessons)
       setStorageNotice(null)
+      commitPlan(planContext ?? createPlanNavigationContext({
+        calendarId: calendar.id,
+        anchorDate: anchorDate ?? calendar.firstDay,
+        view: activeView,
+      }), { planning: prepared.planning, units: prepared.units, lessons: prepared.lessons })
       return prepared.receipt
     } catch (error) {
       return error instanceof Error ? error.message : String(error)
@@ -430,25 +535,44 @@ export function useArcWorkspace(onCloseMode: () => void) {
   function movePeriod(direction: PeriodDirection) {
     if (!calendar || !anchorDate) return
     const next = moveAnchor(calendar, activeView, anchorDate, direction)
-    if (next) {
-      setAnchorDate(next)
-      savePlanningAnchor(calendar.id, next)
-    }
+    if (!next) return
+    commitPlan({
+      ...(planContext ?? createPlanNavigationContext({ calendarId: calendar.id, anchorDate: next, view: activeView })),
+      anchorDate: next,
+    })
   }
 
   function goToday() {
     if (!calendar) return
     const today = todayAnchor(calendar, currentLocalISODate())
-    if (today) {
-      setAnchorDate(today)
-      savePlanningAnchor(calendar.id, today)
-    }
+    if (!today) return
+    commitPlan({
+      ...(planContext ?? createPlanNavigationContext({ calendarId: calendar.id, anchorDate: today, view: activeView })),
+      anchorDate: today,
+    })
   }
 
   function selectDate(date: ISODate) {
     if (!calendar || compareISODate(date, calendar.firstDay) < 0 || compareISODate(date, calendar.lastDay) > 0) return
-    setAnchorDate(date)
-    savePlanningAnchor(calendar.id, date)
+    commitPlan({
+      ...(planContext ?? createPlanNavigationContext({ calendarId: calendar.id, anchorDate: date, view: activeView })),
+      anchorDate: date,
+    })
+  }
+
+  function selectTeachingBlock(block: TeachingDayRailItem) {
+    if (!calendar || !planContext) return
+    commitPlan(focusTeachingBlock(planContext, { id: block.id, courseId: block.courseId, sectionId: block.sectionId }))
+  }
+
+  function selectLesson(lesson: { lessonId: string; unitId: string; courseId: string }) {
+    if (!calendar || !planContext) return
+    commitPlan(focusLesson(planContext, lesson))
+  }
+
+  function retreatFocus() {
+    if (!calendar || !planContext) return
+    commitPlan(retreatPlanFocus(planContext))
   }
 
   function viewAvailability(view: CalendarView): ViewAvailability {
@@ -470,6 +594,8 @@ export function useArcWorkspace(onCloseMode: () => void) {
   return {
     activeView,
     setActiveView,
+    planContext,
+    viewWasPersisted,
     calendar,
     calendarInput,
     anchorDate,
@@ -511,5 +637,34 @@ export function useArcWorkspace(onCloseMode: () => void) {
     movePeriod,
     goToday,
     selectDate,
+    selectTeachingBlock,
+    selectLesson,
+    retreatFocus,
+  }
+}
+
+function initialPlanContext(input: {
+  calendar: SchoolCalendar | null
+  restoredPlan: ReturnType<typeof loadWorkspaceSnapshot>['restoredPlan']
+  restoredAnchor: ISODate | null
+  planning: PlanningWorkspace | null
+  units: UnitWorkspace | null
+  lessons: LessonWorkspace | null
+  overrides: NonNullable<ShiftPersistenceInput['overrides']>
+}): { context: PlanNavigationContext | null; viewWasPersisted: boolean } {
+  if (!input.calendar) return { context: null, viewWasPersisted: false }
+  const seed = input.restoredPlan?.context ?? createPlanNavigationContext({
+    calendarId: input.calendar.id,
+    anchorDate: input.restoredAnchor ?? input.calendar.firstDay,
+  })
+  return {
+    context: resolvePlanContext(seed, {
+      calendar: input.calendar,
+      planning: input.planning,
+      units: input.units,
+      lessons: input.lessons,
+      overrides: input.overrides,
+    }),
+    viewWasPersisted: input.restoredPlan?.viewWasPersisted ?? false,
   }
 }

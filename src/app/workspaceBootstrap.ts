@@ -1,6 +1,6 @@
 import {
   loadCalendarFromBrowser,
-  loadPlanningAnchor,
+  loadPlanNavigationContext,
 } from '../calendar'
 import {
   loadCapturesFromBrowser,
@@ -13,7 +13,8 @@ import {
 export function loadWorkspaceSnapshot() {
   const calendarLoad = loadCalendarFromBrowser()
   const restoredCalendar = calendarLoad.status === 'restored' ? calendarLoad.restored : null
-  const restoredAnchor = restoredCalendar ? loadPlanningAnchor(restoredCalendar.calendar) : null
+  const restoredPlan = restoredCalendar ? loadPlanNavigationContext(restoredCalendar.calendar) : null
+  const restoredAnchor = restoredPlan?.context.anchorDate ?? null
   const captureLoad = restoredCalendar
     ? loadCapturesFromBrowser(restoredCalendar.calendar.id)
     : { status: 'empty' as const }
@@ -47,6 +48,7 @@ export function loadWorkspaceSnapshot() {
     shiftLoad,
     captureLoad,
     restoredCalendar,
+    restoredPlan,
     restoredAnchor,
     restoredPlanning,
     restoredUnits,

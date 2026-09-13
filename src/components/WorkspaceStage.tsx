@@ -7,16 +7,18 @@ import { TermBoundarySetup } from './TermBoundarySetup'
 import { UnitSetup } from './UnitSetup'
 import { TeachingDaySetup } from './TeachingDaySetup'
 import { CurriculumImport } from './CurriculumImport'
-import type { CalendarHydrationInput, ISODate, SchoolCalendar } from '../calendar'
+import type { CalendarHydrationInput, ISODate, PlanNavigationContext, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import type {
+  DayContinuityLesson,
   LessonWorkspace,
   LessonWorkspaceInput,
   PlanningWorkspace,
   PlanningWorkspaceInput,
   ShiftOperation,
   ShiftPersistenceInput,
+  TeachingDayRailItem,
   UnitWorkspace,
   UnitWorkspaceInput,
   CurriculumImportProposal,
@@ -31,6 +33,7 @@ type WorkspaceStageProps = {
   calendar: SchoolCalendar | null
   calendarInput: CalendarHydrationInput | null
   anchorDate: ISODate | null
+  planContext?: PlanNavigationContext | null
   planningWorkspace: PlanningWorkspace | null
   planningInput: PlanningWorkspaceInput | null
   unitWorkspace: UnitWorkspace | null
@@ -50,6 +53,10 @@ type WorkspaceStageProps = {
   onApplyRecoveryShift: (operation: ShiftOperation) => string | null
   onStartClass: (sectionId: string, lessonId: string) => void
   onSelectDate: (date: ISODate, view: CalendarView) => void
+  onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
+  onSelectLesson?: (lesson: DayContinuityLesson) => void
+  onRetreatPlanFocus?: () => void
+  onOpenWorkspace?: () => void
   onAddNote: (date: ISODate, text: string) => boolean
   onDeleteNote: (noteId: string) => void
   onCloseMode: () => void
@@ -64,6 +71,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     calendar,
     calendarInput,
     anchorDate,
+    planContext,
     planningWorkspace,
     planningInput,
     unitWorkspace,
@@ -83,6 +91,10 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onApplyRecoveryShift,
     onStartClass,
     onSelectDate,
+    onSelectTeachingBlock,
+    onSelectLesson,
+    onRetreatPlanFocus,
+    onOpenWorkspace,
     onAddNote,
     onDeleteNote,
     onCloseMode,
@@ -185,8 +197,13 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       calendar={calendar}
       anchorDate={anchorDate}
       planningContext={planningContext}
+      planContext={planContext}
       onStartClass={onStartClass}
       onSelectDate={onSelectDate}
+      onSelectTeachingBlock={onSelectTeachingBlock}
+      onSelectLesson={onSelectLesson}
+      onRetreatPlanFocus={onRetreatPlanFocus}
+      onOpenWorkspace={onOpenWorkspace}
       onAddNote={onAddNote}
       onDeleteNote={onDeleteNote}
     />

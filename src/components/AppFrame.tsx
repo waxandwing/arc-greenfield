@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { B01Furniture } from './B01Furniture'
 import { CalendarStageHeader } from './CalendarStageHeader'
+import { PlanStateHeader } from './PlanStateHeader'
 import { SettingsFurnitureContent } from './SettingsFurnitureContent'
 import { TaskBarPanel } from './TaskBarPanel'
 import { WorkspaceStage } from './WorkspaceStage'
@@ -46,6 +47,7 @@ export function AppFrame() {
   const [onboardingDraft, setOnboardingDraft] = useState(loadOnboardingDraft)
   const [showFirstCapturePrompt, setShowFirstCapturePrompt] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
   const [workspaceOpenToken, setWorkspaceOpenToken] = useState(0)
+  const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
@@ -61,9 +63,11 @@ export function AppFrame() {
 
   useEffect(() => {
     if (!workspace.calendar || !workspace.anchorDate) return
+    if (workspace.viewWasPersisted) return
     const preferred = resolveAvailableHomeView(viewPreferences, workspace.viewAvailability)
     workspace.setActiveView(preferred)
-    // Home preference is intentionally applied only when the restored workspace becomes available.
+    // Home preference is intentionally applied only when the restored workspace becomes available
+    // and the teacher did not already persist an explicit Plan view.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(workspace.calendar && workspace.anchorDate)])
 
@@ -274,10 +278,32 @@ export function AppFrame() {
 
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
-          <B01Furniture settings={settingsContent} workspace={fridgeContent} tasks={taskContent} dismissSideDrawers={workspaceMode.mode !== 'calendar'} openRequest={workspaceOpenToken ? { name: 'workspace', token: workspaceOpenToken } : null}>
+          <B01Furniture
+            settings={settingsContent}
+            workspace={fridgeContent}
+            tasks={taskContent}
+            dismissSideDrawers={workspaceMode.mode !== 'calendar'}
+            openRequest={workspaceOpenToken ? { name: 'workspace', token: workspaceOpenToken } : null}
+            workspaceOpen={workspaceOverlayOpen}
+            onWorkspaceOpenChange={setWorkspaceOverlayOpen}
+          >
             <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
               {workspaceMode.mode === 'calendar' ? <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} onOpenImport={() => workspaceMode.open('import')} /> : null}
               {workspaceMode.mode === 'calendar' && minimumPlanningSetupEstablished(setupCapabilities) && showFirstCapturePrompt && !onboardingDraft.firstCapturePromptDismissed ? <FirstCapturePrompt onSave={workspace.addCapture} onPlace={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }); setWorkspaceOpenToken((token) => token + 1) }} onDismiss={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }) }} /> : null}
+              {workspaceMode.mode === 'calendar' && workspace.calendar && workspace.anchorDate ? (
+                <PlanStateHeader
+                  viewLabel={workspace.activeView === 'Day' ? 'Teaching Day' : workspace.activeView}
+                  focus={workspace.planContext?.focus ?? 'day'}
+                  date={workspace.anchorDate}
+                  courseTitle={headerCourseTitle(workspace)}
+                  sectionName={headerSectionName(workspace)}
+                  unitTitle={headerUnitTitle(workspace)}
+                  lessonTitle={headerLessonTitle(workspace)}
+                  blockLabel={headerBlock(workspace)?.label}
+                  blockType={headerBlock(workspace)?.type ?? null}
+                  overlay={workspaceOverlayOpen ? 'workspace' : null}
+                />
+              ) : null}
               <WorkspaceStage
                 mode={workspaceMode.mode}
                 activeView={workspace.activeView}
@@ -285,6 +311,7 @@ export function AppFrame() {
                 calendar={workspace.calendar}
                 calendarInput={workspace.calendarInput}
                 anchorDate={workspace.anchorDate}
+                planContext={workspace.planContext}
                 planningWorkspace={workspace.planningWorkspace}
                 planningInput={workspace.planningInput}
                 unitWorkspace={workspace.unitWorkspace}
@@ -304,6 +331,10 @@ export function AppFrame() {
                 onApplyRecoveryShift={workspace.applyRecoveryShift}
                 onStartClass={startClass}
                 onSelectDate={deepenTo}
+                onSelectTeachingBlock={workspace.selectTeachingBlock}
+                onSelectLesson={workspace.selectLesson}
+                onRetreatPlanFocus={workspace.retreatFocus}
+                onOpenWorkspace={() => setWorkspaceOverlayOpen(true)}
                 onAddNote={workspace.addCalendarNote}
                 onDeleteNote={workspace.deleteCalendarNote}
                 onCloseMode={workspaceMode.close}
@@ -335,4 +366,30 @@ function stageTitleFor(mode: ReturnType<typeof useWorkspaceMode>['mode'], active
   if (mode === 'lessons') return 'Lessons'
   if (mode === 'calendar-setup') return 'Calendar'
   return activeView
+}
+
+function headerCourseTitle(workspace: ReturnType<typeof useArcWorkspace>) {
+  const id = workspace.planContext?.courseId
+  return id ? workspace.planningWorkspace?.courses.find((course) => course.id === id)?.title ?? null : null
+}
+
+function headerSectionName(workspace: ReturnType<typeof useArcWorkspace>) {
+  const id = workspace.planContext?.sectionId
+  return id ? workspace.planningWorkspace?.sections.find((section) => section.id === id)?.name ?? null : null
+}
+
+function headerUnitTitle(workspace: ReturnType<typeof useArcWorkspace>) {
+  const id = workspace.planContext?.unitId
+  return id ? workspace.unitWorkspace?.units.find((unit) => unit.id === id)?.title ?? null : null
+}
+
+function headerLessonTitle(workspace: ReturnType<typeof useArcWorkspace>) {
+  const id = workspace.planContext?.lessonId
+  return id ? workspace.lessonWorkspace?.lessons.find((lesson) => lesson.id === id)?.title ?? null : null
+}
+
+function headerBlock(workspace: ReturnType<typeof useArcWorkspace>) {
+  const id = workspace.planContext?.teachingBlockId
+  if (!id) return null
+  return workspace.planningWorkspace?.teachingDay?.blocks.find((block) => block.id === id) ?? null
 }

@@ -118,6 +118,7 @@ CI reports separate gates for:
 - TypeScript
 - production bundle
 - browser accessibility/interaction
+- Arc Plan navigation spine (`npm run test:plan-navigation` against a running preview)
 
 `tests/run-contracts.mjs` verifies that every discovered `*.contract.ts` file is represented in the contract runner. Adding a contract that CI does not execute must fail the gate.
 
