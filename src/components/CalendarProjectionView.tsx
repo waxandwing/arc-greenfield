@@ -6,7 +6,7 @@ import type { ISODate, SchoolCalendar } from '../calendar/types'
 import { projectDayContinuity } from '../planning/dayContinuityProjection'
 import { projectPlanningRange } from '../planning/planningProjection'
 import { projectMonthPlanning } from '../planning/monthPlanningProjection'
-import type { DayContinuityLesson, LessonWorkspace, PlanningWorkspace, ShiftPersistenceInput, TeachingDayRailItem, UnitWorkspace } from '../planning'
+import type { CaptureWorkspace, DayContinuityLesson, LessonWorkspace, PlanningPeriodAttentionItem, PlanningWorkspace, ShiftPersistenceInput, TeachingDayRailItem, UnitWorkspace } from '../planning'
 import { PlanningDayContinuityView } from './PlanningDayContinuityView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
@@ -36,13 +36,17 @@ type Props = {
   onSelectLesson?: (lesson: DayContinuityLesson) => void
   onRetreatPlanFocus?: () => void
   onOpenWorkspace?: () => void
+  onFollowPlanningAttention?: (item: PlanningPeriodAttentionItem) => void
+  onReturnToPlanningPeriod?: () => void
+  planningPeriodReturnPending?: boolean
+  captureWorkspace?: CaptureWorkspace | null
   onAddNote?: (date: ISODate, text: string) => boolean
   onDeleteNote?: (noteId: string) => void
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onAddNote, onDeleteNote }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending = false, captureWorkspace = null, onAddNote, onDeleteNote }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -66,6 +70,10 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           onSelectLesson={onSelectLesson}
           onRetreatPlanFocus={onRetreatPlanFocus}
           onOpenWorkspace={onOpenWorkspace}
+          onFollowPlanningAttention={onFollowPlanningAttention}
+          onReturnToPlanningPeriod={onReturnToPlanningPeriod}
+          planningPeriodReturnPending={planningPeriodReturnPending}
+          captureWorkspace={captureWorkspace}
           onAddNote={onAddNote}
           onDeleteNote={onDeleteNote}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
@@ -84,6 +92,8 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           planContext={planContext}
           onSelectDate={(date) => onSelectDate?.(date, 'Day')}
           onOpenWorkspace={onOpenWorkspace}
+          onReturnToPlanningPeriod={onReturnToPlanningPeriod}
+          planningPeriodReturnPending={planningPeriodReturnPending}
           onAddNote={onAddNote}
           onDeleteNote={onDeleteNote}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
@@ -188,7 +198,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, planContext, termContext, onStartClass, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onAddNote, onDeleteNote }: {
+function PlanningDayStrip({ title, day, planningContext, planContext, termContext, onStartClass, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending, captureWorkspace, onAddNote, onDeleteNote }: {
   title: string
   day: ProjectedDay
   planningContext?: PlanningContext | null
@@ -199,6 +209,10 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   onSelectLesson?: (lesson: DayContinuityLesson) => void
   onRetreatPlanFocus?: () => void
   onOpenWorkspace?: () => void
+  onFollowPlanningAttention?: (item: import('../planning').PlanningPeriodAttentionItem) => void
+  onReturnToPlanningPeriod?: () => void
+  planningPeriodReturnPending?: boolean
+  captureWorkspace?: import('../planning').CaptureWorkspace | null
   onAddNote?: (date: ISODate, text: string) => boolean
   onDeleteNote?: (noteId: string) => void
 }) {
@@ -224,6 +238,12 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
           onSelectLesson={onSelectLesson}
           onRetreat={onRetreatPlanFocus}
           onOpenWorkspace={onOpenWorkspace}
+          onFollowAttention={onFollowPlanningAttention}
+          onReturnToPlanningPeriod={onReturnToPlanningPeriod}
+          planningReturnPending={planningPeriodReturnPending}
+          units={planningContext.units}
+          captures={captureWorkspace ?? null}
+          overrides={planningContext.shiftState?.overrides ?? []}
           onStartClass={onStartClass}
         /></>
       ) : (
@@ -235,7 +255,7 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   )
 }
 
-function PlanningWeekStrip({ title, days, focusDate, planningContext, planContext, termContext, onSelectDate, onOpenWorkspace, onAddNote, onDeleteNote }: {
+function PlanningWeekStrip({ title, days, focusDate, planningContext, planContext, termContext, onSelectDate, onOpenWorkspace, onReturnToPlanningPeriod, planningPeriodReturnPending, onAddNote, onDeleteNote }: {
   title: string
   days: ProjectedDay[]
   focusDate: ISODate
@@ -244,6 +264,8 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
   termContext?: ReactNode
   onSelectDate?: (date: ISODate) => void
   onOpenWorkspace?: () => void
+  onReturnToPlanningPeriod?: () => void
+  planningPeriodReturnPending?: boolean
   onAddNote?: (date: ISODate, text: string) => boolean
   onDeleteNote?: (noteId: string) => void
 }) {
@@ -258,6 +280,9 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
       data-plan-lesson={planContext?.lessonId ?? ''}
     >
       <ProjectionHeading title={title} termContext={termContext} />
+      {planningPeriodReturnPending && onReturnToPlanningPeriod ? (
+        <p className="planning-week-actions"><button type="button" className="plan-back-link" onClick={onReturnToPlanningPeriod}>Back to Planning period</button></p>
+      ) : null}
       {onOpenWorkspace ? (
         <p className="planning-week-actions">
           <button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button>

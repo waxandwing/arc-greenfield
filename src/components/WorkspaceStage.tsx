@@ -58,6 +58,10 @@ type WorkspaceStageProps = {
   onSelectLesson?: (lesson: DayContinuityLesson) => void
   onRetreatPlanFocus?: () => void
   onOpenWorkspace?: () => void
+  onFollowPlanningAttention?: (item: import('../planning').PlanningPeriodAttentionItem) => void
+  onReturnToPlanningPeriod?: () => void
+  planningPeriodReturnPending?: boolean
+  captureWorkspace?: import('../planning').CaptureWorkspace | null
   onAddNote: (date: ISODate, text: string) => boolean
   onDeleteNote: (noteId: string) => void
   onCloseMode: () => void
@@ -97,6 +101,10 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onSelectLesson,
     onRetreatPlanFocus,
     onOpenWorkspace,
+    onFollowPlanningAttention,
+    onReturnToPlanningPeriod,
+    planningPeriodReturnPending,
+    captureWorkspace,
     onAddNote,
     onDeleteNote,
     onCloseMode,
@@ -207,6 +215,10 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       onSelectLesson={onSelectLesson}
       onRetreatPlanFocus={onRetreatPlanFocus}
       onOpenWorkspace={onOpenWorkspace}
+      onFollowPlanningAttention={onFollowPlanningAttention}
+      onReturnToPlanningPeriod={onReturnToPlanningPeriod}
+      planningPeriodReturnPending={planningPeriodReturnPending}
+      captureWorkspace={captureWorkspace}
       onAddNote={onAddNote}
       onDeleteNote={onDeleteNote}
     />

@@ -7,6 +7,7 @@ import type { LessonWorkspace } from './lessonWorkspace'
 import { buildTeachingDayRail } from './teachingDayRail'
 import type { UnitWorkspace } from './unitWorkspace'
 import type { PlanningWorkspace } from './workspace'
+import type { PlanningPeriodAttentionTarget } from './planningPeriodAttention'
 import type { SectionLessonDateOverride } from './sectionSchedule'
 
 export type PlanContextAuthority = {
@@ -15,6 +16,38 @@ export type PlanContextAuthority = {
   units?: UnitWorkspace | null
   lessons?: LessonWorkspace | null
   overrides?: SectionLessonDateOverride[]
+}
+
+export function followPlanningAttentionTarget(
+  context: PlanNavigationContext,
+  target: PlanningPeriodAttentionTarget,
+  block: { id: string; courseId: string | null; sectionId: string | null } | null,
+): PlanNavigationContext {
+  if (target.view !== 'Day') {
+    return sparsePlanContext({
+      ...enterPlanView(context, target.view, target.anchorDate),
+      courseId: target.courseId,
+      sectionId: target.sectionId,
+      unitId: target.unitId,
+      focus: target.sectionId ? 'class' : 'day',
+    })
+  }
+
+  let next = sparsePlanContext({ ...context, view: 'Day', anchorDate: target.anchorDate })
+  if (target.sectionId && block) {
+    next = focusTeachingBlock(next, block)
+  }
+  if (target.focus === 'lesson' && target.lessonId && target.unitId && target.sectionId) {
+    next = focusLesson(next, { lessonId: target.lessonId, unitId: target.unitId, courseId: target.courseId })
+  }
+  return next
+}
+
+export function restorePlanningPeriodBlock(
+  context: PlanNavigationContext,
+  block: { id: string; courseId: string | null; sectionId: string | null },
+): PlanNavigationContext {
+  return focusTeachingBlock(sparsePlanContext({ ...context, view: 'Day' }), block)
 }
 
 export function resolvePlanContext(context: PlanNavigationContext, authority: PlanContextAuthority): PlanNavigationContext {

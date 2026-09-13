@@ -24,6 +24,7 @@ import {
   elapsedLiveMinutes,
   projectArcTableSession,
   projectDayContinuity,
+  buildTeachingDayRail,
   type ArcTableTeachingOutcome,
   undoFridgeRoundTrip,
   type FridgeRoundTripReceipt,
@@ -344,6 +345,10 @@ export function AppFrame() {
                 onSelectLesson={workspace.selectLesson}
                 onRetreatPlanFocus={workspace.retreatFocus}
                 onOpenWorkspace={() => setWorkspaceOverlayOpen(true)}
+                onFollowPlanningAttention={workspace.followPlanningAttention}
+                onReturnToPlanningPeriod={workspace.returnToPlanningPeriod}
+                planningPeriodReturnPending={Boolean(workspace.planningPeriodReturnBlockId)}
+                captureWorkspace={workspace.captureWorkspace}
                 onAddNote={workspace.addCalendarNote}
                 onDeleteNote={workspace.deleteCalendarNote}
                 onCloseMode={workspaceMode.close}
@@ -400,7 +405,20 @@ function headerLessonTitle(workspace: ReturnType<typeof useArcWorkspace>) {
 function headerBlock(workspace: ReturnType<typeof useArcWorkspace>) {
   const id = workspace.planContext?.teachingBlockId
   if (!id) return null
-  return workspace.planningWorkspace?.teachingDay?.blocks.find((block) => block.id === id) ?? null
+  const explicit = workspace.planningWorkspace?.teachingDay?.blocks.find((block) => block.id === id)
+  if (explicit) return explicit
+  if (!workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace || !workspace.anchorDate) return null
+  const continuity = projectDayContinuity({
+    date: workspace.anchorDate,
+    planning: workspace.planningWorkspace,
+    units: workspace.unitWorkspace,
+    lessons: workspace.lessonWorkspace,
+    overrides: workspace.shiftState?.overrides ?? [],
+  })
+  const rail = buildTeachingDayRail(workspace.planningWorkspace, continuity)
+  const item = rail.find((block) => block.id === id)
+  if (!item) return null
+  return { id: item.id, label: item.label, type: item.type, order: 0, sectionId: item.sectionId, startTime: item.block?.startTime ?? null, endTime: item.block?.endTime ?? null }
 }
 
 function weekRangeLabel(workspace: ReturnType<typeof useArcWorkspace>, showWeekends: boolean) {

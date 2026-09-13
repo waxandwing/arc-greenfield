@@ -78,6 +78,7 @@ function secondaryLine(props: {
   courseTitle?: string | null
   sectionName?: string | null
   unitTitle?: string | null
+  blockType?: 'teaching' | 'planning' | 'non-teaching' | null
   weekRange?: string | null
   monthLabel?: string | null
   yearLabel?: string | null
@@ -88,5 +89,6 @@ function secondaryLine(props: {
   if (props.focus === 'lesson') {
     return [props.sectionName, props.courseTitle, props.unitTitle, dateLabel].filter(Boolean).join(' · ')
   }
+  if (props.focus === 'class' && props.blockType === 'planning') return 'Across My Preps'
   return dateLabel
 }

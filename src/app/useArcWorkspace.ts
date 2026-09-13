@@ -47,12 +47,17 @@ import {
   commitCurriculumImport,
   enterMonthFromYearUnit,
   enterPlanView,
+  followPlanningAttentionTarget,
   focusLesson,
   focusTeachingBlock,
   goPlanHome,
   prepareCurriculumCommit,
+  projectDayContinuity,
+  buildTeachingDayRail,
+  restorePlanningPeriodBlock,
   resolvePlanContext,
   retreatPlanFocus,
+  type PlanningPeriodAttentionItem,
   type ReimportDecision,
   type TeachingDayRailItem,
 } from '../planning'
@@ -106,6 +111,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     restoredCaptures ?? (restoredCalendar ? { calendarId: restoredCalendar.calendar.id, captures: [] } : null),
   )
   const [storageNotice, setStorageNotice] = useState<string | null>(snapshot.storageNotice)
+  const [planningPeriodReturnBlockId, setPlanningPeriodReturnBlockId] = useState<string | null>(null)
 
   function persistReconciledShift(next: ShiftPersistenceInput | null): boolean {
     if (!next) return true
@@ -573,8 +579,48 @@ export function useArcWorkspace(onCloseMode: () => void) {
     })
   }
 
+  function planningRail() {
+    if (!planningWorkspace || !unitWorkspace || !lessonWorkspace || !anchorDate) return []
+    const continuity = projectDayContinuity({
+      date: anchorDate,
+      planning: planningWorkspace,
+      units: unitWorkspace,
+      lessons: lessonWorkspace,
+      overrides: shiftState?.overrides ?? [],
+    })
+    return buildTeachingDayRail(planningWorkspace, continuity)
+  }
+
+  function isPlanningPeriodFocus(context: PlanNavigationContext | null = planContext) {
+    if (!context || context.focus !== 'class' || !context.teachingBlockId) return false
+    const block = planningRail().find((item) => item.id === context.teachingBlockId)
+    return block?.type === 'planning'
+  }
+
+  function followPlanningAttention(item: PlanningPeriodAttentionItem) {
+    if (!calendar || !planContext || !planningWorkspace) return
+    if (isPlanningPeriodFocus()) setPlanningPeriodReturnBlockId(planContext.teachingBlockId ?? null)
+    const block = item.target.sectionId
+      ? planningRail().find((candidate) => candidate.sectionId === item.target.sectionId) ?? null
+      : null
+    commitPlan(followPlanningAttentionTarget(
+      planContext,
+      item.target,
+      block ? { id: block.id, courseId: block.courseId, sectionId: block.sectionId } : null,
+    ))
+  }
+
+  function returnToPlanningPeriod() {
+    if (!planContext || !planningPeriodReturnBlockId) return
+    const block = planningRail().find((item) => item.id === planningPeriodReturnBlockId)
+    if (!block) return
+    commitPlan(restorePlanningPeriodBlock(planContext, { id: block.id, courseId: block.courseId, sectionId: block.sectionId }))
+    setPlanningPeriodReturnBlockId(null)
+  }
+
   function selectTeachingBlock(block: TeachingDayRailItem) {
     if (!calendar || !planContext) return
+    setPlanningPeriodReturnBlockId(null)
     commitPlan(focusTeachingBlock(planContext, { id: block.id, courseId: block.courseId, sectionId: block.sectionId }))
   }
 
@@ -665,6 +711,9 @@ export function useArcWorkspace(onCloseMode: () => void) {
     selectLesson,
     retreatFocus,
     goHome,
+    followPlanningAttention,
+    returnToPlanningPeriod,
+    planningPeriodReturnBlockId,
   }
 }
 

@@ -136,8 +136,9 @@ try {
   await shot(page, '01-plan-day-multiprep.png')
 
   await page.getByRole('button', { name: 'Period 5, planning time' }).click()
-  assert(await page.getByRole('heading', { name: 'Pull the week into focus.' }).isVisible(), 'Planning period did not open the cross-course lens.')
-  assert(await page.getByText('Stopped after the threshold comparison. Resume with patron evidence.', { exact: false }).count() > 0 || await page.getByText('Temple threshold', { exact: true }).count() > 0, 'Planning period did not surface unfinished teaching.')
+  assert(await page.getByRole('heading', { name: 'Planning period' }).isVisible(), 'Planning period did not open the cross-prep lens.')
+  assert(await page.getByText('Needs attention', { exact: true }).count() > 0, 'Planning period did not surface attention buckets.')
+  assert(await page.getByText('Stopped after the threshold comparison. Resume with patron evidence.', { exact: false }).count() > 0 || await page.getByRole('button', { name: /Temple threshold/ }).count() > 0, 'Planning period did not surface unfinished teaching.')
   await shot(page, '02-plan-day-planning-period.png')
 
   await selectView(page, 'Week')
