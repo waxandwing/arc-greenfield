@@ -211,3 +211,9 @@ Six obsolete browser tests were updated to current product law:
 - The external 12ui target-comparison service could not be used without explicit authorization to upload the repository/reference payload; local visual acceptance was completed.
 
 Known RED bugs: none observed in the completed verification suite.
+
+## Import + onboarding continuation
+
+The subsequent import/onboarding pass preserves this report's ArcTable architecture and adds no second Lesson or live-session model. Imported curriculum maps into canonical Course/Unit/Lesson truth only after explicit review and an atomic confirmation transaction. Explicit teaching-day blocks replace missing-period inference for newly configured schedules while older stored workspaces remain compatible.
+
+Detailed status, YELLOW limitations, verification, and evidence are recorded in `docs/overnight/ARC_IMPORT_ONBOARDING_REPORT.md`. ArcTable continuity remains **GREEN++**; this pass did not rename ArcTable, change End Class writeback, merge, deploy, or touch Vercel.

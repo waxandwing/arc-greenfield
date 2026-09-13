@@ -99,3 +99,23 @@ Transient/live boundary remains explicit: timers, cleanup, picker result, pass s
 - `git diff --check`
 
 No uncaptured command is represented as passing.
+
+## Import + onboarding implementation — 2026-09-13
+
+Starting HEAD: `a8ec1be`
+
+The implementation reused the existing calendar proposal/review lane, canonical planning stores, Capture promotion, and current Arc Plan shell. It added independent setup capabilities, resumable unconfirmed drafts, explicit teaching-day/Planning truth, a single curriculum CSV review pipeline, stable import provenance, re-import conflict classification, and a rollback-tested Course/Unit/Lesson transaction.
+
+### Status
+
+- **GREEN++**: explicit Planning/day order, partial onboarding persistence, parse/review no-write boundary, hostile CSV parsing, atomic commit/rollback, provenance, duplicate-title identity, identical re-import, local/upstream conflict protection.
+- **GREEN**: current-family onboarding/review composition, existing official calendar lane, manual bell/Course entry routing, compatibility projection for older planning state.
+- **YELLOW**: removed-upstream deletion review, inline row correction, date-aware placement without governed date semantics, bell-schedule file/alternate-day parsing, Course/Section file parsing, prior-Arc reuse, optional profile UI.
+- **YELLOW**: the required 12ui method was consulted, but its executable is not installed in this workspace; local screenshot review plus 200%/400% and 390px browser geometry were used.
+- **RED**: none observed.
+
+The dedicated report is `docs/overnight/ARC_IMPORT_ONBOARDING_REPORT.md`; implementation-audit notes are `docs/overnight/ARC_IMPORT_ONBOARDING_IMPLEMENTATION_NOTES.md`; fresh evidence is under `docs/overnight/evidence/import-onboarding/`.
+
+No merge, deployment, Vercel mutation, base-branch modification, ArcTable rename, or continuity-architecture replacement occurred.
+
+Observed final sweep: `npm run build` (50 contract groups, type-check, production bundle), import/onboarding browser gate, Arc Plan continuity, browser accessibility, planning truth, keyboard parity, Section divergence, recovery/Undo, calendar-edge truth, ArcTable continuity, and `git diff --check` all passed.
