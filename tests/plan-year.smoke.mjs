@@ -253,9 +253,11 @@ try {
   })
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
+    await selectCalendarView(page, 'Year')
     await selectCalendarView(page, 'Month')
+    await page.getByRole('button', { name: 'Open Day for Monday, September 14, 2026' }).click()
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
-    assert(await page.getByText('Shifted: Period 6', { exact: true }).count() > 0, 'Section divergence was lost on Month after Year work.')
+    assert(await page.getByText('Shifted for this class', { exact: true }).count() > 0, 'Section divergence was lost on Month after Year work.')
   })
 
   const yearContext = {
