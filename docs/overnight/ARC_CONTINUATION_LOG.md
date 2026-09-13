@@ -46,7 +46,7 @@ The four legacy phase-browser commands were dispatched during the initial baseli
 - Classroom elapsed duration remains derived solely from immutable `startedAt`.
 - Classroom countdown, cleanup countdown, people, passes, and media belong to the durable live-session boundary; none may create a second planner or mutate Lesson planning truth.
 - Because no legacy roster, pass, or media model exists, this pass adds section-scoped live tools rather than inventing canonical school-wide data.
-- Validated Easel projection/outcome donors remain untouched behind ArcTable-named adapters.
+- The validated Easel projection/outcome seam remains behind ArcTable-named adapters; the jury pass minimally extends only the projection payload with canonical Lesson content.
 
 ## Queue completion matrix
 
@@ -65,3 +65,37 @@ The four legacy phase-browser commands were dispatched during the initial baseli
 ## Tool constraint
 
 The required 12ui target comparison was attempted with the pinned 0.2.65 CLI against the approved Teacher Monitor image. Platform review rejected repository/reference upload to the external service because that data egress was not explicitly authorized. No workaround was attempted. Manual side-by-side image review and local browser verification were completed instead; this constraint does not block product behavior.
+
+## Jury fix pass — 2026-09-13
+
+Starting HEAD: `a5f2969b1ce1e1446a15e566baea20e025f4d481`
+
+| Jury lane | Status | Observed evidence |
+|---|---|---|
+| Canonical Lesson → ArcTable | GREEN++ | Removed generic directions/material defaults; added minimal canonical directions, materials, phases, and resources; projection and Teacher/Student browser assertions pass |
+| Timer limit | GREEN++ | Shared 120-minute maximum; domain clamps and UI visibly constrains 121 to 120; immutable class `startedAt` unchanged |
+| Student privacy | GREEN++ | Class elapsed and Exit projection removed; no buttons/private passes/editor controls; Escape returns to Teacher Monitor |
+| People engine | GREEN++ | Explicit random/round-robin modes, duplicate/empty/keyboard/invalid-ID coverage |
+| Reusable roster | GREEN | Section configuration persists name-only roster across separate P4 sessions; P1 isolation proven |
+| Pass engine | GREEN++ | Configurable definitions, optional person ownership, request/active/returned, unique-ID hardening, Plan View continuity |
+| Google Slides | GREEN | Real public deck normalized to sandboxed embed, rendered in Teacher/Student, and retained through Plan View |
+| Other slide providers | YELLOW | Rejected visibly; no generic interoperability claim |
+| Version-2 integrity | GREEN++ | Hostile repair covers impossible selections/media, duplicate roster/pass/media IDs, ownership, countdown bounds and run origins |
+| Visual composition | GREEN | Teaching field >70%; compact utility rail; closed tools consume no workspace; rounded utility-card count reduced to at most one |
+| External 12ui comparison | YELLOW | Re-attempted; platform rejected destination-specific repository/reference upload. No workaround used. |
+
+Transient/live boundary remains explicit: timers, cleanup, picker result, pass status/ownership, active media, projection choices, phase position, voice, and board state never auto-save into canonical Lesson truth. Section delivery outcome is still the only End Class writeback.
+
+### Observed final verification
+
+- `npm run build` — 42 contract groups, type-check, production bundle
+- `node tests/arctable-continuity.smoke.mjs`
+- `node tests/browser-a11y.smoke.mjs`
+- `node tests/phase2-planning-truth.mjs`
+- `node tests/phase2-nondrag-keyboard-parity.mjs`
+- `node tests/phase2-object-actions-section-divergence.mjs`
+- `node tests/phase2-recovery-undo-continuity.mjs`
+- `node tests/phase2-calendar-edge-planning-truth.mjs`
+- `git diff --check`
+
+No uncaptured command is represented as passing.
