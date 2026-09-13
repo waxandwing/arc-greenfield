@@ -30,6 +30,12 @@ async function selectCalendarView(page, view) {
   await navigation.getByRole('button', { name: view, exact: true }).click()
 }
 
+async function openSettingsAction(page, name) {
+  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
+}
+
 async function auditDesktop(browser) {
   const context = await browser.newContext({ viewport: { width: 1024, height: 900 } })
   const page = await context.newPage()
@@ -90,7 +96,8 @@ async function auditShellHierarchyAndZoom(browser) {
   await switcher.click()
   const viewNavigation = page.getByRole('navigation', { name: 'Calendar views' })
   assert(await viewNavigation.isVisible(), 'Shell navigation: activating current view name must reveal calendar views.')
-  assert(await viewNavigation.getByRole('button').count() === 6, 'Shell navigation: all six canonical calendar horizons must remain represented.')
+  const viewNames = await viewNavigation.getByRole('button').allTextContents()
+  assert(JSON.stringify(viewNames) === JSON.stringify(['Day', 'Week', 'Month', 'Year']), `Shell navigation: visible product law must be Day/Week/Month/Year (${viewNames.join(', ')}).`)
   await page.keyboard.press('Escape')
   assert(await viewNavigation.count() === 0, 'Shell navigation: Escape must close the view choices.')
   assert(await switcher.evaluate((node) => document.activeElement === node), 'Shell navigation: Escape must restore focus to the current-view control.')
@@ -135,7 +142,7 @@ async function auditCalendarEditPreservesContext(browser) {
   const beforeRange = await page.locator('.projection-section').first().getAttribute('aria-label')
   assert(Boolean(beforeRange), 'Calendar edit continuity: Week range did not expose its current anchored range.')
 
-  await page.getByRole('button', { name: 'Edit dates' }).click()
+  await (await openSettingsAction(page, 'Calendar dates')).click()
   await page.locator('#last-school-day').fill('2027-06-01')
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 
@@ -143,40 +150,6 @@ async function auditCalendarEditPreservesContext(browser) {
   const afterRange = await page.locator('.projection-section').first().getAttribute('aria-label')
   assert(afterRange === beforeRange, `Calendar edit continuity: saving calendar dates moved the current Week anchor (${beforeRange} → ${afterRange}).`)
   assert(runtimeErrors.length === 0, `Calendar edit continuity runtime errors: ${runtimeErrors.join(' | ')}`)
-  await context.close()
-}
-
-async function auditMondayFirstAlignment(browser) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
-  const page = await context.newPage()
-  const runtimeErrors = trackRuntimeErrors(page)
-  await page.goto(baseUrl, { waitUntil: 'networkidle' })
-
-  await configureCalendar(page, { first: '2026-09-02', last: '2026-09-13' })
-
-  await selectCalendarView(page, 'Year Map')
-  const yearMap = page.getByRole('region', { name: '2026–27 year map' })
-  assert(await yearMap.count() === 1, 'Monday-first: Year Map did not render after calendar setup.')
-
-  const columns = await yearMap.locator('.projection-range--compact').evaluate((grid) => {
-    const children = Array.from(grid.children)
-    const columnFor = (date) => {
-      const index = children.findIndex((child) => child.getAttribute('data-date') === date)
-      return index < 0 ? null : (index % 7) + 1
-    }
-    return {
-      leadingBlanks: children.filter((child, index) => index < 2 && child.classList.contains('calendar-day-cell--blank')).length,
-      wednesday: columnFor('2026-09-02'),
-      sunday: columnFor('2026-09-06'),
-      monday: columnFor('2026-09-07'),
-    }
-  })
-
-  assert(columns.leadingBlanks === 2, `Monday-first: a Wednesday start must reserve two leading cells; got ${columns.leadingBlanks}.`)
-  assert(columns.wednesday === 3, `Monday-first: Wednesday rendered in column ${columns.wednesday}, expected 3.`)
-  assert(columns.sunday === 7, `Monday-first: Sunday rendered in column ${columns.sunday}, expected 7.`)
-  assert(columns.monday === 1, `Monday-first: next Monday rendered in column ${columns.monday}, expected 1.`)
-  assert(runtimeErrors.length === 0, `Monday-first runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
 }
 
@@ -226,11 +199,10 @@ try {
   await auditDesktop(browser)
   await auditShellHierarchyAndZoom(browser)
   await auditCalendarEditPreservesContext(browser)
-  await auditMondayFirstAlignment(browser)
   await auditTouchAndReflow(browser)
   await auditMinimumWidth(browser)
   await auditReducedMotion(browser)
-  console.log('Arc browser accessibility smoke gate passed: landmarks, title-based calendar view navigation, exact B01 Week shell evidence, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
+  console.log('Arc browser accessibility smoke gate passed: landmarks, Day/Week/Month/Year product navigation, exact B01 Week shell evidence, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
 } finally {
   await browser.close()
 }

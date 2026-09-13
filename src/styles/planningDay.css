@@ -183,14 +183,18 @@
 }
 
 .day-period-rail {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(118px, 1fr));
+  display: flex;
   gap: 10px;
   overflow-x: auto;
   padding: 2px 2px 14px;
 }
 
-.day-period-button {
+.day-period-rail > * {
+  flex: 1 0 118px;
+}
+
+.day-period-button,
+.day-period-gap {
   display: grid;
   min-height: 74px;
   padding: 12px 14px;
@@ -202,15 +206,31 @@
   cursor: pointer;
 }
 
-.day-period-button span {
+.day-period-gap {
+  border-style: dashed;
+  background: rgba(255, 253, 248, .38);
+}
+
+.day-period-gap strong {
+  white-space: normal;
+}
+
+.day-period-button span,
+.day-period-gap span {
   color: var(--soft-charcoal);
   font-size: 12px;
 }
 
-.day-period-button strong {
+.day-period-button strong,
+.day-period-gap strong {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.day-period-gap strong {
+  overflow: visible;
+  white-space: normal;
 }
 
 .day-period-button.is-selected {

@@ -19,6 +19,12 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function settingsAction(page, name) {
+  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
+}
+
 async function selectCalendarView(page, view) {
   await page.getByRole('button', { name: /Change calendar view, current/ }).click()
   await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
@@ -50,7 +56,7 @@ async function configureCalendarWithEdges(page) {
 }
 
 async function createClass(page) {
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('Studio Art')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
@@ -59,7 +65,7 @@ async function createClass(page) {
 }
 
 async function createAndProbeUnits(page) {
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   const unitFields = page.getByRole('textbox', { name: 'Unit', exact: true })
   const startFields = page.getByRole('textbox', { name: 'Start', exact: true })
@@ -83,7 +89,7 @@ async function createAndProbeUnits(page) {
 }
 
 async function createAndProbeLessons(page) {
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
 
   await page.getByRole('button', { name: 'Add Lesson', exact: true }).click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('No-school lesson')

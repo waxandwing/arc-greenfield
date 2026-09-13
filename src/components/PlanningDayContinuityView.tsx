@@ -14,6 +14,13 @@ export function PlanningDayContinuityView({
 }) {
   const periods = continuity.courses.flatMap((course) => course.sections.map((section) => ({ course, section })))
     .sort((a, b) => periodNumber(a.section.sectionName) - periodNumber(b.section.sectionName))
+  const numberedPeriods = periods.map((entry) => ({ entry, number: periodNumber(entry.section.sectionName) })).filter(({ number }) => Number.isFinite(number))
+  const firstPeriod = numberedPeriods[0]?.number ?? 1
+  const lastPeriod = numberedPeriods.at(-1)?.number ?? 0
+  const periodRail = Array.from({ length: Math.max(0, lastPeriod - firstPeriod + 1) }, (_, index) => {
+    const number = firstPeriod + index
+    return { number, entry: numberedPeriods.find((candidate) => candidate.number === number)?.entry ?? null }
+  })
   const [selectedSectionId, setSelectedSectionId] = useState(periods[0]?.section.sectionId ?? '')
   const selected = periods.find(({ section }) => section.sectionId === selectedSectionId) ?? periods[0]
 
@@ -32,11 +39,11 @@ export function PlanningDayContinuityView({
 
       {periods.length > 0 ? (
         <nav className="day-period-rail" aria-label="Teaching day periods">
-          {periods.map(({ course, section }) => (
-            <button type="button" className={`day-period-button${section.sectionId === selected?.section.sectionId ? ' is-selected' : ''}`} aria-current={section.sectionId === selected?.section.sectionId ? 'true' : undefined} onClick={() => setSelectedSectionId(section.sectionId)} key={section.sectionId}>
-              <span>{section.sectionName}</span><strong>{course.courseTitle}</strong>
+          {periodRail.map(({ number, entry }) => entry ? (
+            <button type="button" className={`day-period-button${entry.section.sectionId === selected?.section.sectionId ? ' is-selected' : ''}`} aria-current={entry.section.sectionId === selected?.section.sectionId ? 'true' : undefined} onClick={() => setSelectedSectionId(entry.section.sectionId)} key={entry.section.sectionId}>
+              <span>{entry.section.sectionName}</span><strong>{entry.course.courseTitle}</strong>
             </button>
-          ))}
+          ) : <div className="day-period-gap" aria-label={`Period ${number}, planning time`} key={`planning-${number}`}><span>Period {number}</span><strong>Planning time</strong></div>)}
         </nav>
       ) : null}
 
@@ -89,7 +96,7 @@ export function PlanningDayContinuityView({
 
 function periodNumber(label: string): number {
   const match = label.match(/\d+/)
-  return match ? Number(match[0]) : Number.MAX_SAFE_INTEGER
+  return match ? Number(match[0]) : Number.POSITIVE_INFINITY
 }
 
 function ContinuityLesson({ lesson, sectionId, onStartClass, carryover = false }: { lesson: DayContinuityLesson; sectionId: string; onStartClass?: (sectionId: string, lessonId: string) => void; carryover?: boolean }) {
