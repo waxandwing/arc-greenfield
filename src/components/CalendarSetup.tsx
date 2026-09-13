@@ -49,9 +49,10 @@ type Props = {
   initialValue?: CalendarHydrationInput | null
   onSave: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
   onCancel?: () => void
+  onDraftChange?: (input: CalendarHydrationInput) => void
 }
 
-export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) {
+export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftChange }: Props) {
   const [calendarId] = useState(() => initialValue?.id ?? createManualCalendarId())
   const [schoolYearLabel, setSchoolYearLabel] = useState(initialValue?.schoolYearLabel ?? '')
   const [firstDay, setFirstDay] = useState(initialValue?.firstDay ?? '')
@@ -67,6 +68,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
   })))
   const [errors, setErrors] = useState<string[]>([])
   const errorSummaryRef = useRef<HTMLDivElement | null>(null)
+  const lastDraftRef = useRef('')
   const isSourceBackedEdit = Boolean(initialValue && initialValue.patternSource !== 'manual')
 
   const input = useMemo<CalendarHydrationInput>(() => buildManualCalendarInput({
@@ -101,6 +103,8 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
   useEffect(() => {
     if (errors.length > 0) errorSummaryRef.current?.focus()
   }, [errors])
+
+  useEffect(() => { const serialized = JSON.stringify(input); if (serialized !== lastDraftRef.current) { lastDraftRef.current = serialized; onDraftChange?.(input) } }, [input, onDraftChange])
 
   function toggleWeekday(day: Weekday) {
     setWeekdays((current) => current.includes(day)
@@ -178,7 +182,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel }: Props) 
             tabIndex={-1}
           >
             <strong>Check these before saving:</strong>
-            <ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul>
+            <ul>{errors.map((error, index) => <li key={`${index}-${error}`}>{error}</li>)}</ul>
           </div>
         )}
 

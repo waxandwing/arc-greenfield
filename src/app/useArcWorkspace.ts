@@ -40,6 +40,11 @@ import {
   type UnitWorkspace,
   type UnitWorkspaceInput,
   type CaptureWorkspace,
+  type CurriculumImportProposal,
+  type CurriculumImportReceipt,
+  commitCurriculumImport,
+  prepareCurriculumCommit,
+  type ReimportDecision,
 } from '../planning'
 import { reconcileShiftState } from './shiftReconciliation'
 import { loadWorkspaceSnapshot } from './workspaceBootstrap'
@@ -88,13 +93,13 @@ export function useArcWorkspace(onCloseMode: () => void) {
       const unitErrors = validateUnitWorkspace(unitWorkspace, nextCalendar, planningWorkspace)
       if (unitErrors.length > 0) {
         setStorageNotice('That calendar change would make one or more existing Units invalid. Adjust or remove those Unit placements first; Arc has not changed the calendar.')
-        return
+        return false
       }
       if (lessonWorkspace) {
         const lessonErrors = validateLessonWorkspace(lessonWorkspace, nextCalendar, planningWorkspace, unitWorkspace)
         if (lessonErrors.length > 0) {
           setStorageNotice('That calendar change would invalidate an existing Lesson plan or recorded class progress. Resolve those Lesson dates first; Arc has not changed the calendar.')
-          return
+          return false
         }
       }
     }
@@ -102,7 +107,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     const shift = reconcileShiftState(shiftState, nextCalendar, planningWorkspace, unitWorkspace, lessonWorkspace)
     if (!shift.allowed) {
       setStorageNotice('That calendar change would invalidate an existing Section schedule. Resolve the affected Shift dates first; Arc has not changed the calendar.')
-      return
+      return false
     }
 
     const nextAnchor = anchorDate
@@ -130,6 +135,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     if (!calendarPersisted || !shiftPersisted) setStorageNotice('This change is active for this session, but Arc could not save all related planning state in this browser.')
     else if (shift.undoDropped) setStorageNotice('Calendar updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
     else setStorageNotice(null)
+    return true
   }
 
   function useTerms(input: CalendarHydrationInput) {
@@ -161,12 +167,12 @@ export function useArcWorkspace(onCloseMode: () => void) {
       const lessonErrors = validateLessonWorkspace(lessonWorkspace, calendar, workspace, unitWorkspace)
       if (lessonErrors.length > 0) {
         setStorageNotice('That class change would orphan existing Lesson progress. Resolve the affected Lesson history first; Arc has not changed the classes.')
-        return
+        return false
       }
       const shift = reconcileShiftState(shiftState, calendar, workspace, unitWorkspace, lessonWorkspace)
       if (!shift.allowed) {
         setStorageNotice('That class change would orphan an existing Section schedule. Resolve the affected Shift history first; Arc has not changed the classes.')
-        return
+        return false
       }
       const classesPersisted = savePlanningWorkspaceToBrowser(input)
       const shiftPersisted = persistReconciledShift(shift.next)
@@ -176,13 +182,14 @@ export function useArcWorkspace(onCloseMode: () => void) {
       if (!classesPersisted || !shiftPersisted) setStorageNotice('These classes are active for this session, but Arc could not save all related planning state in this browser.')
       else if (shift.undoDropped) setStorageNotice('Classes updated. The Section schedule remains valid, but the previous Undo was no longer safe and was discarded.')
       else setStorageNotice(null)
-      return
+      return true
     }
     const persisted = savePlanningWorkspaceToBrowser(input)
     setPlanningWorkspace(workspace)
     setPlanningInput(input)
     onCloseMode()
     setStorageNotice(persisted ? null : 'These classes are active for this session, but Arc could not save them in this browser.')
+    return true
   }
 
   function useUnits(input: UnitWorkspaceInput, workspace: UnitWorkspace) {
@@ -265,6 +272,35 @@ export function useArcWorkspace(onCloseMode: () => void) {
     setCaptureWorkspace(next)
     setStorageNotice(persisted ? null : 'This Workspace change is active for this session, but Arc could not save it in this browser.')
     return persisted
+  }
+
+  function useCurriculumImport(proposal: CurriculumImportProposal, courseMatches: Record<string, string>, decisions: Record<string, ReimportDecision>): CurriculumImportReceipt | string {
+    if (!calendar) return 'Set up the school year before importing curriculum.'
+    try {
+      const prepared = prepareCurriculumCommit({
+        proposal,
+        calendar,
+        planning: planningWorkspace ?? { calendarId: calendar.id, courses: [], sections: [], notes: [] },
+        units: unitWorkspace ?? { calendarId: calendar.id, units: [] },
+        lessons: lessonWorkspace ?? { calendarId: calendar.id, lessons: [], deliveryStates: [] },
+        courseMatches,
+        decisions,
+      })
+      const result = commitCurriculumImport(prepared)
+      if (!result.saved) return result.rollbackSucceeded
+        ? 'Arc could not save the complete import, so it restored the previous planning truth. Nothing changed.'
+        : 'Browser storage refused the import and a complete rollback. Stop editing in this tab until storage is checked.'
+      setPlanningWorkspace(prepared.planning)
+      setPlanningInput(prepared.planning)
+      setUnitWorkspace(prepared.units)
+      setUnitInput(prepared.units)
+      setLessonWorkspace(prepared.lessons)
+      setLessonInput(prepared.lessons)
+      setStorageNotice(null)
+      return prepared.receipt
+    } catch (error) {
+      return error instanceof Error ? error.message : String(error)
+    }
   }
 
   function addCapture(text: string): string | null {
@@ -467,6 +503,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
     addCapture,
     removeCapture,
     promoteCapture,
+    useCurriculumImport,
     addCalendarNote,
     deleteCalendarNote,
     applyRecoveryShift,

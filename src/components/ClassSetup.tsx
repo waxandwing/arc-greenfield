@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   createCourseId,
   createSectionId,
@@ -17,12 +17,17 @@ type Props = {
   protectedSectionIds?: Set<string>
   onSave: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
   onCancel: () => void
+  onDraftChange?: (input: PlanningWorkspaceInput) => void
 }
 
-export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new Set(), protectedSectionIds = new Set(), onSave, onCancel }: Props) {
+export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new Set(), protectedSectionIds = new Set(), onSave, onCancel, onDraftChange }: Props) {
   const [courses, setCourses] = useState<Course[]>(() => initialValue?.courses.map((course) => ({ ...course })) ?? [])
   const [sections, setSections] = useState<Section[]>(() => initialValue?.sections.map((section) => ({ ...section })) ?? [])
+  const [teachingDay, setTeachingDay] = useState(() => initialValue?.teachingDay ? { blocks: initialValue.teachingDay.blocks.map((block) => ({ ...block })) } : undefined)
   const [errors, setErrors] = useState<string[]>([])
+  const lastDraftRef = useRef('')
+
+  useEffect(() => { const draft = { calendarId, courses, sections, notes: initialValue?.notes, teachingDay }; const serialized = JSON.stringify(draft); if (serialized !== lastDraftRef.current) { lastDraftRef.current = serialized; onDraftChange?.(draft) } }, [calendarId, courses, sections, initialValue?.notes, teachingDay, onDraftChange])
 
   function addCourse() { setCourses((current) => [...current, { id: createCourseId(), title: '' }]) }
 
@@ -37,7 +42,9 @@ export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new 
       return
     }
     setCourses((current) => current.filter((course) => course.id !== courseId))
+    const removedIds = new Set(sections.filter((section) => section.courseId === courseId).map((section) => section.id))
     setSections((current) => current.filter((section) => section.courseId !== courseId))
+    setTeachingDay((current) => current ? { blocks: current.blocks.filter((block) => !block.sectionId || !removedIds.has(block.sectionId)).map((block, index) => ({ ...block, order: index + 1 })) } : undefined)
   }
 
   function removeSection(section: Section) {
@@ -46,6 +53,7 @@ export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new 
       return
     }
     setSections((current) => current.filter((item) => item.id !== section.id))
+    setTeachingDay((current) => current ? { blocks: current.blocks.filter((block) => block.sectionId !== section.id).map((block, index) => ({ ...block, order: index + 1 })) } : undefined)
   }
 
   function addSection(courseId: string) {
@@ -58,6 +66,8 @@ export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new 
         calendarId,
         courses: courses.map((course) => ({ ...course, title: course.title.trim() })),
         sections: sections.map((section) => ({ ...section, name: section.name.trim(), calendarId })),
+        notes: initialValue?.notes?.map((note) => ({ ...note })),
+        teachingDay,
       }
       const workspace = hydratePlanningWorkspace(input)
       setErrors([])

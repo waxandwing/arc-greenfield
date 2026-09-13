@@ -31,6 +31,10 @@ import {
 import type { ISODate } from '../calendar'
 import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfaces'
 import { WorkspacePanel } from './WorkspacePanel'
+import { ArcOnboarding } from './ArcOnboarding'
+import { FirstCapturePrompt } from './FirstCapturePrompt'
+import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
+import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
 
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
@@ -39,10 +43,21 @@ export function AppFrame() {
   const arcTable = useArcTableSession()
   const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
   const [fridgeUndo, setFridgeUndo] = useState<FridgeRoundTripReceipt | null>(null)
+  const [onboardingDraft, setOnboardingDraft] = useState(loadOnboardingDraft)
+  const [showFirstCapturePrompt, setShowFirstCapturePrompt] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
+  const [workspaceOpenToken, setWorkspaceOpenToken] = useState(0)
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
   const unscheduledUnits = workspace.unitWorkspace?.units.filter((unit) => unit.placement === null) ?? []
+  const setupCapabilities = assessSetupCapabilities({ calendar: workspace.calendar, planning: workspace.planningWorkspace, lessons: workspace.lessonWorkspace })
+  const returningTeacher = Boolean(workspace.calendar && workspace.planningWorkspace?.courses.length && workspace.planningWorkspace.sections.length && onboardingDraft.stage === 'welcome')
+  const showOnboarding = !returningTeacher && !onboardingDraft.dismissed && !minimumPlanningSetupEstablished(setupCapabilities)
+
+  function updateOnboarding(next: OnboardingDraft) {
+    setOnboardingDraft(next)
+    saveOnboardingDraft(next)
+  }
 
   useEffect(() => {
     if (!workspace.calendar || !workspace.anchorDate) return
@@ -170,6 +185,10 @@ export function AppFrame() {
     return <ArcTableStudentSurface live={arcTable.live} onOpenPlan={arcTable.showPlan} onShowTeacher={arcTable.showTeacher} onShowStudent={arcTable.showStudent} onUpdate={arcTable.update} onEnd={endClass} />
   }
 
+  if (showOnboarding) {
+    return <div className="arc-shell onboarding-shell"><a className="skip-link" href="#onboarding-stage">Skip to setup</a><header className="arc-header" aria-label="Arc application header"><div className="arc-wordmark"><img src="/assets/arc/arc-mark.png" alt="Arc" /></div></header><main id="onboarding-stage" className="onboarding-main" tabIndex={-1}><ArcOnboarding draft={onboardingDraft} capabilities={setupCapabilities} calendar={workspace.calendar} calendarInput={workspace.calendarInput} planningInput={workspace.planningInput} onChangeDraft={updateOnboarding} onUseCalendar={workspace.useCalendar} onUseClasses={workspace.useClasses} onLandInDay={() => workspace.setActiveView('Day')} onOpenImport={() => workspaceMode.open('import')} /></main></div>
+  }
+
   const homeView = resolveAvailableHomeView(viewPreferences, workspace.viewAvailability)
   const fridgeContent = workspace.calendar && workspaceMode.mode === 'calendar' ? (
     <WorkspacePanel
@@ -186,6 +205,7 @@ export function AppFrame() {
       onUnplaceLesson={sendLessonBackToFridge}
       onUndo={undoLastFridgeMove}
       onOpenUnits={() => workspaceMode.open('units')}
+      onOpenImport={() => workspaceMode.open('import')}
     />
   ) : <p className="b01-furniture-empty">Workspace is available in Plan View.</p>
 
@@ -200,6 +220,8 @@ export function AppFrame() {
       onOpenCalendarSetup={() => workspaceMode.open('calendar-setup')}
       onOpenTerms={() => workspaceMode.open('terms')}
       onOpenClasses={() => workspaceMode.open('classes')}
+      onOpenTeachingDay={() => workspaceMode.open('teaching-day')}
+      onOpenImport={() => workspaceMode.open('import')}
       onOpenUnits={() => workspaceMode.open('units')}
       onOpenLessons={() => workspaceMode.open('lessons')}
     />
@@ -252,8 +274,10 @@ export function AppFrame() {
 
           {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
 
-          <B01Furniture settings={settingsContent} workspace={fridgeContent} tasks={taskContent} dismissSideDrawers={workspaceMode.mode !== 'calendar'}>
+          <B01Furniture settings={settingsContent} workspace={fridgeContent} tasks={taskContent} dismissSideDrawers={workspaceMode.mode !== 'calendar'} openRequest={workspaceOpenToken ? { name: 'workspace', token: workspaceOpenToken } : null}>
             <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
+              {workspaceMode.mode === 'calendar' ? <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} onOpenImport={() => workspaceMode.open('import')} /> : null}
+              {workspaceMode.mode === 'calendar' && minimumPlanningSetupEstablished(setupCapabilities) && showFirstCapturePrompt && !onboardingDraft.firstCapturePromptDismissed ? <FirstCapturePrompt onSave={workspace.addCapture} onPlace={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }); setWorkspaceOpenToken((token) => token + 1) }} onDismiss={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }) }} /> : null}
               <WorkspaceStage
                 mode={workspaceMode.mode}
                 activeView={workspace.activeView}
@@ -276,12 +300,14 @@ export function AppFrame() {
                 onUseClasses={workspace.useClasses}
                 onUseUnits={workspace.useUnits}
                 onUseLessons={workspace.useLessons}
+                onUseCurriculumImport={workspace.useCurriculumImport}
                 onApplyRecoveryShift={workspace.applyRecoveryShift}
                 onStartClass={startClass}
                 onSelectDate={deepenTo}
                 onAddNote={workspace.addCalendarNote}
                 onDeleteNote={workspace.deleteCalendarNote}
                 onCloseMode={workspaceMode.close}
+                onOpenMode={workspaceMode.open}
               />
             </section>
           </B01Furniture>
@@ -303,6 +329,8 @@ function stageTitleFor(mode: ReturnType<typeof useWorkspaceMode>['mode'], active
   if (mode === 'recovery') return 'Recovery review'
   if (mode === 'terms') return 'Terms'
   if (mode === 'classes') return 'Courses & sections'
+  if (mode === 'teaching-day') return 'Teaching day'
+  if (mode === 'import') return 'Import curriculum'
   if (mode === 'units') return 'Units'
   if (mode === 'lessons') return 'Lessons'
   if (mode === 'calendar-setup') return 'Calendar'

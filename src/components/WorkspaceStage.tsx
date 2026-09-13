@@ -5,6 +5,8 @@ import { LessonSetup } from './LessonSetup'
 import { RecoveryReview } from './RecoveryReview'
 import { TermBoundarySetup } from './TermBoundarySetup'
 import { UnitSetup } from './UnitSetup'
+import { TeachingDaySetup } from './TeachingDaySetup'
+import { CurriculumImport } from './CurriculumImport'
 import type { CalendarHydrationInput, ISODate, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
@@ -17,6 +19,9 @@ import type {
   ShiftPersistenceInput,
   UnitWorkspace,
   UnitWorkspaceInput,
+  CurriculumImportProposal,
+  CurriculumImportReceipt,
+  ReimportDecision,
 } from '../planning'
 
 type WorkspaceStageProps = {
@@ -41,12 +46,14 @@ type WorkspaceStageProps = {
   onUseClasses: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
   onUseUnits: (input: UnitWorkspaceInput, workspace: UnitWorkspace) => void
   onUseLessons: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => void
+  onUseCurriculumImport: (proposal: CurriculumImportProposal, courseMatches: Record<string, string>, decisions: Record<string, ReimportDecision>) => CurriculumImportReceipt | string
   onApplyRecoveryShift: (operation: ShiftOperation) => string | null
   onStartClass: (sectionId: string, lessonId: string) => void
   onSelectDate: (date: ISODate, view: CalendarView) => void
   onAddNote: (date: ISODate, text: string) => boolean
   onDeleteNote: (noteId: string) => void
   onCloseMode: () => void
+  onOpenMode: (mode: WorkspaceMode) => void
 }
 
 export function WorkspaceStage(props: WorkspaceStageProps) {
@@ -72,12 +79,14 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onUseClasses,
     onUseUnits,
     onUseLessons,
+    onUseCurriculumImport,
     onApplyRecoveryShift,
     onStartClass,
     onSelectDate,
     onAddNote,
     onDeleteNote,
     onCloseMode,
+    onOpenMode,
   } = props
 
   const needsCalendarSetup = !calendar || !anchorDate || mode === 'calendar-setup'
@@ -107,6 +116,14 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         onCancel={onCloseMode}
       />
     )
+  }
+
+  if (mode === 'teaching-day' && planningInput) {
+    return <TeachingDaySetup initialValue={planningInput} onSave={onUseClasses} onCancel={onCloseMode} />
+  }
+
+  if (mode === 'import') {
+    return <CurriculumImport calendarId={calendar.id} existingCourses={planningWorkspace?.courses ?? []} existingUnits={unitWorkspace?.units ?? []} existingLessons={lessonWorkspace?.lessons ?? []} onCommit={onUseCurriculumImport} onCancel={onCloseMode} onOpenCalendar={() => onOpenMode('calendar-setup')} onOpenClasses={() => onOpenMode('classes')} onOpenTeachingDay={() => onOpenMode('teaching-day')} />
   }
 
   if (mode === 'units' && planningWorkspace) {

@@ -11,6 +11,8 @@ type Props = {
   onOpenCalendarSetup: () => void
   onOpenTerms: () => void
   onOpenClasses: () => void
+  onOpenTeachingDay: () => void
+  onOpenImport: () => void
   onOpenUnits: () => void
   onOpenLessons: () => void
 }
@@ -25,6 +27,8 @@ export function SettingsFurnitureContent({
   onOpenCalendarSetup,
   onOpenTerms,
   onOpenClasses,
+  onOpenTeachingDay,
+  onOpenImport,
   onOpenUnits,
   onOpenLessons,
 }: Props) {
@@ -39,6 +43,8 @@ export function SettingsFurnitureContent({
       <section className="b01-settings-group" aria-labelledby="settings-teaching-structure">
         <h2 id="settings-teaching-structure">Teaching structure</h2>
         <button type="button" className="b01-settings-action" onClick={onOpenClasses}>{hasClasses ? 'Courses & sections' : 'Set courses & sections'}</button>
+        {hasClasses && <button type="button" className="b01-settings-action" onClick={onOpenTeachingDay}>Teaching day & planning</button>}
+        {hasClasses && <button type="button" className="b01-settings-action" onClick={onOpenImport}>Import curriculum</button>}
         {hasClasses && <button type="button" className="b01-settings-action" onClick={onOpenUnits}>{hasUnits ? 'Unit library' : 'Add Units'}</button>}
         {hasUnits && <button type="button" className="b01-settings-action" onClick={onOpenLessons}>{hasLessons ? 'Lesson library' : 'Add Lessons'}</button>}
       </section>

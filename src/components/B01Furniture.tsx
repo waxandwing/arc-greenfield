@@ -10,9 +10,10 @@ type Props = {
   tasks?: ReactNode
   children: ReactNode
   dismissSideDrawers?: boolean
+  openRequest?: { name: DrawerName; token: number } | null
 }
 
-export function B01Furniture({ settings, workspace, tasks, children, dismissSideDrawers = false }: Props) {
+export function B01Furniture({ settings, workspace, tasks, children, dismissSideDrawers = false, openRequest = null }: Props) {
   const [open, setOpen] = useState<Record<DrawerName, boolean>>({ settings: false, workspace: false, tasks: false })
   const settingsButton = useRef<HTMLButtonElement>(null)
   const workspaceButton = useRef<HTMLButtonElement>(null)
@@ -50,6 +51,11 @@ export function B01Furniture({ settings, workspace, tasks, children, dismissSide
     if (!dismissSideDrawers) return
     setOpen((current) => current.settings || current.workspace ? { ...current, settings: false, workspace: false } : current)
   }, [dismissSideDrawers])
+
+  useEffect(() => {
+    if (!openRequest) return
+    setOpen({ settings: openRequest.name === 'settings', workspace: openRequest.name === 'workspace', tasks: openRequest.name === 'tasks' })
+  }, [openRequest?.token])
 
   return (
     <div className="b01-furniture-composition" data-testid="b01-furniture-composition">

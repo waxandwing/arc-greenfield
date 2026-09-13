@@ -1,0 +1,14 @@
+.teaching-day-setup{max-width:980px;margin:0 auto;padding:var(--space-8)}
+.teaching-day-list{display:grid;border-top:1px solid var(--line-strong)}
+.teaching-day-block{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:20px;padding:22px 0;border-bottom:1px solid var(--line-subtle)}
+.teaching-day-block--planning{background:linear-gradient(90deg,rgba(228,179,61,.12),transparent 68%)}
+.teaching-day-block--non-teaching{color:var(--soft-charcoal)}
+.teaching-day-order{padding-top:28px;font:500 26px/1 var(--font-editorial);color:rgba(44,46,46,.45)}
+.teaching-day-fields{display:grid;grid-template-columns:1.1fr 1fr 1.4fr;gap:14px;align-items:start}
+.teaching-day-fields label{display:grid;gap:6px;font-weight:700}.teaching-day-fields label>span{font-size:12px;letter-spacing:.03em;color:var(--soft-charcoal)}
+.teaching-day-times{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.teaching-day-controls{display:grid;align-content:start;justify-items:start}.teaching-day-controls .text-button{min-height:36px;padding-block:5px}.teaching-day-controls .text-button:disabled{opacity:.35;cursor:default;text-decoration:none}
+.teaching-day-add{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.teaching-day-setup .setup-actions{margin-top:32px}
+@media(max-width:800px){.teaching-day-setup{padding:var(--space-6)}.teaching-day-block{grid-template-columns:40px 1fr}.teaching-day-controls{grid-column:2;display:flex;flex-wrap:wrap}.teaching-day-fields{grid-template-columns:1fr 1fr}.teaching-day-fields>label:first-child{grid-column:1/-1}}
+@media(max-width:520px){.teaching-day-setup{padding:var(--space-4)}.teaching-day-block{grid-template-columns:30px 1fr;gap:10px}.teaching-day-fields{grid-template-columns:1fr}.teaching-day-fields>label:first-child{grid-column:auto}.teaching-day-times{grid-template-columns:1fr 1fr}.teaching-day-order{font-size:20px}}

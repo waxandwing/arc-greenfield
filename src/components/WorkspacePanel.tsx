@@ -16,6 +16,7 @@ type Props = {
   onUnplaceLesson: (lessonId: string) => void
   onUndo: () => void
   onOpenUnits: () => void
+  onOpenImport: () => void
 }
 
 export function WorkspacePanel(props: Props) {
@@ -32,6 +33,7 @@ export function WorkspacePanel(props: Props) {
   return (
     <div className="b01-fridge-content">
       <p className="b01-furniture-empty">Capture first. Organize when the shape is clear. Workspace keeps loose ideas and deliberately unplaced Lessons out of the calendar without losing them.</p>
+      <button type="button" className="workspace-import-link" onClick={props.onOpenImport}>Bring in curriculum CSV</button>
       <div className="workspace-quick-capture">
         <label htmlFor="workspace-capture-text">Quick capture</label>
         <div><input id="workspace-capture-text" value={draft} placeholder="A Lesson idea, resource, or reminder" onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); capture() } }} /><button type="button" disabled={!draft.trim()} onClick={capture}>Save</button></div>

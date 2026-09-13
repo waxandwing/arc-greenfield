@@ -5,6 +5,8 @@ export type WorkspaceMode =
   | 'calendar-setup'
   | 'terms'
   | 'classes'
+  | 'teaching-day'
+  | 'import'
   | 'units'
   | 'lessons'
   | 'recovery'

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { DayContinuityLesson, DayContinuityProjection } from '../planning/dayContinuityProjection'
-import type { LessonWorkspace } from '../planning'
+import type { LessonWorkspace, PlanningWorkspace, TeachingDayBlock } from '../planning'
 import { formatShortDate } from './dateLabels'
 
 export function PlanningDayContinuityView({
@@ -9,23 +9,35 @@ export function PlanningDayContinuityView({
   continuity,
   onStartClass,
   lessons,
+  planning,
 }: {
   day: ProjectedDay
   continuity: DayContinuityProjection
   onStartClass?: (sectionId: string, lessonId: string) => void
   lessons: LessonWorkspace
+  planning: PlanningWorkspace
 }) {
   const periods = continuity.courses.flatMap((course) => course.sections.map((section) => ({ course, section })))
     .sort((a, b) => periodNumber(a.section.sectionName) - periodNumber(b.section.sectionName))
   const numberedPeriods = periods.map((entry) => ({ entry, number: periodNumber(entry.section.sectionName) })).filter(({ number }) => Number.isFinite(number))
   const firstPeriod = numberedPeriods[0]?.number ?? 1
   const lastPeriod = numberedPeriods.at(-1)?.number ?? 0
-  const periodRail = Array.from({ length: Math.max(0, lastPeriod - firstPeriod + 1) }, (_, index) => {
+  const legacyRail = Array.from({ length: Math.max(0, lastPeriod - firstPeriod + 1) }, (_, index) => {
     const number = firstPeriod + index
-    return { number, entry: numberedPeriods.find((candidate) => candidate.number === number)?.entry ?? null }
+    const entry = numberedPeriods.find((candidate) => candidate.number === number)?.entry ?? null
+    return { id: entry?.section.sectionId ?? `legacy-planning-${number}`, label: `Period ${number}`, type: entry ? 'teaching' as const : 'planning' as const, entry, block: null }
   })
-  const [selectedPeriodNumber, setSelectedPeriodNumber] = useState(firstPeriod)
-  const selected = numberedPeriods.find(({ number }) => number === selectedPeriodNumber)?.entry ?? null
+  const explicitRail = planning.teachingDay?.blocks.map((block) => ({
+    id: block.id,
+    label: block.label,
+    type: block.type,
+    entry: block.sectionId ? periods.find((candidate) => candidate.section.sectionId === block.sectionId) ?? null : null,
+    block,
+  })) ?? []
+  const periodRail = explicitRail.length > 0 ? explicitRail : legacyRail
+  const [selectedBlockId, setSelectedBlockId] = useState(periodRail[0]?.id ?? '')
+  const selectedRail = periodRail.find((item) => item.id === selectedBlockId) ?? periodRail[0] ?? null
+  const selected = selectedRail?.entry ?? null
 
   if (continuity.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -42,11 +54,11 @@ export function PlanningDayContinuityView({
 
       {periods.length > 0 ? (
         <nav className="day-period-rail" aria-label="Teaching day periods">
-          {periodRail.map(({ number, entry }) => entry ? (
-            <button type="button" className={`day-period-button${number === selectedPeriodNumber ? ' is-selected' : ''}`} aria-current={number === selectedPeriodNumber ? 'true' : undefined} onClick={() => setSelectedPeriodNumber(number)} key={entry.section.sectionId}>
-              <span>{entry.section.sectionName}</span><strong>{entry.course.courseTitle}</strong>
+          {periodRail.map(({ id, label, type, entry, block }) => entry ? (
+            <button type="button" className={`day-period-button${id === selectedRail?.id ? ' is-selected' : ''}`} aria-current={id === selectedRail?.id ? 'true' : undefined} onClick={() => setSelectedBlockId(id)} key={id}>
+              <span>{label}{blockTimes(block)}</span><strong>{entry.course.courseTitle}</strong>
             </button>
-          ) : <button type="button" className={`day-period-gap${number === selectedPeriodNumber ? ' is-selected' : ''}`} aria-current={number === selectedPeriodNumber ? 'true' : undefined} aria-label={`Period ${number}, planning time`} onClick={() => setSelectedPeriodNumber(number)} key={`planning-${number}`}><span>Period {number}</span><strong>Planning time</strong></button>)}
+          ) : <button type="button" className={`day-period-gap${id === selectedRail?.id ? ' is-selected' : ''}`} aria-current={id === selectedRail?.id ? 'true' : undefined} aria-label={`${label}, ${type === 'planning' ? 'planning time' : 'non-teaching time'}`} onClick={() => setSelectedBlockId(id)} key={id}><span>{label}{blockTimes(block)}</span><strong>{type === 'planning' ? 'Planning time' : 'Lunch / other'}</strong></button>)}
         </nav>
       ) : null}
 
@@ -92,15 +104,15 @@ export function PlanningDayContinuityView({
                 </article>
           </div>
         </section>
-      ) : <PlanningPeriodLens period={selectedPeriodNumber} date={day.date} continuity={continuity} lessons={lessons} />}
+      ) : selectedRail?.type === 'planning' ? <PlanningPeriodLens label={selectedRail.label} date={day.date} continuity={continuity} lessons={lessons} /> : <NonTeachingLens label={selectedRail?.label ?? 'Non-teaching block'} />}
     </div>
   )
 }
 
-function PlanningPeriodLens({ period, date, continuity, lessons }: { period: number; date: string; continuity: DayContinuityProjection; lessons: LessonWorkspace }) {
+function PlanningPeriodLens({ label, date, continuity, lessons }: { label: string; date: string; continuity: DayContinuityProjection; lessons: LessonWorkspace }) {
   return (
-    <section className="planning-period-lens" aria-label={`Period ${period} planning time`}>
-      <header><div><p className="day-continuity-kicker">Period {period} · Planning time</p><h2>Pull the week into focus.</h2></div><p>Unfinished teaching, what comes next, and loose Lesson work across every prep.</p></header>
+    <section className="planning-period-lens" aria-label={`${label} planning time`}>
+      <header><div><p className="day-continuity-kicker">{label} · Planning time</p><h2>Pull the week into focus.</h2></div><p>Unfinished teaching, what comes next, and loose Lesson work across every prep.</p></header>
       <div className="planning-period-courses">
         {continuity.courses.map((course) => {
           const courseLessons = lessons.lessons.filter((lesson) => lesson.courseId === course.courseId)
@@ -112,6 +124,14 @@ function PlanningPeriodLens({ period, date, continuity, lessons }: { period: num
       </div>
     </section>
   )
+}
+
+function NonTeachingLens({ label }: { label: string }) {
+  return <section className="planning-period-lens" aria-label={`${label}, non-teaching time`}><header><div><p className="day-continuity-kicker">{label}</p><h2>This part of the day is yours.</h2></div><p>Arc keeps class plans quiet during lunch and other non-teaching blocks.</p></header></section>
+}
+
+function blockTimes(block: TeachingDayBlock | null): string {
+  return block?.startTime && block.endTime ? ` · ${block.startTime}–${block.endTime}` : ''
 }
 
 function periodNumber(label: string): number {

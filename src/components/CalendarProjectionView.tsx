@@ -149,6 +149,7 @@ function PlanningDayStrip({ title, day, planningContext, termContext, onStartCla
             overrides: planningContext.shiftState?.overrides ?? [],
           })}
           lessons={planningContext.lessons}
+          planning={planningContext.planning}
           onStartClass={onStartClass}
         /></>
       ) : (
