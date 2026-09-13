@@ -329,16 +329,16 @@ try {
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await selectCalendarView(page, 'Week')
-    await page.getByRole('button', { name: 'Open Day for Wednesday, September 16, 2026' }).click()
+    await page.getByRole('button', { name: 'Open Day for Monday, September 14, 2026' }).click()
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Week → Day did not open Teaching Day.')
-    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-16', 'Week → Day did not use the selected date.')
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-14', 'Week → Day did not use the selected date.')
     assert(await page.getByRole('heading', { level: 1, name: 'Day' }).isVisible(), 'Week → Day did not open the Day rail.')
     await shot(page, '06-week-back-to-day.png')
 
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'class', 'Week → Day → Class did not restore Class Focus.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-section') === 'section-p6', 'Week → Day → Class did not restore Section.')
-    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-16', 'Week → Day → Class moved the selected date.')
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-14', 'Week → Day → Class moved the selected date.')
     assert(await page.getByText('Shifted for this class', { exact: true }).count() > 0, 'Section divergence was lost after Week → Day → Class.')
   })
 
