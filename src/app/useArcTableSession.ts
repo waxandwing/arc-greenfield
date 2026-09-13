@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import {
   clearArcTableLiveState,
   createArcTableLiveState,
+  loadArcTableSectionConfig,
   loadArcTableLiveState,
+  saveArcTableSectionConfig,
   saveArcTableLiveState,
   type ArcTableLiveState,
   type ArcTableSession,
@@ -15,11 +17,18 @@ export function useArcTableSession() {
   const [surface, setSurface] = useState<ArcSurface>(() => liveSurface(live))
 
   useEffect(() => {
-    if (live) saveArcTableLiveState(live)
+    if (live) {
+      saveArcTableLiveState(live)
+      saveArcTableSectionConfig({
+        sectionId: live.session.sectionId,
+        roster: live.people.roster,
+        passDefinitions: live.passes.passes.map(({ id, label }) => ({ id, label })),
+      })
+    }
   }, [live])
 
   function start(session: ArcTableSession) {
-    const next = createArcTableLiveState(session)
+    const next = createArcTableLiveState(session, new Date(), loadArcTableSectionConfig(session.sectionId))
     saveArcTableLiveState(next)
     setLive(next)
     setSurface('teacher')
