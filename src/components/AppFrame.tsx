@@ -30,7 +30,7 @@ import {
   type ShiftPersistenceInput,
 } from '../planning'
 import { projectWeek, type ISODate } from '../calendar'
-import { formatPlanHeaderWeekRange } from './dateLabels'
+import { formatMonth, formatPlanHeaderWeekRange } from './dateLabels'
 import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfaces'
 import { WorkspacePanel } from './WorkspacePanel'
 import { ArcOnboarding } from './ArcOnboarding'
@@ -298,6 +298,7 @@ export function AppFrame() {
                   focus={workspace.planContext?.focus ?? 'day'}
                   date={workspace.anchorDate}
                   weekRange={weekRangeLabel(workspace, viewPreferences.showWeekends)}
+                  monthLabel={monthLabel(workspace)}
                   courseId={workspace.planContext?.courseId}
                   sectionId={workspace.planContext?.sectionId}
                   lessonId={workspace.planContext?.lessonId}
@@ -407,4 +408,9 @@ function weekRangeLabel(workspace: ReturnType<typeof useArcWorkspace>, showWeeke
   const start = days[0]?.date ?? projection.startDate
   const end = days[days.length - 1]?.date ?? projection.endDate
   return formatPlanHeaderWeekRange(start, end)
+}
+
+function monthLabel(workspace: ReturnType<typeof useArcWorkspace>) {
+  if (workspace.activeView !== 'Month' || !workspace.anchorDate) return null
+  return formatMonth(workspace.anchorDate)
 }

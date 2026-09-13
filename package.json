@@ -13,7 +13,8 @@
     "test:browser-a11y": "node tests/browser-a11y.smoke.mjs",
     "test:browser-plan": "node tests/arc-plan-continuity.smoke.mjs",
     "test:plan-navigation": "node tests/plan-navigation.smoke.mjs",
-    "test:plan-week": "node tests/plan-week.smoke.mjs"
+    "test:plan-week": "node tests/plan-week.smoke.mjs",
+    "test:plan-month": "node tests/plan-month.smoke.mjs"
   },
   "dependencies": {
     "react": "19.2.8",

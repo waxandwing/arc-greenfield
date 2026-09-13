@@ -74,13 +74,9 @@
   font-weight:700;
 }
 
-.planning-month-day{
-  min-width:0;
-  min-height:132px;
-  padding:8px;
-  border-right:1px solid var(--line-subtle);
-  border-bottom:1px solid var(--line-subtle);
-  background:rgba(255,255,255,.12);
+.planning-month-day--focus{
+  outline:2px solid var(--ink, #1c1b18);
+  outline-offset:-2px;
 }
 
 .planning-month-day--weekend,

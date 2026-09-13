@@ -143,8 +143,8 @@ export function goPlanHome(context: PlanNavigationContext): PlanNavigationContex
 
 export function enterPlanView(context: PlanNavigationContext, view: CalendarView, date?: PlanNavigationContext['anchorDate']): PlanNavigationContext {
   const anchorDate = date ?? context.anchorDate
-  if (view === 'Week') {
-    return enterCalendarDepth(context, 'Week', anchorDate)
+  if (view === 'Week' || view === 'Month') {
+    return enterCalendarDepth(context, view, anchorDate)
   }
   if (view === 'Day') {
     if (context.view === 'Day') {

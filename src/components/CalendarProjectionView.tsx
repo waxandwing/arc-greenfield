@@ -101,13 +101,26 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           })
         : null
       return (
-        <section className="projection-section month-section" aria-label={`${formatMonth(anchorDate)} calendar`}>
+        <section
+          className="projection-section month-section planning-month-stage"
+          aria-label={`${formatMonth(anchorDate)} calendar`}
+          data-plan-view="Month"
+          data-plan-date={anchorDate}
+          data-plan-course={planContext?.courseId ?? ''}
+          data-plan-section={planContext?.sectionId ?? ''}
+          data-plan-lesson={planContext?.lessonId ?? ''}
+        >
           <div className="projection-heading-row">
             <p className="projection-range-label">{formatMonth(anchorDate)}</p>
             <TermContext quarters={projection.quarters} semesters={projection.semesters} />
           </div>
+          {onOpenWorkspace ? (
+            <p className="planning-week-actions">
+              <button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button>
+            </p>
+          ) : null}
           {monthPlanning ? (
-            <><PlanningNotes notes={planningContext?.planning.notes ?? []} dates={projection.weeks.flatMap((week) => week.days.map((day) => day.date))} focusDate={anchorDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningMonthView month={projection} planning={monthPlanning} onSelectDate={(date) => onSelectDate?.(date, 'Day')} /></div></>
+            <><PlanningNotes notes={planningContext?.planning.notes ?? []} dates={projection.weeks.flatMap((week) => week.days.map((day) => day.date))} focusDate={anchorDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningMonthView month={projection} planning={monthPlanning} focusDate={planContext?.anchorDate ?? anchorDate} onSelectDate={(date) => onSelectDate?.(date, 'Day')} /></div></>
           ) : (
             <CalendarOnlyMonth projection={projection} label={formatMonth(anchorDate)} />
           )}

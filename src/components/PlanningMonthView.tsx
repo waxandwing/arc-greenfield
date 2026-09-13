@@ -8,14 +8,16 @@ const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 export function PlanningMonthView({
   month,
   planning,
+  focusDate,
   onSelectDate,
 }: {
   month: MonthProjection
   planning: MonthPlanningProjection
+  focusDate?: ISODate
   onSelectDate?: (date: ISODate) => void
 }) {
   return (
-    <div className="planning-month" aria-label={`${formatMonthKey(month.monthKey)} planning calendar`}>
+    <div className="planning-month" aria-label={`${formatMonthKey(month.monthKey)} planning calendar`} data-focus-date={focusDate ?? ''}>
       <div className="planning-month-weekdays" aria-hidden="true">
         {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
       </div>
@@ -34,6 +36,7 @@ export function PlanningMonthView({
                   key={day.date}
                   day={day}
                   inAnchorMonth={day.date.slice(0, 7) === month.monthKey}
+                  selected={day.date === focusDate}
                   signals={planningWeek?.days[dayIndex]?.lessonSignals ?? []}
                   onSelectDate={onSelectDate}
                 />
@@ -67,11 +70,13 @@ function MonthUnitLane({ segment }: { segment: MonthUnitSegment }) {
 function MonthDayCell({
   day,
   inAnchorMonth,
+  selected,
   signals,
   onSelectDate,
 }: {
   day: ProjectedDay
   inAnchorMonth: boolean
+  selected: boolean
   signals: MonthLessonSignal[]
   onSelectDate?: (date: ISODate) => void
 }) {
@@ -82,12 +87,13 @@ function MonthDayCell({
     day.isWeekend ? 'planning-month-day--weekend' : '',
     inAnchorMonth ? '' : 'planning-month-day--outside-month',
     day.inSchoolYear ? '' : 'planning-month-day--outside-year',
+    selected ? 'planning-month-day--focus' : '',
   ].filter(Boolean).join(' ')
 
   return (
     <div className={classes} aria-label={`${formatLongDate(day.date)}${dayStatus ? `. ${dayStatus}` : ''}`}>
       <div className="planning-month-day-heading">
-        <button type="button" className="planning-month-date" aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>{Number(day.date.slice(8))}</button>
+        <button type="button" className="planning-month-date" aria-current={selected ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>{Number(day.date.slice(8))}</button>
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
       </div>
       <div className="planning-month-signals">
