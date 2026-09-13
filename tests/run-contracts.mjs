@@ -53,6 +53,7 @@ const contracts = [
   'tests/generated/src/planning/shiftPersistence.contract.js',
   'tests/generated/src/planning/lessonShiftPersistence.contract.js',
   'tests/generated/src/planning/captureWorkspace.contract.js',
+  'tests/generated/src/planning/planContextResolution.contract.js',
 ]
 
 assertManifestComplete()
