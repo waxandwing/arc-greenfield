@@ -52,3 +52,5 @@
   .lesson-detail-heading,.lesson-progress-heading{display:grid}
   .delivery-resume-note{grid-column:auto}
 }
+.lesson-shared-plan{display:grid;gap:22px}.lesson-teaching-content{display:grid;gap:14px;padding-top:22px;border-top:1px solid var(--line)}.lesson-teaching-content h3,.lesson-teaching-content p{margin:0}.lesson-teaching-content>label{display:grid;gap:6px}.lesson-teaching-content textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--paper-raised)}.lesson-resource-list{display:grid;gap:12px}.lesson-resource-list>div:first-child{display:flex;align-items:center;justify-content:space-between}.lesson-resource-list fieldset{display:grid;grid-template-columns:1fr 150px;gap:10px;padding:14px 0;border:0;border-top:1px solid var(--line)}.lesson-resource-list fieldset label{display:grid;gap:5px}.lesson-resource-list fieldset label:nth-of-type(3){grid-column:1/-1}.lesson-resource-list fieldset button{justify-self:start}
+@media(max-width:700px){.lesson-resource-list fieldset{grid-template-columns:1fr}}

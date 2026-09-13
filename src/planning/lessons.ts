@@ -4,6 +4,14 @@ import type { Unit } from './units'
 
 export type LessonId = string
 export type LessonDatePolicy = 'flexible' | 'fixed'
+export type LessonResourceKind = 'image' | 'slides' | 'link'
+
+export type LessonResource = {
+  id: string
+  title: string
+  kind: LessonResourceKind
+  source: string
+}
 
 export type Lesson = {
   id: LessonId
@@ -14,6 +22,10 @@ export type Lesson = {
   sequence: number
   plannedDate: ISODate | null
   datePolicy: LessonDatePolicy
+  directions: string[]
+  materials: string[]
+  phases: string[]
+  resources: LessonResource[]
 }
 
 export function createLessonId(): LessonId {
@@ -21,6 +33,13 @@ export function createLessonId(): LessonId {
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`
   return `lesson-${token}`
+}
+
+export function createLessonResourceId(): string {
+  const token = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  return `resource-${token}`
 }
 
 export function createLesson(input: {
@@ -32,6 +51,10 @@ export function createLesson(input: {
   sequence: number
   plannedDate?: ISODate | null
   datePolicy?: LessonDatePolicy
+  directions?: string[]
+  materials?: string[]
+  phases?: string[]
+  resources?: LessonResource[]
 }): Lesson {
   const lesson: Lesson = {
     id: input.id ?? createLessonId(),
@@ -42,6 +65,15 @@ export function createLesson(input: {
     sequence: input.sequence,
     plannedDate: input.plannedDate ?? null,
     datePolicy: input.datePolicy ?? 'flexible',
+    directions: normalizeTextList(input.directions),
+    materials: normalizeTextList(input.materials),
+    phases: normalizeTextList(input.phases),
+    resources: (input.resources ?? []).map((resource) => ({
+      id: resource.id.trim(),
+      title: resource.title.trim(),
+      kind: resource.kind,
+      source: resource.source.trim(),
+    })),
   }
 
   const errors = validateLesson(lesson)
@@ -59,7 +91,21 @@ export function validateLesson(lesson: Lesson): string[] {
   if (!Number.isInteger(lesson.sequence) || lesson.sequence < 1) errors.push('Lesson sequence must be a positive whole number.')
   if (lesson.datePolicy !== 'flexible' && lesson.datePolicy !== 'fixed') errors.push('Lesson date policy must be flexible or fixed.')
   if (lesson.datePolicy === 'fixed' && !lesson.plannedDate) errors.push('A fixed Lesson needs a planned date.')
+  if (!Array.isArray(lesson.directions) || lesson.directions.some((item) => !item.trim())) errors.push('Lesson directions must be non-empty text.')
+  if (!Array.isArray(lesson.materials) || lesson.materials.some((item) => !item.trim())) errors.push('Lesson materials must be non-empty text.')
+  if (!Array.isArray(lesson.phases) || lesson.phases.some((item) => !item.trim())) errors.push('Lesson phases must be non-empty text.')
+  const resourceIds = new Set<string>()
+  for (const resource of lesson.resources ?? []) {
+    if (!resource.id.trim() || !resource.title.trim() || !resource.source.trim()) errors.push('Lesson resources need an ID, title, and source.')
+    if (!['image', 'slides', 'link'].includes(resource.kind)) errors.push('Lesson resource kind must be image, slides, or link.')
+    if (resourceIds.has(resource.id)) errors.push(`Duplicate Lesson resource ID: ${resource.id}.`)
+    resourceIds.add(resource.id)
+  }
   return errors
+}
+
+function normalizeTextList(items: string[] | undefined): string[] {
+  return (items ?? []).map((item) => item.trim()).filter(Boolean)
 }
 
 export function validateLessonAgainstUnit(

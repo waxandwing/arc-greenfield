@@ -34,7 +34,7 @@ const planning = hydratePlanningWorkspace({ calendarId: calendar.id, courses: [c
 const unit = placeUnit(createUnit({ id: 'unit-egypt', calendarId: calendar.id, courseId: course.id, title: 'Egypt' }), calendar, { startDate: '2026-09-14', endDate: '2026-09-25' })
 const units = hydrateUnitWorkspace({ calendarId: calendar.id, units: [unit] }, calendar, planning)
 
-const lesson = createLesson({ id: 'lesson-17', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Lesson 17', sequence: 17, plannedDate: '2026-09-16' })
+const lesson = createLesson({ id: 'lesson-17', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Lesson 17', sequence: 17, plannedDate: '2026-09-16', directions: ['Look closely.'], materials: ['Sketchbook'], phases: ['Look'], resources: [{ id: 'source-1', title: 'Source image', kind: 'image', source: '/source.png' }] })
 const p2Done = updateLessonDeliveryState(createLessonDeliveryState({ lesson, section: p2 }), lesson, p2, { status: 'completed', taughtDate: '2026-09-16' })
 const p5Stopped = updateLessonDeliveryState(createLessonDeliveryState({ lesson, section: p5 }), lesson, p5, { status: 'in-progress', taughtDate: '2026-09-16', resumeNote: 'Stopped after the demo. Start with guided comparison.' })
 
@@ -47,6 +47,7 @@ assert(sectionIdsProtectedByDelivery(workspace).has(p5.id), 'A Section with teac
 const raw = serializeLessons(workspace)
 const restoredInput = deserializeLessons(raw)
 assert(restoredInput?.lessons[0]?.id === lesson.id, 'Lesson identity must survive persistence.')
+assert(restoredInput?.lessons[0]?.directions[0] === 'Look closely.' && restoredInput.lessons[0].resources[0]?.source === '/source.png', 'Canonical Lesson teaching content must survive persistence.')
 assert(restoredInput?.deliveryStates.find((state) => state.sectionId === p5.id)?.resumeNote === p5Stopped.resumeNote, 'Interrupted resume note must survive persistence.')
 const restored = hydrateLessonWorkspace(restoredInput!, calendar, planning, units)
 assert(restored.deliveryStates.length === 2, 'Sparse delivery state must remain sparse after restore.')
@@ -62,5 +63,9 @@ assert(validateLessonWorkspace(invalidTeachingDate, calendar, planning, units).s
 
 assert(deserializeLessons('{bad json') === null, 'Malformed Lesson persistence must be rejected.')
 assert(deserializeLessons(JSON.stringify({ schemaVersion: 2, input: workspace })) === null, 'Unknown Lesson persistence versions must be rejected.')
+
+const legacyInput = deserializeLessons(JSON.stringify({ schemaVersion: 1, input: { calendarId: calendar.id, lessons: [{ id: 'legacy', calendarId: calendar.id, courseId: course.id, unitId: unit.id, title: 'Legacy Lesson', sequence: 1, plannedDate: null, datePolicy: 'flexible' }], deliveryStates: [] } }))
+const legacyLesson = hydrateLessonWorkspace(legacyInput!, calendar, planning, units).lessons[0]
+assert(legacyLesson.directions.length === 0 && legacyLesson.materials.length === 0 && legacyLesson.resources.length === 0, 'Stored Lessons created before teaching-content fields existed must migrate to usable empty content rather than fail.')
 
 console.log('lesson workspace contract passed')
