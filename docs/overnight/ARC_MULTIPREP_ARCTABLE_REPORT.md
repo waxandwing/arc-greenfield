@@ -1,90 +1,149 @@
-# Arc Multi-Prep + ArcTable integration report
+# Arc Multi-Prep + ArcTable production report
 
-Date: 2026-09-12  
-Branch: `codex/arc-multiprep-arctable-integration`  
-Starting/base HEAD: `f543ff25f86277809d68daeda5bb2a7bbe34a17f` (`design/v1-current-laws-reconciliation`)  
-Overall status: **YELLOW** — the requested core continuity path is implemented and tested; Month remains intentionally conservative, and two historical browser scripts encode superseded navigation/action placement.
+Date: 2026-09-13
 
-## What shipped
+Branch: `codex/arc-multiprep-arctable-integration`
 
-- Day is now a true teaching-day lens: a six-period multi-prep rail preserves the full day while one period is the clear working focus. The focused Lesson has the explicit `Start class` / `Resume in ArcTable` transition.
-- Week gives the selected instructional day materially more width while keeping the surrounding week readable.
-- Month remains a compact pacing and continuity lens. Unit spans sit above Lesson signals; it does not expand into full Lesson cards.
-- Year is organized as `Course → Unit sequence`. Each Course retains a distinct, subtle structural underlay and shared-plan Section count.
-- The visible “Fridge” metaphor is retired. The same reversible holding-place behavior is preserved as **Workspace**, including loose Lessons/Units, move-to-date, return-to-Workspace, undo, and capture-before-Course-placement.
-- ArcTable now has a dedicated public session/outcome boundary, durable live-session storage, a Teacher Monitor, and a distinct projected Student Surface.
-- A teacher can move `live → Plan View → live` without changing Lesson identity, Section identity, timer origin, phase, materials, voice expectation, cleanup state, or board lock.
-- `End Class` is deliberately different from opening Plan View. It records only the active Section outcome: complete, stop with a required resume note, or skip only while the launch still represents a never-started class.
-- Calendar setup error focus was repaired so the rendered error summary receives focus reliably.
+Design base: `f543ff25f86277809d68daeda5bb2a7bbe34a17f` (`design/v1-current-laws-reconciliation`)
 
-## Evidence sources used
+Continuation starting HEAD: `3cd321249722d772632e85bd72f3c8f6e11a832d`
+Overall status: **GREEN** — the core planning/live-class path and classroom tools are implemented, durable, accessible, and covered. Real slide-deck interoperability remains YELLOW.
 
-### Figma
+## Status vocabulary
 
-File `guts` (`CfWcuQPY4ljYXondICj2ZX`), page **Arc Multi-Prep Synthesis** (`6:46`) was inspected frame-by-frame:
+- **GREEN++**: implemented and proven across domain contracts, browser interaction, persistence boundaries, and hostile/continuity checks where relevant.
+- **GREEN**: implemented, accessible, persistent where required, and covered by appropriate verification.
+- **YELLOW**: intentionally limited or not yet proven end-to-end against a real external integration.
+- **RED**: missing, broken, or falsely represented as functional. There are no known RED rows in this report.
 
-- `7:46` — State 1 / My Teaching Day
-- `8:46` — State 2 / Working Inside a Class
-- `8:105` — State 3 / Planning a Course
-- `8:183` — State 4 / Longer Horizon Across Preps
-- `8:243` — State 5 / Plan in Motion
-- `12:46` — Product Architecture
-- `12:60` — Plan View / Week + Workspace
-- `12:155` — Live Monitor / ArcTable
-- `12:199` — Plan View while P4 stays Live
-- `14:49` — ArcTable Teacher Monitor
-- `15:46` — ArcTable Projected Student View
+Rendering alone never earns GREEN.
 
-The implementation follows the hierarchy and interaction laws in those frames, not a pixel-for-pixel reconstruction of a single static canvas.
+## Public architecture and donor boundary
 
-### ARC ASSETS 910
+There is still one canonical Arc planner. ArcTable is a temporary, Section-specific live projection that returns one explicit teaching outcome to the existing Lesson delivery-state model.
 
-The archive was inventoried before use. The production/manifests/fonts subset contained 317 production files, 21 manifest files, and 192 font files. `manifests/AUDIT_STATUS.txt` reports the asset library as GREEN++ but the broader product as not yet GOLD. `production/logos/arctable/PLACEMENT.md` and `GOLD-AUDIT.md` were used to select approved placements.
+```text
+AppFrame
+  ├─ useArcTableSession
+  │    └─ arcTableLiveState + arcTableTools
+  ├─ ArcTableTeacherMonitor
+  │    └─ live timer / cleanup / people / passes / media
+  └─ ArcTableStudentSurface
+       └─ deliberately projected public state only
 
-Integrated production assets:
+arcTableSession ──────────→ easelSessionProjection (validated donor)
+arcTableTeachingOutcome ──→ easelTeachingOutcome (validated donor)
+```
 
-- Arc mark, planner paper, and note paper
-- Instrument Serif and League Spartan
+Legacy Easel donors remain intentionally untouched:
+
+- `src/planning/easelSessionProjection.ts`
+- `src/planning/easelTeachingOutcome.ts`
+- their projection, outcome, and hostile core-loop contracts
+
+No legacy roster, pass-state, or media subsystem existed. The new tool state is scoped to the live Section and stored inside the existing durable ArcTable session boundary; it is not a second planning model.
+
+## Brutally accurate state table
+
+| State / capability | Visual presence | Verified functionality | Status |
+|---|---|---|---|
+| Day | Six-period teaching rail plus explicit Period 5 planning time and one focused teaching moment | Browser verifies Periods 1/2/3/4/6/7, Period 5 gap, focus, and P4 launch | **GREEN** |
+| Week | Selected day is materially wider; surrounding days remain readable | Browser measures unequal columns and verifies Section drift/fixed work remains visible | **GREEN** |
+| Month | Compact Unit bands, Lesson signals, Fixed labels, drift labels, and real gaps | Browser verifies Unit continuity, a fixed assessment, Period 6 drift, and no full-card expansion | **GREEN** |
+| Year | Course rows with subtle structural underlays and Unit sequence | Browser verifies all Courses and one underlay per Course at Unit resolution | **GREEN** |
+| Workspace | All visible and accessible language says Workspace | Capture-before-Course, holding, placement, return, and undo retain existing contracts; no visible “Fridge” in browser | **GREEN** |
+| Live identity | Course, Section, Unit, Lesson, phase, and class elapsed context | Identity and immutable `startedAt` survive Plan View and refresh; outcome remains Section-only | **GREEN++** |
+| Classroom timer | Production normal ring, editable duration, 5/10/15 presets, Start/Pause/Resume/Reset | Independent deterministic origin; running and paused states survive Plan View and refresh; completion settles explicitly | **GREEN++** |
+| Cleanup | Production cleanup ring/accent, distance-readable Student mode | Separate countdown supports start, pause, resume, cancel, completion, Plan View persistence, and never ends class | **GREEN++** |
+| People picker | Section-labeled production people surface and live result | Empty state, normalized names, duplicate prevention, keyboard operation, live announcement, persistence, deliberate projection, no planning mutation | **GREEN** |
+| Pass tools | Production available/active plates with requested/active/inactive state | Section-scoped, keyboard-native, persistent through Plan View, private on Student Surface, cleared with End Class | **GREEN** |
+| Artwork/image media | Real media apparatus with intentional empty and active states | Safe source schemes, selection, Plan View restore, deliberate Student projection, teacher-only edit controls | **GREEN** |
+| Presentation/slide media | Same apparatus supports a `slides` item and isolated iframe | State and render path are contract/type/build covered, but no real external deck was exercised end-to-end | **YELLOW** |
+| Projected Student Surface | Distinct quiet surface, normal/cleanup timer rings, media and optional picked student | No private pass data, no hidden keyboard-reachable controls, only one visible Exit projection action, 390px reflow | **GREEN** |
+| End Class | Explicit outcome dialog | Complete/stop-with-required-note/never-started-skip; clears live tools only after confirmation | **GREEN++** |
+
+## Classroom timer truth
+
+- `startedAt` remains immutable metadata for elapsed class duration.
+- `timer` owns independent duration, remaining seconds, status, and deterministic running origin.
+- `cleanupTimer` is a second countdown with independent status and duration.
+- Countdown states are `idle`, `running`, `paused`, and `completed`; cleanup is an explicit instructional mode derived from the cleanup countdown rather than a cosmetic boolean.
+- Live state schema is version 2. Stored version-1 sessions migrate forward, including an active legacy cleanup state.
+
+## People, pass, and media privacy
+
+- People, passes, and media each carry the active `sectionId`.
+- People selection and all pass details remain teacher-only unless a teacher explicitly projects the selected person.
+- The Student Surface never renders pass labels or states.
+- Only the active media item is shown, and only after the teacher enables projection.
+- Live tools are proven not to modify canonical planning workspace data.
+- End Class removes the live-session boundary, resolving transient people/pass/media state without inventing durable student records.
+
+## ARC ASSETS 910 function audit
+
+The archive subset contained 317 production files, 21 manifest files, and 192 font files. `AUDIT_STATUS.txt` calls the asset library GREEN++ but does not call the product GOLD. `PLACEMENT.md` and `GOLD-AUDIT.md` governed identity placement. No audit/gold label is exposed in product UI.
+
+### Wired because behavior exists
+
+- Arc mark, planner/note paper, Instrument Serif, League Spartan
 - ArcTable compact light/dark headers
-- ArcTable breeze-block tile, board panel, timer well, progress rail, normal/cleanup timer rings, cream paper, and green texture
+- board panel, progress rail, timer well, normal timer ring, cleanup timer ring
+- cleanup corner accent, people surface, pass available/active plates, media apparatus frame
 
-No “gold” badge or audit language is exposed in the product UI.
+### Represented functionally without redundant image layers
 
-## State-by-state status
+- progress markers: semantic progress rail and CSS fill
+- clock plate: readable live system clock and separate class duration
+- student display surface: dedicated Student component/surface
+- tools/people/pass tabs and teacher sidebar: semantic native controls and responsive sidebar
 
-| State | Status | Evidence / note |
-|---|---|---|
-| Day | **GREEN** | Six-period rail plus one focused teaching moment; repeated preps remain visible and each period can become current. |
-| Week | **GREEN** | Selected day is wider than surrounding days; multi-prep context and Workspace remain available. |
-| Month | **YELLOW** | Correct compact Unit/Lesson continuity and no oversized Lesson cards. Dense months are deliberately information-heavy and pre-school-year cells retain explicit unknown status. |
-| Year | **GREEN** | All Courses shown at Unit resolution with distinct structural underlays and readable Unit sequences. |
-| Workspace | **GREEN** | Visible metaphor and copy replaced; capture, unscheduled holding, placement, return, and undo survive. Internal legacy identifiers remain temporarily to preserve persisted contracts. |
-| ArcTable Teacher Monitor | **GREEN** | Course/Section/Lesson context, phase progress, live timer, materials, voice, board lock, student preview, people/pass tools, cleanup, Plan View, and explicit End Class. |
-| Projected Student Surface | **GREEN** | Quiet full-screen prompt with directions, timer, materials, phase, voice, and cleanup; teacher controls are absent. |
-| Live → Plan → Live | **GREEN** | Browser gate proves stable `startedAt`, Lesson id, Section id, and phase across the round trip. |
+### Deliberately not wired because behavior is outside this pass
+
+- Now/Next tabs, resource QR frame, hold/reconnecting plates
+- blackout/pause surface
+- group marker, groups folder, unit magnet, activity chip
+- notes and resources folders
+- decorative accents and separator variants already covered by the authored surface system
+
+These remain honest YELLOW inventory items rather than controls that pretend to work.
+
+## Design and accessibility audit
+
+- Approved Figma file `guts` (`CfWcuQPY4ljYXondICj2ZX`), page `Arc Multi-Prep Synthesis` (`6:46`), was reviewed against Day, Week/Workspace, plan-while-live, Teacher Monitor, and Student Surface frames.
+- Manual image review confirmed authored tactile/editorial character, central working space, variable emphasis, production identity placement, and distinct teacher/student hierarchy.
+- The required 12ui target comparison was attempted after installing the pinned CLI, but platform review blocked repository/reference upload to the external service because that egress was not explicitly authorized. No workaround was attempted. Local visual review and browser evidence continued independently.
+- Native buttons/inputs/selects provide keyboard operation and accessible names. Picker results use a polite live region.
+- Focus visibility is browser-verified. ArcTable motion is suppressed under `prefers-reduced-motion: reduce`.
+- Planner shell tests cover 200%/400% zoom and 320/390px widths. ArcTable additionally covers Teacher and Student reflow at 390px.
+- A verified Student overflow at 390px was fixed in this pass.
 
 ## Verification
 
-Passing:
+Verified before functional changes:
 
-- `npm run test:contracts` — 40/40 contract groups, including ArcTable persistence and all existing calendar/planning/recovery contracts
+- `npm run test:contracts`
 - `npm run typecheck`
 - `npm run build:bundle`
 - `node tests/arctable-continuity.smoke.mjs`
-- `node tests/phase2-nondrag-keyboard-parity.mjs`
-- `node tests/phase2-object-actions-section-divergence.mjs`
-- `node tests/phase2-recovery-undo-continuity.mjs`
-- `node tests/phase2-calendar-edge-planning-truth.mjs`
 - `git diff --check`
 
-Historical test mismatches, documented rather than masked:
+The four legacy phase-browser commands were dispatched during the initial baseline, but their completion output was not captured. The final verification sweep later exposed stale header-action selectors in all four. They were migrated to the current Settings workflow and then passed individually and in the final suite; they are not claimed as pre-change passes.
 
-- `tests/browser-a11y.smoke.mjs` reaches the repaired setup-error focus check, then expects all six internal calendar horizons to be visible. Current navigation law exposes only Day, Week, Month, and Year.
-- `tests/phase2-planning-truth.mjs` expects a visible `Set classes` header action. Current product architecture places that action in Settings furniture.
+Passing after functional changes:
 
-The new smoke gate covers the requested multi-prep seed (AP Art History, 2D Art 1, 3D Art 1 across Periods 1/2/3/4/6/7), Day/Week/Month/Year, Workspace, P4 ArcTable launch, teacher controls, the distinct Student Surface, live-plan-live continuity, and a Section-scoped teaching outcome.
+- `npm run build` — 41 contract groups, type-check, production bundle
+- `node tests/arctable-continuity.smoke.mjs`
+- `node tests/browser-a11y.smoke.mjs`
+- `node tests/phase2-planning-truth.mjs`
+- existing keyboard parity, Section divergence, recovery/undo, and calendar-edge planning gates
+- `git diff --check`
 
-## Screenshot evidence
+Six obsolete browser tests were updated to current product law:
+
+- visible navigation is Day / Week / Month / Year; Semester and Quarter remain internal boundary concepts
+- calendar, Course/Section, Unit, and Lesson setup lives in Settings furniture instead of permanent header actions
+
+## Fresh evidence
 
 - `evidence/01-day-multiprep.png`
 - `evidence/02-week-workspace.png`
@@ -93,10 +152,16 @@ The new smoke gate covers the requested multi-prep seed (AP Art History, 2D Art 
 - `evidence/04-plan-while-live.png`
 - `evidence/05-teacher-monitor.png`
 - `evidence/06-student-surface.png`
+- `evidence/07-timer-running.png`
+- `evidence/08-people-picker.png`
+- `evidence/09-pass-tools.png`
+- `evidence/10-media.png`
+- `evidence/11-cleanup-teacher.png`
+- `evidence/12-cleanup-student.png`
 
-## Architecture and debt notes
+## Guardrails honored
 
-- There is still one canonical planner. ArcTable projects a temporary live-teaching session from current Day continuity and writes back through the existing Lesson delivery-state model.
-- The existing Easel implementation remains the validated donor underneath ArcTable-named adapter modules. This keeps old contracts intact while presenting one new public product boundary; deleting the donor is follow-up cleanup, not a prerequisite for the feature.
-- Existing `fridge*` function names, storage contracts, CSS hooks, and test IDs remain internal compatibility seams. Visible product language and accessible labels use Workspace.
-- Month density and the two historical browser expectations are the remaining explicit YELLOW items. No deploy, Vercel mutation, merge, or main-branch edit was performed.
+- Existing `fridge*` internal compatibility seams remain intact.
+- Existing validated Easel donor code remains intact.
+- `main` and `design/v1-current-laws-reconciliation` were not modified.
+- No merge, deployment, or Vercel configuration change was performed.
