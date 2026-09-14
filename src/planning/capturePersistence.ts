@@ -18,12 +18,21 @@ export function deserializeCaptures(raw: string): CaptureWorkspace | null {
     if (parsed.schemaVersion !== 1 || !parsed.workspace || typeof parsed.workspace.calendarId !== 'string' || !Array.isArray(parsed.workspace.captures)) return null
     const workspace: CaptureWorkspace = {
       calendarId: parsed.workspace.calendarId,
-      captures: parsed.workspace.captures.map((capture) => ({
-        id: typeof capture.id === 'string' ? capture.id : '',
-        calendarId: typeof capture.calendarId === 'string' ? capture.calendarId : '',
-        text: typeof capture.text === 'string' ? capture.text : '',
-        createdAt: typeof capture.createdAt === 'string' ? capture.createdAt : '',
-      })),
+      captures: parsed.workspace.captures.map((capture) => {
+        const row = {
+          id: typeof capture.id === 'string' ? capture.id : '',
+          calendarId: typeof capture.calendarId === 'string' ? capture.calendarId : '',
+          text: typeof capture.text === 'string' ? capture.text : '',
+          createdAt: typeof capture.createdAt === 'string' ? capture.createdAt : '',
+        } as CaptureWorkspace['captures'][number]
+        if (typeof capture.anchorDate === 'string' && capture.anchorDate.trim()) row.anchorDate = capture.anchorDate as CaptureWorkspace['captures'][number]['anchorDate']
+        if (typeof capture.courseId === 'string' && capture.courseId.trim()) row.courseId = capture.courseId
+        if (typeof capture.sectionId === 'string' && capture.sectionId.trim()) row.sectionId = capture.sectionId
+        if (typeof capture.unitId === 'string' && capture.unitId.trim()) row.unitId = capture.unitId
+        if (typeof capture.lessonId === 'string' && capture.lessonId.trim()) row.lessonId = capture.lessonId
+        if (typeof capture.sourceView === 'string' && capture.sourceView.trim()) row.sourceView = capture.sourceView
+        return row
+      }),
     }
     return validateCaptureWorkspace(workspace).length === 0 ? workspace : null
   } catch {

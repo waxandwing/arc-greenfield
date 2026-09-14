@@ -1,0 +1,174 @@
+import { mkdirSync } from 'node:fs'
+import { chromium } from 'playwright'
+import { retreatToTeachingDayViaDayTab, selectPlanView } from './helpers/selectPlanView.mjs'
+
+const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
+const evidenceDir = new URL('../docs/overnight/evidence/repair-pass-3/', import.meta.url).pathname
+mkdirSync(evidenceDir, { recursive: true })
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message)
+}
+
+function fixture() {
+  const calendarId = 'arc-plan-gauntlet-2026'
+  const courses = [
+    { id: 'course-apah', title: 'AP Art History' },
+    { id: 'course-2d', title: '2D Art 1' },
+  ]
+  const sections = [
+    ['section-p1', 'course-apah', 'Period 1'],
+    ['section-p4', 'course-apah', 'Period 4'],
+    ['section-p6', 'course-2d', 'Period 6'],
+  ].map(([id, courseId, name]) => ({ id, courseId, calendarId, name }))
+  const planning = {
+    calendarId,
+    courses,
+    sections,
+    teachingDay: {
+      blocks: [
+        { id: 'b1', label: 'Period 1', type: 'teaching', order: 1, sectionId: 'section-p1', startTime: null, endTime: null },
+        { id: 'b2', label: 'Planning', type: 'planning', order: 2, sectionId: null, startTime: null, endTime: null },
+        { id: 'b3', label: 'Period 4', type: 'teaching', order: 3, sectionId: 'section-p4', startTime: null, endTime: null },
+      ],
+    },
+    notes: [],
+  }
+  const calendarInput = {
+    id: calendarId,
+    schoolYearLabel: '2026–27',
+    firstDay: '2026-09-01',
+    lastDay: '2027-05-28',
+    instructionalWeekdays: [1, 2, 3, 4, 5],
+    patternSource: 'manual',
+    patternConfidence: 'confirmed',
+    exceptions: [],
+    quarters: [],
+    semesters: [],
+    provenance: [],
+  }
+  return { calendarId, calendarInput, planning }
+}
+
+async function shot(page, name) {
+  await page.screenshot({ path: `${evidenceDir}${name}`, fullPage: true })
+}
+
+const browser = await chromium.launch({ headless: true })
+try {
+  const data = fixture()
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
+  const page = await context.newPage()
+  await page.goto(baseUrl, { waitUntil: 'networkidle' })
+  await page.evaluate(({ storage }) => {
+    for (const [key, value] of Object.entries(storage)) localStorage.setItem(key, value)
+  }, {
+    storage: {
+      'arc.onboarding.v1': JSON.stringify({ schemaVersion: 1, draft: { stage: 'landed', dismissed: true, firstCapturePromptDismissed: true } }),
+      'arc.calendar.v1': JSON.stringify({ schemaVersion: 1, savedAt: '2026-09-15T12:00:00.000Z', input: data.calendarInput }),
+      'arc.planningWorkspace.v1': JSON.stringify({ schemaVersion: 1, input: data.planning }),
+      'arc.planning-context.v1': JSON.stringify({
+        schemaVersion: 2,
+        calendarId: data.calendarId,
+        view: 'Day',
+        anchorDate: '2026-09-15',
+        focus: 'day',
+      }),
+    },
+  })
+  await page.reload({ waitUntil: 'networkidle' })
+
+  assert(await page.locator('.arc-header').count() === 0, 'Full-width app header must be removed.')
+  const logo = page.locator('[data-testid="arc-mark-logo"]')
+  assert(await logo.count() === 1, 'Canonical Arc mark must render inside planner shell.')
+  assert((await logo.getAttribute('src'))?.includes('/assets/arc/arc-mark.png'), 'Logo must use canonical arc-mark.png asset.')
+  const filter = await logo.evaluate((img) => getComputedStyle(img).filter)
+  assert(!filter.includes('invert'), 'Canonical mark must not use inverted white substitute.')
+
+  await shot(page, '01-day-no-dark-header.png')
+
+  assert(await page.getByTestId('global-capture-trigger').isVisible(), '+ Capture must be visible on Day.')
+  assert(await page.getByText('Try Capture', { exact: true }).count() === 0, 'Permanent Try Capture banner must be removed.')
+
+  await selectPlanView(page, 'Week')
+  await shot(page, '02-week-no-banner.png')
+  assert(await page.getByTestId('global-capture-trigger').isVisible(), '+ Capture must remain on Week.')
+
+  await selectPlanView(page, 'Month')
+  await shot(page, '03-month.png')
+  await selectPlanView(page, 'Year')
+  await shot(page, '04-year.png')
+
+  await selectPlanView(page, 'Day')
+  await page.getByRole('button', { name: 'Planning, planning time' }).click()
+  await shot(page, '05-planning-period.png')
+  assert(await page.getByTestId('global-capture-trigger').isVisible(), '+ Capture must remain on Planning period.')
+
+  await page.getByTestId('global-capture-trigger').click()
+  await page.locator('.arc-capture-dialog input').fill('Repair pass 3 capture metadata')
+  await page.locator('.arc-capture-dialog button.primary-button').click()
+  await page.getByText('Captured.', { exact: true }).waitFor({ timeout: 3000 })
+  const captures = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.captures.v1')))
+  const saved = captures.workspace.captures.find((c) => c.text === 'Repair pass 3 capture metadata')
+  assert(saved?.anchorDate === '2026-09-15', 'Capture must store anchorDate.')
+  assert(saved?.sourceView?.includes('Day'), 'Capture must store source view.')
+  await shot(page, '06-capture-success.png')
+
+  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
+  await shot(page, '07-workspace-captures-first.png')
+  await page.getByRole('button', { name: 'Close Workspace' }).click()
+
+  await page.evaluate(() => {
+    localStorage.removeItem('arc.onboarding.v1')
+    localStorage.removeItem('arc.calendar.v1')
+    localStorage.removeItem('arc.planningWorkspace.v1')
+    localStorage.removeItem('arc.captures.v1')
+  })
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.getByRole('button', { name: 'Set up my teaching day' }).click()
+  await page.locator('#school-year-label').fill('2026–27')
+  await page.locator('#first-school-day').fill('2026-09-01')
+  await page.locator('#last-school-day').fill('2027-05-28')
+  await page.getByRole('button', { name: 'Use this calendar' }).click()
+  await page.getByRole('button', { name: 'Add a course' }).click()
+  await page.locator('.class-course-title input').fill('Studio Art')
+  await page.getByRole('button', { name: 'Add a period or section' }).click()
+  await page.locator('.class-section-row input').fill('Period 1')
+  await page.getByRole('button', { name: 'Save classes' }).click()
+  await page.evaluate(() => {
+    const raw = localStorage.getItem('arc.onboarding.v1')
+    if (!raw) return
+    const parsed = JSON.parse(raw)
+    parsed.draft.schoolNcesId = 'nces:120144001406'
+    localStorage.setItem('arc.onboarding.v1', JSON.stringify(parsed))
+  })
+  await page.reload({ waitUntil: 'networkidle' })
+  assert(await page.getByText(/bell schedule|Build your day manually/).count() > 0, 'School schedule lookup must surface proposal or manual fallback.')
+  await shot(page, '08-bell-schedule-lookup.png')
+
+  await page.getByRole('button', { name: 'Add planning' }).click()
+  await page.getByRole('button', { name: 'Use this teaching day' }).click()
+  await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).waitFor()
+  await shot(page, '09-onboarding-land-day.png')
+
+  await page.evaluate(({ storage }) => {
+    for (const [key, value] of Object.entries(storage)) localStorage.setItem(key, value)
+  }, {
+    storage: {
+      'arc.onboarding.v1': JSON.stringify({ schemaVersion: 1, draft: { stage: 'welcome', dismissed: false, firstCapturePromptDismissed: true } }),
+      'arc.calendar.v1': JSON.stringify({ schemaVersion: 1, savedAt: '2026-09-15T12:00:00.000Z', input: data.calendarInput }),
+      'arc.planningWorkspace.v1': JSON.stringify({ schemaVersion: 1, input: data.planning }),
+    },
+  })
+  await page.reload({ waitUntil: 'networkidle' })
+  assert(await page.getByRole('heading', { name: 'Arc is where your plan lives when the plan changes.' }).count() === 0, 'Returning user must skip onboarding.')
+  await shot(page, '11-returning-user-day.png')
+
+  await retreatToTeachingDayViaDayTab(page)
+  await shot(page, '10-class-depth.png')
+
+  await context.close()
+  console.log('Repair pass 3 smoke passed.')
+} finally {
+  await browser.close()
+}

@@ -27,6 +27,7 @@ import './styles/schoolIdentitySearch.css'
 import './styles/visual-reconciliation.css'
 import './styles/repair-pass-1-chrome.css'
 import './styles/repair-pass-2-chrome.css'
+import './styles/repair-pass-3-chrome.css'
 
 maybeApplyDemoSeed(window.location, window.localStorage, { envDemo: import.meta.env.VITE_ARC_DEMO === 'true' })
 

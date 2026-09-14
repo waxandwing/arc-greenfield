@@ -22,7 +22,6 @@ import {
   moveLessonFromFridge,
   moveLessonToFridge,
   applyArcTableTeachingOutcome,
-  elapsedLiveMinutes,
   projectArcTableSession,
   projectDayContinuity,
   buildTeachingDayRail,
@@ -36,7 +35,9 @@ import { formatMonth, formatPlanHeaderDate, formatPlanHeaderWeekRange } from './
 import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfaces'
 import { WorkspacePanel } from './WorkspacePanel'
 import { ArcOnboarding, resolveOnboardingStage } from './ArcOnboarding'
-import { FirstCapturePrompt } from './FirstCapturePrompt'
+import { CaptureCoachMark } from './CaptureCoachMark'
+import { GlobalCaptureAffordance, captureAnchorFromPlan } from './GlobalCaptureAffordance'
+import { PlannerShellBar } from './PlannerShellBar'
 import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
 import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
 
@@ -48,8 +49,8 @@ export function AppFrame() {
   const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
   const [fridgeUndo, setFridgeUndo] = useState<FridgeRoundTripReceipt | null>(null)
   const [onboardingDraft, setOnboardingDraft] = useState(loadOnboardingDraft)
-  const [showFirstCapturePrompt, setShowFirstCapturePrompt] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
-  const [workspaceOpenToken, setWorkspaceOpenToken] = useState(0)
+  const [showCaptureCoachMark, setShowCaptureCoachMark] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
+  const [workspaceOpenToken] = useState(0)
   const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
@@ -75,6 +76,20 @@ export function AppFrame() {
     ? onboardingStageTitle(onboardingDraft, setupCapabilities)
     : stageTitleFor(workspaceMode.mode, workspace.activeView)
   const showPlanFurniture = Boolean(workspace.calendar && workspaceMode.mode === 'calendar' && !onboardingActive)
+  const globalCaptureEnabled = Boolean(workspace.calendar && !onboardingActive)
+  const captureAnchor = captureAnchorFromPlan({
+    anchorDate: workspace.anchorDate,
+    activeView: workspace.activeView,
+    planContext: workspace.planContext,
+    workspaceMode: workspaceMode.mode,
+  })
+  function saveGlobalCapture(text: string, extra: Parameters<typeof workspace.addCapture>[1] = {}) {
+    return workspace.addCapture(text, { ...captureAnchor, ...extra })
+  }
+  function dismissCaptureCoachMark() {
+    setShowCaptureCoachMark(false)
+    updateOnboarding({ ...onboardingDraft, firstCapturePromptDismissed: true })
+  }
   const planningIndexActive = Boolean(
     showPlanFurniture
     && workspace.activeView === 'Day'
@@ -317,17 +332,28 @@ export function AppFrame() {
     <div className="arc-shell">
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
 
-      <header className="arc-header" aria-label="Arc application header">
-        <button className="arc-wordmark" type="button" aria-label={onboardingActive ? 'Exit setup to Arc' : 'Teaching Day home'} onClick={returnHome}><img src="/assets/arc/arc-mark.png" alt="Arc" /></button>
-        <div className="arc-header-space" aria-hidden="true" />
-        {arcTable.live ? <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}><span>{arcTable.live.session.sectionName} live · {elapsedLiveMinutes(arcTable.live)} min</span><strong>Return to ArcTable</strong></button> : null}
-      </header>
-
       <div className="arc-layout">
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
           <B01Furniture
             spreadChrome={
               <>
+                <PlannerShellBar
+                  homeLabel={onboardingActive ? 'Exit setup to Arc' : 'Teaching Day home'}
+                  onHome={returnHome}
+                  capture={globalCaptureEnabled ? (
+                    <>
+                      <GlobalCaptureAffordance
+                        disabled={workspaceBusy}
+                        units={workspace.unitWorkspace}
+                        defaultUnitId={workspace.planContext?.unitId ?? null}
+                        onSave={saveGlobalCapture}
+                      />
+                      {minimumPlanningSetupEstablished(setupCapabilities) && showCaptureCoachMark && !onboardingDraft.firstCapturePromptDismissed ? (
+                        <CaptureCoachMark onDismiss={dismissCaptureCoachMark} />
+                      ) : null}
+                    </>
+                  ) : null}
+                />
                 <CalendarStageHeader
                   activeView={workspace.activeView}
                   mode={headerMode}
@@ -391,7 +417,6 @@ export function AppFrame() {
               {!onboardingActive && workspaceMode.mode === 'calendar' && workspace.activeView === 'Day' && !minimumPlanningSetupEstablished(setupCapabilities) ? (
                 <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} />
               ) : null}
-              {workspaceMode.mode === 'calendar' && minimumPlanningSetupEstablished(setupCapabilities) && showFirstCapturePrompt && !onboardingDraft.firstCapturePromptDismissed ? <FirstCapturePrompt onSave={workspace.addCapture} onPlace={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }); setWorkspaceOpenToken((token) => token + 1) }} onDismiss={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }) }} /> : null}
               {workspaceMode.mode === 'calendar' && workspace.calendar && workspace.anchorDate ? (
                 <PlanStateHeader
                   view={workspace.activeView}

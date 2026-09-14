@@ -20,49 +20,81 @@ type Props = {
 }
 
 export function WorkspacePanel(props: Props) {
-  const [draft, setDraft] = useState('')
   const [date, setDate] = useState(props.defaultDate ?? '')
+  const [selectedCaptureId, setSelectedCaptureId] = useState<string | null>(null)
   const unscheduledLessons = props.lessons.filter((lesson) => lesson.plannedDate === null)
   const scheduledLessons = props.lessons.filter((lesson) => lesson.plannedDate !== null)
-
-  function capture() {
-    if (!draft.trim()) return
-    if (props.onAddCapture(draft)) setDraft('')
-  }
+  const captureCount = props.captures?.captures.length ?? 0
 
   return (
-    <div className="b01-fridge-content">
-      <p className="b01-furniture-empty">Loose ideas and unplaced lessons wait here until you are ready to place them.</p>
-      <button type="button" className="workspace-import-link" onClick={props.onOpenImport}>Bring in curriculum CSV</button>
-      <div className="workspace-quick-capture">
-        <label htmlFor="workspace-capture-text">Quick capture</label>
-        <div><input id="workspace-capture-text" value={draft} placeholder="A Lesson idea, resource, or reminder" onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); capture() } }} /><button type="button" disabled={!draft.trim()} onClick={capture}>Save</button></div>
-      </div>
+    <div className="b01-fridge-content b01-fridge-content--repair-pass-3">
+      <section aria-labelledby="workspace-captures-heading" className="workspace-captures-primary">
+        <div className="workspace-captures-heading-row">
+          <h2 id="workspace-captures-heading">Captures</h2>
+          {captureCount > 0 ? <span className="workspace-capture-count">{captureCount}</span> : null}
+        </div>
+        {captureCount === 0 ? (
+          <p className="b01-furniture-empty">Nothing waiting. Use + Capture from any planner view.</p>
+        ) : (
+          props.captures?.captures.map((capture) => (
+            <CaptureCard
+              key={capture.id}
+              capture={capture}
+              units={props.units}
+              defaultDate={date as ISODate | ''}
+              selected={selectedCaptureId === capture.id}
+              onSelect={() => setSelectedCaptureId((current) => (current === capture.id ? null : capture.id))}
+              onPromote={props.onPromoteCapture}
+              onDelete={props.onDeleteCapture}
+            />
+          ))
+        )}
+      </section>
+
       {props.undoAvailable ? <button type="button" className="quiet-button" onClick={props.onUndo}>Undo last Workspace move</button> : null}
 
-      <section aria-labelledby="workspace-captures-heading">
-        <h2 id="workspace-captures-heading">Captures</h2>
-        {(props.captures?.captures.length ?? 0) === 0 ? <p className="b01-furniture-empty">Nothing waiting to be organized.</p> : props.captures?.captures.map((capture) => <CaptureCard key={capture.id} capture={capture} units={props.units} defaultDate={date as ISODate | ''} onPromote={props.onPromoteCapture} onDelete={props.onDeleteCapture} />)}
-      </section>
+      <details className="workspace-secondary-block">
+        <summary>Unscheduled lessons ({unscheduledLessons.length})</summary>
+        <label className="b01-fridge-date"><span>Lesson destination</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
+        {unscheduledLessons.length === 0 ? <p className="b01-furniture-empty">No loose Lessons.</p> : unscheduledLessons.map((lesson) => (
+          <article className="b01-fridge-card" key={lesson.id}>
+            <strong>{lesson.title}</strong>
+            <button type="button" className="quiet-button" disabled={!date} onClick={() => props.onScheduleLesson(lesson.id, date as ISODate)}>Place on date</button>
+          </article>
+        ))}
+      </details>
 
-      <label className="b01-fridge-date"><span>Lesson destination</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
-      <section aria-labelledby="b01-fridge-lessons">
-        <h2 id="b01-fridge-lessons">Unscheduled Lessons</h2>
-        {unscheduledLessons.length === 0 ? <p className="b01-furniture-empty">No loose Lessons.</p> : unscheduledLessons.map((lesson) => <article className="b01-fridge-card" key={lesson.id}><strong>{lesson.title}</strong><button type="button" className="quiet-button" disabled={!date} onClick={() => props.onScheduleLesson(lesson.id, date as ISODate)}>Place on date</button></article>)}
-      </section>
-      <section aria-labelledby="b01-fridge-units">
-        <h2 id="b01-fridge-units">Unscheduled Units</h2>
-        {props.unscheduledUnitTitles.length === 0 ? <p className="b01-furniture-empty">No loose Units.</p> : props.unscheduledUnitTitles.map((unit) => <article className="b01-fridge-card b01-fridge-card--unit" key={unit.id}><strong>{unit.title}</strong><button type="button" className="quiet-button" onClick={props.onOpenUnits}>Place Unit</button></article>)}
-      </section>
-      {scheduledLessons.length > 0 ? <details className="b01-fridge-return"><summary>Put a scheduled Lesson in Workspace</summary>{scheduledLessons.map((lesson) => <button key={lesson.id} type="button" className="quiet-button" onClick={() => props.onUnplaceLesson(lesson.id)}>{lesson.title}</button>)}</details> : null}
+      <details className="workspace-secondary-block">
+        <summary>Unscheduled units ({props.unscheduledUnitTitles.length})</summary>
+        {props.unscheduledUnitTitles.length === 0 ? <p className="b01-furniture-empty">No loose Units.</p> : props.unscheduledUnitTitles.map((unit) => (
+          <article className="b01-fridge-card b01-fridge-card--unit" key={unit.id}>
+            <strong>{unit.title}</strong>
+            <button type="button" className="quiet-button" onClick={props.onOpenUnits}>Place Unit</button>
+          </article>
+        ))}
+      </details>
+
+      <details className="workspace-secondary-block">
+        <summary>Curriculum & returns</summary>
+        <button type="button" className="workspace-import-link" onClick={props.onOpenImport}>Bring in curriculum CSV</button>
+        {scheduledLessons.length > 0 ? (
+          <div className="b01-fridge-return">
+            {scheduledLessons.map((lesson) => (
+              <button key={lesson.id} type="button" className="quiet-button" onClick={() => props.onUnplaceLesson(lesson.id)}>{lesson.title}</button>
+            ))}
+          </div>
+        ) : null}
+      </details>
     </div>
   )
 }
 
-function CaptureCard({ capture, units, defaultDate, onPromote, onDelete }: {
+function CaptureCard({ capture, units, defaultDate, selected, onSelect, onPromote, onDelete }: {
   capture: PlanningCapture
   units: UnitWorkspace | null
   defaultDate: ISODate | ''
+  selected: boolean
+  onSelect: () => void
   onPromote: Props['onPromoteCapture']
   onDelete: Props['onDeleteCapture']
 }) {
@@ -73,15 +105,21 @@ function CaptureCard({ capture, units, defaultDate, onPromote, onDelete }: {
   const dateAllowed = Boolean(unit?.placement && defaultDate && defaultDate >= unit.placement.startDate && defaultDate <= unit.placement.endDate)
 
   return (
-    <article className="workspace-capture-card">
-      <strong>{capture.text}</strong>
-      <p>Captured {new Date(capture.createdAt).toLocaleDateString()}</p>
-      {units?.units.length ? <>
-        <label><span>Unit</span><select aria-label={`Unit for ${capture.text}`} value={unitId} onChange={(event) => setUnitId(event.target.value)}>{units.units.map((candidate) => <option value={candidate.id} key={candidate.id}>{candidate.title}</option>)}</select></label>
-        <label className="workspace-schedule-choice"><input type="checkbox" checked={scheduleNow} disabled={!dateAllowed} onChange={(event) => setScheduleNow(event.target.checked)} /><span>{dateAllowed ? `Place on ${defaultDate}` : 'Choose a date inside the Unit to place now'}</span></label>
-        <button type="button" className="quiet-button" onClick={() => onPromote(capture.id, unitId, scheduleNow && dateAllowed ? defaultDate as ISODate : null)}>{scheduleNow && dateAllowed ? 'Place as Lesson' : 'Make unscheduled Lesson'}</button>
-      </> : <p className="b01-furniture-empty">It is safe here. Add a Course and Unit when you are ready to organize it.</p>}
-      <button type="button" className="text-button" aria-label={`Delete Capture ${capture.text}`} onClick={() => onDelete(capture.id)}>Delete</button>
+    <article className={`workspace-capture-card${selected ? ' workspace-capture-card--selected' : ''}`}>
+      <button type="button" className="workspace-capture-card-select" onClick={onSelect}>
+        <strong>{capture.text}</strong>
+        <span>Captured {new Date(capture.createdAt).toLocaleDateString()}</span>
+      </button>
+      {selected ? (
+        <div className="workspace-capture-actions">
+          {units?.units.length ? <>
+            <label><span>Organize into unit</span><select aria-label={`Unit for ${capture.text}`} value={unitId} onChange={(event) => setUnitId(event.target.value)}>{units.units.map((candidate) => <option value={candidate.id} key={candidate.id}>{candidate.title}</option>)}</select></label>
+            <label className="workspace-schedule-choice"><input type="checkbox" checked={scheduleNow} disabled={!dateAllowed} onChange={(event) => setScheduleNow(event.target.checked)} /><span>{dateAllowed ? `Place on ${defaultDate}` : 'Choose a date inside the Unit to place now'}</span></label>
+            <button type="button" className="quiet-button" onClick={() => onPromote(capture.id, unitId, scheduleNow && dateAllowed ? defaultDate as ISODate : null)}>{scheduleNow && dateAllowed ? 'Convert & place' : 'Convert to lesson'}</button>
+          </> : <p className="b01-furniture-empty">Add a course and unit when you are ready to organize.</p>}
+          <button type="button" className="text-button" aria-label={`Delete Capture ${capture.text}`} onClick={() => onDelete(capture.id)}>Delete</button>
+        </div>
+      ) : null}
     </article>
   )
 }

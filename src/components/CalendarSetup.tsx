@@ -66,9 +66,10 @@ type Props = {
   onSave: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
   onCancel?: () => void
   onDraftChange?: (input: CalendarHydrationInput) => void
+  onSchoolIdentitySelected?: (candidate: import('../calendar').OfficialSourceCandidate) => void
 }
 
-export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftChange }: Props) {
+export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftChange, onSchoolIdentitySelected }: Props) {
   const [calendarId] = useState(() => initialValue?.id ?? createManualCalendarId())
   const [schoolYearLabel, setSchoolYearLabel] = useState(initialValue?.schoolYearLabel ?? '')
   const [firstDay, setFirstDay] = useState(initialValue?.firstDay ?? '')
@@ -262,7 +263,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
         <p>Start with your school. Arc will look for an official identity before you enter dates yourself.</p>
       </div>
 
-      {!initialValue && <SchoolIdentitySearch onUseCalendar={onSave} />}
+      {!initialValue && <SchoolIdentitySearch onUseCalendar={onSave} onSchoolIdentitySelected={onSchoolIdentitySelected} />}
       {isSourceBackedEdit && initialValue && <SourceCalendarReview input={initialValue} />}
 
       <form className="calendar-setup-form" onSubmit={submit} noValidate>

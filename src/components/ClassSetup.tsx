@@ -80,7 +80,7 @@ export function ClassSetup({ calendarId, initialValue, protectedCourseIds = new 
 
   return (
     <div className="class-setup">
-      <div className="calendar-setup-intro"><p className="section-label">Classes</p><h2>Tell Arc what you actually teach.</h2><p>Add each course once, then add the periods or sections that use that same plan. Arc keeps the curriculum shared without pretending every class moves at the same speed.</p></div>
+      <div className="calendar-setup-intro"><p className="section-label">What do you teach</p><h2>Tell Arc what you actually teach.</h2><p>Add each course once, then add the periods or sections that use that same plan. Arc keeps the curriculum shared without pretending every class moves at the same speed.</p></div>
       {errors.length > 0 && <div className="setup-errors" role="alert"><strong>Check the class setup.</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div>}
       <div className="class-course-list">
         {courses.length === 0 && <div className="class-empty-state"><p>No classes yet.</p><button type="button" className="primary-button" onClick={addCourse}>Add a course</button></div>}

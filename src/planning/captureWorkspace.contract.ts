@@ -10,8 +10,14 @@ function assert(condition: unknown, message: string): asserts condition {
 
 const calendar = hydrateSchoolCalendar({ id: 'capture-calendar', schoolYearLabel: '2026–27', firstDay: '2026-09-01', lastDay: '2027-05-28', instructionalWeekdays: [1, 2, 3, 4, 5], patternSource: 'manual', patternConfidence: 'confirmed', exceptions: [], quarters: [], semesters: [] })
 const unit = placeUnit(createUnit({ id: 'unit-2d', calendarId: calendar.id, courseId: 'course-2d', title: 'Line' }), calendar, { startDate: '2026-09-01', endDate: '2026-09-30' })
-const capture = createPlanningCapture(calendar.id, '  Blind contour warm-up  ', new Date('2026-09-03T14:00:00.000Z'))
+const capture = createPlanningCapture(calendar.id, '  Blind contour warm-up  ', new Date('2026-09-03T14:00:00.000Z'), {
+  anchorDate: '2026-09-03',
+  courseId: 'course-2d',
+  sectionId: 'section-p2',
+  sourceView: 'Day:class',
+})
 assert(capture.text === 'Blind contour warm-up', 'Capture must normalize text without requiring Course or date.')
+assert(capture.anchorDate === '2026-09-03' && capture.sourceView === 'Day:class', 'Capture must store plan anchor metadata when provided.')
 
 const captures = { calendarId: calendar.id, captures: [capture] }
 assert(validateCaptureWorkspace(captures).length === 0, 'Valid Capture workspace must pass.')

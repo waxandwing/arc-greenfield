@@ -81,8 +81,8 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
             <p className="calendar-context">{calendar.schoolYearLabel}</p>
             <div className="calendar-context-actions">
               {recoveryCount > 0 && (
-                <button type="button" className="text-button recovery-review-trigger recovery-review-trigger--header" onClick={onOpenRecovery}>
-                  Recovery ({recoveryCount})
+                <button type="button" className="text-button recovery-review-trigger recovery-review-trigger--header recovery-review-trigger--quiet" onClick={onOpenRecovery}>
+                  Recovery · {recoveryCount}
                 </button>
               )}
               {undoAvailable && <button type="button" className="text-button" onClick={onUndoShift}>Undo last Shift</button>}

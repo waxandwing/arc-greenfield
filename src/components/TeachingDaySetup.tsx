@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  lookupSchoolBellSchedule,
+  resolveBellScheduleSchoolId,
+  type BellScheduleBlockProposal,
+} from '../calendar'
+import {
   createTeachingDayBlock,
   hydratePlanningWorkspace,
   type PlanningWorkspace,
@@ -10,17 +15,59 @@ import {
 
 type Props = {
   initialValue: PlanningWorkspaceInput
+  schoolNcesId?: string
+  calendarProvenance?: Array<{ id?: string; locator?: string }>
   onSave: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
   onCancel: () => void
   onDraftChange?: (input: PlanningWorkspaceInput) => void
 }
 
-export function TeachingDaySetup({ initialValue, onSave, onCancel, onDraftChange }: Props) {
+export function TeachingDaySetup({ initialValue, schoolNcesId, calendarProvenance, onSave, onCancel, onDraftChange }: Props) {
   const [blocks, setBlocks] = useState<TeachingDayBlock[]>(() => initialValue.teachingDay?.blocks.map((block) => ({ ...block })) ?? initialValue.sections.map((section, index) => createTeachingDayBlock({ label: section.name, type: 'teaching', order: index + 1, sectionId: section.id })))
   const [errors, setErrors] = useState<string[]>([])
+  const [scheduleNotice, setScheduleNotice] = useState<string | null>(null)
+  const [scheduleSource, setScheduleSource] = useState<{ label: string; locator: string } | null>(null)
+  const [pendingProposal, setPendingProposal] = useState<BellScheduleBlockProposal[] | null>(null)
   const lastDraftRef = useRef('')
+  const lookupStarted = useRef(false)
 
   useEffect(() => { const draft = { ...initialValue, teachingDay: { blocks: blocks.map((block, index) => ({ ...block, order: index + 1 })) } }; const serialized = JSON.stringify(draft); if (serialized !== lastDraftRef.current) { lastDraftRef.current = serialized; onDraftChange?.(draft) } }, [blocks, initialValue, onDraftChange])
+
+  useEffect(() => {
+    if (lookupStarted.current) return
+    lookupStarted.current = true
+    const ncesId = resolveBellScheduleSchoolId({ onboardingSchoolNcesId: schoolNcesId, calendarProvenance })
+    if (!ncesId) return
+    const result = lookupSchoolBellSchedule({ ncesSchoolId: ncesId, sectionCount: initialValue.sections.length })
+    if (result.status === 'found') {
+      setScheduleSource({ label: result.sourceLabel, locator: result.sourceLocator })
+      setPendingProposal(result.blocks)
+      setScheduleNotice('Arc found a bell schedule to review. Confirm before it becomes your teaching day.')
+    } else {
+      setScheduleNotice(result.message)
+    }
+  }, [calendarProvenance, initialValue.sections.length, schoolNcesId])
+
+  function applyBellProposal() {
+    if (!pendingProposal) return
+    const sections = initialValue.sections
+    const next = pendingProposal.map((proposal, index) => {
+      const sectionId = proposal.type === 'teaching'
+        ? sections[proposal.sectionIndex ?? index]?.id ?? sections[0]?.id ?? null
+        : null
+      return createTeachingDayBlock({
+        label: proposal.label,
+        type: proposal.type,
+        order: index + 1,
+        sectionId,
+        startTime: proposal.startTime,
+        endTime: proposal.endTime,
+      })
+    })
+    setBlocks(next)
+    setPendingProposal(null)
+    setScheduleNotice('Bell schedule applied. Reorder or edit anything that does not match your day.')
+  }
 
   function addBlock(type: TeachingDayBlockType) {
     const order = blocks.length + 1
@@ -72,7 +119,16 @@ export function TeachingDaySetup({ initialValue, onSave, onCancel, onDraftChange
 
   return (
     <div className="teaching-day-setup">
-      <div className="calendar-setup-intro"><p className="section-label">Teaching day</p><h2>Put the day in the order you live it.</h2><p>Planning is a real block, not a guessed gap. Times are useful, but optional.</p></div>
+      <div className="calendar-setup-intro"><p className="section-label">Build your teaching day</p><h2>Teaching, planning, lunch, and other blocks—in your order.</h2><p>Planning is a real block, not a guessed gap. Times are useful, but optional.</p></div>
+      {scheduleNotice ? (
+        <div className="teaching-day-schedule-notice" role="status">
+          <p>{scheduleNotice}</p>
+          {scheduleSource ? <p className="teaching-day-schedule-source">Source: {scheduleSource.label}</p> : null}
+          {pendingProposal ? (
+            <button type="button" className="quiet-button" onClick={applyBellProposal}>Use proposed schedule</button>
+          ) : null}
+        </div>
+      ) : null}
       {errors.length > 0 ? <div className="setup-errors" role="alert"><strong>Check the teaching day.</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div> : null}
       <div className="teaching-day-list">
         {blocks.map((block, index) => (

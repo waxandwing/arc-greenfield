@@ -97,17 +97,22 @@ try {
   assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Onboarding did not land in the real Day view.')
   assert(await page.getByText('Teaching Day', { exact: true }).first().isVisible(), 'Plan state header must show Teaching Day on first landing.')
   assert(await page.getByRole('button', { name: 'Planning, planning time' }).count() === 1, 'Day did not project the explicit Planning block.')
-  assert(await page.getByText('Try Capture', { exact: true }).isVisible(), 'First-use Capture prompt did not appear in Arc.')
+  assert(await page.getByTestId('global-capture-trigger').isVisible(), 'Global + Capture must appear after onboarding lands in Day.')
+  assert(await page.getByText('Try Capture', { exact: true }).count() === 0, 'Permanent Try Capture banner must not return on Day.')
   await shot(page, '06-first-day.png')
 
-  // 8 — first Capture persists and offers place path
-  await page.getByRole('textbox', { name: 'Capture thought' }).fill('Pull comparison prints for P4')
-  await page.getByRole('button', { name: 'Save Capture' }).click()
+  // 8 — first Capture via global affordance persists without opening Workspace
+  await page.getByTestId('global-capture-trigger').click()
+  await page.locator('.arc-capture-dialog input').fill('Pull comparison prints for P4')
+  await page.locator('.arc-capture-dialog button.primary-button').click()
+  await page.getByText('Captured.', { exact: true }).waitFor({ timeout: 3000 })
   const captures = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.captures.v1')))
   assert(captures.workspace.captures.some((capture) => capture.text === 'Pull comparison prints for P4'), 'First Capture did not persist immediately.')
-  assert(await page.getByRole('button', { name: 'Place it' }).isVisible(), 'First-use Capture did not offer the real organize/place path.')
+  assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).getAttribute('aria-expanded') !== 'true', 'Capture save must not open Workspace.')
   await shot(page, '07-first-capture.png')
-  await page.getByRole('button', { name: 'Leave it here' }).click()
+  if (await page.getByTestId('capture-coach-mark').isVisible()) {
+    await page.getByRole('button', { name: 'Got it' }).click()
+  }
 
   // 9 — Settings import uses shared pipeline; parse is no-write
   await openSettings(page)

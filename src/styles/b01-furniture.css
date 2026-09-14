@@ -6,6 +6,7 @@
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
   gap:0;
+  align-items:stretch;
   width:100%;
   margin:0;
   padding:var(--shell-frame-inset);
@@ -19,10 +20,24 @@
   background-repeat:no-repeat, repeat;
   background-blend-mode:normal, soft-light;
   box-shadow:var(--shadow-overlay);
+  transition:grid-template-columns 220ms var(--ease-out-soft, ease);
 }
 
 .arc-planner-object{
   min-width:0;
+  transition:margin 220ms var(--ease-out-soft, ease);
+}
+
+.b01-side-rail{
+  display:grid;
+  grid-template-columns:auto;
+  align-items:stretch;
+  min-width:0;
+  transition:grid-template-columns 220ms var(--ease-out-soft, ease);
+}
+
+.b01-side-panels{
+  display:contents;
 }
 
 .arc-index-tabs{
@@ -30,36 +45,41 @@
   z-index:55;
   display:flex;
   flex-direction:column;
-  align-items:stretch;
-  gap:2px;
-  min-width:42px;
-  padding:6px 0 6px 2px;
+  align-items:flex-start;
+  justify-content:flex-start;
+  gap:4px;
+  min-width:0;
+  padding:14px 0 14px 0;
+  align-self:stretch;
 }
 
 .arc-index-tab{
-  min-width:44px;
-  min-height:44px;
-  padding:10px 4px;
-  border:0;
-  border-radius:3px 0 0 3px;
-  background:transparent;
-  color:color-mix(in srgb, var(--field-elevated) 88%, transparent);
-  font:800 10px/1.05 var(--font-label);
+  min-width:72px;
+  min-height:38px;
+  padding:8px 12px 8px 10px;
+  border:1px solid color-mix(in srgb, var(--line-subtle) 70%, transparent);
+  border-left:0;
+  border-radius:0 7px 7px 0;
+  background:color-mix(in srgb, var(--field-elevated) 92%, transparent);
+  color:var(--soft-charcoal);
+  font:800 10px/1.1 var(--font-label);
   letter-spacing:.08em;
-  writing-mode:vertical-rl;
-  text-orientation:mixed;
-  transform:rotate(180deg);
+  writing-mode:horizontal-tb;
+  text-orientation:unset;
+  transform:none;
   cursor:pointer;
+  box-shadow:0 1px 0 rgba(255,253,248,.65);
 }
 
-.arc-index-tab:hover:not(:disabled),
-.arc-index-tab[aria-current='page']{
-  background:color-mix(in srgb, var(--field-elevated) 18%, transparent);
-  color:var(--field-elevated);
+.arc-index-tab:hover:not(:disabled){
+  transform:translateX(2px);
 }
 
 .arc-index-tab[aria-current='page']{
-  box-shadow:inset 3px 0 0 var(--mustard);
+  transform:translateX(3px);
+  box-shadow:
+    0 3px 10px -6px rgba(33,29,23,.45),
+    inset 0 0 0 1px color-mix(in srgb, var(--mustard) 55%, transparent);
 }
 
 .arc-index-tab:disabled{
@@ -93,6 +113,7 @@
   background:rgba(251,248,240,.98);
   box-shadow:0 24px 65px -30px rgba(33,29,23,.55);
   pointer-events:auto;
+  transition:opacity 180ms ease, transform 220ms var(--ease-out-soft, ease);
 }
 .b01-settings-surface{border-top-color:var(--mustard)}
 .b01-fridge-surface{border-top-color:var(--dusty-blue)}
@@ -111,8 +132,60 @@
 .b01-settings-owner .view-preferences-check{grid-template-columns:auto 1fr;align-items:center}
 .b01-settings-owner .view-preferences-check input{min-height:auto}
 
-@media (max-width:800px){
+@media (min-width:901px){
+  .b01-furniture-composition[data-side-panel='workspace'] .b01-side-rail,
+  .b01-furniture-composition[data-side-panel='settings'] .b01-side-rail{
+    grid-template-columns:auto minmax(320px,380px);
+  }
+
+  .b01-furniture-composition[data-side-panel='settings'] .b01-side-rail{
+    grid-template-columns:auto minmax(340px,420px);
+  }
+
+  .b01-furniture-composition[data-side-panel='workspace'] .arc-index-tabs,
+  .b01-furniture-composition[data-side-panel='settings'] .arc-index-tabs{
+    grid-column:1;
+    grid-row:1;
+    align-self:start;
+  }
+
+  .b01-furniture-composition[data-side-panel='workspace'] .b01-fridge-owner[data-state='open'],
+  .b01-furniture-composition[data-side-panel='settings'] .b01-settings-owner[data-state='open']{
+    grid-column:2;
+    grid-row:1;
+    min-width:0;
+  }
+
+  .b01-furniture-composition[data-side-panel='workspace'] .b01-tool-owner[data-state='closed'],
+  .b01-furniture-composition[data-side-panel='settings'] .b01-tool-owner[data-state='closed']{
+    display:none;
+  }
+
+  .b01-furniture-composition[data-side-panel='workspace'] .b01-fridge-owner[data-state='open'] .b01-fridge-surface,
+  .b01-furniture-composition[data-side-panel='settings'] .b01-settings-owner[data-state='open'] .b01-settings-surface{
+    position:relative;
+    top:auto;
+    right:auto;
+    bottom:auto;
+    width:100%;
+    min-height:calc(100dvh - 140px);
+    max-height:calc(100dvh - 120px);
+    margin:14px 0 14px -1px;
+    border-top-width:1px;
+    border-left:0;
+    border-radius:0 8px 8px 0;
+    box-shadow:0 16px 40px -28px rgba(33,29,23,.5);
+  }
+}
+
+@media (max-width:900px){
   .b01-furniture-composition{grid-template-columns:1fr;padding:var(--space-2)}
+  .b01-side-rail{
+    grid-column:1 / -1;
+    grid-row:2;
+    display:flex;
+    flex-direction:column;
+  }
   .arc-index-tabs{
     flex-direction:row;
     flex-wrap:wrap;
@@ -121,11 +194,16 @@
     padding:6px 0 0;
   }
   .arc-index-tab{
-    writing-mode:horizontal-tb;
-    transform:none;
+    min-width:auto;
     min-height:40px;
     padding:8px 10px;
+    border-left:1px solid color-mix(in srgb, var(--line-subtle) 70%, transparent);
+    border-radius:6px;
     font-size:9px;
+  }
+  .arc-index-tab[aria-current='page'],
+  .arc-index-tab:hover:not(:disabled){
+    transform:none;
   }
   .b01-furniture-surface{top:200px;right:12px;bottom:12px}
   .b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 240px)}
@@ -137,4 +215,9 @@
   .b01-task-surface{width:calc(100vw - 24px)}
 }
 
-@media (prefers-reduced-motion:reduce){.b01-furniture-surface{transition:none}}
+@media (prefers-reduced-motion:reduce){
+  .b01-furniture-composition,
+  .arc-planner-object,
+  .b01-side-rail,
+  .b01-furniture-surface{transition:none}
+}

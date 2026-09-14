@@ -42,6 +42,7 @@ import {
   type UnitWorkspace,
   type UnitWorkspaceInput,
   type CaptureWorkspace,
+  type CaptureAnchorInput,
   type CurriculumImportProposal,
   type CurriculumImportReceipt,
   commitCurriculumImport,
@@ -432,11 +433,14 @@ export function useArcWorkspace(onCloseMode: () => void) {
     }
   }
 
-  function addCapture(text: string): string | null {
+  function addCapture(text: string, anchor: CaptureAnchorInput = {}): string | null {
     if (!calendar) return null
     try {
       const current = captureWorkspace?.calendarId === calendar.id ? captureWorkspace : { calendarId: calendar.id, captures: [] }
-      const capture = createPlanningCapture(calendar.id, text)
+      const capture = createPlanningCapture(calendar.id, text, new Date(), {
+        ...anchor,
+        anchorDate: anchor.anchorDate ?? anchorDate ?? undefined,
+      })
       saveCaptureWorkspace({ ...current, captures: [...current.captures, capture] })
       return capture.id
     } catch (error) {

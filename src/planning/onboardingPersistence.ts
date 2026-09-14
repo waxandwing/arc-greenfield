@@ -6,6 +6,8 @@ export type OnboardingDraft = {
   stage: OnboardingStage
   dismissed: boolean
   firstCapturePromptDismissed: boolean
+  /** Selected NCES school token (`nces:…`) for bell-schedule lookup during Build your day. */
+  schoolNcesId?: string
   calendarDraft?: CalendarHydrationInput
   planningDraft?: PlanningWorkspaceInput
   intent?: 'guided' | 'import'
@@ -31,6 +33,9 @@ export function deserializeOnboardingDraft(raw: string): OnboardingDraft | null 
       stage,
       dismissed: parsed.draft.dismissed === true,
       firstCapturePromptDismissed: parsed.draft.firstCapturePromptDismissed === true,
+      schoolNcesId: typeof parsed.draft.schoolNcesId === 'string' && parsed.draft.schoolNcesId.trim()
+        ? parsed.draft.schoolNcesId.trim()
+        : undefined,
       calendarDraft: isCalendarDraft(parsed.draft.calendarDraft) ? parsed.draft.calendarDraft : undefined,
       planningDraft: isPlanningDraft(parsed.draft.planningDraft) ? parsed.draft.planningDraft : undefined,
       intent: parsed.draft.intent === 'import' ? 'import' : parsed.draft.intent === 'guided' ? 'guided' : undefined,

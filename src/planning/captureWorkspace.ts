@@ -3,11 +3,26 @@ import type { LessonWorkspace } from './lessonWorkspace'
 import { createLesson } from './lessons'
 import type { UnitWorkspace } from './unitWorkspace'
 
+export type CaptureAnchorInput = {
+  anchorDate?: ISODate | null
+  courseId?: string
+  sectionId?: string
+  unitId?: string
+  lessonId?: string
+  sourceView?: string
+}
+
 export type PlanningCapture = {
   id: string
   calendarId: string
   text: string
   createdAt: string
+  anchorDate?: ISODate
+  courseId?: string
+  sectionId?: string
+  unitId?: string
+  lessonId?: string
+  sourceView?: string
 }
 
 export type CaptureWorkspace = {
@@ -15,14 +30,26 @@ export type CaptureWorkspace = {
   captures: PlanningCapture[]
 }
 
-export function createPlanningCapture(calendarId: string, text: string, now = new Date()): PlanningCapture {
+export function createPlanningCapture(
+  calendarId: string,
+  text: string,
+  now = new Date(),
+  anchor: CaptureAnchorInput = {},
+): PlanningCapture {
   const clean = text.trim()
   if (!calendarId.trim()) throw new Error('A Capture needs a school calendar.')
   if (!clean) throw new Error('Write something before saving this Capture.')
   const token = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-  return { id: `capture-${token}`, calendarId, text: clean, createdAt: now.toISOString() }
+  const capture: PlanningCapture = { id: `capture-${token}`, calendarId, text: clean, createdAt: now.toISOString() }
+  if (anchor.anchorDate) capture.anchorDate = anchor.anchorDate
+  if (anchor.courseId?.trim()) capture.courseId = anchor.courseId.trim()
+  if (anchor.sectionId?.trim()) capture.sectionId = anchor.sectionId.trim()
+  if (anchor.unitId?.trim()) capture.unitId = anchor.unitId.trim()
+  if (anchor.lessonId?.trim()) capture.lessonId = anchor.lessonId.trim()
+  if (anchor.sourceView?.trim()) capture.sourceView = anchor.sourceView.trim()
+  return capture
 }
 
 export function validateCaptureWorkspace(workspace: CaptureWorkspace): string[] {

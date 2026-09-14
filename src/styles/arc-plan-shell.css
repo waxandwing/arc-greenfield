@@ -17,22 +17,7 @@
   content: none;
 }
 
-.arc-header {
-  position: relative;
-  z-index: 2;
-  min-height: 64px;
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-2) var(--page-gutter);
-  border-bottom: 1px solid color-mix(in srgb, var(--field-elevated) 22%, transparent);
-  background: color-mix(in srgb, var(--shell-frame-green) 88%, black);
-}
-
-.arc-header .arc-wordmark img {
-  filter: brightness(0) invert(1);
-}
+/* App-level header removed in Repair Pass 3; brand lives in .planner-shell-bar */
 
 .arc-layout {
   position: relative;

@@ -15,9 +15,10 @@ type SearchState =
 
 type Props = {
   onUseCalendar: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
+  onSchoolIdentitySelected?: (candidate: OfficialSourceCandidate) => void
 }
 
-export function SchoolIdentitySearch({ onUseCalendar }: Props) {
+export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected }: Props) {
   const [schoolName, setSchoolName] = useState('')
   const [districtName, setDistrictName] = useState('')
   const [city, setCity] = useState('')
@@ -132,7 +133,10 @@ export function SchoolIdentitySearch({ onUseCalendar }: Props) {
                     type="button"
                     className={isSelected ? 'quiet-button' : 'primary-button'}
                     aria-pressed={isSelected}
-                    onClick={() => setSelected(candidate)}
+                    onClick={() => {
+                      setSelected(candidate)
+                      onSchoolIdentitySelected?.(candidate)
+                    }}
                   >
                     {isSelected ? 'Selected' : 'This is my school'}
                   </button>
