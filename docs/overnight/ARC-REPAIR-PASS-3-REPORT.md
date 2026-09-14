@@ -1,74 +1,55 @@
-# ARC Repair Pass 3 — Capture, Chrome, Onboarding, Settings, Tabs (Report)
+# ARC Repair Pass 3 — Capture-first & quiet chrome
 
-**Branch:** `cursor/arc-production-integration` (merged from `cursor/arc-pass-3-tabs-drawer-43c2`)  
-**Scope:** UX and setup surfaces only — **no** changes to planning law (Now / Needs Attention, Move / Shift / Recovery, Month / Year structure, ArcTable semantics, or exact-return-on-close behavior).
+Branch: `cursor/arc-production-integration`
 
-## Stop condition
+## Recommendation
 
-### A. Commit SHA
+**GREEN FOR NEXT UX REVIEW** — Global Capture, onboarding restoration, bell-schedule proposal path, quiet chrome, and Workspace progressive disclosure are implemented with contract + smoke coverage. Keyboard shortcut deferred (documented below).
 
-**`e7495e5`** (Pass 3 stack; tab evidence in `docs/overnight/evidence/repair-pass-3-tabs/`).
+## Stop conditions
 
-### B. Pass 3 themes (§33–48 + capture/header/onboarding)
+| ID | Item | Result |
+|----|------|--------|
+| **A** | Commit SHA | _(see git push output below)_ |
+| **B** | Global + Capture on primary planner states | `GlobalCaptureAffordance` on Day/Week/Month/Year/Planning/class depth via shared shell; dialog saves with plan anchor metadata; success “Captured.” closes without opening Workspace |
+| **C** | Try Capture banner removed | Permanent `FirstCapturePrompt` removed; one-time `CaptureCoachMark` with `firstCapturePromptDismissed` persistence |
+| **D** | Workspace visual burden reduced | Captures-first panel; lessons/units/curriculum in `<details>`; organize/convert/delete on selected capture card |
+| **E** | Workspace IA Option A vs B | **Recommendation: Option A** — keep WORKSPACE index tab, subordinate visually (`arc-index-tab--secondary`), Capture-first global path; Option B (remove tab) rejected without product approval |
+| **F** | Onboarding flow restored | School year → classes (“what do you teach”) → Build your teaching day (explicit blocks + planning) → land in Day; `onboardingFlowActive` + `resolveOnboardingStage` honor draft until `landed` |
+| **G** | Returning users skip setup | Unchanged returning-teacher gate + `repairPass3Setup.contract.ts` |
+| **H** | School schedule lookup E2E | `schoolBellScheduleLookup.ts` (NCES id → curated proposal or fallback copy); `TeachingDaySetup` shows source + “Use proposed schedule” confirmation |
+| **I** | Canonical logo | `/assets/arc/arc-mark.png` in `PlannerShellBar`; no invert filter |
+| **J** | Dark full-width header removed | `.arc-header` hidden; logo + quiet controls inside planner spread |
+| **K** | Recovery quieter | Header trigger `Recovery · N` with tertiary styling |
+| **L** | Capture persistence metadata | `anchorDate`, `courseId`, `sectionId`, `unitId`, `lessonId`, `sourceView` on `PlanningCapture` |
+| **M** | Keyboard shortcut | **Future** — global dialog + coach mark only; no unsafe default chord (document for Settings / power-user pass) |
+| **N** | Tests added | `schoolBellScheduleLookup.contract.ts`, `repairPass3Setup.contract.ts`, `tests/repair-pass-3.smoke.mjs`; onboarding smoke updated for global Capture |
+| **O** | Contracts | `npm run test:contracts` green |
+| **P** | Regression smokes | `test:plan-onboarding-import`, `test:repair-pass-2-1`, `test:repair-pass-3` green |
+| **Q** | Evidence | `docs/overnight/evidence/repair-pass-3/` (`00-contact-sheet.png` … `11-returning-user-day.png`) |
+| **R** | Scope guardrails | No changes to Now/Needs Attention semantics, Move/Shift/Recovery logic, Month/Year/ArcTable |
+| **S** | Deploy / merge | Not performed (per brief) |
 
-| Theme | Result |
-|-------|--------|
-| Capture-first chrome | App-level `.arc-header` hidden; Arc mark + **Capture** live in `PlannerShellBar` inside the cream spread (`repair-pass-3-chrome.css`, `PlannerShellBar.tsx`). |
-| Global capture | `GlobalCaptureAffordance` + anchor persistence (`captureWorkspace.ts`, `capturePersistence.ts`); coach mark after minimum setup (`CaptureCoachMark.tsx`, onboarding flag). |
-| Workspace captures | Primary list + promote / schedule actions in `WorkspacePanel.tsx`; contract updates in `captureWorkspace.contract.ts`. |
-| Onboarding | Returning-teacher bypass + school NCES persistence (`repairPass3Setup.contract.ts`, `onboardingPersistence.ts`, `ArcOnboarding.tsx`). |
-| Teaching day setup | Bell schedule lookup hook + notice (`schoolBellScheduleLookup.ts`, `TeachingDaySetup.tsx`). |
-| Settings furniture | Existing groups retained (`SettingsFurnitureContent.tsx`); entry via **SETTINGS** tab only (no new navigation law). |
+## Workspace IA audit (Option A vs B)
 
-### C. Tab + drawer refinement (§1–14)
+| | Option A — Keep WORKSPACE tab, subordinate | Option B — Remove WORKSPACE tab |
+|--|--|--|
+| Capture path | Global + Capture (primary); Workspace for organize/place | Would force Capture-only or deep links |
+| Risk | Tab clutter | Needs explicit approval; breaks muscle memory for organize flows |
+| Pass 3 choice | **Ship A** — tab de-emphasized, Capture global | Not implemented |
 
-**Before (Pass 2 shell lock):** Full-height **dark green index rail** behind vertical tabs (`shell-emphasis.css` / `shell-visibility-lock.css`) — tabs read as exterior nav, not planner index. Workspace/settings used **fixed overlay** with planner dimming (`repair-pass-2-chrome.css`).
+## Evidence
 
-**After (Pass 3):**
+```bash
+npm run build:bundle
+npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
+npm run test:repair-pass-3
+python3 scripts/build-repair-pass-3-contact-sheet.py
+```
 
-| Requirement | Implementation |
-|-------------|----------------|
-| No dark vertical nav rail | `repair-pass-3-chrome.css` resets `.arc-index-tabs` to transparent; per-tab muted Arc palette on projecting chips (`b01-furniture.css`). |
-| Planner-attached tabs | Horizontal labels; flat inner edge, rounded outer; active = stronger cream fill + mustard inset + elevation. |
-| Desktop push | `B01Furniture` side rail grid: tabs + 320–420px panel; `data-side-panel` on composition; planner stays visible (dimming removed). |
-| Tab ↔ panel continuity | Open WORKSPACE / SETTINGS: active tab square inner edge, panel shares surface color (`repair-pass-3-chrome.css`). |
-| Tablet / mobile | ≤900px: fixed overlay panels; ≤520px: near-full-width settings. |
-| Exact return | Unchanged — close only toggles drawer; smokes assert active index tab unchanged. |
+## Files (high signal)
 
-### D. Evidence
-
-**Folder:** `docs/overnight/evidence/repair-pass-3-tabs/`
-
-| File | Shows |
-|------|--------|
-| `day-tabs-closed.png` | DAY tab active, muted chips, no dark rail |
-| `week-tabs-closed.png` | WEEK destination color |
-| `workspace-open-push.png` | Desktop push + tab/panel join |
-| `settings-open-push.png` | Settings push width |
-| `tablet-workspace-overlay.png` | ≤900px overlay |
-| `mobile-settings.png` | Narrow full-width settings |
-
-**Before reference:** dark rail visible in older shell evidence (e.g. repair-pass-2 workspace shots with vertical cream-on-green rail).
-
-### E. Tests
-
-| Command | Purpose |
-|---------|---------|
-| `npm run test:contracts` | Includes `repairPass3Setup.contract.ts` |
-| `node tests/repair-pass-3-tabs.smoke.mjs` | Tab rail + push + exact-return + evidence capture |
-| Existing plan / repair smokes | Regression guard (no nav law edits) |
-
-### F. Files touched (Pass 3 cumulative)
-
-- **Tabs / drawers:** `B01Furniture.tsx`, `b01-furniture.css`, `repair-pass-3-chrome.css`
-- **Capture / header / onboarding / settings:** see working tree on branch (AppFrame, WorkspacePanel, TeachingDaySetup, etc.)
-- **Report:** this file
-- **Smoke:** `tests/repair-pass-3-tabs.smoke.mjs`
-
-## Success criteria (§14)
-
-- Tabs read as **planner index**, not app nav.
-- **No** full-height dark green tab rail.
-- Arc-muted destination colors per tab.
-- Desktop **push** for Workspace / Settings; graceful overlay on tablet/mobile.
-- **No** navigation or planning law changes.
+- Capture: `GlobalCaptureAffordance.tsx`, `CaptureCoachMark.tsx`, `captureWorkspace.ts`, `useArcWorkspace.ts`
+- Chrome: `PlannerShellBar.tsx`, `repair-pass-3-chrome.css`, `AppFrame.tsx`, `CalendarStageHeader.tsx`, `WorkspacePanel.tsx`
+- Onboarding / schedule: `ArcOnboarding.tsx`, `TeachingDaySetup.tsx`, `schoolBellScheduleLookup.ts`
+- Tests: `tests/repair-pass-3.smoke.mjs`, `repairPass3Setup.contract.ts`
