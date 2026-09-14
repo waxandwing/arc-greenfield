@@ -25,8 +25,8 @@ Use the **integration branch** for the Arc desk (wood tabletop, tray, MSC pad, A
 
 | You see… | Which build |
 |----------|-------------|
-| Green/cream **pattern** around the planner, **CALENDAR** label, **Month** dropdown, no wood | **OLD** shell — wrong branch, stale build, or preview not from this repo |
-| **Light wood desk**, planner tabs on top of the spread (**DAY / WEEK / MONTH**), **Teaching week** title, tray on the wood | **NEW** desk (`desk-v2`) |
+| Green/cream **pattern** around the planner, **CALENDAR** label, **Month** dropdown, big **cream** field behind the planner | **OLD** plan shell — wrong branch, stale build, or preview not from this repo |
+| **Light wood** edge-to-edge (viewport + tabletop), planner tabs on the spread (**DAY / WEEK / MONTH**), **Teaching week** title, tray on the wood, `desk-v2` stamp | **NEW** desk (`desk-v2`) — cream is only *inside* the green planner frame, not the desk surround |
 
 With `npm run preview:desk`, a tiny footer shows `desk-v2 · <git sha>` and the browser console logs the same. The `<html>` tag gets `data-build="desk-v2@<sha>"`.
 
