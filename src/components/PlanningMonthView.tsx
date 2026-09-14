@@ -105,8 +105,10 @@ function MonthDayCell({
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
 }) {
   const nonTeaching = day.kind === 'no-school' || day.kind === 'holiday' || day.kind === 'break' || day.kind === 'teacher-workday'
-  const dayStatus = day.kind === 'instructional' || day.kind === 'unknown' || nonTeaching ? null : day.label || humanizeKind(day.kind)
-  const ariaStatus = nonTeaching ? humanizeKind(day.kind) : dayStatus
+  const dayStatus = day.kind === 'instructional' || day.kind === 'unknown'
+    ? null
+    : day.label || humanizeKind(day.kind)
+  const ariaStatus = nonTeaching ? (day.label || humanizeKind(day.kind)) : dayStatus
   const classes = [
     'planning-month-day',
     `planning-month-day--${day.kind}`,

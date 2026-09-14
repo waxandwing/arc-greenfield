@@ -45,7 +45,7 @@ Evidence: `01-teaching-day.png`, `02-class.png`.
 
 **Severity: GREEN**
 
-- **Week:** Course bands AP mustard, 2D dusty blue, 3D sage; unit spans; off-day column hatch (`planning-day-slot--off`); Mon–Fri visible columns when `showWeekends` is false (Sat–Fri grid math unchanged).
+- **Week:** Course bands AP mustard, 2D dusty blue, 3D sage; unit spans; off-day column hatch (`planning-day-slot--off`); Mon–Fri columns when `showWeekends` is false (Monday–Sunday week projection preserved for planning law).
 - **Month:** Clickable unit bands via `unitStartDate`; reduced noise for unknown/no-school cell copy; off-day tint.
 - **Progressive disclosure:** Week lesson Open / Move / More when class/section context active.
 

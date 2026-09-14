@@ -1,4 +1,5 @@
 import { chromium } from 'playwright'
+import { selectPlanView as selectCalendarView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -142,9 +143,10 @@ try {
   assert(await calendarSurface.locator('.planning-date-heading').count() === 7, 'Phase 2 calendar edge: Week did not expand to seven days when weekends were enabled.')
   assert(await calendarSurface.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: confirmed Saturday Lesson was not restored when weekends were shown.')
 
-  await weekendToggle.uncheck()
+  await openViewOptions(page)
+  await page.getByRole('checkbox', { name: 'Show weekends in Week view', exact: true }).uncheck()
   assert(await calendarSurface.getByText('Saturday studio lesson', { exact: true }).count() === 0, 'Phase 2 calendar edge: Saturday Lesson remained visible in the calendar after weekends were hidden again.')
-  await weekendToggle.check()
+  await page.getByRole('checkbox', { name: 'Show weekends in Week view', exact: true }).check()
   assert(await calendarSurface.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: hiding weekends mutated/deleted Saturday planning data.')
 
   await page.reload({ waitUntil: 'networkidle' })

@@ -53,8 +53,10 @@ try {
   const nextRange = await weekRegion.getAttribute('aria-label')
   assert(Boolean(nextRange), 'RGAV-B: navigated Week lost its accessible range label.')
 
-  await page.getByRole('button', { name: /Return to Week view/ }).click()
-  assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: Arc wordmark did not honor Last used Week behavior.')
+  await page.getByRole('button', { name: 'Return to Teaching Day', exact: true }).click()
+  assert(await page.getByRole('heading', { level: 1, name: 'Day' }).count() === 1, 'RGAV-B: Home must land on Teaching Day.')
+  await selectCalendarView(page, 'Week')
+  assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: Last used Week must restore from planner index.')
 
   await page.reload({ waitUntil: 'networkidle' })
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: reload did not restore Last used Week behavior.')

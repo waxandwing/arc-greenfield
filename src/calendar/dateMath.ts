@@ -36,11 +36,4 @@ export function mondayFirstWeekdayIndex(date: ISODate): number {
   return weekday === 0 ? 6 : weekday - 1
 }
 
-/** Days since the Saturday that starts the visible plan week (Sat → Fri columns). */
-export function saturdayFirstWeekdayIndex(date: ISODate): number {
-  assertISODate(date)
-  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay()
-  return (weekday + 1) % 7
-}
-
-export const PLAN_WEEKDAY_LABELS = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const
+export const PLAN_WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const

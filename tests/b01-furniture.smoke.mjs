@@ -99,7 +99,7 @@ try {
   const taskSurface = page.locator('.b01-task-surface')
   const baseline = await calendarRect(page)
   assert(baseline, 'B01: calendar geometry is unavailable.')
-  assert(baseline.width >= 1300, `B01: current Figma shell must give the workspace dominant width (${baseline.width}px).`)
+  assert(baseline.width >= 1280, `B01: planner object must keep dominant width beside index tabs (${baseline.width}px).`)
   const shellStyle = await page.locator('.b01-calendar-owner > .calendar-canvas').evaluate((node) => {
     const style = getComputedStyle(node)
     return { borderWidth: style.borderWidth, borderRadius: style.borderRadius, backgroundImage: style.backgroundImage, boxShadow: style.boxShadow }
