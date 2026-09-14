@@ -1,4 +1,4 @@
-import { CALENDAR_VIEWS, DEFAULT_HOME_VIEW, type CalendarView } from './calendarViews'
+import { CALENDAR_VIEWS, type CalendarView } from './calendarViews'
 import type { MscSizePreset, PlannerSizePreset, TraySizePreset } from './deskLayout'
 import { loadViewPreferences, saveViewPreferences, type ViewPreferences } from './viewPreferences'
 

@@ -317,6 +317,7 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
       data-plan-section={planContext?.sectionId ?? ''}
       data-plan-lesson={planContext?.lessonId ?? ''}
     >
+      <span className="sr-only">{title}</span>
       {termContext ? <div className="projection-heading-row projection-heading-row--terms-only">{termContext}</div> : null}
       {planningPeriodReturnPending && onReturnToPlanningPeriod ? (
         <p className="planning-week-actions"><button type="button" className="plan-back-link" onClick={onReturnToPlanningPeriod}>Back to Planning period</button></p>
