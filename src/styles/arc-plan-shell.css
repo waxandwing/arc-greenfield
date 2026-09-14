@@ -1,0 +1,132 @@
+/* Arc Plan shell: cream field, editorial hierarchy, cropped brand bloops (not furniture chrome). */
+
+.arc-shell {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 120% 80% at 100% -8%, var(--accent-blue-soft), transparent 55%),
+    radial-gradient(ellipse 90% 60% at -6% 102%, rgba(228, 179, 61, 0.08), transparent 50%),
+    var(--field);
+  color: var(--ink);
+}
+
+.arc-shell::before,
+.arc-shell::after {
+  content: '';
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+
+.arc-shell::before {
+  top: -72px;
+  right: -48px;
+  width: 220px;
+  height: 220px;
+  border-radius: var(--radius-bloop);
+  background: rgba(124, 156, 173, 0.22);
+  transform: rotate(8deg);
+}
+
+.arc-shell::after {
+  bottom: -96px;
+  left: -64px;
+  width: 180px;
+  height: 180px;
+  border-radius: var(--radius-bloop);
+  background: rgba(228, 179, 61, 0.18);
+  transform: rotate(-12deg);
+}
+
+.arc-header {
+  position: relative;
+  z-index: 2;
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--page-gutter);
+  border-bottom: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--field) 92%, transparent);
+}
+
+.arc-layout {
+  position: relative;
+  z-index: 1;
+}
+
+.section-label {
+  font: var(--type-section);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--soft-charcoal);
+}
+
+.view-title {
+  font: var(--type-view-title);
+  letter-spacing: -0.035em;
+}
+
+.calendar-canvas {
+  background: transparent;
+}
+
+.primary-button {
+  border-color: rgba(44, 46, 46, 0.22);
+  background: var(--mustard);
+  color: var(--ink);
+  transition: background var(--duration-fast) var(--ease-out-soft);
+}
+
+.primary-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--mustard) 88%, white);
+}
+
+.arc-btn-accent {
+  min-height: 44px;
+  border: 1px solid color-mix(in srgb, var(--accent-blue-deep) 35%, transparent);
+  border-radius: 999px;
+  background: var(--accent-blue-deep);
+  color: var(--field-elevated);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.arc-btn-accent:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-blue-deep) 90%, var(--ink));
+}
+
+.arc-live-return {
+  border-color: color-mix(in srgb, var(--mustard) 55%, var(--line-strong));
+  background: rgba(228, 179, 61, 0.14);
+}
+
+.arc-live-return strong {
+  color: var(--ink);
+}
+
+.workspace-capture {
+  border-color: color-mix(in srgb, var(--accent-blue) 45%, transparent);
+  background: rgba(255, 253, 248, 0.45);
+  color: var(--accent-blue-deep);
+}
+
+.day-continuity-lesson .primary-button {
+  background: var(--accent-blue-deep);
+  color: var(--field-elevated);
+  border-color: transparent;
+}
+
+@media (max-width: 520px) {
+  .arc-shell::before,
+  .arc-shell::after {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-button {
+    transition: none;
+  }
+}

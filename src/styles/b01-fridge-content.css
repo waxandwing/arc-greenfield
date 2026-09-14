@@ -1,7 +1,7 @@
 .b01-fridge-content{display:grid;gap:16px;font:500 13px/1.35 var(--font-ui);color:var(--soft-charcoal)}
 .b01-fridge-content section{display:grid;gap:8px}
 .b01-fridge-content h2{margin:0;font:800 11px/1 var(--font-ui);letter-spacing:.12em;text-transform:uppercase}
-.workspace-import-link{justify-self:start;min-height:36px;border:0;border-bottom:1px solid rgba(31,75,58,.45);background:transparent;padding:4px 0;color:#1f4b3a;font-weight:800;cursor:pointer}
+.workspace-import-link{justify-self:start;min-height:36px;border:0;border-bottom:1px solid color-mix(in srgb,var(--accent-blue) 55%,transparent);background:transparent;padding:4px 0;color:var(--accent-blue-deep);font-weight:800;cursor:pointer}
 .b01-fridge-date{display:grid;gap:6px;font-weight:700}
 .b01-fridge-date input{min-height:44px;width:100%;box-sizing:border-box;border:1px solid rgba(44,46,46,.24);border-radius:6px;background:rgba(255,255,255,.72);padding:8px 10px;font:inherit;color:inherit}
 .b01-fridge-card{display:grid;gap:8px;padding:14px 0 16px;border:0;border-bottom:1px solid rgba(44,46,46,.16);background:transparent;box-shadow:none;transform:none}

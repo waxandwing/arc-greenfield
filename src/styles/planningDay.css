@@ -245,10 +245,10 @@
   min-height: 44px;
   margin-top: var(--space-2);
   padding: 9px 18px;
-  border: 1px solid rgba(31,75,58,.28);
+  border: 1px solid color-mix(in srgb, var(--accent-blue-deep) 30%, transparent);
   border-radius: 999px;
-  background: #1f4b3a;
-  color: #fff;
+  background: var(--accent-blue-deep);
+  color: var(--field-elevated);
   font-weight: 800;
   cursor: pointer;
 }
@@ -305,10 +305,10 @@
 }
 
 .day-period-button.is-selected {
-  border-color: #1f4b3a;
-  background: #1f4b3a;
-  color: #fff;
-  box-shadow: 0 10px 24px -18px #1f4b3a;
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--field-elevated);
+  box-shadow: var(--shadow-field);
 }
 
 .day-period-button.is-selected span {

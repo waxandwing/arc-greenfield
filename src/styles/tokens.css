@@ -1,39 +1,69 @@
 :root {
-  --paper:#F3EBDD;
-  --paper-raised:#F7F1E7;
-  --ink:#2C2E2E;
-  --mustard:#E4B33D;
-  --terracotta:#C96845;
-  --terracotta-text:#A84F32;
-  --dusty-blue:#7C9CAD;
-  --focus-blue:#657F90;
-  --sage:#9AAA89;
-  --dusty-pink:#C99A9E;
-  --lavender:#AAA0B8;
-  --kraft:#C6A77D;
-  --soft-charcoal:#4A4945;
+  /* —— Color: paper & ink —— */
+  --paper: #F3EBDD;
+  --paper-raised: #F7F1E7;
+  --field: #FBF8F0;
+  --field-elevated: #FFFDF8;
+  --ink: #2C2E2E;
+  --soft-charcoal: #4A4945;
+  --muted-ink: rgba(74, 73, 69, 0.72);
 
-  --line-subtle:rgba(44,46,46,.12);
-  --line-strong:rgba(44,46,46,.22);
-  --control-border:rgba(44,46,46,.55);
-  --shadow-hairline:0 1px 0 rgba(44,46,46,.04);
+  /* —— Color: brand accents (Plan prefers blue; live classroom keeps pine on ArcTable) —— */
+  --mustard: #E4B33D;
+  --terracotta: #C96845;
+  --terracotta-text: #A84F32;
+  --dusty-blue: #7C9CAD;
+  --focus-blue: #657F90;
+  --accent-blue: #657F90;
+  --accent-blue-deep: #4A6678;
+  --accent-blue-soft: rgba(124, 156, 173, 0.14);
+  --sage: #9AAA89;
+  --dusty-pink: #C99A9E;
+  --lavender: #AAA0B8;
+  --kraft: #C6A77D;
+  --pine-live: #1F4B3A;
+  --pine-live-soft: rgba(31, 75, 58, 0.12);
 
-  --space-1:4px;
-  --space-2:8px;
-  --space-3:12px;
-  --space-4:16px;
-  --space-6:24px;
-  --space-8:32px;
-  --space-12:48px;
-  --space-16:64px;
+  /* —— Lines & shadows —— */
+  --line-subtle: rgba(44, 46, 46, 0.12);
+  --line-strong: rgba(44, 46, 46, 0.22);
+  --control-border: rgba(44, 46, 46, 0.55);
+  --shadow-hairline: 0 1px 0 rgba(44, 46, 46, 0.04);
+  --shadow-field: 0 20px 48px -46px rgba(44, 46, 46, 0.28);
+  --shadow-overlay: 0 24px 65px -30px rgba(33, 29, 23, 0.45);
 
-  --radius-sm:4px;
-  --radius-md:8px;
-  --radius-lg:12px;
+  /* —— Spacing —— */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
 
-  --page-gutter:32px;
-  --mobile-gutter:20px;
+  /* —— Geometry —— */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-bloop: 49% 52% 47% 53% / 53% 46% 54% 48%;
+  --page-gutter: 32px;
+  --mobile-gutter: 20px;
 
-  --font-ui:'Nunito Sans','Avenir Next Rounded','Avenir Next',Avenir,system-ui,sans-serif;
-  --font-editorial:Georgia,'Source Serif 4','Newsreader',serif;
+  /* —— Typography —— */
+  --font-display: 'Instrument Serif', Georgia, 'Source Serif 4', 'Newsreader', serif;
+  --font-editorial: var(--font-display);
+  --font-ui: 'Inter', 'League Spartan', system-ui, sans-serif;
+  --font-label: 'League Spartan', var(--font-ui);
+  --type-kicker: 800 11px/1 var(--font-label);
+  --type-section: 800 12px/1 var(--font-label);
+  --type-view-title: 500 clamp(34px, 4.2vw, 42px)/1.06 var(--font-display);
+  --type-editorial-lg: 600 clamp(26px, 3vw, 34px)/1.12 var(--font-display);
+
+  /* —— Motion —— */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-medium: 220ms;
 }
