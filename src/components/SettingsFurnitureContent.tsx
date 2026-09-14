@@ -17,7 +17,7 @@ type Props = {
   onOpenUnits: () => void
   onOpenLessons: () => void
   onOpenTaskBar?: () => void
-  onCustomizeDesk: () => void
+  onEditWorkspace: () => void
 }
 
 export function SettingsFurnitureContent({
@@ -35,7 +35,7 @@ export function SettingsFurnitureContent({
   onOpenUnits,
   onOpenLessons,
   onOpenTaskBar,
-  onCustomizeDesk,
+  onEditWorkspace,
 }: Props) {
   return (
     <div className="b01-settings-content">
@@ -73,7 +73,7 @@ export function SettingsFurnitureContent({
       <DeskSetupSettings
         preferences={preferences}
         onChange={onChangePreferences}
-        onCustomizeDesk={onCustomizeDesk}
+        onEditWorkspace={onEditWorkspace}
       />
 
       <section className="b01-settings-group" aria-labelledby="settings-arctable">

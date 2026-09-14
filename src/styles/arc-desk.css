@@ -593,6 +593,7 @@ html:has(.arc-shell--desk) body {
   display: grid;
   gap: 6px;
   max-width: min(280px, 42vw);
+  position: relative;
 }
 
 .arc-desk-arctable-mark-wrap {
@@ -615,50 +616,57 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-mark-svg {
   display: block;
-  pointer-events: none;
 }
 
-.arc-desk-mark-svg .arc-desk-mark-quadrant {
-  pointer-events: auto;
-}
-
-.arc-desk-mark-quadrant {
+.arc-desk-mark-quadrant,
+.arc-desk-mark-center {
   cursor: pointer;
+  transition: transform 160ms var(--ease-out-soft, ease);
 }
 
-.arc-desk-mark-quadrant:focus {
+.arc-desk-mark-quadrant:focus,
+.arc-desk-mark-center:focus {
   outline: none;
 }
 
-.arc-desk-mark-quadrant:focus-visible {
+.arc-desk-mark-quadrant:focus-visible,
+.arc-desk-mark-center:focus-visible {
   outline: 2px solid var(--mustard);
   outline-offset: 1px;
 }
 
-.arc-desk-mark-quadrant path {
-  transition: transform 160ms var(--ease-out-soft, ease);
-}
-
-.arc-desk-mark-quadrant--live path {
+.arc-desk-mark-quadrant--live {
   transform-origin: 7px 7px;
 }
 
-.arc-desk-mark-quadrant--timer path {
+.arc-desk-mark-quadrant--timer {
   transform-origin: 93px 7px;
 }
 
-.arc-desk-mark-quadrant--tools path {
+.arc-desk-mark-quadrant--tools {
   transform-origin: 7px 93px;
 }
 
-.arc-desk-mark-quadrant--media path {
+.arc-desk-mark-quadrant--media {
   transform-origin: 93px 93px;
 }
 
-.arc-desk-mark-quadrant--active path,
-.arc-desk-mark-quadrant:hover path,
-.arc-desk-mark-quadrant:focus-visible path {
+.arc-desk-mark-center {
+  transform-origin: 50px 50px;
+  --arc-desk-mark-lift-x: 0;
+  --arc-desk-mark-lift-y: -1px;
+}
+
+.arc-desk-mark-target--active,
+.arc-desk-mark-quadrant:hover,
+.arc-desk-mark-quadrant:focus-visible,
+.arc-desk-mark-center:hover,
+.arc-desk-mark-center:focus-visible {
   transform: translate(var(--arc-desk-mark-lift-x, 0), var(--arc-desk-mark-lift-y, 0));
+}
+
+.arc-desk-mark-hit {
+  cursor: pointer;
 }
 
 .arc-desk-mark-quadrant--live {
@@ -688,6 +696,7 @@ html:has(.arc-shell--desk) body {
   letter-spacing: 0.04em;
   fill: #2c2e2e;
   pointer-events: none;
+  text-anchor: middle;
 }
 
 .arc-desk-arctable--live .arc-desk-arctable-mark-wrap {
@@ -695,17 +704,35 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-arctable--preview .arc-desk-arctable-mark-wrap {
-  filter: drop-shadow(0 14px 28px -16px rgba(33, 29, 23, 0.45)) saturate(0.92);
+  filter: drop-shadow(0 14px 28px -16px rgba(33, 29, 23, 0.45));
 }
 
-.arc-desk-arctable-notice {
+.arc-desk-arctable--interactions-off .arc-desk-arctable-mark-wrap {
+  pointer-events: none;
+}
+
+.arc-desk-arctable-live-badge {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2c2e2e;
+  background: rgba(228, 179, 61, 0.92);
+  box-shadow: 0 6px 14px -10px rgba(33, 29, 23, 0.45);
+}
+
+.arc-desk-arctable-context {
   margin: 0;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: rgba(255, 253, 248, 0.94);
-  box-shadow: 0 10px 24px -18px rgba(33, 29, 23, 0.45);
   font-size: 11px;
-  line-height: 1.35;
+  line-height: 1.3;
+  color: var(--soft-charcoal);
+  max-width: 12rem;
 }
 
 .arc-desk-arctable-preview-layer {
@@ -745,13 +772,16 @@ html:has(.arc-shell--desk) body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .arc-desk-mark-quadrant path {
+  .arc-desk-mark-quadrant,
+  .arc-desk-mark-center {
     transition: none;
   }
 
-  .arc-desk-mark-quadrant--active path,
-  .arc-desk-mark-quadrant:hover path,
-  .arc-desk-mark-quadrant:focus-visible path {
+  .arc-desk-mark-target--active,
+  .arc-desk-mark-quadrant:hover,
+  .arc-desk-mark-quadrant:focus-visible,
+  .arc-desk-mark-center:hover,
+  .arc-desk-mark-center:focus-visible {
     transform: none;
   }
 }

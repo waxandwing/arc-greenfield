@@ -3,6 +3,9 @@ import type { TaskPriority } from './taskBar'
 
 export const TRAY_CAPTURE_DRAG_MIME = 'application/x-arc-tray-capture+json'
 export const DESK_PRIORITY_DRAG_MIME = 'application/x-arc-desk-priority+json'
+export const TRAY_STACK_DRAG_MIME = 'application/x-arc-tray-stack+json'
+
+export const STACK_DWELL_MS = 450
 
 export type TrayCaptureDragPayload = {
   kind: 'capture'
@@ -61,4 +64,26 @@ export type DeskDateDropPayload = { date: ISODate }
 
 export function encodeDeskDateDrop(payload: DeskDateDropPayload): string {
   return JSON.stringify(payload)
+}
+
+export type TrayStackDragPayload = {
+  kind: 'stack'
+  stackId: string
+  memberKind: 'capture' | 'lesson'
+}
+
+export function encodeTrayStackDrag(payload: TrayStackDragPayload): string {
+  return JSON.stringify(payload)
+}
+
+export function readTrayStackDrag(dataTransfer: DataTransfer): TrayStackDragPayload | null {
+  try {
+    const raw = dataTransfer.getData(TRAY_STACK_DRAG_MIME)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<TrayStackDragPayload>
+    if (parsed.kind !== 'stack' || typeof parsed.stackId !== 'string') return null
+    return { kind: 'stack', stackId: parsed.stackId, memberKind: parsed.memberKind === 'lesson' ? 'lesson' : 'capture' }
+  } catch {
+    return null
+  }
 }

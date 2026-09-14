@@ -18,15 +18,27 @@ import {
   type DeskAwareViewPreferences,
 } from '../navigation/deskPreferences'
 import {
-  deskLayoutUsesDefault,
-  loadDeskLayout,
   moveDeskObject,
-  resetDeskLayoutToArcDefault,
-  saveDeskLayout,
-  type DeskLayoutState,
   type DeskMoveDirection,
   type DeskObjectKind,
 } from '../navigation/deskLayout'
+import {
+  loadWorkspaceLayout,
+  resetWorkspaceLayoutToArcDefault,
+  saveWorkspaceLayout,
+  workspaceLayoutUsesDefault,
+  type WorkspaceLayoutState,
+} from '../navigation/workspaceLayout'
+import {
+  addMemberToStack,
+  createStackFromMembers,
+  removeMemberFromStack,
+  reorderStackMember,
+  stackForMember,
+  unstack,
+  type StackWorkspace,
+} from '../planning/stacks'
+import { loadStackWorkspace, saveStackWorkspace } from '../planning/stackPersistence'
 import { recordLastUsedView } from '../navigation/viewPreferences'
 import type { TaskPriority } from '../planning/taskBar'
 import {
@@ -35,12 +47,12 @@ import {
   applyArcTableTeachingOutcome,
   arcTableLaunchOptions,
   collectArcTableDeskLaunchOptions,
-  deskQuadrantToTeacherTool,
+  deskActionToTeacherTool,
   projectArcTableSession,
   projectDayContinuity,
   buildTeachingDayRail,
   setArcTableDeskLaunch,
-  type ArcTableDeskQuadrant,
+  type ArcTableDeskAction,
   type ArcTableTeachingOutcome,
   undoFridgeRoundTrip,
   type FridgeRoundTripReceipt,
@@ -73,39 +85,82 @@ export function AppFrame() {
   const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
-  const [deskLayout, setDeskLayout] = useState<DeskLayoutState>(loadDeskLayout)
+  const [workspaceLayout, setWorkspaceLayout] = useState<WorkspaceLayoutState>(loadWorkspaceLayout)
+  const [stackWorkspace, setStackWorkspace] = useState<StackWorkspace | null>(null)
   const [deskEditSession, setDeskEditSession] = useState<{
     returnView: CalendarView
     returnAnchor: ISODate | null
-    draftLayout: DeskLayoutState
+    draftLayout: WorkspaceLayoutState
     draftDesk: DeskAwareViewPreferences['desk']
   } | null>(null)
   const [deskSelectedObject, setDeskSelectedObject] = useState<DeskObjectKind>('tray')
   const [deskResetArmed, setDeskResetArmed] = useState(false)
 
   const deskEditActive = deskEditSession !== null
-  const activeDeskLayout = deskEditSession?.draftLayout ?? deskLayout
+  const activeDeskLayout = deskEditSession?.draftLayout ?? workspaceLayout
   const activeDeskPreferences = deskEditSession ? { ...viewPreferences, desk: deskEditSession.draftDesk } : viewPreferences
 
-  function enterDeskEditMode() {
+  useEffect(() => {
+    if (!workspace.calendar) {
+      setStackWorkspace(null)
+      return
+    }
+    setStackWorkspace(loadStackWorkspace(workspace.calendar.id))
+  }, [workspace.calendar?.id])
+
+  function persistStackWorkspace(next: StackWorkspace) {
+    setStackWorkspace(next)
+    saveStackWorkspace(next)
+  }
+
+  function combineCaptures(targetCaptureId: string, incomingCaptureId: string) {
+    if (!workspace.calendar || !stackWorkspace || targetCaptureId === incomingCaptureId) return
+    const existing = stackForMember(stackWorkspace, targetCaptureId)
+    const next = existing
+      ? addMemberToStack(stackWorkspace, existing.stackId, incomingCaptureId)
+      : createStackFromMembers(stackWorkspace, 'capture', [targetCaptureId, incomingCaptureId], `stack-${Date.now()}`)
+    persistStackWorkspace(next)
+  }
+
+  function removeCaptureFromStack(stackId: string, captureId: string) {
+    if (!stackWorkspace) return
+    persistStackWorkspace(removeMemberFromStack(stackWorkspace, stackId, captureId))
+  }
+
+  function unstackCaptures(stackId: string) {
+    if (!stackWorkspace) return
+    persistStackWorkspace(unstack(stackWorkspace, stackId))
+  }
+
+  function reorderStackCapture(stackId: string, captureId: string, toIndex: number) {
+    if (!stackWorkspace) return
+    persistStackWorkspace(reorderStackMember(stackWorkspace, stackId, captureId, toIndex))
+  }
+
+  function enterEditWorkspaceMode() {
     if (!workspace.calendar || workspaceMode.mode !== 'calendar' || !workspace.anchorDate) return
     setWorkspaceOverlayOpen(false)
     setTasksOverlayOpen(false)
     setDeskEditSession({
       returnView: workspace.activeView,
       returnAnchor: workspace.anchorDate,
-      draftLayout: deskLayout,
+      draftLayout: workspaceLayout,
       draftDesk: viewPreferences.desk,
     })
     setDeskSelectedObject('tray')
     setDeskResetArmed(false)
   }
 
+  function patchEditWorkspaceSizes(patch: Partial<DeskAwareViewPreferences['desk']>) {
+    if (!deskEditSession) return
+    setDeskEditSession({ ...deskEditSession, draftDesk: { ...deskEditSession.draftDesk, ...patch } })
+  }
+
   function completeDeskEdit(save: boolean) {
     if (!deskEditSession) return
     if (save) {
-      setDeskLayout(deskEditSession.draftLayout)
-      saveDeskLayout(deskEditSession.draftLayout)
+      setWorkspaceLayout(deskEditSession.draftLayout)
+      saveWorkspaceLayout(deskEditSession.draftLayout)
       updateViewPreferences({ ...viewPreferences, desk: deskEditSession.draftDesk })
     }
     if (deskEditSession.returnAnchor) {
@@ -127,11 +182,11 @@ export function AppFrame() {
 
   function resetDeskLayoutDraft() {
     if (!deskEditSession) return
-    if (!deskResetArmed && !deskLayoutUsesDefault(deskEditSession.draftLayout)) {
+    if (!deskResetArmed && !workspaceLayoutUsesDefault(deskEditSession.draftLayout)) {
       setDeskResetArmed(true)
       return
     }
-    setDeskEditSession({ ...deskEditSession, draftLayout: resetDeskLayoutToArcDefault() })
+    setDeskEditSession({ ...deskEditSession, draftLayout: resetWorkspaceLayoutToArcDefault() })
     setDeskResetArmed(false)
   }
 
@@ -345,16 +400,9 @@ export function AppFrame() {
     })
   }
 
-  function launchArcTableFromDesk(quadrant: ArcTableDeskQuadrant) {
-    const teacherTool = deskQuadrantToTeacherTool(quadrant)
-    if (arcTable.live) {
-      if (teacherTool) setArcTableDeskLaunch(teacherTool)
-      arcTable.showTeacher()
-      return
-    }
+  function deskArcTableLaunchOptions() {
     const day = projectTeachingDay()
-    if (!day || !workspace.calendar || !workspace.anchorDate) return
-
+    if (!day || !workspace.calendar || !workspace.anchorDate) return []
     const preferredSectionId = workspace.planContext?.sectionId ?? null
     let options = preferredSectionId
       ? (() => {
@@ -377,6 +425,34 @@ export function AppFrame() {
         liveDate: workspace.anchorDate,
       })
     }
+    return options
+  }
+
+  function deskArcTableContextLine(): string | null {
+    if (arcTable.live) return `Live · ${arcTable.live.session.sectionName}`
+    const options = deskArcTableLaunchOptions()
+    const pick = options.find((option) => option.deliveryStatus === 'in-progress') ?? options[0]
+    if (!pick) return null
+    const section = workspace.planningWorkspace?.sections.find((sectionRow) => sectionRow.id === pick.sectionId)
+    const course = section
+      ? workspace.planningWorkspace?.courses.find((courseRow) => courseRow.id === section.courseId)
+      : null
+    const courseTitle = course?.title ?? pick.title
+    return `${section?.name ?? pick.sectionId} · ${courseTitle}`
+  }
+
+  function launchArcTableFromDesk(action: ArcTableDeskAction) {
+    const teacherTool = deskActionToTeacherTool(action)
+    if (action === 'open' && arcTable.live) {
+      arcTable.showTeacher()
+      return
+    }
+    if (arcTable.live) {
+      if (teacherTool) setArcTableDeskLaunch(teacherTool)
+      arcTable.showTeacher()
+      return
+    }
+    const options = deskArcTableLaunchOptions()
     if (options.length === 0) {
       workspace.setStorageNotice('No live or resumable class is available on this teaching day.')
       if (workspace.activeView !== 'Day') workspace.setActiveView('Day')
@@ -425,47 +501,36 @@ export function AppFrame() {
   }
 
 
+  const trayPanelProps = {
+    captures: workspace.captureWorkspace,
+    lessons: workspace.lessonWorkspace?.lessons ?? [],
+    units: workspace.unitWorkspace,
+    unscheduledUnitTitles: unscheduledUnits.map((unit) => ({ id: unit.id, title: unit.title })),
+    defaultDate: workspace.anchorDate,
+    undoAvailable: Boolean(fridgeUndo),
+    stackWorkspace,
+    onAddCapture: workspace.addCapture,
+    onDeleteCapture: workspace.removeCapture,
+    onSetCaptureImportant: workspace.setCaptureImportant,
+    onMoveCaptureToDate: workspace.moveCaptureToDate,
+    onPromoteCapture: workspace.promoteCapture,
+    onScheduleLesson: scheduleLessonFromFridge,
+    onUnplaceLesson: sendLessonBackToFridge,
+    onUndo: undoLastFridgeMove,
+    onOpenUnits: () => workspaceMode.open('units'),
+    onOpenImport: () => workspaceMode.open('import'),
+    onCombineCaptures: combineCaptures,
+    onRemoveCaptureFromStack: removeCaptureFromStack,
+    onUnstack: unstackCaptures,
+    onReorderStackMember: reorderStackCapture,
+  }
+
   const fridgeContent = showPlanFurniture ? (
-    <WorkspacePanel
-      captures={workspace.captureWorkspace}
-      lessons={workspace.lessonWorkspace?.lessons ?? []}
-      units={workspace.unitWorkspace}
-      unscheduledUnitTitles={unscheduledUnits.map((unit) => ({ id: unit.id, title: unit.title }))}
-      defaultDate={workspace.anchorDate}
-      undoAvailable={Boolean(fridgeUndo)}
-      onAddCapture={workspace.addCapture}
-      onDeleteCapture={workspace.removeCapture}
-      onSetCaptureImportant={workspace.setCaptureImportant}
-      onMoveCaptureToDate={workspace.moveCaptureToDate}
-      onPromoteCapture={workspace.promoteCapture}
-      onScheduleLesson={scheduleLessonFromFridge}
-      onUnplaceLesson={sendLessonBackToFridge}
-      onUndo={undoLastFridgeMove}
-      onOpenUnits={() => workspaceMode.open('units')}
-      onOpenImport={() => workspaceMode.open('import')}
-    />
+    <WorkspacePanel {...trayPanelProps} />
   ) : <p className="b01-furniture-empty">Tray is available in Plan View.</p>
 
   const deskTrayCompact = showPlanFurniture && activeDeskPreferences.desk.showTray ? (
-    <WorkspacePanel
-      planningDragDisabled={deskEditActive}
-      captures={workspace.captureWorkspace}
-      lessons={workspace.lessonWorkspace?.lessons ?? []}
-      units={workspace.unitWorkspace}
-      unscheduledUnitTitles={unscheduledUnits.map((unit) => ({ id: unit.id, title: unit.title }))}
-      defaultDate={workspace.anchorDate}
-      undoAvailable={Boolean(fridgeUndo)}
-      onAddCapture={workspace.addCapture}
-      onDeleteCapture={workspace.removeCapture}
-      onSetCaptureImportant={workspace.setCaptureImportant}
-      onMoveCaptureToDate={workspace.moveCaptureToDate}
-      onPromoteCapture={workspace.promoteCapture}
-      onScheduleLesson={scheduleLessonFromFridge}
-      onUnplaceLesson={sendLessonBackToFridge}
-      onUndo={undoLastFridgeMove}
-      onOpenUnits={() => workspaceMode.open('units')}
-      onOpenImport={() => workspaceMode.open('import')}
-    />
+    <WorkspacePanel {...trayPanelProps} planningDragDisabled={deskEditActive} />
   ) : null
 
   const deskPriorityPad = showPlanFurniture && activeDeskPreferences.desk.showPriorityPad && taskBar.workspace ? (
@@ -497,7 +562,7 @@ export function AppFrame() {
       onOpenUnits={() => workspaceMode.open('units')}
       onOpenLessons={() => workspaceMode.open('lessons')}
       onOpenTaskBar={() => setTasksOverlayOpen(true)}
-      onCustomizeDesk={enterDeskEditMode}
+      onEditWorkspace={enterEditWorkspaceMode}
     />
   ) : <p className="b01-furniture-empty">Settings are available from the planner.</p>
 
@@ -529,8 +594,11 @@ export function AppFrame() {
               deskEnabled && activeDeskPreferences.desk.showArcTable ? (
                 <ArcTableDeskFixture
                   liveActive={Boolean(arcTable.live)}
-                  onLaunchQuadrant={launchArcTableFromDesk}
+                  contextLine={deskArcTableContextLine()}
+                  interactionsDisabled={deskEditActive}
+                  onDeskAction={launchArcTableFromDesk}
                   onExplorePreview={exploreArcTableFromDeskPreview}
+                  onAddArcTable={() => workspace.setStorageNotice('ArcTable add-on flows from your Arc account settings.')}
                 />
               ) : null
             }
@@ -547,7 +615,14 @@ export function AppFrame() {
             }}
             deskEditToolbar={deskEditActive ? (
               <DeskEditToolbar
-                onDone={() => completeDeskEdit(true)}
+                selectedObject={deskSelectedObject}
+                sizes={{
+                  planner: activeDeskPreferences.desk.plannerSize,
+                  tray: activeDeskPreferences.desk.traySize,
+                  msc: activeDeskPreferences.desk.mscSize,
+                }}
+                onSizeChange={patchEditWorkspaceSizes}
+                onPinDown={() => completeDeskEdit(true)}
                 onReset={resetDeskLayoutDraft}
                 resetNeedsConfirm={deskResetArmed}
               />

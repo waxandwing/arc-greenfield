@@ -1,6 +1,5 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
-import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const evidenceDir = new URL('../docs/overnight/evidence/arc-desk-mark/', import.meta.url).pathname
@@ -43,7 +42,11 @@ function seed() {
     'arc.shift.v1': JSON.stringify({ schemaVersion: 1, input: { calendarId, overrides: [], undo: null } }),
     'arc.captures.v1': JSON.stringify({ schemaVersion: 1, workspace: { calendarId, captures: [] } }),
     'arc.planning-context.v1': JSON.stringify({ schemaVersion: 2, calendarId, view: 'Month', anchorDate: '2026-09-15', focus: 'day' }),
-    'arc.desk-preferences.v1': JSON.stringify({ showTray: true, showPriorityPad: true, showDeskNotes: false, homeDeskPlannerView: 'Month' }),
+    'arc.desk-preferences.v1': JSON.stringify({ showTray: true, showPriorityPad: true, showDeskNotes: false, showArcTable: true, homeDeskPlannerView: 'Month' }),
+    'arc.onboarding.v1': JSON.stringify({
+      schemaVersion: 1,
+      draft: { stage: 'landed', dismissed: true, firstCapturePromptDismissed: true },
+    }),
   }
 }
 
@@ -67,21 +70,29 @@ try {
   assert(await page.locator('.arc-shell--desk').count() === 1, 'Desk shell must render.')
   assert(await page.getByTestId('arc-desk-arctable-anchor').isVisible(), 'ArcTable mark anchor must render on desk.')
   assert(await page.getByTestId('arc-desk-arctable').isVisible(), 'ArcTable desk fixture must render.')
-  assert(await page.locator('.arc-desk-mark-svg').count() === 1, 'Desk fixture must use inline SVG mark, not raster quadrants.')
+  assert(await page.locator('.arc-desk-mark-svg image').count() === 1, 'Desk fixture must reference canonical AT-001 SVG asset.')
   await shot(page, '01-desk-mark-idle.png')
 
   const fixture = page.getByTestId('arc-desk-arctable')
-  assert(await fixture.getAttribute('data-quadrant-mode') === 'true', 'Default viewport must enable quadrant launcher.')
-  await fixture.locator('.arc-desk-mark-quadrant--live').hover({ force: true })
+  assert(await fixture.getAttribute('data-quadrant-mode') === 'true', 'Default viewport must enable five-target launcher.')
+  await page.getByRole('button', { name: 'Start class', exact: true }).hover()
   await shot(page, '02-live-quadrant-hover.png')
 
-  assert(await fixture.getAttribute('data-access') === 'free-preview', 'Smoke expects free-preview desk gate.')
-  await fixture.locator('.arc-desk-mark-quadrant--live').focus()
-  await page.keyboard.press('Enter')
-  assert(await page.getByTestId('arc-desk-arctable-preview').isVisible(), 'Free preview must open Explore ArcTable dialog from Live quadrant.')
+  await page.getByRole('button', { name: 'Start class', exact: true }).click()
+  assert(await page.getByRole('heading', { name: 'Start or resume today’s class' }).isVisible(), 'Free preview must open contextual Start class dialog.')
   await shot(page, '03-explore-arctable-preview.png')
 
-  console.log('Arc desk mark smoke passed: AT-001 SVG fixture, quadrant hover, free preview gate.')
+  await page.getByRole('button', { name: 'Close', exact: true }).click()
+  await page.getByRole('button', { name: 'Timer & cleanup', exact: true }).click()
+  assert(await page.getByRole('heading', { name: 'Preview classroom timer' }).isVisible(), 'Free timer quadrant must show contextual preview.')
+  await shot(page, '04-timer-preview.png')
+
+  await page.getByRole('button', { name: 'Close', exact: true }).click()
+  await page.getByRole('button', { name: 'Open ArcTable', exact: true }).click()
+  assert(await page.getByRole('heading', { name: 'Open ArcTable from your desk' }).isVisible(), 'Center cream must open ArcTable home preview when not entitled.')
+  await shot(page, '05-center-open-preview.png')
+
+  console.log('Arc desk mark smoke passed: AT-001 asset, five targets, entitlement previews.')
   await context.close()
 } finally {
   await browser.close()

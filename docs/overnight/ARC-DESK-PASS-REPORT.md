@@ -1,7 +1,7 @@
 # ARC Desk Pass Report
 
 Branch: `cursor/arc-production-integration`  
-Baseline: Repair 2.1 + Pass 3 chrome + interaction laws (`ce01bee`)
+Baseline: Arc Desk pass 3 + AT-001 mark + workspace layout migration (`97ebda9`)
 
 ## Stop condition (A–Z)
 
@@ -19,10 +19,10 @@ Baseline: Repair 2.1 + Pass 3 chrome + interaction laws (`ce01bee`)
 | J | Capture → tray + feedback | **GREEN** — existing global capture + "Captured." |
 | K | Capture → MSC (canonical move) | **GREEN** — drag capture to lane promotes to task + removes capture |
 | L | Drag audit | **YELLOW** — HTML5 DnD reused/extended (`deskDrag.ts`); tray↔calendar lesson DnD not expanded |
-| M | Day notes / Important laws | **GREEN** — untouched (`ce01bee`) |
+| M | Day notes / Important laws | **GREEN** — untouched through integration (`2079ff4`) |
 | N | Settings §43 Home desk | **GREEN** — `HomeDeskPreferences` |
 | O | Onboarding / school lookup / logo | **GREEN** — no regressions in touched paths |
-| P | ArcTable entry | **GREEN** — internals untouched; Plan View return chip restored in shell bar |
+| P | ArcTable entry | **GREEN** — AT-001 desk mark (5 actions + entitlement previews); routes via existing ArcTable session |
 | Q | Move/Shift/Recovery | **GREEN** — out of scope, unchanged |
 | R | Now/Needs Attention | **GREEN** — unchanged |
 | S | Day retreat law | **GREEN** — unchanged |
@@ -30,8 +30,8 @@ Baseline: Repair 2.1 + Pass 3 chrome + interaction laws (`ce01bee`)
 | U | ArcTable internals | **GREEN** — unchanged |
 | V | Import confirmation law | **GREEN** — unchanged |
 | W | Evidence contact sheet | **GREEN** — `docs/overnight/evidence/arc-desk-pass/` |
-| X | Contracts | **GREEN** — desk prefs, year desk projection, desk drag |
-| Y | Smokes | **GREEN** — `tests/arc-desk-pass.smoke.mjs` + updated TRAY smokes |
+| X | Contracts | **GREEN** — desk prefs, year desk projection, desk drag, `arcTableDeskActions` |
+| Y | Smokes | **GREEN** — `tests/arc-desk-pass.smoke.mjs`, `tests/arc-desk-mark.smoke.mjs` |
 | Z | Visual addendum (wood, tray, tab, year grid) | **GREEN** — assets in `public/assets/desk/` |
 
 ## Drag audit (summary)
@@ -56,12 +56,21 @@ Baseline: Repair 2.1 + Pass 3 chrome + interaction laws (`ce01bee`)
 - **Mobile desk**: tray/MSC docks hidden `<900px`; index TRAY drawer remains.
 - **Full photoreal desk clutter**: intentionally omitted (editorial/tactile CSS only).
 
+## ArcTable desk mark (functional)
+
+- Asset: `public/assets/arctable/AT-001_table-mark.svg` (referenced from `ArcTableDeskMarkSvg`, not redrawn).
+- Actions (`arcTableDeskActions.ts`): center **open**; blue **startOrResume**; clay **timerCleanup**; mustard **classTools**; green **mediaDirections**.
+- Entitlement: single `ArcTableDeskFixture`; `paid-live` executes via `AppFrame` → `useArcTableSession` + `setArcTableDeskLaunch`; `free-preview` shows per-action preview with Explore / Add ArcTable (mark never grayed or locked).
+- Edit desk: `interactionsDisabled` while desk edit session is active (re-enabled on Done).
+- Evidence: `docs/overnight/evidence/arc-desk-mark/` (idle, quadrant hover, center/timer previews).
+
 ## Tests
 
 ```bash
 npm run test:contracts
 npm run test:arc-desk-pass
+npm run test:arc-desk-mark
 npm run test:plan-year
 ```
 
-Evidence screenshots: `docs/overnight/evidence/arc-desk-pass/01–04` (+ reference `00`).
+Evidence screenshots: `docs/overnight/evidence/arc-desk-pass/` (+ reference `00`), `arc-desk-mark/` for AT-001 interactions.

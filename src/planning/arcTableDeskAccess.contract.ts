@@ -16,7 +16,7 @@ function assert(condition: unknown, message: string): asserts condition {
 assert(normalizeArcTableDeskAccess(undefined) === 'free-preview', 'Default desk access is free preview.')
 assert(normalizeArcTableDeskAccess('paid-live') === 'paid-live', 'Paid-live gate must normalize.')
 assert(quadrantLauncherMeetsA11y(96, false), '96px mark should allow quadrant launcher when motion is allowed.')
-assert(!quadrantLauncherMeetsA11y(96, true), 'Reduced motion must fall back to single entry.')
+assert(quadrantLauncherMeetsA11y(96, true), 'Reduced motion keeps five keyboard targets; motion is CSS-only.')
 assert(!quadrantLauncherMeetsA11y(72, false), 'Small marks must fall back to single entry.')
 
 assert(ARC_TABLE_DESK_QUADRANT_LABELS.live === 'Live class', 'Blue quadrant maps to Start/Live class.')

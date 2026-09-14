@@ -1,24 +1,24 @@
 import type { KeyboardEvent } from 'react'
 import {
-  ARC_TABLE_DESK_QUADRANT_COLORS,
-  ARC_TABLE_DESK_QUADRANT_LABELS,
+  ARC_TABLE_DESK_QUADRANT_HIT_PATHS,
+  ARC_TABLE_DESK_CENTER_HIT_PATH,
   ARC_TABLE_DESK_QUADRANT_ORDER,
-  ARC_TABLE_DESK_QUADRANT_PATHS,
-  ARC_TABLE_MARK_INSET,
+  ARC_TABLE_MARK_ASSET_SVG,
   ARC_TABLE_MARK_VIEWBOX,
   type ArcTableDeskQuadrant,
 } from '../planning/arcTableDeskMark'
+import { deskTargetToAction, resolveDeskActionLabel, type ArcTableDeskTarget } from '../planning/arcTableDeskActions'
 
 type Props = {
   size: number
   interactive: boolean
-  hovered: ArcTableDeskQuadrant | null
-  onHover: (quadrant: ArcTableDeskQuadrant | null) => void
-  onActivate: (quadrant: ArcTableDeskQuadrant) => void
+  liveActive: boolean
+  hovered: ArcTableDeskTarget | null
+  onHover: (target: ArcTableDeskTarget | null) => void
+  onActivate: (target: ArcTableDeskTarget) => void
 }
 
-export function ArcTableDeskMarkSvg({ size, interactive, hovered, onHover, onActivate }: Props) {
-  const inner = ARC_TABLE_MARK_VIEWBOX - ARC_TABLE_MARK_INSET * 2
+export function ArcTableDeskMarkSvg({ size, interactive, liveActive, hovered, onHover, onActivate }: Props) {
   return (
     <svg
       className="arc-desk-mark-svg"
@@ -29,66 +29,74 @@ export function ArcTableDeskMarkSvg({ size, interactive, hovered, onHover, onAct
       role={interactive ? 'group' : 'img'}
       aria-label={interactive ? 'ArcTable desk mark' : 'ArcTable mark'}
     >
-      <rect width={ARC_TABLE_MARK_VIEWBOX} height={ARC_TABLE_MARK_VIEWBOX} fill="#1F4B3A" pointerEvents="none" />
-      <rect
-        x={ARC_TABLE_MARK_INSET}
-        y={ARC_TABLE_MARK_INSET}
-        width={inner}
-        height={inner}
-        fill="#F4E9D1"
+      <image
+        href={ARC_TABLE_MARK_ASSET_SVG}
+        width={ARC_TABLE_MARK_VIEWBOX}
+        height={ARC_TABLE_MARK_VIEWBOX}
         pointerEvents="none"
       />
-      {ARC_TABLE_DESK_QUADRANT_ORDER.map((quadrant) => {
-        const active = hovered === quadrant
-        const path = (
-          <path
-            fill={ARC_TABLE_DESK_QUADRANT_COLORS[quadrant]}
-            d={ARC_TABLE_DESK_QUADRANT_PATHS[quadrant]}
-            pointerEvents={interactive ? 'all' : 'none'}
-          />
-        )
-        if (!interactive) {
-          return <g key={quadrant} aria-hidden>{path}</g>
-        }
-        return (
-          <g
-            key={quadrant}
-            role="button"
-            tabIndex={0}
-            className={`arc-desk-mark-quadrant arc-desk-mark-quadrant--${quadrant}${active ? ' arc-desk-mark-quadrant--active' : ''}`}
-            aria-label={ARC_TABLE_DESK_QUADRANT_LABELS[quadrant]}
-            onFocus={() => onHover(quadrant)}
-            onBlur={() => onHover(null)}
-            onMouseEnter={() => onHover(quadrant)}
-            onMouseLeave={() => onHover(null)}
-            onClick={() => onActivate(quadrant)}
-            onKeyDown={(event: KeyboardEvent<SVGGElement>) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                onActivate(quadrant)
-              }
-            }}
-          >
-            {path}
-            {active ? (
-              <text
-                className="arc-desk-mark-quadrant-label"
-                aria-hidden
-                x={quadrantLabelAnchor(quadrant).x}
-                y={quadrantLabelAnchor(quadrant).y}
-              >
-                {ARC_TABLE_DESK_QUADRANT_LABELS[quadrant]}
-              </text>
-            ) : null}
-          </g>
-        )
-      })}
+      {interactive ? (
+        <>
+          {renderTarget('center', hovered, liveActive, onHover, onActivate)}
+          {ARC_TABLE_DESK_QUADRANT_ORDER.map((quadrant) =>
+            renderTarget(quadrant, hovered, liveActive, onHover, onActivate),
+          )}
+        </>
+      ) : null}
     </svg>
   )
 }
 
-function quadrantLabelAnchor(quadrant: ArcTableDeskQuadrant): { x: number; y: number } {
-  switch (quadrant) {
+function renderTarget(
+  target: ArcTableDeskTarget,
+  hovered: ArcTableDeskTarget | null,
+  liveActive: boolean,
+  onHover: (target: ArcTableDeskTarget | null) => void,
+  onActivate: (target: ArcTableDeskTarget) => void,
+) {
+  const action = deskTargetToAction(target)
+  const label = resolveDeskActionLabel(action, liveActive)
+  const active = hovered === target
+  const hitPath =
+    target === 'center'
+      ? ARC_TABLE_DESK_CENTER_HIT_PATH
+      : ARC_TABLE_DESK_QUADRANT_HIT_PATHS[target]
+  const quadrantClass =
+    target === 'center' ? 'arc-desk-mark-center' : `arc-desk-mark-quadrant arc-desk-mark-quadrant--${target}`
+
+  return (
+    <g
+      key={target}
+      role="button"
+      tabIndex={0}
+      className={`${quadrantClass}${active ? ' arc-desk-mark-target--active' : ''}`}
+      aria-label={label}
+      onFocus={() => onHover(target)}
+      onBlur={() => onHover(null)}
+      onMouseEnter={() => onHover(target)}
+      onMouseLeave={() => onHover(null)}
+      onClick={() => onActivate(target)}
+      onKeyDown={(event: KeyboardEvent<SVGGElement>) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onActivate(target)
+        }
+      }}
+    >
+      <path className="arc-desk-mark-hit" fill="transparent" d={hitPath} pointerEvents="all" />
+      {active ? (
+        <text className="arc-desk-mark-quadrant-label" aria-hidden x={labelAnchor(target).x} y={labelAnchor(target).y}>
+          {label}
+        </text>
+      ) : null}
+    </g>
+  )
+}
+
+function labelAnchor(target: ArcTableDeskTarget): { x: number; y: number } {
+  switch (target) {
+    case 'center':
+      return { x: 50, y: 54 }
     case 'live':
       return { x: 12, y: 28 }
     case 'timer':
@@ -98,6 +106,6 @@ function quadrantLabelAnchor(quadrant: ArcTableDeskQuadrant): { x: number; y: nu
     case 'media':
       return { x: 48, y: 78 }
     default:
-      return { x: 12, y: 50 }
+      return { x: 50, y: 50 }
   }
 }

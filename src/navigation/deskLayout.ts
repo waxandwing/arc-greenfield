@@ -72,14 +72,19 @@ export const DEFAULT_DESK_LAYOUT: DeskLayoutState = {
   appearanceThemeId: null,
 }
 
-const DESK_LAYOUT_STORAGE_KEY = 'arc.desk-layout.v1'
+export const DESK_LAYOUT_STORAGE_KEY = 'arc.desk-layout.v1'
+export const WORKSPACE_LAYOUT_STORAGE_KEY = 'arc.workspace-layout.v1'
 
-export function loadDeskLayout(storage: Pick<Storage, 'getItem'> | null = browserStorage()): DeskLayoutState {
+export function loadDeskLayout(storage: Pick<Storage, 'getItem' | 'setItem'> | null = browserStorage()): DeskLayoutState {
   if (!storage) return DEFAULT_DESK_LAYOUT
   try {
+    const workspaceRaw = storage.getItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    if (workspaceRaw) return normalizeDeskLayout(JSON.parse(workspaceRaw))
     const raw = storage.getItem(DESK_LAYOUT_STORAGE_KEY)
     if (!raw) return DEFAULT_DESK_LAYOUT
-    return normalizeDeskLayout(JSON.parse(raw))
+    const migrated = normalizeDeskLayout(JSON.parse(raw))
+    saveDeskLayout(migrated, storage)
+    return migrated
   } catch {
     return DEFAULT_DESK_LAYOUT
   }
@@ -88,7 +93,9 @@ export function loadDeskLayout(storage: Pick<Storage, 'getItem'> | null = browse
 export function saveDeskLayout(layout: DeskLayoutState, storage: Pick<Storage, 'setItem'> | null = browserStorage()) {
   if (!storage) return
   try {
-    storage.setItem(DESK_LAYOUT_STORAGE_KEY, JSON.stringify(normalizeDeskLayout(layout)))
+    const payload = JSON.stringify(normalizeDeskLayout(layout))
+    storage.setItem(WORKSPACE_LAYOUT_STORAGE_KEY, payload)
+    storage.setItem(DESK_LAYOUT_STORAGE_KEY, payload)
   } catch {
     /* ignore quota */
   }

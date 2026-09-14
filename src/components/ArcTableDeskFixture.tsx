@@ -1,8 +1,12 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
-  ARC_TABLE_DESK_QUADRANT_LABELS,
-  type ArcTableDeskQuadrant,
-} from '../planning/arcTableDeskMark'
+  ARC_TABLE_DESK_PREVIEW_COPY,
+  deskTargetToAction,
+  resolveDeskActionLabel,
+  routeArcTableDeskAction,
+  type ArcTableDeskAction,
+  type ArcTableDeskTarget,
+} from '../planning/arcTableDeskActions'
 import {
   normalizeArcTableDeskAccess,
   quadrantLauncherMeetsA11y,
@@ -15,50 +19,53 @@ const MARK_SIZE = 96
 type Props = {
   access?: ArcTableDeskAccess
   liveActive: boolean
-  onLaunchQuadrant: (quadrant: ArcTableDeskQuadrant) => void
+  contextLine?: string | null
+  interactionsDisabled?: boolean
+  onDeskAction: (action: ArcTableDeskAction) => void
   onExplorePreview: () => void
+  onAddArcTable?: () => void
 }
 
 export function ArcTableDeskFixture({
   access = normalizeArcTableDeskAccess(import.meta.env.VITE_ARCTABLE_DESK_ACCESS),
   liveActive,
-  onLaunchQuadrant,
+  contextLine = null,
+  interactionsDisabled = false,
+  onDeskAction,
   onExplorePreview,
+  onAddArcTable,
 }: Props) {
-  const noticeId = useId()
   const [quadrantMode, setQuadrantMode] = useState(false)
-  const [previewNotice, setPreviewNotice] = useState<string | null>(null)
-  const [hovered, setHovered] = useState<ArcTableDeskQuadrant | null>(null)
-  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewAction, setPreviewAction] = useState<ArcTableDeskAction | null>(null)
+  const [hovered, setHovered] = useState<ArcTableDeskTarget | null>(null)
 
   useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    setQuadrantMode(quadrantLauncherMeetsA11y(MARK_SIZE, reduced))
+    setQuadrantMode(quadrantLauncherMeetsA11y(MARK_SIZE))
   }, [])
 
-  function openPreview() {
-    setPreviewOpen(true)
+  function openPreview(action: ArcTableDeskAction) {
+    setPreviewAction(action)
     onExplorePreview()
   }
 
-  function requestQuadrant(quadrant: ArcTableDeskQuadrant) {
-    if (access === 'free-preview') {
-      if (quadrant === 'live') {
-        openPreview()
-        return
-      }
-      setPreviewNotice(`${ARC_TABLE_DESK_QUADRANT_LABELS[quadrant]} is part of ArcTable live. Preview from Live class or Explore ArcTable.`)
+  function requestTarget(target: ArcTableDeskTarget) {
+    if (interactionsDisabled) return
+    const action = deskTargetToAction(target)
+    if (routeArcTableDeskAction(access) === 'preview') {
+      openPreview(action)
       return
     }
-    onLaunchQuadrant(quadrant)
+    onDeskAction(action)
   }
 
   function singleEntry() {
-    if (access === 'free-preview') {
-      openPreview()
+    if (interactionsDisabled) return
+    const action: ArcTableDeskAction = 'open'
+    if (routeArcTableDeskAction(access) === 'preview') {
+      openPreview(action)
       return
     }
-    onLaunchQuadrant('live')
+    onDeskAction(action)
   }
 
   const stateClass =
@@ -68,35 +75,43 @@ export function ArcTableDeskFixture({
         : 'arc-desk-arctable--paid-idle'
       : 'arc-desk-arctable--preview'
 
+  const previewCopy = previewAction ? ARC_TABLE_DESK_PREVIEW_COPY[previewAction] : null
+  const hoverAction = hovered ? deskTargetToAction(hovered) : null
+  const hoverLabel = hoverAction ? resolveDeskActionLabel(hoverAction, liveActive) : null
+
   return (
     <>
       <div
-        className={`arc-desk-arctable ${stateClass}`}
+        className={`arc-desk-arctable ${stateClass}${interactionsDisabled ? ' arc-desk-arctable--interactions-off' : ''}`}
         data-testid="arc-desk-arctable"
         data-access={access}
         data-quadrant-mode={quadrantMode ? 'true' : 'false'}
         data-live={liveActive ? 'true' : 'false'}
+        data-interactions-disabled={interactionsDisabled ? 'true' : 'false'}
       >
+        {liveActive ? <span className="arc-desk-arctable-live-badge">Live</span> : null}
         <div className="arc-desk-arctable-mark-wrap">
           {quadrantMode ? (
             <ArcTableDeskMarkSvg
               size={MARK_SIZE}
-              interactive
+              interactive={!interactionsDisabled}
+              liveActive={liveActive}
               hovered={hovered}
               onHover={setHovered}
-              onActivate={requestQuadrant}
+              onActivate={requestTarget}
             />
           ) : (
             <button
               type="button"
               className="arc-desk-arctable-single"
-              aria-label={access === 'paid-live' ? 'Open ArcTable live launcher' : 'Preview ArcTable live class'}
-              aria-describedby={previewNotice ? noticeId : undefined}
+              disabled={interactionsDisabled}
+              aria-label={access === 'paid-live' ? 'Open ArcTable' : 'Preview ArcTable'}
               onClick={singleEntry}
             >
               <ArcTableDeskMarkSvg
                 size={MARK_SIZE}
                 interactive={false}
+                liveActive={liveActive}
                 hovered={null}
                 onHover={() => {}}
                 onActivate={() => {}}
@@ -104,30 +119,41 @@ export function ArcTableDeskFixture({
             </button>
           )}
         </div>
-        {previewNotice ? (
-          <p id={noticeId} className="arc-desk-arctable-notice" role="status">
-            {previewNotice}
-            <button type="button" className="quiet-button" onClick={() => setPreviewNotice(null)}>
-              Dismiss
-            </button>
+        {contextLine || hoverLabel ? (
+          <p className="arc-desk-arctable-context" aria-live="polite">
+            {hoverLabel ?? contextLine}
           </p>
         ) : null}
       </div>
 
-      {previewOpen ? (
-        <div className="arc-desk-arctable-preview-layer" role="dialog" aria-modal="true" aria-labelledby="arc-desk-preview-title" data-testid="arc-desk-arctable-preview">
+      {previewCopy ? (
+        <div
+          className="arc-desk-arctable-preview-layer"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="arc-desk-preview-title"
+        >
           <div className="arc-desk-arctable-preview-card">
-            <p className="b01-furniture-kicker">ArcTable preview</p>
-            <h2 id="arc-desk-preview-title">Explore ArcTable on your desk</h2>
-            <p>
-              ArcTable is the live classroom layer: timer, cleanup, people tools, and media projection. Plan stays free; live tools
-              open from the mark when ArcTable is enabled for your account.
-            </p>
+            <p className="b01-furniture-kicker">{previewCopy.kicker}</p>
+            <h2 id="arc-desk-preview-title">{previewCopy.title}</h2>
+            <p>{previewCopy.body}</p>
             <div className="arc-desk-arctable-preview-actions">
-              <button type="button" className="primary-button" onClick={() => setPreviewOpen(false)}>
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => {
+                  setPreviewAction(null)
+                  onExplorePreview()
+                }}
+              >
                 Explore ArcTable
               </button>
-              <button type="button" className="quiet-button" onClick={() => setPreviewOpen(false)}>
+              {onAddArcTable ? (
+                <button type="button" className="quiet-button" onClick={() => { setPreviewAction(null); onAddArcTable() }}>
+                  Add ArcTable
+                </button>
+              ) : null}
+              <button type="button" className="quiet-button" onClick={() => setPreviewAction(null)}>
                 Close
               </button>
             </div>

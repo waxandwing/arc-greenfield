@@ -7,9 +7,8 @@ export function normalizeArcTableDeskAccess(raw: string | undefined): ArcTableDe
   return 'free-preview'
 }
 
-/** Quadrant hit targets need ~36px corners; fall back to single control when too small or reduced motion. */
-export function quadrantLauncherMeetsA11y(markSizePx: number, prefersReducedMotion: boolean): boolean {
-  if (prefersReducedMotion) return false
+/** Quadrant hit targets need ~36px corners; fall back to single control when mark is too small. */
+export function quadrantLauncherMeetsA11y(markSizePx: number, _prefersReducedMotion = false): boolean {
   if (markSizePx < 88) return false
   const corner = markSizePx * 0.42
   return corner >= 36

@@ -228,7 +228,7 @@ export function B01Furniture({
     if (!node) return null
     return (
       <div
-        className={deskObjectClass(object, 'arc-desk-object-slot')}
+        className={deskObjectClass(object, `arc-desk-object-slot${deskEditMode ? '' : ' arc-desk-object-slot--locked'}`)}
         style={deskObjectStyle(object)}
         data-desk-object={object}
         tabIndex={deskEditMode ? 0 : undefined}
@@ -248,7 +248,7 @@ export function B01Furniture({
       <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
         {spreadChrome}
         {deskEditToolbar}
-        <div className="b01-calendar-owner">{children}</div>
+        <div className={`b01-calendar-owner${deskEditMode ? ' b01-calendar-owner--workspace-edit' : ''}`}>{children}</div>
       </div>
     </div>
   )
@@ -283,6 +283,7 @@ export function B01Furniture({
         <div
           className={`arc-desk-surface${deskEditMode ? ' arc-desk-surface--edit' : ''}`}
           data-layout-grid={layoutGridActive ? 'true' : 'false'}
+          data-furniture-locked={deskEditMode ? 'false' : 'true'}
         >
           {deskEditMode ? <div className="arc-desk-zone-grid" aria-hidden="true" /> : null}
           {layoutGridActive ? (

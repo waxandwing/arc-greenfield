@@ -34,6 +34,19 @@ export const ARC_TABLE_DESK_QUADRANT_LABELS: Record<ArcTableDeskQuadrant, string
   media: 'Media & directions',
 }
 
+/** Center cream diamond — open ArcTable home (geometry aligned with AT-001). */
+export const ARC_TABLE_DESK_CENTER_PATH = 'M 50 28 L 72 50 L 50 72 L 28 50 Z'
+
+/** Expanded hit slop (~44px at 100 viewBox) for keyboard/pointer targets. */
+export const ARC_TABLE_DESK_QUADRANT_HIT_PATHS: Record<ArcTableDeskQuadrant, string> = {
+  live: 'M 4 50 A 46 46 0 0 1 50 4 L 4 4 Z',
+  timer: 'M 50 4 A 46 46 0 0 1 96 50 L 96 4 Z',
+  tools: 'M 4 50 A 46 46 0 0 0 50 96 L 4 96 Z',
+  media: 'M 96 50 A 46 46 0 0 0 50 96 L 96 96 Z',
+}
+
+export const ARC_TABLE_DESK_CENTER_HIT_PATH = 'M 50 22 L 78 50 L 50 78 L 22 50 Z'
+
 export type ArcTableDeskTeacherTool = 'timer' | 'people' | 'passes' | 'media'
 
 export function deskQuadrantToTeacherTool(quadrant: ArcTableDeskQuadrant): ArcTableDeskTeacherTool | null {
