@@ -62,6 +62,12 @@ export function maybeApplyDemoSeed(
   if (!request) return false
 
   const hadCalendar = Boolean(storage.getItem(CALENDAR_STORAGE_KEY))
+  const hadPartialArcStorage = (() => {
+    for (let index = 0; index < storage.length; index += 1) {
+      if (storage.key(index)?.startsWith('arc.')) return true
+    }
+    return false
+  })()
 
   if (request.mode === 'gauntlet') {
     if (request.force) clearArcBrowserStorage(storage)
@@ -75,7 +81,7 @@ export function maybeApplyDemoSeed(
     const query = params.toString()
     const nextUrl = `${location.pathname}${query ? `?${query}` : ''}${location.hash}`
     if (typeof window !== 'undefined') {
-      if (hadCalendar || request.force) {
+      if (request.force || hadCalendar || hadPartialArcStorage) {
         window.location.replace(nextUrl)
         return true
       }

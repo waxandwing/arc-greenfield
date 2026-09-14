@@ -28,7 +28,7 @@ Use the **integration branch** for the Arc desk (wood tabletop, tray, MSC pad, A
 | Green/cream **pattern** around the planner, **CALENDAR** label, **Month** dropdown, big **cream** field behind the planner | **OLD** plan shell — wrong branch, stale build, or preview not from this repo |
 | **Light wood** edge-to-edge (viewport + tabletop), planner tabs on the spread (**DAY / WEEK / MONTH**), **Teaching week** title, tray on the wood, `desk-v2` stamp | **NEW** desk (`desk-v2`) — cream is only *inside* the green planner frame, not the desk surround |
 
-With `npm run preview:desk`, a tiny footer shows `desk-v2 · <git sha>` and the browser console logs the same. The `<html>` tag gets `data-build="desk-v2@<sha>"`.
+With `npm run preview:desk`, a tiny footer shows `desk-v2 · <git sha>` (in the built `index.html` **and** after React loads) and the browser console logs the same. The `<html>` tag gets `data-build="desk-v2@<sha>"` during the production build — you should see the stamp even before JavaScript finishes loading.
 
 ## Run every command from the repo root
 
@@ -131,3 +131,30 @@ Override base URL if needed: `ARC_BASE_URL=http://127.0.0.1:4173 npm run test:ar
 ## Cloud agent vs your laptop
 
 Cloud agents sometimes keep a long-lived preview in tmux (e.g. `arc-desk-preview-4173`). **On your machine you do not need tmux** — run `npm run preview:desk` in a terminal and stop it with Ctrl+C when done.
+
+## Troubleshooting
+
+<!-- Kelly: cream UI with no desk-v2 footer stamp = wrong repo folder, still on main, or you did not run npm run preview:desk (old bundle). Fix: cd arc-greenfield, checkout cursor/arc-production-integration, npm run preview:desk, open ?demo=1&demoReset=1 — bottom-right must say desk-v2 · <git sha>. -->
+
+**Kelly-simple:** If the planner looks like **cream everywhere** and there is **no** tiny **`desk-v2 · …`** stamp in the bottom-right corner, you are **not** running the new desk build. That is almost always the **wrong folder**, **`main`** (or another branch), or you ran **`npm run dev`** / plain **`npm run preview`** instead of **`npm run preview:desk`**.
+
+| Symptom | Likely cause | Fix |
+|---------|----------------|-----|
+| Cream mat / green pattern around planner, **CALENDAR** label, month dropdown | Old plan shell or stale bundle | `cd` to repo root, `git checkout cursor/arc-production-integration`, `git pull`, `npm run preview:desk` |
+| No `desk-v2` footer stamp, no `data-build="desk-v2@…"` on `<html>` | Build was not `preview:desk` (env stamp missing) or wrong checkout | Run **`npm run preview:desk`** only; preflight prints cwd, branch, commit |
+| Preflight fails on branch | Not on integration branch | `git checkout cursor/arc-production-integration` |
+| Still wrong after pull | Preview from another clone or port | Stop other servers; use `http://127.0.0.1:4173/?demo=1&demoReset=1` |
+
+### Verify the stamp (proves you have new JS + HTML)
+
+1. Run `npm run preview:desk` — the terminal prints **cwd**, **branch**, **commit**, and the demo URL.
+2. Open `http://127.0.0.1:4173/?demo=1&demoReset=1`.
+3. Bottom-right footer: **`desk-v2 · <short git sha>`** (also injected into `dist/index.html` before JS runs).
+4. DevTools → Elements → `<html data-build="desk-v2@<sha>">`.
+5. Console: `[Arc desk preview] desk-v2@<sha>`.
+
+If step 3–5 fail, you do **not** have the integration desk build — CSS-only tweaks cannot add the stamp.
+
+### CalendarStageHeader vs desk shell
+
+On the **desk** build, legacy **Calendar** chrome (`CALENDAR` label, month dropdown in the spread header) is **hidden by CSS** when `.arc-shell--desk` is active. If you still see that header, the app never entered the desk shell (onboarding / wrong branch / old bundle). **`?demo=1&demoReset=1`** re-seeds storage and reloads so onboarding is skipped and the wood desk shell (`arc-shell--desk`) can mount. No stamp ⇒ the new code path is not loaded at all.

@@ -18,5 +18,6 @@ export function applyArcBuildStamp(): void {
 
   if (stampedPreview) {
     console.info(`[Arc desk preview] ${stamp}`)
+    document.getElementById('arc-desk-build-stamp-html')?.remove()
   }
 }
