@@ -282,15 +282,7 @@ export function enterPlanView(context: PlanNavigationContext, view: CalendarView
     return enterCalendarDepth(context, view, anchorDate)
   }
   if (view === 'Day') {
-    if (context.view === 'Day') {
-      return sparsePlanContext({ ...context, view: 'Day', anchorDate })
-    }
-    return createPlanNavigationContext({
-      calendarId: context.calendarId,
-      view: 'Day',
-      anchorDate,
-      focus: 'day',
-    })
+    return goPlanHome({ ...context, anchorDate })
   }
   if (context.view === 'Day') {
     return createPlanNavigationContext({ calendarId: context.calendarId, anchorDate, view, focus: 'day' })

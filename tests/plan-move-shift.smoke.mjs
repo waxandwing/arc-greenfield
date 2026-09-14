@@ -1,5 +1,5 @@
 import { mkdirSync } from 'node:fs'
-import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
+import { selectPlanView as selectView, retreatToTeachingDayViaDayTab } from './helpers/selectPlanView.mjs'
 import { chromium } from 'playwright'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
@@ -97,9 +97,7 @@ async function pageFlow(browser, data, context) {
   if (await page.getByRole('button', { name: 'Back to class', exact: true }).count()) {
     await page.getByRole('button', { name: 'Back to class', exact: true }).click()
   }
-  if (await page.getByRole('button', { name: 'Return to Teaching Day', exact: true }).count()) {
-    await page.getByRole('button', { name: 'Return to Teaching Day', exact: true }).click()
-  }
+  await retreatToTeachingDayViaDayTab(page)
   await page.getByRole('button', { name: /Period 4 AP Art History/ }).click()
   await shot(page, '05-week-shift-entry.png')
   await page.getByRole('button', { name: 'Review Shift', exact: true }).first().click()

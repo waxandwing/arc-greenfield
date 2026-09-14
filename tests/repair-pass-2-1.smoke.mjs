@@ -1,9 +1,9 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
-import { selectPlanView as selectView, retreatToTeachingDayViaDayTab } from './helpers/selectPlanView.mjs'
+import { retreatToTeachingDayViaDayTab, selectPlanView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
-const evidenceDir = new URL('../docs/overnight/evidence/repair-pass-2/', import.meta.url).pathname
+const evidenceDir = new URL('../docs/overnight/evidence/repair-pass-2-1/', import.meta.url).pathname
 mkdirSync(evidenceDir, { recursive: true })
 
 function assert(condition, message) {
@@ -28,7 +28,11 @@ function fixture() {
   }
   const spans = [['2026-09-01', '2026-09-11'], ['2026-09-14', '2026-09-25'], ['2026-09-28', '2026-10-09']]
   const units = []
-  for (const course of courses) unitSpecs[course.id].forEach((title, index) => units.push({ id: `unit-${course.id.slice(7)}-${index + 1}`, calendarId, courseId: course.id, title, placement: { startDate: spans[index][0], endDate: spans[index][1] } }))
+  for (const course of courses) {
+    unitSpecs[course.id].forEach((title, index) => {
+      units.push({ id: `unit-${course.id.slice(7)}-${index + 1}`, calendarId, courseId: course.id, title, placement: { startDate: spans[index][0], endDate: spans[index][1] } })
+    })
+  }
   const dates = [
     ['2026-09-02', '2026-09-03', '2026-09-04', '2026-09-08'],
     ['2026-09-14', '2026-09-15', '2026-09-16', '2026-09-18'],
@@ -57,7 +61,10 @@ function fixture() {
     }
   }
   const planning = { calendarId, courses, sections, notes: [] }
-  const deliveryStates = [{ lessonId: 'lesson-apah-5', sectionId: 'section-p4', status: 'in-progress', taughtDate: '2026-09-14', resumeNote: 'Stopped after the threshold comparison. Resume with patron evidence.' }]
+  const deliveryStates = [
+    { lessonId: 'lesson-apah-5', sectionId: 'section-p4', status: 'in-progress', taughtDate: '2026-09-14', resumeNote: 'Stopped after the threshold comparison. Resume with patron evidence.' },
+    { lessonId: 'lesson-apah-6', sectionId: 'section-p1', status: 'completed', taughtDate: '2026-09-15' },
+  ]
   const overrides = [
     { sectionId: 'section-p6', lessonId: 'lesson-2d-5', plannedDate: '2026-09-15' },
     { sectionId: 'section-p6', lessonId: 'lesson-2d-6', plannedDate: '2026-09-14' },
@@ -98,55 +105,57 @@ try {
     for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value)
   }, storageEntries(data, dayContext))
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
+  await shot(page, '01-planning-before.png')
 
-  assert(await page.locator('.progressive-setup').count() === 0, 'Setup banner visible for complete gauntlet day.')
-  await shot(page, '01-day-clean.png')
+  await page.getByRole('button', { name: 'Period 5, planning time' }).click()
+  await page.locator('.planning-period-lens').waitFor({ timeout: 5000 })
+  const nowLane = page.locator('section.planning-period-bucket[aria-label="Now"]')
+  const nowTexts = await nowLane.locator('.planning-period-item').allTextContents()
+  assert(!nowTexts.some((text) => text.includes('Patron and audience')), 'Now must exclude completed earlier-class prep.')
+  await shot(page, '02-planning-after.png')
 
-  await selectView(page, 'Week')
-  const lesson = page.locator('.planning-lesson').first()
-  assert(await lesson.locator('.planning-lesson-actions').evaluate((el) => getComputedStyle(el).opacity) === '0', 'Week actions visible by default.')
-  await shot(page, '02-week-clean.png')
-  await lesson.hover()
-  await shot(page, '03-week-actions-revealed.png')
+  const valueScaleNow = nowLane.locator('.planning-period-item').filter({ hasText: 'Value scale' })
+  assert(await valueScaleNow.count() <= 1, 'Shared prep must dedupe in Now.')
+  await shot(page, '03-planning-now-deduped.png')
 
-  await selectView(page, 'Day')
+  await page.locator('section.planning-period-bucket[aria-label="Needs attention"] .planning-period-item').first().waitFor({ timeout: 5000 })
+  await shot(page, '04-planning-needs-attention.png')
+
   await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
   await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
-  assert(await page.getByRole('heading', { level: 1, name: 'Value scale' }).count() === 1, 'Lesson must have one canonical title.')
-  assert(await page.locator('.lesson-focus-heading h2').count() === 0, 'Lesson body must not repeat title.')
-  assert(await page.getByRole('button', { name: 'Open Workspace', exact: true }).count() === 0, 'Inline Workspace link must be removed from Lesson.')
-  await shot(page, '04-lesson-clean.png')
-
-  await page.getByRole('button', { name: 'Back to class', exact: true }).click()
+  await page.locator('.day-continuity[data-plan-focus="lesson"]').waitFor()
   await retreatToTeachingDayViaDayTab(page)
-  await page.getByRole('button', { name: 'Period 5, planning time' }).click()
-  assert(await page.getByRole('heading', { level: 1, name: 'Planning period' }).isVisible(), 'Planning period needs one state heading.')
-  assert(await page.locator('.planning-period-heading').count() === 0, 'Planning lens must not duplicate headings.')
-  await shot(page, '05-planning-clean.png')
-
-  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
-  assert(await page.locator('.b01-furniture-composition').getAttribute('data-workspace-open') === 'true', 'Workspace overlay open.')
-  await shot(page, '06-workspace-open.png')
-  await page.getByRole('button', { name: 'Close Workspace', exact: true }).click()
+  assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Lesson → DAY must retreat to Teaching Day.')
+  assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Lesson → DAY must keep anchor date.')
+  await shot(page, '05-lesson-to-day.png')
 
   await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
-  await shot(page, '07-class-focus.png')
+  await retreatToTeachingDayViaDayTab(page)
+  assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Class → DAY must retreat to Teaching Day.')
+  assert(!await page.locator('.day-continuity').getAttribute('data-plan-section'), 'Class → DAY must clear Section focus.')
+  await shot(page, '06-class-to-day.png')
 
-  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 })
-  const mobilePage = await mobile.newPage()
-  await mobilePage.addInitScript((entries) => {
-    for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value)
-  }, storageEntries(data, dayContext))
-  await mobilePage.goto(baseUrl, { waitUntil: 'networkidle' })
-  await shot(mobilePage, '08-mobile-day.png')
-  await selectView(mobilePage, 'Week')
-  await shot(mobilePage, '09-mobile-week.png')
-  await mobile.close()
+  await page.getByRole('button', { name: 'Period 5, planning time' }).click()
+  await retreatToTeachingDayViaDayTab(page)
+  assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Planning → DAY must retreat to Teaching Day.')
+  assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Planning → DAY must show Teaching Day.')
+  await shot(page, '07-planning-to-day.png')
 
+  await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
+  await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
+  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
+  await page.getByRole('button', { name: 'Close Workspace', exact: true }).click()
+  assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'lesson', 'Close Workspace must return to Lesson focus.')
+  await shot(page, '08-workspace-exact-return.png')
+
+  assert(await page.getByRole('button', { name: 'Return to Teaching Day', exact: true }).count() === 0, 'Redundant Return to Teaching Day control must be removed.')
+
+  await selectPlanView(page, 'Week')
+  await selectPlanView(page, 'Day')
   await shot(page, '00-contact-sheet.png')
 
   await context.close()
-  console.log('Repair Pass 2 evidence + gates passed.')
+  console.log('Repair Pass 2.1 evidence + gates passed.')
 } finally {
   await browser.close()
 }

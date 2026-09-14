@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
+import { retreatToTeachingDayViaDayTab } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const evidenceDir = new URL('../docs/overnight/evidence/plan-navigation/', import.meta.url).pathname
@@ -174,7 +175,7 @@ try {
     assert(await page.locator('.day-continuity').getAttribute('data-plan-section') === 'section-p6', 'Lesson → Back lost Section.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Lesson → Back lost the Day date.')
 
-    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    await retreatToTeachingDayViaDayTab(page)
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Class → Home did not restore Teaching Day.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Class → Back did not restore the same date.')
     assert(!await page.locator('.day-continuity').getAttribute('data-plan-section'), 'Class → Back left a Section selected on Teaching Day.')
@@ -229,7 +230,7 @@ try {
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
-    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    await retreatToTeachingDayViaDayTab(page)
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Class → Home did not land on Teaching Day.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Class → Home moved the anchored date.')
     assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Class → Home did not open the Day view.')
@@ -240,7 +241,7 @@ try {
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
-    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    await retreatToTeachingDayViaDayTab(page)
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Lesson → Home did not land on Teaching Day.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Lesson → Home moved the anchored date.')
     assert(await page.locator('[data-lesson-focus]').count() === 0, 'Lesson → Home kept Lesson Focus.')
@@ -252,7 +253,7 @@ try {
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
     await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
     assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).getAttribute('aria-expanded') === 'true', 'Workspace did not open before Home.')
-    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    await retreatToTeachingDayViaDayTab(page)
     assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).getAttribute('aria-expanded') === 'false', 'Home from Workspace did not close the overlay.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-overlay') === 'none', 'Home from Workspace left overlay state on the header.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Workspace-from-Lesson → Home did not land on Teaching Day.')
@@ -264,7 +265,7 @@ try {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
     const before = await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))
-    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    await retreatToTeachingDayViaDayTab(page)
     const after = await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))
     assert(before === after, 'Home mutated ArcTable live state.')
     assert(JSON.parse(after).timer.remainingSeconds === live.timer.remainingSeconds, 'Home changed the ArcTable timer.')
@@ -276,7 +277,7 @@ try {
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
-    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    await retreatToTeachingDayViaDayTab(page)
     await page.reload({ waitUntil: 'networkidle' })
     await page.locator('.day-continuity[data-plan-focus="day"]').waitFor({ timeout: 5000 })
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Refresh after Home did not restore the same Teaching Day date.')

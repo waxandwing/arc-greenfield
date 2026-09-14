@@ -318,7 +318,7 @@ export function AppFrame() {
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
 
       <header className="arc-header" aria-label="Arc application header">
-        <button className="arc-wordmark" type="button" aria-label={onboardingActive ? 'Exit setup to Arc' : 'Return to Teaching Day'} onClick={returnHome}><img src="/assets/arc/arc-mark.png" alt="Arc" /></button>
+        <button className="arc-wordmark" type="button" aria-label={onboardingActive ? 'Exit setup to Arc' : 'Teaching Day home'} onClick={returnHome}><img src="/assets/arc/arc-mark.png" alt="Arc" /></button>
         <div className="arc-header-space" aria-hidden="true" />
         {arcTable.live ? <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}><span>{arcTable.live.session.sectionName} live · {elapsedLiveMinutes(arcTable.live)} min</span><strong>Return to ArcTable</strong></button> : null}
       </header>

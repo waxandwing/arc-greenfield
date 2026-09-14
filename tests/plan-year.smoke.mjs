@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
-import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
+import { selectPlanView as selectView, retreatToTeachingDayViaDayTab } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const evidenceDir = new URL('../docs/overnight/evidence/plan-year/', import.meta.url).pathname
@@ -220,7 +220,7 @@ try {
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await selectView(page, 'Year')
-    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    await retreatToTeachingDayViaDayTab(page)
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Year → Home did not land on Teaching Day.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Year → Home moved the anchored date.')
     assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Year → Home did not open the Day view.')
@@ -301,7 +301,7 @@ try {
     await selectView(page, 'Year')
     await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
     await page.getByRole('button', { name: 'Close Workspace', exact: true }).click()
-    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    await retreatToTeachingDayViaDayTab(page)
     const after = await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))
     assert(before === after, 'Year navigation mutated ArcTable live state.')
     assert(JSON.parse(after).timer.remainingSeconds === live.timer.remainingSeconds, 'Year navigation changed the ArcTable timer.')

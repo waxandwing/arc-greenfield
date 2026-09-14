@@ -29,7 +29,8 @@ const calendar = hydrateSchoolCalendar({
 const apah = createCourse({ id: 'course-apah', title: 'AP Art History' })
 const p1 = createSection({ id: 'section-p1', courseId: apah.id, calendarId: calendar.id, name: 'Period 1' })
 const p4 = createSection({ id: 'section-p4', courseId: apah.id, calendarId: calendar.id, name: 'Period 4' })
-const planning = hydratePlanningWorkspace({ calendarId: calendar.id, courses: [apah], sections: [p1, p4] })
+const p6 = createSection({ id: 'section-p6', courseId: apah.id, calendarId: calendar.id, name: 'Period 6' })
+const planning = hydratePlanningWorkspace({ calendarId: calendar.id, courses: [apah], sections: [p1, p4, p6] })
 const units = hydrateUnitWorkspace({
   calendarId: calendar.id,
   units: [{ id: 'unit-apah-1', calendarId: calendar.id, courseId: apah.id, title: 'Power & Place', placement: { startDate: '2026-09-14', endDate: '2026-09-25' } }],
@@ -37,26 +38,31 @@ const units = hydrateUnitWorkspace({
 const unit = units.units[0]
 const threshold = createLesson({ id: 'lesson-threshold', calendarId: calendar.id, courseId: apah.id, unitId: unit.id, title: 'Temple threshold', sequence: 5, plannedDate: '2026-09-14' })
 const patron = createLesson({ id: 'lesson-patron', calendarId: calendar.id, courseId: apah.id, unitId: unit.id, title: 'Patron and audience', sequence: 6, plannedDate: '2026-09-15' })
-const tomorrow = createLesson({ id: 'lesson-tomorrow', calendarId: calendar.id, courseId: apah.id, unitId: unit.id, title: 'Fixed visual analysis assessment', sequence: 7, plannedDate: '2026-09-16' })
+const afternoon = createLesson({ id: 'lesson-afternoon', calendarId: calendar.id, courseId: apah.id, unitId: unit.id, title: 'Gallery synthesis', sequence: 7, plannedDate: '2026-09-15' })
+const tomorrow = createLesson({ id: 'lesson-tomorrow', calendarId: calendar.id, courseId: apah.id, unitId: unit.id, title: 'Fixed visual analysis assessment', sequence: 8, plannedDate: '2026-09-16' })
 let deliveryP1 = updateLessonDeliveryState(createLessonDeliveryState({ lesson: patron, section: p1 }), patron, p1, { status: 'completed', taughtDate: '2026-09-15' })
 let deliveryP4Stopped = updateLessonDeliveryState(createLessonDeliveryState({ lesson: threshold, section: p4 }), threshold, p4, { status: 'in-progress', taughtDate: '2026-09-14', resumeNote: 'Stopped after the threshold comparison.' })
 const lessons = hydrateLessonWorkspace({
   calendarId: calendar.id,
-  lessons: [threshold, patron, tomorrow],
+  lessons: [threshold, patron, afternoon, tomorrow],
   deliveryStates: [deliveryP1, deliveryP4Stopped],
 }, calendar, planning, units)
-const continuity = projectDayContinuity({ date: '2026-09-15', planning, units, lessons, overrides: [] })
+const continuity = projectDayContinuity({ date: '2026-09-15', planning, units, lessons, overrides: [{ sectionId: p6.id, lessonId: afternoon.id, plannedDate: '2026-09-15' }] })
 const attention = projectPlanningPeriodAttention({
   date: '2026-09-15',
   planning,
   units,
   lessons,
   captures: { calendarId: calendar.id, captures: [{ id: 'capture-loose', calendarId: calendar.id, text: 'Museum label mini-lesson', createdAt: '2026-09-01T12:00:00.000Z' }] },
-  overrides: [],
+  overrides: [{ sectionId: p6.id, lessonId: afternoon.id, plannedDate: '2026-09-15' }],
   continuity,
 })
 
-assert(attention.buckets.now.some((item) => item.kind === 'scheduled-today' && item.lessonTitle === 'Patron and audience'), 'NOW must list Lessons placed on the anchor date.')
+assert(attention.buckets.now.every((item) => item.lessonTitle !== 'Patron and audience'), 'NOW must not repeat completed earlier-class prep.')
+const galleryNow = attention.buckets.now.find((item) => item.kind === 'scheduled-today' && item.lessonTitle === 'Gallery synthesis')
+assert(galleryNow, 'NOW must list upcoming prep after Planning time.')
+assert(galleryNow.sectionName === 'Period 6', 'NOW upcoming prep must lead with the earliest post-Planning Section.')
+assert(galleryNow.reason.includes('Period 6'), 'NOW shared prep must name post-Planning Sections.')
 assert(attention.buckets['needs-attention'].some((item) => item.kind === 'stopped-lesson' && item.reason.includes('threshold comparison')), 'NEEDS ATTENTION must surface stopped Lessons with resume notes.')
 assert(attention.buckets['needs-attention'].some((item) => item.kind === 'section-behind' && item.sectionName === 'Period 4'), 'NEEDS ATTENTION must flag a Section behind the Course plan.')
 assert(attention.buckets['next-planned'].some((item) => item.kind === 'next-planned-lesson' && item.lessonTitle === 'Fixed visual analysis assessment'), 'NEXT PLANNED must expose the next dated Lesson per Section.')

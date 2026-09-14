@@ -191,4 +191,15 @@ assert(wrongYear.anchorDate === calendar.firstDay && wrongYear.focus === 'day', 
 
 assert(!JSON.stringify(lessonFocus).includes('timer') && !JSON.stringify(lessonFocus).includes('cleanup'), 'Plan navigation context must not carry ArcTable live controls.')
 
+const dayTabFromLesson = resolvePlanContext(enterPlanView(lessonFocus, 'Day'), authority)
+assert(dayTabFromLesson.focus === 'day' && dayTabFromLesson.view === 'Day' && dayTabFromLesson.anchorDate === '2026-09-16' && !dayTabFromLesson.lessonId && !dayTabFromLesson.sectionId, 'DAY index must retreat Lesson Focus to Teaching Day on the same anchor date.')
+
+const dayTabFromClass = resolvePlanContext(enterPlanView(classFocus, 'Day'), authority)
+assert(dayTabFromClass.focus === 'day' && dayTabFromClass.view === 'Day' && dayTabFromClass.anchorDate === '2026-09-16' && !dayTabFromClass.sectionId && !dayTabFromClass.teachingBlockId, 'DAY index must retreat Class Focus to Teaching Day on the same anchor date.')
+
+const planningBlock = resolvePlanContext(focusTeachingBlock(day, { id: 'block-plan', courseId: null, sectionId: null }), authority)
+assert(planningBlock.focus === 'class' && planningBlock.teachingBlockId === 'block-plan', 'Fixture must enter Planning period block focus.')
+const dayTabFromPlanning = resolvePlanContext(enterPlanView(planningBlock, 'Day'), authority)
+assert(dayTabFromPlanning.focus === 'day' && dayTabFromPlanning.view === 'Day' && dayTabFromPlanning.anchorDate === '2026-09-16' && !dayTabFromPlanning.teachingBlockId, 'DAY index must retreat Planning period depth to Teaching Day on the same anchor date.')
+
 console.log('Plan context resolution contract passed')

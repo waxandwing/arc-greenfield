@@ -7,6 +7,16 @@ export async function selectPlanView(page, view) {
   await nav.getByRole('button', { name: label, exact: true }).click()
 }
 
+/** Teaching Day retreat law: DAY tab returns to Teaching Day on the same anchor date. */
+export async function retreatToTeachingDayViaDayTab(page) {
+  await selectPlanView(page, 'Day')
+}
+
+/** Wordmark home matches DAY retreat when not in Workspace overlay workflows. */
+export async function retreatToTeachingDayViaWordmark(page) {
+  await page.getByRole('button', { name: 'Teaching Day home' }).click()
+}
+
 /** @deprecated alias for smokes migrating from dropdown navigation */
 export async function selectView(page, view) {
   return selectPlanView(page, view)

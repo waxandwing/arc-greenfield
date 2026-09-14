@@ -7,7 +7,7 @@
 
 ### A. Commit SHA
 
-**`0184cae`** (follow-up docs: see latest on branch for report + `test:repair-pass-2` script if amended).
+**`5f48327`** (Repair Pass 2 code + evidence: **`0184cae`**).
 
 ### B. Files changed (summary)
 

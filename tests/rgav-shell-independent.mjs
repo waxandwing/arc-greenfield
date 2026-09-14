@@ -1,5 +1,5 @@
 import { chromium } from 'playwright'
-import { selectPlanView as selectCalendarView } from './helpers/selectPlanView.mjs'
+import { selectPlanView as selectCalendarView, retreatToTeachingDayViaDayTab } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -53,7 +53,7 @@ try {
   const nextRange = await weekRegion.getAttribute('aria-label')
   assert(Boolean(nextRange), 'RGAV-B: navigated Week lost its accessible range label.')
 
-  await page.getByRole('button', { name: 'Return to Teaching Day', exact: true }).click()
+  await retreatToTeachingDayViaDayTab(page)
   assert(await page.getByRole('heading', { level: 1, name: 'Day' }).count() === 1, 'RGAV-B: Home must land on Teaching Day.')
   await selectCalendarView(page, 'Week')
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: Last used Week must restore from planner index.')
