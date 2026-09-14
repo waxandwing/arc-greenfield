@@ -48,7 +48,7 @@ export function DeskEditToolbar({ selectedObject, sizes, onSizeChange, onDone, o
           {resetNeedsConfirm ? 'Confirm reset desk' : 'Reset desk'}
         </button>
         <button type="button" className="b01-settings-action b01-settings-action--primary" onClick={onDone}>
-          Pin it down
+          Done
         </button>
       </div>
     </div>
