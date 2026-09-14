@@ -12,6 +12,10 @@ Use the **integration branch** for the Arc desk (wood tabletop, tray, MSC pad, A
    git pull origin cursor/arc-production-integration
    npm install
    ```
+   If `checkout` says the branch is missing, create it from the remote:
+   ```bash
+   git fetch origin && git switch -c cursor/arc-production-integration --track origin/cursor/arc-production-integration
+   ```
 3. **Build and open the desk preview:**
    ```bash
    npm run preview:desk
@@ -142,7 +146,8 @@ Cloud agents sometimes keep a long-lived preview in tmux (e.g. `arc-desk-preview
 |---------|----------------|-----|
 | Cream mat / green pattern around planner, **CALENDAR** label, month dropdown | Old plan shell or stale bundle | `cd` to repo root, `git checkout cursor/arc-production-integration`, `git pull`, `npm run preview:desk` |
 | No `desk-v2` footer stamp, no `data-build="desk-v2@…"` on `<html>` | Build was not `preview:desk` (env stamp missing) or wrong checkout | Run **`npm run preview:desk`** only; preflight prints cwd, branch, commit |
-| Preflight fails on branch | Not on integration branch | `git checkout cursor/arc-production-integration` |
+| Preflight fails on branch | Not on integration branch and commit ≠ `origin/cursor/arc-production-integration` | `git fetch origin`, then checkout integration **or** pull until your commit matches origin; see switch command above if checkout fails |
+| Said **"nope"** after preflight blocked you | Wrong branch **and** old commit, or checkout failed silently | From repo root: `git fetch origin`, then either `git switch cursor/arc-production-integration && git pull` **or** stay on your repair branch but `git merge origin/cursor/arc-production-integration` so HEAD matches origin; run `npm run preview:desk` again; open `?demo=1&demoReset=1` — you need **wood** + **`desk-v2 · …`** stamp |
 | Still wrong after pull | Preview from another clone or port | Stop other servers; use `http://127.0.0.1:4173/?demo=1&demoReset=1` |
 
 ### Verify the stamp (proves you have new JS + HTML)
