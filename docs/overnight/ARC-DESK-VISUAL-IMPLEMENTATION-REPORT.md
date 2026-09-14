@@ -1,7 +1,7 @@
 # ARC Desk Visual Implementation Report
 
 **Branch:** `cursor/arc-production-integration`  
-**Implementation SHA:** _(see git log after push — baseline `2d72807`, desk visual commits on top)_  
+**Implementation SHA:** `5b7b767` (desk visual: `c8f79ae` + evidence/report: `5b7b767`; baseline `2d72807`)  
 **Figma authority:** file `CfWcuQPY4ljYXondICj2ZX`, frame node `6:3194` (1696×1254 ref; wood field 1440×1024)  
 **Behavioral authority:** Arc on branch (planning, tray, MSC, edit workspace, stacks unchanged)
 
