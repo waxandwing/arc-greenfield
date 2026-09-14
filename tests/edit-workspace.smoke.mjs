@@ -109,7 +109,7 @@ async function main() {
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
   await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
-  await page.getByRole('button', { name: 'Edit Workspace', exact: true }).click()
+  await page.getByRole('button', { name: 'Customize desk', exact: true }).click()
   await page.locator('[data-settings-open="false"]').waitFor()
   await page.getByTestId('desk-edit-toolbar').waitFor({ state: 'visible' })
   assert(await page.locator('[data-desk-edit-mode="true"]').count() === 1, 'Edit mode must be active on the desk.')
@@ -126,11 +126,11 @@ async function main() {
     'Edit Workspace arrow keys must move selected tray furniture on the desk.',
   )
 
-  await page.getByRole('button', { name: 'Pin it down', exact: true }).click()
+  await page.getByTestId('desk-edit-toolbar').getByRole('button', { name: 'Done', exact: true }).click()
   const layoutAfter = await page.evaluate(() => localStorage.getItem('arc.workspace-layout.v1'))
-  assert(layoutBefore !== layoutAfter, 'Pin it down must persist workspace layout after furniture moves.')
+  assert(layoutBefore !== layoutAfter, 'Done must persist workspace layout after furniture moves.')
   await page.getByTestId('desk-edit-toolbar').waitFor({ state: 'hidden' })
-  assert(await page.locator('[data-desk-edit-mode="false"]').count() >= 1, 'Pin it down must exit edit workspace mode.')
+  assert(await page.locator('[data-desk-edit-mode="false"]').count() >= 1, 'Done must exit edit workspace mode.')
 
   const postIt = page.locator('.workspace-capture-card-select').first()
   assert(await postIt.getAttribute('draggable') === 'true', 'Tray post-its must remain draggable after pinning furniture.')
