@@ -20,7 +20,7 @@ Baseline: workspace layout migration + desk integration fixes (`698e130`)
 | K | Capture → MSC (canonical move) | **GREEN** — drag capture to lane promotes to task + removes capture |
 | L | Drag audit | **YELLOW** — HTML5 DnD reused/extended (`deskDrag.ts`); tray↔calendar lesson DnD not expanded |
 | M | Day notes / Important laws | **GREEN** — untouched through integration (`2079ff4`) |
-| N | Settings §43 Home desk | **GREEN** — `HomeDeskPreferences` |
+| N | Settings Desk setup addendum | **GREEN** — teacher IA (My school year … Data / import / reuse); **Customize desk** → live edit mode; **Done** / **Reset desk** |
 | O | Onboarding / school lookup / logo | **GREEN** — no regressions in touched paths |
 | P | ArcTable entry | **GREEN** — AT-001 desk mark on wood; ArcTable session internals unchanged |
 | Q | Move/Shift/Recovery | **GREEN** — out of scope, unchanged |
