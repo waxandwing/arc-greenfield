@@ -7,7 +7,7 @@
 
 ### A. Commit SHA
 
-Set at push time (see git log on branch).
+**`0184cae`** (follow-up docs: see latest on branch for report + `test:repair-pass-2` script if amended).
 
 ### B. Files changed (summary)
 
