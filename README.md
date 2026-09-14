@@ -134,6 +134,17 @@ Onboarding, first-capture prompt, and progressive setup are skipped once the dem
 
 Example preview URL: `http://127.0.0.1:4173/?demo=1`
 
+### Local desk preview (integration branch)
+
+The Arc **desk** build lives on `cursor/arc-production-integration`, not on `main`. On your laptop:
+
+```bash
+git checkout cursor/arc-production-integration && npm install
+npm run preview:desk
+```
+
+Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. See [docs/LOCAL-PREVIEW.md](docs/LOCAL-PREVIEW.md) for dev server, smokes, and aliases (`dev:desk`, `start:desk`).
+
 ## Integration rule
 
 No material feature is GREEN merely because it compiles.
