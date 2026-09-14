@@ -18,7 +18,7 @@
 | **SVG brand assets in `public/`** | None |
 | **Kelly local library** `/Users/knyhagen/assets910` | Not mounted on Mac path in cloud VM |
 | **Cloud ingest path (option 3)** | `/workspace/.local/assets910/` — **scaffold only**; library not present yet (see **Phase 2 ingest**) |
-| **Icarus public assets repo** | [waxandwing/icarus](https://github.com/waxandwing/icarus) — **14 source PNGs** inventoried; see **`ICARUS-ASSET-INVENTORY-CROSSWALK.md`** (cloneable; not copied to `public/assets/` yet) |
+| **Photoroom pattern export** | `Photoroom_da1f.zip` — **6** `AT-PATTERN-*` tiles (~375px); extracted to `.local/photoroom-patterns/`; evidence copy in `photoroom-patterns/` |
 | **Canonical Arc mark (in repo)** | `public/assets/arc/arc-mark.png` — board `ARC-LOGO-*` / `ARC-001A` family |
 
 ---
@@ -36,7 +36,7 @@
 
 **Reconciliation:** Drive/governing sans (**Nunito/Avenir**) vs repo (**Inter/League Spartan**) needs founder pick. Logo boards do not substitute font files — they show **TABLE** and **arc** as **designed lockups**.
 
---- (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
+Palette reference (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
 
 **Approved visual target (Kelly, 2026-09-14):** dark green **planner frame** only; **light cream exterior** with **large, faded, desaturated** direct Arc pattern (not dark-green-dominant shell). Interior quiet; exterior branded. Stage 7.2.2 exterior reads too dark/heavy — future import should favor light-field pattern sources below, not `green.png` or full-strength breezeblock wash alone.
 
@@ -53,6 +53,27 @@
 Kelly (2026-09-14): reference is **excellent and correct** provided the UI **does not** show a **central gutter / spine line** (no book crease). Implementation: removed `.arc-calendar-spread::before` / `::after` gutter stack in `shell-visibility-lock.css`. Frame + `--plan-surface-paper` repeat remain.
 
 This is **not** legacy “journal spine” product chrome (still rejected per Plan law) — it is the **single cream planner field** inside the green frame.
+
+---
+
+## Photoroom_da1f.zip — `AT-PATTERN` swatches (2026-09-14)
+
+**Source:** Kelly upload `Photoroom_da1f.zip` (6 files, ~427 KB). Likely **Photoroom background-removed / cropped** exports — **small** (~375–387 px); treat as **directional swatches**, not final `@2x` production tiles until a full-resolution source is confirmed.
+
+| File | Format | Size | Description | Exterior? | Rec |
+|------|--------|------|-------------|-----------|-----|
+| `AT-PATTERN-01` | JPG | 375×372 | Large **organic multicolor dots** on cream | Yes — dot field | **POSSIBLE** — alt. to REF-PATTERN-GRID (less regular grid) |
+| `AT-PATTERN-02` | JPG | 377×372 | **Concentric corner arcs** (green TL, red BR) | Accent only | **POSSIBLE** — corner motif, not full-page repeat |
+| `AT-PATTERN-03` | JPG | 375×364 | **6×6 cream tile grid** with dark grout | No | **REJECT** — reads as literal tile floor / graph paper |
+| `AT-PATTERN-04` | PNG | 387×364 | Four-shape **collage** (blue arc, mustard trap, red square, green arc) | No | **POSSIBLE** — mark composition / hero, not tile |
+| `AT-PATTERN-05` | JPG | 377×375 | **Semicircle columns** (up/down), brand colors | Yes | **KEEP** — strong match to approved semicircle/grid family; compare to REF-PATTERN-GRID |
+| `AT-PATTERN-06` | JPG | 382×375 | **12 small dots** (3× each color) on cream | Yes | **KEEP** — “magnet field” / light exterior candidate; relates to board **ARC-010** magnets |
+
+**Vs Kelly 2048 grid (`REF-PATTERN-GRID`):** Photoroom **05** and **06** are the closest **light exterior** alternates; **01** is a looser dot variant. Prefer **2048 grid** for production tile clarity unless Kelly chooses a Photoroom export after side-by-side fade test.
+
+**Evidence:** `docs/overnight/evidence/asset-reconciliation/photoroom-patterns/` (+ working copy `.local/photoroom-patterns/`, gitignored).
+
+**Import mapping (proposal only):** `public/assets/arc/pattern-exterior-at-05.jpg` (or PNG from source) with CSS low opacity/saturation — **after** shortlist approval.
 
 ---
 
