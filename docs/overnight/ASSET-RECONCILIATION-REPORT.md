@@ -19,9 +19,24 @@
 | **Kelly local library** `/Users/knyhagen/assets910` | Not mounted on Mac path in cloud VM |
 | **Cloud ingest path (option 3)** | `/workspace/.local/assets910/` — **scaffold only**; library not present yet (see **Phase 2 ingest**) |
 | **Icarus public assets repo** | [waxandwing/icarus](https://github.com/waxandwing/icarus) — **14 source PNGs** inventoried; see **`ICARUS-ASSET-INVENTORY-CROSSWALK.md`** (cloneable; not copied to `public/assets/` yet) |
-| **Canonical Arc mark (in repo)** | `public/assets/arc/arc-mark.png` — no higher-fidelity alternate found in repo |
+| **Canonical Arc mark (in repo)** | `public/assets/arc/arc-mark.png` — board `ARC-LOGO-*` / `ARC-001A` family |
 
-Palette reference (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
+---
+
+## Brand typography (identified)
+
+| Layer | Governing doc (icarus `04_CANONICAL_BRAND_SYSTEM`) | **arc-greenfield production** (`arc-fonts.css`, `tokens.css`) | Logo boards (visual) |
+|-------|-----------------------------------------------------|----------------------------------------------------------------|----------------------|
+| Primary UI sans | Nunito Sans or Avenir Next Rounded | **Inter** (+ League Spartan labels) | **TABLE** lockups: bold, tracked **all-caps sans** (not named by font file on board) |
+| Editorial / display | Georgia, Source Serif 4, Newsreader | **Instrument Serif** (+ same serif fallbacks) | Large onboarding/view titles in product match Instrument Serif direction |
+| Plan wordmark | — | **`arc-mark.png` only** (no `@font-face` for “arc” letters) | Chunky geometric **lowercase a/r/c** + red quadrant — **outlined artwork**, not CSS text |
+| ArcTable wordmark | — | **`header-compact*.png`** | Image type; separate from square **`AT-LOGO-*`** icons |
+
+**Files shipped:** `InstrumentSerif-Regular.ttf`, `Inter-Variable.woff2`, `LeagueSpartan-VF.woff2` under `public/assets/`.
+
+**Reconciliation:** Drive/governing sans (**Nunito/Avenir**) vs repo (**Inter/League Spartan**) needs founder pick. Logo boards do not substitute font files — they show **TABLE** and **arc** as **designed lockups**.
+
+--- (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
 
 **Approved visual target (Kelly, 2026-09-14):** dark green **planner frame** only; **light cream exterior** with **large, faded, desaturated** direct Arc pattern (not dark-green-dominant shell). Interior quiet; exterior branded. Stage 7.2.2 exterior reads too dark/heavy — future import should favor light-field pattern sources below, not `green.png` or full-strength breezeblock wash alone.
 
@@ -113,7 +128,31 @@ Kelly confirmed the **six 1000×1000 quadrant / breezeblock frame variants** (ch
 
 **Proposal (no import yet):** Pick **one** icon variant for ArcTable mark/splash experiments under `public/assets/arctable/logo-icon-*.png`; **do not** wire to Plan `AppFrame` wordmark (`arc-mark.png`) or `--shell-pattern`.
 
----
+### Logo & asset board extracts (Kelly chat)
+
+Full contact sheets archived (not individual tile exports):
+
+| Evidence | Size | Contents |
+|----------|------|----------|
+| `board-extracts/arc-arctable-logos-board-extract.png` | 1060×1084 | **~53 tiles** — `ARC-LOGO-*` arc lettermark; `AT-D04` / `AT-D06` TABLE lockups; **`AT-LOGO-*` square arch + “TABLE / AN ARC CLASSROOM SPACE”** |
+| `board-extracts/arc-asset-grid-124-tiles-board-extract.png` | 1388×3148 | **~124 tiles** — numbered library (`ARC-001A` … `AT-SURF-*`), magnets, planner shell, surfaces, `AT-GEO-*` primitives |
+
+**Logo authority map (from boards + repo):**
+
+| Use | Board IDs | Repo today | Notes |
+|-----|-----------|------------|-------|
+| Plan header mark | `ARC-LOGO-*`, `ARC-001A` mark | `arc-mark.png` | Colored **a / r / c + red quadrant** — raster, not a text font |
+| ArcTable header | `AT-D04`, `AT-D06`, `AT-LOGO-*` + subtitle | `header-compact*.png` | **TABLE** = bold wide **caps sans**; subtitle “AN ARC CLASSROOM SPACE” |
+| ArcTable app/icon | `AT-LOGO-04/05`, chat **arctable-logo-icon-*** | *(none wired)* | Square **quadrant arch** matches Kelly’s ArcTable logo icon set |
+| Legacy TABLE-as-furniture | `AT-D06` (T shaped like table) | — | **REJECT** for current lockup unless explicitly revived |
+
+**Magnet reuse (from 124-tile board):** `ARC-010A–E` / `ARC-010` / `AT-08-*` **unit-magnet** discs (blue, red, mustard, sage, lavender) → candidate **course signature** rasters instead of Fridge chrome; map AP/2D/3D to mustard/blue/sage discs + existing wedge/dot shortlist.
+
+**Fridge-named tiles on board (`ARC-006/007/015/017`, `ARC-019B`, etc.):** **Do not import** to Plan; Workspace stays CSS + live UI (Kelly: remove Fridge product language).
+
+**Planner shell:** `ARC-003_calendar-shell` on board = journal spread **with center gutter**; approved direction is **same chrome without gutter** (see REF-PLANNER-JOURNAL + CSS).
+
+### Batch 3 — arcs, bloops, ArcTable duplicates
 
 | Audit ID | Evidence copy | Size | Visual role | vs repo | Rec |
 |----------|---------------|------|-------------|---------|-----|
