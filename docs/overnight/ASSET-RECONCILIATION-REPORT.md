@@ -18,7 +18,8 @@
 | **SVG brand assets in `public/`** | None |
 | **Kelly local library** `/Users/knyhagen/assets910` | Not mounted on Mac path in cloud VM |
 | **Cloud ingest path (option 3)** | `/workspace/.local/assets910/` — **scaffold only**; library not present yet (see **Phase 2 ingest**) |
-| **Photoroom pattern export** | `Photoroom_da1f.zip` — **6** `AT-PATTERN-*` tiles (~375px); extracted to `.local/photoroom-patterns/`; evidence copy in `photoroom-patterns/` |
+| **Photoroom pattern export** | `Photoroom_da1f.zip` — **6** `AT-PATTERN-*` tiles (~375px); see `photoroom-patterns/` |
+| **ArcTable brand sheets (chat)** | **8** contact sheets @ 1254² / 1448×1086 — `arctable-brand-sheets/` (icons, magnets, UI chrome, identity) |
 | **Canonical Arc mark (in repo)** | `public/assets/arc/arc-mark.png` — board `ARC-LOGO-*` / `ARC-001A` family |
 
 ---
@@ -30,13 +31,16 @@
 | Primary UI sans | Nunito Sans or Avenir Next Rounded | **Inter** (+ League Spartan labels) | **TABLE** lockups: bold, tracked **all-caps sans** (not named by font file on board) |
 | Editorial / display | Georgia, Source Serif 4, Newsreader | **Instrument Serif** (+ same serif fallbacks) | Large onboarding/view titles in product match Instrument Serif direction |
 | Plan wordmark | — | **`arc-mark.png` only** (no `@font-face` for “arc” letters) | Chunky geometric **lowercase a/r/c** + red quadrant — **outlined artwork**, not CSS text |
-| ArcTable wordmark | — | **`header-compact*.png`** | Image type; separate from square **`AT-LOGO-*`** icons |
+| ArcTable wordmark | — | **`header-compact*.png`** | **`sheet-02-brand-identity`**: bold geometric **arc** + **Table**; tagline thin tracked sans; seal “ARC TABLE / LIVE CLASSROOM INTERFACE” |
+| ArcTable UI chrome | — | Live React/CSS | **`sheet-05`**: pill labels (**Capture, Sort, Place, Adjust, Ideas, Notes**) — rounded geometric sans on colored chips |
 
 **Files shipped:** `InstrumentSerif-Regular.ttf`, `Inter-Variable.woff2`, `LeagueSpartan-VF.woff2` under `public/assets/`.
 
-**Reconciliation:** Drive/governing sans (**Nunito/Avenir**) vs repo (**Inter/League Spartan**) needs founder pick. Logo boards do not substitute font files — they show **TABLE** and **arc** as **designed lockups**.
+**Reconciliation:** Drive/governing sans (**Nunito/Avenir**) vs repo (**Inter/League Spartan**) vs **Arc Table identity sheet** (heavy geometric sans on lockups — visually closer to **League Spartan / geometric grotesk** than Nunito). Logo sheets are **not font files**; `arc` letters in marks remain **raster/SVG artwork**.
 
-Palette reference (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
+**Arc Table identity sheet (`sheet-02-brand-identity-arc-table.png`):** documents primary lockup, stacked lockup, app icon (green squircle), circular seal, five-color palette — aligns with **`AT-LOGO-*`** / **`arctable-logo-icon-*`** quadrant marks. Subtitle copy: “live classroom interface” (not “AN ARC CLASSROOM SPACE” on older `header-compact` PNG — **copy drift** to reconcile).
+
+--- (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
 
 **Approved visual target (Kelly, 2026-09-14):** dark green **planner frame** only; **light cream exterior** with **large, faded, desaturated** direct Arc pattern (not dark-green-dominant shell). Interior quiet; exterior branded. Stage 7.2.2 exterior reads too dark/heavy — future import should favor light-field pattern sources below, not `green.png` or full-strength breezeblock wash alone.
 
