@@ -40,7 +40,7 @@
 
 **Arc Table identity sheet (`sheet-02-brand-identity-arc-table.png`):** documents primary lockup, stacked lockup, app icon (green squircle), circular seal, five-color palette — aligns with **`AT-LOGO-*`** / **`arctable-logo-icon-*`** quadrant marks. Subtitle copy: “live classroom interface” (not “AN ARC CLASSROOM SPACE” on older `header-compact` PNG — **copy drift** to reconcile).
 
---- (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
+Palette reference (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`. (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
 
 **Approved visual target (Kelly, 2026-09-14):** dark green **planner frame** only; **light cream exterior** with **large, faded, desaturated** direct Arc pattern (not dark-green-dominant shell). Interior quiet; exterior branded. Stage 7.2.2 exterior reads too dark/heavy — future import should favor light-field pattern sources below, not `green.png` or full-strength breezeblock wash alone.
 
@@ -78,6 +78,27 @@ This is **not** legacy “journal spine” product chrome (still rejected per Pl
 **Evidence:** `docs/overnight/evidence/asset-reconciliation/photoroom-patterns/` (+ working copy `.local/photoroom-patterns/`, gitignored).
 
 **Import mapping (proposal only):** `public/assets/arc/pattern-exterior-at-05.jpg` (or PNG from source) with CSS low opacity/saturation — **after** shortlist approval.
+
+---
+
+## ArcTable brand asset sheets (Kelly chat — 8 PNGs)
+
+Evidence: `docs/overnight/evidence/asset-reconciliation/arctable-brand-sheets/` (all **ArcTable / classroom brand**, not Plan shell).
+
+| Sheet | Contents | Plan import? | Rec |
+|-------|----------|--------------|-----|
+| **01** bloop shapes | 17 organic geometric **magnets** / blobs | No | **POSSIBLE** — Workspace capture UI accents; prefer CSS bloops for Plan |
+| **02** brand identity | Lockups, app icon, seal, palette, hero type | ArcTable only | **KEEP** — authority reference for ArcTable mark + typography direction |
+| **03** arch/ring icons | 16 nested arches, rings, quadrants | ArcTable | **KEEP** — motif library; overlaps timer rings / logo icons |
+| **04** pattern composite | Same **6** exterior swatches as Photoroom + `AT-PATTERN` zip | Plan exterior candidates only | **KEEP** — ties Photoroom zip to full-res board |
+| **05** UI chrome | Labeled chips: Capture, Sort, Place, Adjust, Ideas, Notes | Workspace/Task UI | **POSSIBLE** — reuse **wording** + shape language in Plan Workspace (not Fridge art) |
+| **06** magnet discs | 21 circular magnets incl. **arc** letter disc, solids, icons | Course/Workspace | **KEEP** — primary **magnet reuse** source (replaces Fridge metaphor) |
+| **07** pictograms | 20 functional icons (book, calendar, people, etc.) | ArcTable live/tools | **KEEP** ArcTable; **defer** Plan unless a tool needs raster |
+| **08** strips/shapes | Tape strips, bars, dots, decorative geometry | Accent | **POSSIBLE** — trim only; do not clutter Plan shell |
+
+**Magnet policy (Kelly):** Retire **Fridge** naming and product chrome; **reuse magnet discs** (`sheet-06`, board `ARC-010*`, Photoroom **AT-PATTERN-06**) as small signatures in **Workspace / course bands**, not as a separate “Fridge” surface.
+
+**Logo icons:** Square quadrant marks = **`arctable-logo-icons/`** + board **`AT-LOGO-*`**; distinct from Plan **`arc-mark.png`**.
 
 ---
 
