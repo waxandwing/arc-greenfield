@@ -92,6 +92,18 @@
   --page-gutter: 32px;
   --mobile-gutter: 20px;
 
+  /* Vertical stack: app header → shell frame → planner chrome → spread header → canvas */
+  --arc-app-header-block: calc(var(--space-16) + var(--space-2));
+  --shell-composition-inset-block: calc(var(--shell-frame-inset) + 2px);
+  --shell-planner-chrome-block: calc(var(--shell-frame-border) + 6px + calc(var(--shell-planner-border) + 2px));
+  --shell-spread-surface-top: calc(
+    var(--arc-app-header-block) + var(--shell-composition-inset-block) + var(--shell-planner-chrome-block)
+  );
+  /* Sync with .calendar-stage-header min-height + .arc-calendar-spread > .calendar-stage-header padding */
+  --calendar-spread-header-padding-block: calc(10px + 8px);
+  --calendar-spread-header-block: calc(var(--calendar-spread-header-padding-block) + 76px + 1px);
+  --shell-workspace-fridge-top: calc(var(--shell-spread-surface-top) + var(--calendar-spread-header-block));
+
   /* —— Typography —— */
   --font-display: 'Instrument Serif', Georgia, 'Source Serif 4', 'Newsreader', serif;
   --font-editorial: var(--font-display);

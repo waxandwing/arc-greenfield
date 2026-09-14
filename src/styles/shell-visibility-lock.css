@@ -329,7 +329,7 @@
 }
 
 .b01-furniture-composition[data-workspace-open='true'] .b01-fridge-surface {
-  top: 188px;
+  top: var(--shell-workspace-fridge-top);
   right: max(78px, calc(var(--page-gutter) + 46px));
   width: min(420px, calc(100vw - 120px));
   border-width: var(--shell-planner-border);
