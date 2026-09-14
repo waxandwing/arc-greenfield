@@ -1,7 +1,8 @@
 /** AT-001 table mark geometry + quadrant → ArcTable concept mapping (brief). */
 
-/** Approved production raster (Kelly 2026-09-14); SVG paths remain for geometry reference only. */
+/** Canonical ArcTable logo raster (Kelly); matches AT-001 quadrant colors. Inline SVG used on desk for hit targets. */
 export const ARC_TABLE_MARK_ASSET = '/assets/arctable/logo-icon-framed-arc-primary-512.png'
+export const ARC_TABLE_MARK_LOGO_ALIAS = '/assets/arctable/arctable-logo-primary.png'
 export const ARC_TABLE_MARK_ASSET_SVG = '/assets/arctable/AT-001_table-mark.svg'
 
 export const ARC_TABLE_MARK_VIEWBOX = 100
