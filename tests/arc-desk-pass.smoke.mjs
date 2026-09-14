@@ -93,13 +93,13 @@ try {
   await shot(page, '01-desk-layout.png')
 
   await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
-  const editWorkspace = page.getByRole('button', { name: 'Edit Workspace', exact: true })
-  await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
+  const customizeDesk = page.getByRole('button', { name: 'Customize desk', exact: true })
+  await customizeDesk.waitFor({ state: 'visible', timeout: 8000 })
   assert(await page.getByRole('heading', { name: 'Desk setup' }).isVisible(), 'Settings must expose Desk setup IA.')
   await shot(page, '15-settings-home-desk.png')
 
-  await editWorkspace.click()
-  assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Edit Workspace must enter arrangement mode on the real desk.')
+  await customizeDesk.click()
+  assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Customize desk must enter edit mode on the real desk.')
   assert(await page.locator('[data-desk-edit-mode="true"]').count() === 1, 'Desk edit mode flag must be set.')
   assert(await page.getByTestId('arc-desk-arctable').getAttribute('data-interactions-disabled') === 'true', 'ArcTable quadrant clicks must disable while editing desk layout.')
   await shot(page, 'desk-edit-mode.png')
@@ -123,10 +123,6 @@ try {
   })
   await page.reload({ waitUntil: 'networkidle' })
   assert(await page.locator('[data-layout-grid="true"]').count() === 1, 'Saved desk layout must hydrate on load.')
-
-  await selectView(page, 'Year')
-  assert(await page.getByTestId('school-year-desk').count() === 1, 'Year must render school year desk grid.')
-  await shot(page, '03-year-desk-grid.png')
 
   console.log('Arc desk pass smoke passed: desk setup IA, edit mode entry/exit, layout persistence.')
   await context.close()

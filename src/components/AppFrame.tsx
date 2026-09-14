@@ -626,7 +626,7 @@ export function AppFrame() {
                   ...(patch.tray ? { traySize: patch.tray } : {}),
                   ...(patch.msc ? { mscSize: patch.msc } : {}),
                 })}
-                onPinDown={() => completeDeskEdit(true)}
+                onDone={() => completeDeskEdit(true)}
                 onReset={resetDeskLayoutDraft}
                 resetNeedsConfirm={deskResetArmed}
               />
