@@ -11,8 +11,8 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .skip-link:focus{width:auto;height:auto;overflow:visible;clip:auto;clip-path:none;white-space:normal;padding:8px 12px;border-radius:var(--radius-sm)}
 
 /* Shell field + header: see arc-plan-shell.css */
-.arc-wordmark{width:44px;height:44px;border:0;background:transparent;padding:4px;cursor:pointer}
-.arc-wordmark img{display:block;width:36px;height:36px;object-fit:contain}
+.arc-wordmark{width:48px;height:48px;border:0;background:transparent;padding:2px;cursor:pointer}
+.arc-wordmark img{display:block;width:44px;height:44px;object-fit:contain}
 .arc-header-space{min-width:0}
 .arc-live-return{display:flex;align-items:center;gap:16px;min-height:44px;padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer}.arc-live-return span{font-size:13px;font:700 13px/1.2 var(--font-label);letter-spacing:.04em;text-transform:uppercase}
 

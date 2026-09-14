@@ -82,14 +82,14 @@
 }
 
 .arc-header .arc-wordmark {
-  width: 40px;
-  height: 40px;
-  opacity: 0.92;
+  width: 46px;
+  height: 46px;
+  opacity: 1;
 }
 
 .arc-header .arc-wordmark img {
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
 }
 
 .b01-fridge-surface,

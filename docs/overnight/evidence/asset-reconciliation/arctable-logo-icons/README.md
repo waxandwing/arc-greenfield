@@ -1,6 +1,21 @@
 # ArcTable logo icons (audit evidence)
 
-Kelly (2026-09-14): these **1000×1000** breezeblock / quadrant / framed squares are **ArcTable logo icons**, not Plan shell or exterior patterns.
+Kelly (2026-09-14): **1000×1000** breezeblock / quadrant / framed squares in chat batches are **ArcTable logo icons**, not Plan shell or exterior patterns.
+
+## Kelly delivery — framed Arc lettermark (2026-09-14)
+
+Two PNG exports (~796×835): one with black mat (trimmed for production), one full-bleed square.
+
+| Role | Path |
+|------|------|
+| **Primary (production)** | `public/assets/arctable/logo-icon-framed-arc-primary-{256,512}.png` (from **full-bleed**) |
+| Mat-trim variant | `public/assets/arctable/logo-icon-framed-arc-mat-trim-{128,256,512}.png` |
+| Full-bleed variant | `public/assets/arctable/logo-icon-framed-arc-full-bleed-{128,256,512}.png` |
+| Evidence | `logo-icon-framed-arc-*-source.png`, `*-square.png` in this folder |
+
+**Wired:** Plan header wordmark button + favicon use **primary**; live classroom headers remain `header-compact*.png` (horizontal TABLE lockup).
+
+## Earlier chat batch (1000² set)
 
 | File | Notes |
 |------|--------|
@@ -10,9 +25,5 @@ Kelly (2026-09-14): these **1000×1000** breezeblock / quadrant / framed squares
 | `arctable-logo-icon-04-1000.png` | Duplicate of 01 (same MD5) |
 | `arctable-logo-icon-05-1000.png` | Green star, cream corner arcs |
 | `arctable-logo-icon-06-1000.png` | Thick frame + color quadrants |
-
-Duplicates of batch-2 evidence copies: `breezeblock-framed-green-border-1000.png` ≡ 01; `breezeblock-inverted-green-dominant-1000.png` ≡ 02.
-
-Live ArcTable headers today: `public/assets/arctable/header-compact*.png`.
 
 See `docs/overnight/ASSET-RECONCILIATION-REPORT.md`.

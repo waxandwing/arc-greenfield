@@ -31,7 +31,7 @@
 }
 
 .arc-header .arc-wordmark img {
-  filter: brightness(0) invert(1);
+  filter: none;
 }
 
 .arc-layout {
