@@ -1,7 +1,7 @@
 # ARC Desk Pass Report
 
 Branch: `cursor/arc-production-integration`  
-Baseline: Repair 2.1 + Pass 3 chrome + AT-001 desk mark on integration (`2079ff4`)
+Baseline: workspace layout migration + desk integration fixes (`698e130`)
 
 ## Stop condition (A–Z)
 
