@@ -3,6 +3,7 @@ import type { ISODate } from '../calendar'
 import type { CaptureWorkspace, Lesson, PlanningCapture, UnitWorkspace } from '../planning'
 import { ArcImportantObject } from './ArcImportantObject'
 import { ArcObjectMenu, promptMoveToDate, type ArcObjectMenuItem } from './ArcObjectMenu'
+import { TRAY_CAPTURE_DRAG_MIME, encodeTrayCaptureDrag } from '../planning/deskDrag'
 
 type Props = {
   captures: CaptureWorkspace | null
@@ -21,6 +22,7 @@ type Props = {
   onUndo: () => void
   onOpenUnits: () => void
   onOpenImport: () => void
+  planningDragDisabled?: boolean
 }
 
 export function WorkspacePanel(props: Props) {
@@ -31,10 +33,10 @@ export function WorkspacePanel(props: Props) {
   const captureCount = props.captures?.captures.length ?? 0
 
   return (
-    <div className="b01-fridge-content b01-fridge-content--repair-pass-3">
+    <div className="b01-fridge-content b01-fridge-content--repair-pass-3 b01-tray-content">
       <section aria-labelledby="workspace-captures-heading" className="workspace-captures-primary">
         <div className="workspace-captures-heading-row">
-          <h2 id="workspace-captures-heading">Captures</h2>
+          <h2 id="workspace-captures-heading">Tray</h2>
           {captureCount > 0 ? <span className="workspace-capture-count">{captureCount}</span> : null}
         </div>
         {captureCount === 0 ? (
@@ -47,6 +49,7 @@ export function WorkspacePanel(props: Props) {
               units={props.units}
               defaultDate={date as ISODate | ''}
               selected={selectedCaptureId === capture.id}
+              planningDragDisabled={props.planningDragDisabled}
               onSelect={() => setSelectedCaptureId((current) => (current === capture.id ? null : capture.id))}
               onPromote={props.onPromoteCapture}
               onDelete={props.onDeleteCapture}
@@ -57,7 +60,7 @@ export function WorkspacePanel(props: Props) {
         )}
       </section>
 
-      {props.undoAvailable ? <button type="button" className="quiet-button" onClick={props.onUndo}>Undo last Workspace move</button> : null}
+      {props.undoAvailable ? <button type="button" className="quiet-button" onClick={props.onUndo}>Undo last tray move</button> : null}
 
       <details className="workspace-secondary-block">
         <summary>Unscheduled lessons ({unscheduledLessons.length})</summary>
@@ -95,11 +98,12 @@ export function WorkspacePanel(props: Props) {
   )
 }
 
-function CaptureCard({ capture, units, defaultDate, selected, onSelect, onPromote, onDelete, onSetImportant, onMoveToDate }: {
+function CaptureCard({ capture, units, defaultDate, selected, planningDragDisabled = false, onSelect, onPromote, onDelete, onSetImportant, onMoveToDate }: {
   capture: PlanningCapture
   units: UnitWorkspace | null
   defaultDate: ISODate | ''
   selected: boolean
+  planningDragDisabled?: boolean
   onSelect: () => void
   onPromote: Props['onPromoteCapture']
   onDelete: Props['onDeleteCapture']
@@ -136,10 +140,27 @@ function CaptureCard({ capture, units, defaultDate, selected, onSelect, onPromot
     })
   }
 
+  const [lifting, setLifting] = useState(false)
+
   return (
-    <ArcImportantObject important={capture.important === true} className={`workspace-capture-card${selected ? ' workspace-capture-card--selected' : ''}`}>
+    <ArcImportantObject important={capture.important === true} className={`workspace-capture-card tray-post-it${selected ? ' workspace-capture-card--selected' : ''}${lifting ? ' tray-post-it--lift' : ''}`}>
       <ArcObjectMenu label={capture.text} items={menuItems}>
-      <button type="button" className="workspace-capture-card-select" onClick={onSelect}>
+      <button
+        type="button"
+        className="workspace-capture-card-select"
+        draggable={!planningDragDisabled}
+        onDragStart={(event) => {
+          if (planningDragDisabled) {
+            event.preventDefault()
+            return
+          }
+          setLifting(true)
+          event.dataTransfer.effectAllowed = 'move'
+          event.dataTransfer.setData(TRAY_CAPTURE_DRAG_MIME, encodeTrayCaptureDrag({ kind: 'capture', captureId: capture.id }))
+        }}
+        onDragEnd={() => setLifting(false)}
+        onClick={onSelect}
+      >
         <strong>{capture.text}</strong>
         <span>Captured {new Date(capture.createdAt).toLocaleDateString()}{capture.anchorDate ? ` · ${capture.anchorDate}` : ''}</span>
       </button>

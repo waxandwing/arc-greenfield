@@ -56,6 +56,11 @@ const contracts = [
   'tests/generated/src/planning/lessonShiftPersistence.contract.js',
   'tests/generated/src/planning/captureWorkspace.contract.js',
   'tests/generated/src/planning/interactionLaws.contract.js',
+  'tests/generated/src/navigation/deskPreferences.contract.js',
+  'tests/generated/src/navigation/deskLayout.contract.js',
+  'tests/generated/src/planning/arcTableDeskAccess.contract.js',
+  'tests/generated/src/planning/yearDeskProjection.contract.js',
+  'tests/generated/src/planning/deskDrag.contract.js',
   'tests/generated/src/planning/planContextResolution.contract.js',
   'tests/generated/src/planning/planningPeriodAttention.contract.js',
   'tests/generated/src/planning/planningPeriodNow.contract.js',
@@ -69,6 +74,7 @@ for (const contract of contracts) run(process.execPath, [contract])
 function assertManifestComplete() {
   const discovered = [
     ...discoverContracts('src/calendar'),
+    ...discoverContracts('src/navigation'),
     ...discoverContracts('src/planning'),
     ...discoverContracts('src/demo'),
     ...discoverContracts('tests', { topLevelOnly: true }),

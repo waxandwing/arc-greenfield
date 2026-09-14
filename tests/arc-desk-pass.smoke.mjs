@@ -1,0 +1,135 @@
+import { mkdirSync } from 'node:fs'
+import { chromium } from 'playwright'
+import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
+
+const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
+const evidenceDir = new URL('../docs/overnight/evidence/arc-desk-pass/', import.meta.url).pathname
+mkdirSync(evidenceDir, { recursive: true })
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message)
+}
+
+function seed() {
+  const calendarId = 'arc-desk-pass'
+  return {
+    'arc.calendar.v1': JSON.stringify({
+      schemaVersion: 1,
+      savedAt: '2026-09-15T12:00:00.000Z',
+      input: {
+        id: calendarId,
+        schoolYearLabel: '2026–27',
+        firstDay: '2026-08-10',
+        lastDay: '2027-05-28',
+        instructionalWeekdays: [1, 2, 3, 4, 5],
+        patternSource: 'manual',
+        patternConfidence: 'confirmed',
+        exceptions: [],
+        quarters: [{ id: 'q1', label: 'Q1', startDate: '2026-08-10', endDate: '2026-10-16' }],
+        semesters: [],
+      },
+    }),
+    'arc.planningWorkspace.v1': JSON.stringify({
+      schemaVersion: 1,
+      input: {
+        calendarId,
+        courses: [{ id: 'course-1', title: 'Studio Art' }],
+        sections: [{ id: 'section-1', courseId: 'course-1', calendarId, name: 'Period 1' }],
+        notes: [{ id: 'task-1', calendarId, text: 'Print handouts', priority: 'must', placement: 'taskbar', createdAt: '2026-09-01T12:00:00.000Z' }],
+      },
+    }),
+    'arc.units.v1': JSON.stringify({ schemaVersion: 1, input: { calendarId, units: [] } }),
+    'arc.lessons.v1': JSON.stringify({ schemaVersion: 1, input: { calendarId, lessons: [], deliveryStates: [] } }),
+    'arc.shift.v1': JSON.stringify({ schemaVersion: 1, input: { calendarId, overrides: [], undo: null } }),
+    'arc.captures.v1': JSON.stringify({
+      schemaVersion: 1,
+      workspace: { calendarId, captures: [{ id: 'cap-1', calendarId, text: 'Field trip idea', createdAt: '2026-09-01T12:00:00.000Z' }] },
+    }),
+    'arc.planning-context.v1': JSON.stringify({ schemaVersion: 2, calendarId, view: 'Day', anchorDate: '2026-09-15', focus: 'day' }),
+    'arc.desk-preferences.v1': JSON.stringify({
+      showTray: true,
+      showPriorityPad: true,
+      showDeskNotes: false,
+      showArcTable: true,
+      homeDeskPlannerView: 'Month',
+      plannerSize: 'standard',
+      traySize: 'standard',
+      mscSize: 'standard',
+    }),
+    'arc.onboarding.v1': JSON.stringify({
+      schemaVersion: 1,
+      draft: { stage: 'landed', dismissed: true, firstCapturePromptDismissed: true },
+    }),
+  }
+}
+
+async function shot(page, name) {
+  await page.screenshot({ path: `${evidenceDir}${name}`, fullPage: true })
+}
+
+const browser = await chromium.launch({ headless: true })
+try {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+  const page = await context.newPage()
+  await page.addInitScript((entries) => {
+    if (localStorage.getItem('arc.calendar.v1') !== null) return
+    for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value)
+  }, seed())
+  await page.goto(baseUrl, { waitUntil: 'networkidle' })
+  await page.waitForFunction(() => {
+    const tab = document.querySelector('.arc-index-tab[aria-current="page"]')
+    return tab && tab.textContent && tab.textContent.trim().length > 0
+  })
+
+  const returnTabLabel = (await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() ?? ''
+
+  assert(await page.locator('.arc-shell--desk').count() === 1, 'Desk shell must lock viewport.')
+  const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
+  assert(shellWood.includes('light-wood-desk'), 'Desk shell must use full-viewport light wood.')
+  const deskFramePattern = await page.locator('.b01-furniture-composition--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
+  assert(!deskFramePattern.includes('pattern-grid'), 'Desk composition must not repeat exterior pattern tile.')
+  assert(await page.getByTestId('arc-desk-arctable').isVisible(), 'ArcTable desk mark must render on wood.')
+  assert(await page.getByTestId('arc-desk-tray-dock').isVisible(), 'Tray dock must render on desk.')
+  assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render on desk.')
+  assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in tray dock.')
+  await shot(page, '01-desk-layout.png')
+
+  await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
+  assert(await page.getByRole('heading', { name: 'Desk setup' }).isVisible(), 'Settings must expose Desk setup IA.')
+  assert(await page.getByRole('button', { name: 'Customize desk', exact: true }).isVisible(), 'Desk setup overview must offer Customize desk.')
+  await shot(page, '15-settings-home-desk.png')
+
+  await page.getByRole('button', { name: 'Customize desk', exact: true }).click()
+  assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Customize desk must enter edit mode on the real desk.')
+  assert(await page.locator('[data-desk-edit-mode="true"]').count() === 1, 'Desk edit mode flag must be set.')
+  await shot(page, 'desk-edit-mode.png')
+
+  await page.getByRole('button', { name: 'Done', exact: true }).click()
+  assert(await page.getByTestId('desk-edit-toolbar').count() === 0, 'Done must exit desk edit mode.')
+  assert((await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() === returnTabLabel, 'Done must return to the same planner view.')
+
+  await page.evaluate(() => {
+    localStorage.setItem('arc.desk-layout.v1', JSON.stringify({
+      schemaVersion: 1,
+      customized: true,
+      placements: [
+        { object: 'planner', zone: 'main' },
+        { object: 'tray', zone: 'mid-upper' },
+        { object: 'msc', zone: 'side-lower' },
+        { object: 'arctable', zone: 'side-upper' },
+        { object: 'notes', zone: 'notes-rail' },
+      ],
+    }))
+  })
+  await page.reload({ waitUntil: 'networkidle' })
+  assert(await page.locator('[data-layout-grid="true"]').count() === 1, 'Saved desk layout must hydrate on load.')
+
+  await selectView(page, 'Year')
+  assert(await page.getByTestId('school-year-desk').count() === 1, 'Year must render school year desk grid.')
+  await shot(page, '03-year-desk-grid.png')
+
+  console.log('Arc desk pass smoke passed: desk setup IA, edit mode entry/exit, layout persistence.')
+  await context.close()
+} finally {
+  await browser.close()
+}

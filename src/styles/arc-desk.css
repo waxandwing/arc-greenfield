@@ -1,0 +1,752 @@
+/* ARC Desk Pass — full-viewport wood base; desk objects float with shadow only. */
+
+.arc-shell--desk {
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background-color: #e8dcc8;
+  background-image: url('/assets/desk/light-wood-desk.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.arc-shell--desk .arc-layout {
+  height: calc(100dvh - 0px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.arc-shell--desk .arc-calendar-stage {
+  height: 100%;
+  padding-bottom: 12px;
+  overflow: hidden;
+}
+
+.arc-shell--desk body {
+  overflow: hidden;
+}
+
+html:has(.arc-shell--desk) {
+  overflow: hidden;
+}
+
+html:has(.arc-shell--desk) body {
+  overflow: hidden;
+}
+
+.b01-furniture-composition--desk {
+  height: calc(100dvh - 24px);
+  max-height: calc(100dvh - 24px);
+  margin: 0;
+  padding: 10px 8px 12px;
+  overflow: hidden;
+  align-content: stretch;
+  border: none;
+  border-radius: 0;
+  background: none;
+  background-image: none;
+  box-shadow: none;
+}
+
+.arc-desk-surface {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  gap: 10px;
+  align-items: stretch;
+  background: none;
+  box-shadow: none;
+}
+
+.b01-furniture-composition--desk .arc-desk-surface {
+  grid-template-columns: minmax(0, 1fr) minmax(148px, 200px) minmax(132px, 168px);
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded .arc-desk-surface {
+  grid-template-columns: minmax(0, 1.35fr) minmax(112px, 148px) minmax(96px, 128px);
+}
+
+.b01-furniture-composition--desk .arc-planner-object {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.b01-furniture-composition--desk .arc-calendar-spread--desk {
+  min-height: 0;
+  flex: 1 1 auto;
+  border: 3px solid var(--shell-frame-green);
+  border-radius: 22px;
+  background-color: var(--field-elevated);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--field-elevated) 96%, transparent), color-mix(in srgb, var(--field-elevated) 96%, transparent)),
+    var(--plan-surface-paper-texture),
+    var(--plan-surface-paper);
+  box-shadow: 0 22px 48px -28px rgba(33, 29, 23, 0.55);
+}
+
+.b01-furniture-composition--desk .arc-calendar-spread--desk,
+.b01-furniture-composition--desk .b01-calendar-owner {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.b01-furniture-composition--desk .b01-calendar-owner > .calendar-canvas {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.arc-desk-tray-dock,
+.arc-desk-priority-dock,
+.arc-desk-notes-dock {
+  min-height: 0;
+  min-width: 0;
+  transition: flex-basis 220ms var(--ease-out-soft, ease), opacity 220ms ease;
+}
+
+.arc-desk-tray-rim {
+  height: 100%;
+  min-height: 0;
+  padding: 8px;
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.06)),
+    url('/assets/desk/blue-molded-tray.png') center / cover no-repeat;
+  box-shadow: 0 18px 40px -26px rgba(33, 29, 23, 0.52);
+}
+
+.arc-desk-tray-well {
+  height: calc(100% - 28px);
+  margin-top: 6px;
+  overflow: auto;
+  padding: 6px 4px 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent-blue-deep) 18%, transparent);
+  box-shadow: inset 0 8px 22px -12px rgba(15, 35, 48, 0.65);
+}
+
+.b01-tray-content {
+  font-size: 13px;
+}
+
+.tray-post-it {
+  transform: rotate(-0.6deg);
+  transition: transform 160ms var(--ease-out-soft, ease), box-shadow 160ms ease;
+}
+
+.tray-post-it--lift {
+  transform: rotate(-1deg) translateY(-4px) scale(1.02);
+  box-shadow: 0 14px 28px -16px rgba(33, 29, 23, 0.55);
+  z-index: 2;
+}
+
+.desk-priority-pad {
+  height: 100%;
+  min-height: 0;
+  padding: 8px 6px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--paper-raised), var(--field-elevated));
+  box-shadow: 0 18px 40px -26px rgba(33, 29, 23, 0.52);
+  overflow: auto;
+}
+
+.desk-priority-pad-heading h2 {
+  margin: 2px 0 0;
+  font: 700 13px/1.2 var(--font-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.desk-priority-lanes {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.desk-priority-lane {
+  padding: 8px 6px;
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.82);
+  border: 1px dashed rgba(44, 46, 46, 0.14);
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.desk-priority-lane--drop-target {
+  border-color: var(--mustard);
+  background: rgba(228, 179, 61, 0.12);
+}
+
+.desk-priority-lane h3 {
+  margin: 0 0 6px;
+  font: 800 10px/1 var(--font-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.desk-priority-list {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.desk-priority-task {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #fffef9;
+  box-shadow: 0 2px 0 rgba(44, 46, 46, 0.08);
+  cursor: grab;
+  transition: transform 160ms var(--ease-out-soft, ease), box-shadow 160ms ease;
+}
+
+.desk-priority-task--lift {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 22px -14px rgba(33, 29, 23, 0.45);
+}
+
+.desk-priority-task--important {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--terracotta) 70%, transparent);
+}
+
+.desk-priority-add input {
+  width: 100%;
+  min-height: 36px;
+  font-size: 12px;
+}
+
+.b01-tray-surface {
+  border-top-color: var(--accent-blue-deep);
+}
+
+.home-desk-preferences {
+  display: grid;
+  gap: 12px;
+}
+
+.home-desk-intro {
+  margin: 0;
+  font-size: 13px;
+  color: var(--soft-charcoal);
+}
+
+.school-year-desk {
+  display: grid;
+  gap: 16px;
+  padding: 8px 4px 20px;
+  zoom: var(--year-desk-zoom, 100%);
+}
+
+.school-year-desk-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.school-year-desk-title {
+  margin: 4px 0 0;
+  font: 500 34px/1.05 var(--font-editorial);
+}
+
+.school-year-desk-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.school-year-desk-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.85);
+  border: 1px solid rgba(44, 46, 46, 0.12);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.school-year-desk-remain {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--shell-frame-green);
+  color: var(--field-elevated);
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.school-year-desk-remain strong {
+  font: 800 22px/1 var(--font-label);
+  letter-spacing: 0.02em;
+}
+
+.school-year-desk-caught {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid rgba(44, 46, 46, 0.18);
+  border-radius: 8px;
+  background: var(--field-elevated);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.school-year-desk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--soft-charcoal);
+}
+
+.school-year-desk-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.school-year-desk-legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(44, 46, 46, 0.12);
+}
+
+.school-year-desk-legend-swatch--q1 { background: var(--lavender-soft); }
+.school-year-desk-legend-swatch--q2 { background: var(--sage-soft); }
+.school-year-desk-legend-swatch--q3 { background: var(--accent-blue-soft); }
+.school-year-desk-legend-swatch--q4 { background: rgba(201, 154, 158, 0.35); }
+.school-year-desk-legend-swatch--no-school { background: rgba(74, 73, 69, 0.18); }
+.school-year-desk-legend-swatch--countdown { background: repeating-linear-gradient(45deg, var(--mustard-soft), var(--mustard-soft) 4px, transparent 4px, transparent 8px); }
+
+.school-year-desk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 14px;
+}
+
+.school-year-mini-month {
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--field-elevated);
+  box-shadow: inset 0 0 0 1px rgba(44, 46, 46, 0.08);
+}
+
+.school-year-mini-month h3 {
+  margin: 0 0 8px;
+  font: 700 13px/1.2 var(--font-ui);
+}
+
+.school-year-mini-month-weekdays,
+.school-year-mini-month-cells {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.school-year-mini-month-weekdays span {
+  font-size: 9px;
+  font-weight: 800;
+  text-align: center;
+  color: var(--soft-charcoal);
+}
+
+.school-year-mini-day {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 22px;
+  border: 0;
+  border-radius: 4px;
+  padding: 0;
+  font: 700 10px/1 var(--font-ui);
+  background: rgba(255, 253, 248, 0.9);
+  cursor: pointer;
+}
+
+.school-year-mini-day--pad {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.school-year-mini-day--q1 { background: color-mix(in srgb, var(--lavender) 28%, white); }
+.school-year-mini-day--q2 { background: color-mix(in srgb, var(--sage) 30%, white); }
+.school-year-mini-day--q3 { background: color-mix(in srgb, var(--dusty-blue) 26%, white); }
+.school-year-mini-day--q4 { background: color-mix(in srgb, var(--dusty-pink) 30%, white); }
+.school-year-mini-day--no-school { background: rgba(74, 73, 69, 0.12); color: rgba(74, 73, 69, 0.55); }
+.school-year-mini-day--selected { box-shadow: inset 0 0 0 2px var(--ink); }
+.school-year-mini-day--today { box-shadow: inset 0 0 0 2px var(--mustard); }
+.school-year-mini-day--caught .school-year-mini-day-x {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(44, 46, 46, 0.72);
+  pointer-events: none;
+}
+
+.planning-year-progression {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(44, 46, 46, 0.12);
+}
+
+.planning-year-progression > summary {
+  cursor: pointer;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.arc-desk-surface[data-layout-grid='true'] {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.arc-desk-object-slot {
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.arc-desk-object-slot > .arc-planner-object,
+.arc-desk-object-slot > .arc-desk-tray-dock,
+.arc-desk-object-slot > .arc-desk-priority-dock,
+.arc-desk-object-slot > .arc-desk-notes-dock,
+.arc-desk-object-slot > .arc-desk-arctable-anchor {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.arc-desk-object-slot[data-desk-object='arctable'] .arc-desk-arctable-anchor {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  pointer-events: auto;
+}
+
+.arc-desk-object--planner-large {
+  grid-column-end: span 3 !important;
+}
+
+.arc-desk-object--tray-wide {
+  min-width: 0;
+}
+
+.arc-desk-object--msc-compact .desk-priority-pad {
+  font-size: 12px;
+}
+
+.b01-furniture-composition--desk-edit .arc-desk-surface--edit {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mustard) 55%, transparent);
+}
+
+.arc-desk-zone-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6px;
+  padding: 4px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.arc-desk-zone-grid::before {
+  content: '';
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(90deg, rgba(44, 46, 46, 0.06) 0 1px, transparent 1px 25%),
+    repeating-linear-gradient(0deg, rgba(44, 46, 46, 0.06) 0 1px, transparent 1px 50%);
+}
+
+.arc-desk-edit-object--selected {
+  z-index: 2;
+  outline: 3px solid var(--mustard);
+  outline-offset: 2px;
+}
+
+.desk-edit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin: 0 12px 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--mustard-soft) 70%, white);
+  border: 1px solid rgba(44, 46, 46, 0.12);
+}
+
+.desk-edit-toolbar-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.desk-edit-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.desk-setup-settings .b01-settings-action--primary {
+  font-weight: 800;
+}
+
+.desk-setup-overview,
+.desk-setup-hint,
+.b01-settings-muted {
+  margin: 0;
+  font-size: 13px;
+  color: var(--soft-charcoal);
+}
+
+.desk-setup-presets,
+.desk-setup-visibility {
+  border: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.desk-setup-presets legend,
+.desk-setup-visibility legend {
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 1100px) {
+  .b01-furniture-composition--desk .arc-desk-surface:not([data-layout-grid='true']) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+  }
+
+  .arc-desk-tray-dock,
+  .arc-desk-priority-dock {
+    max-height: 220px;
+  }
+}
+
+@media (max-width: 900px) {
+  .b01-furniture-composition--desk .arc-desk-tray-dock,
+  .b01-furniture-composition--desk .arc-desk-priority-dock {
+    display: none;
+  }
+}
+
+.arc-index-tab--workspace {
+  background-image: linear-gradient(90deg, rgba(228, 179, 61, 0.18), transparent 48%), url('/assets/desk/planner-tab-mustard.png');
+  background-size: auto, cover;
+  background-position: left center, center;
+}
+
+/* ArcTable AT-001 desk mark — inline SVG quadrants (public/assets/arctable/AT-001_table-mark.svg). */
+.arc-desk-arctable-anchor {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  z-index: 12;
+  pointer-events: none;
+}
+
+.arc-desk-arctable {
+  pointer-events: auto;
+  display: grid;
+  gap: 6px;
+  max-width: min(280px, 42vw);
+}
+
+.arc-desk-arctable-mark-wrap {
+  filter: drop-shadow(0 14px 28px -16px rgba(33, 29, 23, 0.55));
+}
+
+.arc-desk-arctable-single {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.arc-desk-arctable-single:focus-visible {
+  outline: 3px solid var(--mustard);
+  outline-offset: 3px;
+}
+
+.arc-desk-mark-svg {
+  display: block;
+}
+
+.arc-desk-mark-quadrant {
+  cursor: pointer;
+}
+
+.arc-desk-mark-quadrant:focus {
+  outline: none;
+}
+
+.arc-desk-mark-quadrant:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 1px;
+}
+
+.arc-desk-mark-quadrant path {
+  transition: transform 160ms var(--ease-out-soft, ease);
+}
+
+.arc-desk-mark-quadrant--live path {
+  transform-origin: 7px 7px;
+}
+
+.arc-desk-mark-quadrant--timer path {
+  transform-origin: 93px 7px;
+}
+
+.arc-desk-mark-quadrant--tools path {
+  transform-origin: 7px 93px;
+}
+
+.arc-desk-mark-quadrant--media path {
+  transform-origin: 93px 93px;
+}
+
+.arc-desk-mark-quadrant--active path,
+.arc-desk-mark-quadrant:hover path,
+.arc-desk-mark-quadrant:focus-visible path {
+  transform: translate(var(--arc-desk-mark-lift-x, 0), var(--arc-desk-mark-lift-y, 0));
+}
+
+.arc-desk-mark-quadrant--live {
+  --arc-desk-mark-lift-x: -1.5px;
+  --arc-desk-mark-lift-y: -1.5px;
+}
+
+.arc-desk-mark-quadrant--timer {
+  --arc-desk-mark-lift-x: 1.5px;
+  --arc-desk-mark-lift-y: -1.5px;
+}
+
+.arc-desk-mark-quadrant--tools {
+  --arc-desk-mark-lift-x: -1.5px;
+  --arc-desk-mark-lift-y: 1.5px;
+}
+
+.arc-desk-mark-quadrant--media {
+  --arc-desk-mark-lift-x: 1.5px;
+  --arc-desk-mark-lift-y: 1.5px;
+}
+
+.arc-desk-mark-quadrant-label {
+  font-family: var(--font-label);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  fill: #2c2e2e;
+  pointer-events: none;
+}
+
+.arc-desk-arctable--live .arc-desk-arctable-mark-wrap {
+  filter: drop-shadow(0 0 0 2px rgba(228, 179, 61, 0.55)) drop-shadow(0 16px 32px -14px rgba(33, 29, 23, 0.58));
+}
+
+.arc-desk-arctable--preview .arc-desk-arctable-mark-wrap {
+  filter: drop-shadow(0 14px 28px -16px rgba(33, 29, 23, 0.45)) saturate(0.92);
+}
+
+.arc-desk-arctable-notice {
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.94);
+  box-shadow: 0 10px 24px -18px rgba(33, 29, 23, 0.45);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.arc-desk-arctable-preview-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(33, 29, 23, 0.42);
+}
+
+.arc-desk-arctable-preview-card {
+  max-width: 420px;
+  padding: 20px 22px;
+  border-radius: 12px;
+  background: var(--field-elevated);
+  box-shadow: 0 24px 48px -28px rgba(33, 29, 23, 0.55);
+}
+
+.arc-desk-arctable-preview-card h2 {
+  margin: 6px 0 10px;
+  font: 600 22px/1.2 var(--font-editorial);
+}
+
+.arc-desk-arctable-preview-card p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--soft-charcoal);
+}
+
+.arc-desk-arctable-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc-desk-mark-quadrant path {
+    transition: none;
+  }
+
+  .arc-desk-mark-quadrant--active path,
+  .arc-desk-mark-quadrant:hover path,
+  .arc-desk-mark-quadrant:focus-visible path {
+    transform: none;
+  }
+}

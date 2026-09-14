@@ -12,19 +12,35 @@ import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import { useArcTableSession } from '../app/useArcTableSession'
 import { DEFAULT_HOME_VIEW, calendarViewLabel, type CalendarView } from '../navigation/calendarViews'
 import {
-  loadViewPreferences,
-  recordLastUsedView,
-  resolveHomeView,
-  saveViewPreferences,
-  type ViewPreferences,
-} from '../navigation/viewPreferences'
+  loadDeskAwareViewPreferences,
+  resolveHomeDeskPlannerView,
+  saveDeskAwareViewPreferences,
+  type DeskAwareViewPreferences,
+} from '../navigation/deskPreferences'
+import {
+  deskLayoutUsesDefault,
+  loadDeskLayout,
+  moveDeskObject,
+  resetDeskLayoutToArcDefault,
+  saveDeskLayout,
+  type DeskLayoutState,
+  type DeskMoveDirection,
+  type DeskObjectKind,
+} from '../navigation/deskLayout'
+import { recordLastUsedView } from '../navigation/viewPreferences'
+import type { TaskPriority } from '../planning/taskBar'
 import {
   moveLessonFromFridge,
   moveLessonToFridge,
   applyArcTableTeachingOutcome,
+  arcTableLaunchOptions,
+  collectArcTableDeskLaunchOptions,
+  deskQuadrantToTeacherTool,
   projectArcTableSession,
   projectDayContinuity,
   buildTeachingDayRail,
+  setArcTableDeskLaunch,
+  type ArcTableDeskQuadrant,
   type ArcTableTeachingOutcome,
   undoFridgeRoundTrip,
   type FridgeRoundTripReceipt,
@@ -38,6 +54,9 @@ import { ArcOnboarding, resolveOnboardingStage } from './ArcOnboarding'
 import { CaptureCoachMark } from './CaptureCoachMark'
 import { GlobalCaptureAffordance, captureAnchorFromPlan } from './GlobalCaptureAffordance'
 import { PlannerShellBar } from './PlannerShellBar'
+import { ArcTableDeskFixture } from './ArcTableDeskFixture'
+import { DeskPriorityPad } from './DeskPriorityPad'
+import { DeskEditToolbar } from './DeskEditToolbar'
 import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
 import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
 
@@ -46,7 +65,7 @@ export function AppFrame() {
   const workspace = useArcWorkspace(workspaceMode.close)
   const taskBar = useTaskBar(workspace)
   const arcTable = useArcTableSession()
-  const [viewPreferences, setViewPreferences] = useState<ViewPreferences>(loadViewPreferences)
+  const [viewPreferences, setViewPreferences] = useState<DeskAwareViewPreferences>(loadDeskAwareViewPreferences)
   const [fridgeUndo, setFridgeUndo] = useState<FridgeRoundTripReceipt | null>(null)
   const [onboardingDraft, setOnboardingDraft] = useState(loadOnboardingDraft)
   const [showCaptureCoachMark, setShowCaptureCoachMark] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
@@ -54,6 +73,67 @@ export function AppFrame() {
   const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
+  const [deskLayout, setDeskLayout] = useState<DeskLayoutState>(loadDeskLayout)
+  const [deskEditSession, setDeskEditSession] = useState<{
+    returnView: CalendarView
+    returnAnchor: ISODate | null
+    draftLayout: DeskLayoutState
+    draftDesk: DeskAwareViewPreferences['desk']
+  } | null>(null)
+  const [deskSelectedObject, setDeskSelectedObject] = useState<DeskObjectKind>('tray')
+  const [deskResetArmed, setDeskResetArmed] = useState(false)
+
+  const deskEditActive = deskEditSession !== null
+  const activeDeskLayout = deskEditSession?.draftLayout ?? deskLayout
+  const activeDeskPreferences = deskEditSession ? { ...viewPreferences, desk: deskEditSession.draftDesk } : viewPreferences
+
+  function enterDeskEditMode() {
+    if (!workspace.calendar || workspaceMode.mode !== 'calendar' || !workspace.anchorDate) return
+    setWorkspaceOverlayOpen(false)
+    setTasksOverlayOpen(false)
+    setDeskEditSession({
+      returnView: workspace.activeView,
+      returnAnchor: workspace.anchorDate,
+      draftLayout: deskLayout,
+      draftDesk: viewPreferences.desk,
+    })
+    setDeskSelectedObject('tray')
+    setDeskResetArmed(false)
+  }
+
+  function completeDeskEdit(save: boolean) {
+    if (!deskEditSession) return
+    if (save) {
+      setDeskLayout(deskEditSession.draftLayout)
+      saveDeskLayout(deskEditSession.draftLayout)
+      updateViewPreferences({ ...viewPreferences, desk: deskEditSession.draftDesk })
+    }
+    if (deskEditSession.returnAnchor) {
+      workspace.setActiveView(deskEditSession.returnView, deskEditSession.returnAnchor)
+    } else {
+      workspace.setActiveView(deskEditSession.returnView)
+    }
+    setDeskEditSession(null)
+    setDeskResetArmed(false)
+  }
+
+  function moveSelectedDeskObject(direction: DeskMoveDirection) {
+    if (!deskEditSession || deskSelectedObject === 'planner') return
+    setDeskEditSession({
+      ...deskEditSession,
+      draftLayout: moveDeskObject(deskEditSession.draftLayout, deskSelectedObject, direction),
+    })
+  }
+
+  function resetDeskLayoutDraft() {
+    if (!deskEditSession) return
+    if (!deskResetArmed && !deskLayoutUsesDefault(deskEditSession.draftLayout)) {
+      setDeskResetArmed(true)
+      return
+    }
+    setDeskEditSession({ ...deskEditSession, draftLayout: resetDeskLayoutToArcDefault() })
+    setDeskResetArmed(false)
+  }
 
   function openRecovery(sectionId?: string) {
     setRecoveryFocusSectionId(sectionId ?? null)
@@ -142,26 +222,33 @@ export function AppFrame() {
   useEffect(() => {
     if (!workspace.calendar || !workspace.anchorDate) return
     if (workspace.viewWasPersisted) return
-    const preferred = resolveAvailableHomeView(viewPreferences, workspace.viewAvailability)
+    const preferred = resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability)
     workspace.setActiveView(preferred)
     // Home preference is intentionally applied only when the restored workspace becomes available
     // and the teacher did not already persist an explicit Plan view.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(workspace.calendar && workspace.anchorDate)])
 
-  function updateViewPreferences(next: ViewPreferences) {
+  function updateViewPreferences(next: DeskAwareViewPreferences) {
     setViewPreferences(next)
-    saveViewPreferences(next)
+    saveDeskAwareViewPreferences(next)
+  }
+
+  function promoteCaptureToPriorityLane(captureId: string, priority: TaskPriority): boolean {
+    const capture = workspace.captureWorkspace?.captures.find((item) => item.id === captureId)
+    if (!capture) return false
+    taskBar.add(priority, capture.text)
+    return workspace.removeCapture(captureId)
   }
 
   function selectView(view: CalendarView) {
     workspace.setActiveView(view)
-    updateViewPreferences(recordLastUsedView(viewPreferences, view))
+    updateViewPreferences({ ...recordLastUsedView(viewPreferences, view), desk: viewPreferences.desk })
   }
 
   function deepenTo(date: ISODate, view: CalendarView) {
     workspace.setActiveView(view, date)
-    updateViewPreferences(recordLastUsedView(viewPreferences, view))
+    updateViewPreferences({ ...recordLastUsedView(viewPreferences, view), desk: viewPreferences.desk })
   }
 
   function returnHome() {
@@ -247,6 +334,63 @@ export function AppFrame() {
     }
   }
 
+  function projectTeachingDay() {
+    if (!workspace.calendar || !workspace.anchorDate || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace) return null
+    return projectDayContinuity({
+      date: workspace.anchorDate,
+      planning: workspace.planningWorkspace,
+      units: workspace.unitWorkspace,
+      lessons: workspace.lessonWorkspace,
+      overrides: workspace.shiftState?.overrides ?? [],
+    })
+  }
+
+  function launchArcTableFromDesk(quadrant: ArcTableDeskQuadrant) {
+    const teacherTool = deskQuadrantToTeacherTool(quadrant)
+    if (arcTable.live) {
+      if (teacherTool) setArcTableDeskLaunch(teacherTool)
+      arcTable.showTeacher()
+      return
+    }
+    const day = projectTeachingDay()
+    if (!day || !workspace.calendar || !workspace.anchorDate) return
+
+    const preferredSectionId = workspace.planContext?.sectionId ?? null
+    let options = preferredSectionId
+      ? (() => {
+          try {
+            return arcTableLaunchOptions({
+              day,
+              sectionId: preferredSectionId,
+              calendar: workspace.calendar!,
+              liveDate: workspace.anchorDate!,
+            })
+          } catch {
+            return []
+          }
+        })()
+      : []
+    if (options.length === 0) {
+      options = collectArcTableDeskLaunchOptions({
+        day,
+        calendar: workspace.calendar,
+        liveDate: workspace.anchorDate,
+      })
+    }
+    if (options.length === 0) {
+      workspace.setStorageNotice('No live or resumable class is available on this teaching day.')
+      if (workspace.activeView !== 'Day') workspace.setActiveView('Day')
+      return
+    }
+    const pick = options.find((option) => option.deliveryStatus === 'in-progress') ?? options[0]
+    if (teacherTool) setArcTableDeskLaunch(teacherTool)
+    startClass(pick.sectionId, pick.lessonId)
+  }
+
+  function exploreArcTableFromDeskPreview() {
+    if (workspace.activeView !== 'Day') workspace.setActiveView('Day')
+  }
+
   function endClass(outcome: ArcTableTeachingOutcome): string | null {
     if (!arcTable.live || !workspace.calendar || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace || !workspace.shiftState) {
       return 'ArcTable cannot end this class because its Arc planning context is unavailable.'
@@ -300,7 +444,42 @@ export function AppFrame() {
       onOpenUnits={() => workspaceMode.open('units')}
       onOpenImport={() => workspaceMode.open('import')}
     />
-  ) : <p className="b01-furniture-empty">Workspace is available in Plan View.</p>
+  ) : <p className="b01-furniture-empty">Tray is available in Plan View.</p>
+
+  const deskTrayCompact = showPlanFurniture && activeDeskPreferences.desk.showTray ? (
+    <WorkspacePanel
+      planningDragDisabled={deskEditActive}
+      captures={workspace.captureWorkspace}
+      lessons={workspace.lessonWorkspace?.lessons ?? []}
+      units={workspace.unitWorkspace}
+      unscheduledUnitTitles={unscheduledUnits.map((unit) => ({ id: unit.id, title: unit.title }))}
+      defaultDate={workspace.anchorDate}
+      undoAvailable={Boolean(fridgeUndo)}
+      onAddCapture={workspace.addCapture}
+      onDeleteCapture={workspace.removeCapture}
+      onSetCaptureImportant={workspace.setCaptureImportant}
+      onMoveCaptureToDate={workspace.moveCaptureToDate}
+      onPromoteCapture={workspace.promoteCapture}
+      onScheduleLesson={scheduleLessonFromFridge}
+      onUnplaceLesson={sendLessonBackToFridge}
+      onUndo={undoLastFridgeMove}
+      onOpenUnits={() => workspaceMode.open('units')}
+      onOpenImport={() => workspaceMode.open('import')}
+    />
+  ) : null
+
+  const deskPriorityPad = showPlanFurniture && activeDeskPreferences.desk.showPriorityPad && taskBar.workspace ? (
+    <DeskPriorityPad
+      workspace={taskBar.workspace}
+      planningDragDisabled={deskEditActive}
+      onAdd={taskBar.add}
+      onMove={taskBar.move}
+      onPromoteCaptureText={promoteCaptureToPriorityLane}
+    />
+  ) : null
+
+  const deskEnabled = showPlanFurniture && workspaceMode.mode === 'calendar'
+  const yearExpanded = deskEnabled && workspace.activeView === 'Year Map'
 
   const settingsContent = showPlanFurniture ? (
     <SettingsFurnitureContent
@@ -318,6 +497,7 @@ export function AppFrame() {
       onOpenUnits={() => workspaceMode.open('units')}
       onOpenLessons={() => workspaceMode.open('lessons')}
       onOpenTaskBar={() => setTasksOverlayOpen(true)}
+      onCustomizeDesk={enterDeskEditMode}
     />
   ) : <p className="b01-furniture-empty">Settings are available from the planner.</p>
 
@@ -334,17 +514,55 @@ export function AppFrame() {
   ) : <p className="b01-furniture-empty">Tasks become available after the school calendar is set.</p>
 
   return (
-    <div className="arc-shell">
+    <div className={`arc-shell${deskEnabled ? ' arc-shell--desk' : ''}`}>
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
 
       <div className="arc-layout">
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
           <B01Furniture
+            deskEnabled={deskEnabled}
+            yearExpanded={yearExpanded}
+            deskTrayDock={deskTrayCompact}
+            deskPriorityDock={deskPriorityPad}
+            deskNotesDock={activeDeskPreferences.desk.showDeskNotes ? <p className="b01-furniture-empty">Desk notes stay optional in this pass.</p> : null}
+            deskArcTableFixture={
+              deskEnabled && activeDeskPreferences.desk.showArcTable ? (
+                <ArcTableDeskFixture
+                  liveActive={Boolean(arcTable.live)}
+                  onLaunchQuadrant={launchArcTableFromDesk}
+                  onExplorePreview={exploreArcTableFromDeskPreview}
+                />
+              ) : null
+            }
+            deskEditMode={deskEditActive}
+            deskLayout={activeDeskLayout}
+            deskViewportProfile="desktop"
+            deskSelectedObject={deskSelectedObject}
+            onSelectDeskObject={setDeskSelectedObject}
+            onMoveDeskObject={moveSelectedDeskObject}
+            deskSizes={{
+              planner: activeDeskPreferences.desk.plannerSize,
+              tray: activeDeskPreferences.desk.traySize,
+              msc: activeDeskPreferences.desk.mscSize,
+            }}
+            deskEditToolbar={deskEditActive ? (
+              <DeskEditToolbar
+                onDone={() => completeDeskEdit(true)}
+                onReset={resetDeskLayoutDraft}
+                resetNeedsConfirm={deskResetArmed}
+              />
+            ) : null}
             spreadChrome={
               <>
                 <PlannerShellBar
                   homeLabel={onboardingActive ? 'Exit setup to Arc' : 'Teaching Day home'}
                   onHome={returnHome}
+                  trailing={arcTable.live && arcTable.surface === 'plan' ? (
+                    <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}>
+                      <strong>{arcTable.live.session.sectionName}</strong>
+                      <span>Return to ArcTable</span>
+                    </button>
+                  ) : null}
                   capture={globalCaptureEnabled ? (
                     <>
                       <GlobalCaptureAffordance
@@ -508,11 +726,11 @@ export function AppFrame() {
   )
 }
 
-function resolveAvailableHomeView(
-  preferences: ViewPreferences,
+function resolveAvailableHomeDeskView(
+  preferences: DeskAwareViewPreferences,
   availabilityFor: (view: CalendarView) => { available: boolean },
 ): CalendarView {
-  const preferred = resolveHomeView(preferences)
+  const preferred = resolveHomeDeskPlannerView(preferences)
   return availabilityFor(preferred).available ? preferred : DEFAULT_HOME_VIEW
 }
 

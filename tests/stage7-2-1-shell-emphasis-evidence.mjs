@@ -128,7 +128,7 @@ try {
     await selectView(page, 'Day')
     await page.locator('.day-period-gap').filter({ hasText: 'Planning time' }).click()
     await shot(page, '07-planning-p5.png')
-    await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
+    await page.getByRole('button', { name: 'TRAY', exact: true }).click()
     await shot(page, '08-workspace.png')
     await context.close()
   }

@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import type { CalendarView } from '../navigation/calendarViews'
 import { calendarViewLabel } from '../navigation/calendarViews'
+import type { DeskLayoutState, DeskMoveDirection, DeskObjectKind, DeskViewportProfile } from '../navigation/deskLayout'
+import { gridAreaStyle, placementForObject, sizeClassForObject, zoneCell } from '../navigation/deskLayout'
+import type { MscSizePreset, PlannerSizePreset, TraySizePreset } from '../navigation/deskLayout'
 import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
 
@@ -30,6 +33,20 @@ type Props = {
   onTasksOpenChange?: (open: boolean) => void
   indexNav?: IndexNavProps | null
   spreadChrome?: ReactNode
+  deskEnabled?: boolean
+  yearExpanded?: boolean
+  deskTrayDock?: ReactNode
+  deskPriorityDock?: ReactNode
+  deskNotesDock?: ReactNode
+  deskArcTableFixture?: ReactNode
+  deskEditMode?: boolean
+  deskLayout?: DeskLayoutState | null
+  deskViewportProfile?: DeskViewportProfile
+  deskSelectedObject?: DeskObjectKind | null
+  onSelectDeskObject?: (object: DeskObjectKind) => void
+  onMoveDeskObject?: (direction: DeskMoveDirection) => void
+  deskEditToolbar?: ReactNode
+  deskSizes?: { planner: PlannerSizePreset; tray: TraySizePreset; msc: MscSizePreset }
 }
 
 const VIEW_TABS: { view: CalendarView; label: string; tabClass: string }[] = [
@@ -52,6 +69,20 @@ export function B01Furniture({
   onTasksOpenChange,
   indexNav = null,
   spreadChrome = null,
+  deskEnabled = false,
+  yearExpanded = false,
+  deskTrayDock = null,
+  deskPriorityDock = null,
+  deskNotesDock = null,
+  deskArcTableFixture = null,
+  deskEditMode = false,
+  deskLayout = null,
+  deskViewportProfile = 'desktop',
+  deskSelectedObject = null,
+  onSelectDeskObject,
+  onMoveDeskObject,
+  deskEditToolbar = null,
+  deskSizes = { planner: 'standard', tray: 'standard', msc: 'standard' },
 }: Props) {
   const [open, setOpen] = useState<Record<DrawerName, boolean>>({ settings: false, workspace: false, tasks: false })
   const settingsButton = useRef<HTMLButtonElement>(null)
@@ -150,6 +181,79 @@ export function B01Furniture({
   }, [dismissSideDrawers])
 
   useEffect(() => {
+    if (!deskEditMode) return
+    setOpen((current) => ({ ...current, settings: false, workspace: false, tasks: false }))
+    onWorkspaceOpenChange?.(false)
+    onTasksOpenChange?.(false)
+  }, [deskEditMode, onTasksOpenChange, onWorkspaceOpenChange])
+
+  useEffect(() => {
+    if (!deskEditMode || !onMoveDeskObject) return
+    function onKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) return
+      const map: Record<string, DeskMoveDirection> = {
+        ArrowLeft: 'left',
+        ArrowRight: 'right',
+        ArrowUp: 'up',
+        ArrowDown: 'down',
+      }
+      const direction = map[event.key]
+      if (!direction || !onMoveDeskObject) return
+      event.preventDefault()
+      onMoveDeskObject(direction)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [deskEditMode, onMoveDeskObject])
+
+  function deskObjectStyle(object: DeskObjectKind): CSSProperties | undefined {
+    if (!deskLayout || !deskEnabled) return undefined
+    const zone = placementForObject(deskLayout, object).zone
+    return gridAreaStyle(zoneCell(zone, deskViewportProfile))
+  }
+
+  function deskObjectClass(object: DeskObjectKind, base: string): string {
+    const sizeClass = sizeClassForObject(object, deskSizes)
+    const selected = deskEditMode && deskSelectedObject === object
+    return [
+      base,
+      sizeClass,
+      deskEditMode ? 'arc-desk-edit-object' : '',
+      selected ? 'arc-desk-edit-object--selected' : '',
+    ].filter(Boolean).join(' ')
+  }
+
+  function wrapDeskObject(object: DeskObjectKind, label: string, node: ReactNode | null) {
+    if (!node) return null
+    return (
+      <div
+        className={deskObjectClass(object, 'arc-desk-object-slot')}
+        style={deskObjectStyle(object)}
+        data-desk-object={object}
+        tabIndex={deskEditMode ? 0 : undefined}
+        role={deskEditMode ? 'button' : undefined}
+        aria-label={deskEditMode ? `${label} desk object` : undefined}
+        aria-pressed={deskEditMode && deskSelectedObject === object ? true : undefined}
+        onFocus={() => deskEditMode && onSelectDeskObject?.(object)}
+        onClick={() => deskEditMode && onSelectDeskObject?.(object)}
+      >
+        {node}
+      </div>
+    )
+  }
+
+  const plannerBlock = (
+    <div className="arc-planner-object">
+      <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
+        {spreadChrome}
+        {deskEditToolbar}
+        <div className="b01-calendar-owner">{children}</div>
+      </div>
+    </div>
+  )
+
+  useEffect(() => {
     if (!openRequest) return
     setOpen({
       settings: openRequest.name === 'settings',
@@ -160,21 +264,78 @@ export function B01Furniture({
   }, [openRequest?.token])
 
   const sidePanel = open.settings ? 'settings' : workspaceIsOpen ? 'workspace' : tasksIsOpen ? 'tasks' : 'none'
+  const workspaceTabLabel = deskEnabled ? 'TRAY' : 'WORKSPACE'
+  const workspacePanelLabel = deskEnabled ? 'Tray' : 'Workspace'
+  const layoutGridActive = deskEnabled && Boolean(deskLayout)
 
   return (
     <div
-      className="b01-furniture-composition"
+      className={`b01-furniture-composition${deskEnabled ? ' b01-furniture-composition--desk' : ''}${yearExpanded ? ' b01-furniture-composition--year-expanded' : ''}${deskEditMode ? ' b01-furniture-composition--desk-edit' : ''}`}
       data-testid="b01-furniture-composition"
       data-workspace-open={workspaceIsOpen ? 'true' : 'false'}
       data-settings-open={open.settings ? 'true' : 'false'}
       data-side-panel={sidePanel}
+      data-desk-enabled={deskEnabled ? 'true' : 'false'}
+      data-desk-edit-mode={deskEditMode ? 'true' : 'false'}
+      data-year-expanded={yearExpanded ? 'true' : 'false'}
     >
-      <div className="arc-planner-object">
-        <div className="arc-calendar-spread">
-          {spreadChrome}
-          <div className="b01-calendar-owner">{children}</div>
+      {deskEnabled ? (
+        <div
+          className={`arc-desk-surface${deskEditMode ? ' arc-desk-surface--edit' : ''}`}
+          data-layout-grid={layoutGridActive ? 'true' : 'false'}
+        >
+          {deskEditMode ? <div className="arc-desk-zone-grid" aria-hidden="true" /> : null}
+          {layoutGridActive ? (
+            <>
+              {wrapDeskObject('planner', 'Planner', plannerBlock)}
+              {wrapDeskObject('tray', 'Tray', deskTrayDock ? (
+                <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
+                  <div className="arc-desk-tray-rim">
+                    <p className="b01-furniture-kicker">Tray</p>
+                    <div className="arc-desk-tray-well">{deskTrayDock}</div>
+                  </div>
+                </aside>
+              ) : null)}
+              {wrapDeskObject('msc', 'Must Should Could', deskPriorityDock ? (
+                <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
+                  {deskPriorityDock}
+                </aside>
+              ) : null)}
+              {wrapDeskObject('arctable', 'ArcTable', deskArcTableFixture ? (
+                <div className="arc-desk-arctable-anchor" data-testid="arc-desk-arctable-anchor">{deskArcTableFixture}</div>
+              ) : null)}
+              {wrapDeskObject('notes', 'Desk notes', deskNotesDock ? (
+                <aside className="arc-desk-notes-dock" aria-label="Desk notes">{deskNotesDock}</aside>
+              ) : null)}
+            </>
+          ) : (
+            <>
+              {plannerBlock}
+              {deskTrayDock ? (
+                <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
+                  <div className="arc-desk-tray-rim">
+                    <p className="b01-furniture-kicker">Tray</p>
+                    <div className="arc-desk-tray-well">{deskTrayDock}</div>
+                  </div>
+                </aside>
+              ) : null}
+              {deskPriorityDock ? (
+                <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
+                  {deskPriorityDock}
+                </aside>
+              ) : null}
+              {deskNotesDock ? (
+                <aside className="arc-desk-notes-dock" aria-label="Desk notes">{deskNotesDock}</aside>
+              ) : null}
+              {deskArcTableFixture ? (
+                <div className="arc-desk-arctable-anchor" data-testid="arc-desk-arctable-anchor">{deskArcTableFixture}</div>
+              ) : null}
+            </>
+          )}
         </div>
-      </div>
+      ) : (
+        plannerBlock
+      )}
 
       <div className="b01-side-rail">
         {indexNav ? (
@@ -216,7 +377,7 @@ export function B01Furniture({
               aria-current={workspaceIsOpen ? 'page' : undefined}
               onClick={() => toggle('workspace')}
             >
-              WORKSPACE
+              {workspaceTabLabel}
             </button>
             <button
               ref={settingsButton}
@@ -240,9 +401,9 @@ export function B01Furniture({
             </div>
           </aside>
 
-          <aside className="b01-tool-owner b01-fridge-owner" data-state={workspaceIsOpen ? 'open' : 'closed'} aria-label="Workspace furniture">
-            <div id="b01-fridge-surface" className="b01-furniture-surface b01-fridge-surface" inert={!workspaceIsOpen ? true : undefined}>
-              <div className="b01-surface-heading"><p className="b01-furniture-kicker">Workspace</p><button type="button" onClick={() => close('workspace')} aria-label="Close Workspace">Close</button></div>
+          <aside className="b01-tool-owner b01-fridge-owner" data-state={workspaceIsOpen ? 'open' : 'closed'} aria-label={`${workspacePanelLabel} furniture`}>
+            <div id="b01-fridge-surface" className={`b01-furniture-surface b01-fridge-surface${deskEnabled ? ' b01-tray-surface' : ''}`} inert={!workspaceIsOpen ? true : undefined}>
+              <div className="b01-surface-heading"><p className="b01-furniture-kicker">{workspacePanelLabel}</p><button type="button" onClick={() => close('workspace')} aria-label={`Close ${workspacePanelLabel}`}>Close</button></div>
               {workspace ?? <p className="b01-furniture-empty">No loose planning material yet.</p>}
             </div>
           </aside>

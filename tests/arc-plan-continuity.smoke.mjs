@@ -147,8 +147,8 @@ try {
   assert(await page.getByRole('button', { name: /Open .* in Month/ }).count() === 9, 'Year did not preserve three Units for each of three Courses.')
   await shot(page, '05-plan-year-courses.png')
 
-  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
-  assert(await page.getByText('Unassigned installation idea', { exact: true }).isVisible(), 'Workspace did not restore unassigned capture.')
+  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
+  assert(await page.getByText('Unassigned installation idea', { exact: true }).isVisible(), 'Tray did not restore unassigned capture.')
   await shot(page, '06-plan-workspace-populated.png')
   await page.getByRole('textbox', { name: 'Quick capture' }).fill('Midweek cyanotype idea')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
@@ -168,7 +168,7 @@ try {
   assert(!remainingCaptures.some((capture) => capture.id === captureId), 'Promoted Capture remained as duplicate Workspace truth.')
   await shot(page, '08-plan-capture-placed.png')
 
-  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
+  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
   await (async () => { const settings = page.getByRole('button', { name: 'SETTINGS', exact: true }); if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click() })()
   await page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: 'Lesson library', exact: true }).click()
   await page.getByRole('button', { name: /Midweek cyanotype idea/ }).click()
@@ -198,7 +198,7 @@ try {
   if (await undoShift.count()) await undoShift.click()
   await shot(page, '14-plan-section-reconciled.png')
 
-  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
+  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
   const returnDetails = page.locator('.b01-fridge-return')
   await returnDetails.locator('summary').click()
   await returnDetails.getByRole('button', { name: 'Midweek cyanotype idea', exact: true }).click()
@@ -208,7 +208,7 @@ try {
   assert(await page.locator('.b01-fridge-card').filter({ hasText: 'Midweek cyanotype idea' }).count() === 0, 'Workspace Undo did not restore scheduling state.')
   await shot(page, '16-plan-undo-recovery.png')
 
-  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
+  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
   await selectView(page, 'Month')
   assert(await page.getByText('Fixed visual analysis assessment', { exact: true }).count() > 0, 'Fixed assessment was lost after move/shift/undo operations.')
   await shot(page, '17-plan-fixed-date-protection.png')
@@ -225,7 +225,7 @@ try {
   await shot(page, '19-plan-cross-view-continuity.png')
 
   await selectView(page, 'Day')
-  assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).isVisible() && await page.getByRole('button', { name: 'SETTINGS', exact: true }).isVisible(), 'Arc Plan core controls require ArcTable unexpectedly.')
+  assert(await page.getByRole('button', { name: 'TRAY', exact: true }).isVisible() && await page.getByRole('button', { name: 'SETTINGS', exact: true }).isVisible(), 'Arc Plan core controls require ArcTable unexpectedly.')
   assert(await page.getByText('Return to ArcTable', { exact: true }).count() === 0, 'Free-only scenario entered an ArcTable live session.')
   await shot(page, '20-plan-free-only.png')
 

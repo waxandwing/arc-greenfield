@@ -126,7 +126,7 @@ try {
   await page.getByRole('menuitem', { name: /Important/ }).first().waitFor({ state: 'visible' })
   await shot(page, '04-important-ring-lesson.png')
 
-  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
+  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
   await page.locator('.workspace-capture-card').first().click({ button: 'right' })
   await page.getByRole('menuitem', { name: 'Remove Important' }).click()
   await shot(page, '05-capture-important-menu.png')

@@ -12,6 +12,7 @@ import { PlanningDayContinuityView } from './PlanningDayContinuityView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
 import { PlanningYearView } from './PlanningYearView'
+import { SchoolYearDeskView } from './SchoolYearDeskView'
 import { CalendarDayNotes, type CalendarDayNoteHandlers } from './CalendarDayNotes'
 import { CalendarDayCell, MissingBoundary, ProjectionHeading, RangeProjection, TermContext, WeekdayAlignedRange } from './CalendarProjectionPrimitives'
 import { formatDateRange, formatLongDate, formatMonth } from './dateLabels'
@@ -184,8 +185,16 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
               </div>
               <TermContext quarters={projection.quarters} semesters={projection.semesters} detailed />
             </div>
-            <div className="planning-scroll-frame">
-              <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} onSelectUnit={(input) => onSelectYearUnit?.(input)} />
+            <div className="planning-scroll-frame planning-scroll-frame--year-desk">
+              <SchoolYearDeskView
+                calendar={calendar}
+                anchorDate={anchorDate}
+                onSelectDate={(date) => onSelectDate?.(date, 'Month')}
+              />
+              <details className="planning-year-progression" open>
+                <summary>Course & unit progression</summary>
+                <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} onSelectUnit={(input) => onSelectYearUnit?.(input)} />
+              </details>
             </div>
           </section>
         )

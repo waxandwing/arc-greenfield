@@ -114,9 +114,9 @@ try {
   assert(saved?.sourceView?.includes('Day'), 'Capture must store source view.')
   await shot(page, '06-capture-success.png')
 
-  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
+  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
   await shot(page, '07-workspace-captures-first.png')
-  await page.getByRole('button', { name: 'Close Workspace' }).click()
+  await page.getByRole('button', { name: 'Close Tray' }).click()
 
   await page.evaluate(() => {
     localStorage.removeItem('arc.onboarding.v1')

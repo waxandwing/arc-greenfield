@@ -95,7 +95,7 @@ try {
   const calendarBefore = await documentRect(calendar, page)
   const viewportBefore = await geometrySnapshot(page)
   const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
-  const fridge = page.getByRole('button', { name: 'WORKSPACE', exact: true })
+  const fridge = page.getByRole('button', { name: 'TRAY', exact: true })
   const tabControls = [settings, fridge]
 
   for (const control of tabControls) {

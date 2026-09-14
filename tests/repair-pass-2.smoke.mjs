@@ -114,7 +114,7 @@ try {
   await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
   assert(await page.getByRole('heading', { level: 1, name: 'Value scale' }).count() === 1, 'Lesson must have one canonical title.')
   assert(await page.locator('.lesson-focus-heading h2').count() === 0, 'Lesson body must not repeat title.')
-  assert(await page.getByRole('button', { name: 'Open Workspace', exact: true }).count() === 0, 'Inline Workspace link must be removed from Lesson.')
+  assert(await page.getByRole('button', { name: 'Open Workspace', exact: true }).count() === 0, 'Inline Tray link must be removed from Lesson.')
   await shot(page, '04-lesson-clean.png')
 
   await page.getByRole('button', { name: 'Back to class', exact: true }).click()
@@ -124,10 +124,10 @@ try {
   assert(await page.locator('.planning-period-heading').count() === 0, 'Planning lens must not duplicate headings.')
   await shot(page, '05-planning-clean.png')
 
-  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
-  assert(await page.locator('.b01-furniture-composition').getAttribute('data-workspace-open') === 'true', 'Workspace overlay open.')
+  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
+  assert(await page.locator('.b01-furniture-composition').getAttribute('data-workspace-open') === 'true', 'Tray overlay open.')
   await shot(page, '06-workspace-open.png')
-  await page.getByRole('button', { name: 'Close Workspace', exact: true }).click()
+  await page.getByRole('button', { name: 'Close Tray', exact: true }).click()
 
   await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
   await shot(page, '07-class-focus.png')

@@ -23,6 +23,8 @@
     "test:repair-pass-2-1": "node tests/repair-pass-2-1.smoke.mjs",
     "test:repair-pass-3-tabs": "node tests/repair-pass-3-tabs.smoke.mjs",
     "test:repair-pass-3": "node tests/repair-pass-3.smoke.mjs",
+    "test:arc-desk-pass": "node tests/arc-desk-pass.smoke.mjs",
+    "test:arc-desk-mark": "node tests/arc-desk-mark.smoke.mjs",
     "test:import-onboarding": "node tests/import-onboarding.smoke.mjs"
   },
   "dependencies": {

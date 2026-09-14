@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="at001-title">
+  <title id="at001-title">ArcTable mark</title>
+  <rect width="100" height="100" fill="#1F4B3A"/>
+  <rect x="7" y="7" width="86" height="86" fill="#F4E9D1"/>
+  <path fill="#2F5E8E" d="M 7 50 A 43 43 0 0 1 50 7 L 7 7 Z"/>
+  <path fill="#C44532" d="M 50 7 A 43 43 0 0 1 93 50 L 93 7 Z"/>
+  <path fill="#C89B2F" d="M 7 50 A 43 43 0 0 0 50 93 L 7 93 Z"/>
+  <path fill="#1F4B3A" d="M 93 50 A 43 43 0 0 0 50 93 L 93 93 Z"/>
+</svg>

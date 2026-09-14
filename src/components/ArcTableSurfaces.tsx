@@ -19,6 +19,7 @@ import {
   type ArcTableMediaState,
   type ArcTableTeachingOutcome,
 } from '../planning'
+import { consumeArcTableDeskLaunch } from '../planning/arcTableDeskLaunch'
 import '../styles/arctable.css'
 
 type SharedProps = {
@@ -54,6 +55,18 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
     const closeTool = (event: KeyboardEvent) => { if (event.key === 'Escape') setTool(null) }
     window.addEventListener('keydown', closeTool)
     return () => window.removeEventListener('keydown', closeTool)
+  }, [])
+
+  useEffect(() => {
+    const launch = consumeArcTableDeskLaunch()
+    if (!launch) return
+    if (launch === 'timer') {
+      document.getElementById('classroom-timer-heading')?.scrollIntoView({ block: 'nearest', behavior: 'auto' })
+      return
+    }
+    if (launch === 'people') setTool('people')
+    if (launch === 'passes') setTool('passes')
+    if (launch === 'media') setTool('media')
   }, [])
 
   function finish(outcome: ArcTableTeachingOutcome) {
