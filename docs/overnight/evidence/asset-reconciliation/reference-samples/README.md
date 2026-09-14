@@ -24,4 +24,16 @@ Kelly-approved family excerpts for asset reconciliation. **Not** production path
 | `primitive-green-quadrant-cream-2048.png` | Quadrant crop source |
 | `pattern-vertical-green-cream-stripes-2048.png` | Rejected stripe exterior |
 
+## Batch 3 — arcs, bloops, duplicates
+
+| File | Role |
+|------|------|
+| `motif-cream-disc-green-stroke-792.png` | Optional 3D quiet ring |
+| `arctable-timer-ring-green-780-DUP.png` | **Duplicate** of repo `timer-ring.png` |
+| `arctable-timer-ring-cleanup-780-DUP.png` | **Duplicate** of repo `timer-ring-cleanup.png` |
+| `bloop-terracotta-trapezoid-712x292.png` | Reject for Plan (CSS bloops) |
+| `bloop-dusty-blue-trapezoid-632x252.png` | Reject for Plan |
+| `mark-four-quadrants-scatter-1920x1080.png` | Palette / quadrant reference |
+| `motif-green-semicircle-vertical-1400.png` | Optional 2D arc motif |
+
 See `docs/overnight/ASSET-RECONCILIATION-REPORT.md`.

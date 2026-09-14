@@ -3,7 +3,7 @@
 **Repo:** waxandwing/arc-greenfield  
 **Branch:** `cursor/arc-production-integration`  
 **Audit HEAD (repo-only pass):** `4f6610d`  
-**Supplement:** Kelly reference samples **12 PNGs** (2 chat batches) + ingest scaffold `f3ed6e8` + batch-1 report `0ef13dc`  
+**Supplement:** Kelly reference samples **19 PNGs** (3 chat batches) + ingest scaffold `f3ed6e8` + reports `0ef13dc`, `8b4443b`  
 **Date:** 2026-09-14  
 **Mode:** Audit only — no copies into `public/assets/`, no CSS, no imports.
 
@@ -47,7 +47,7 @@ Kelly selected **option 3**: populate **`/workspace/.local/assets910/`**, then s
 
 **Alternatives (still valid):** (1) attach zip to agent message + extract to `.local/assets910/` in-session; (2) commit checksum manifest only under `docs/asset-library/` — no binaries in git.
 
-**Section A (assets910 total):** **12 reference samples audited** (chat attachments); **full library still N/A** until `.local/assets910/` populated. Prior multiprep audit cited ~317 production rasters + manifests in archive — filenames not verified on this VM.
+**Section A (assets910 total):** **19 reference samples audited** (chat attachments); **full library still N/A** until `.local/assets910/` populated. Prior multiprep audit cited ~317 production rasters + manifests in archive — filenames not verified on this VM.
 
 ---
 
@@ -80,6 +80,22 @@ Kelly attached five approved-family samples (saved under Cursor chat assets, cop
 **Chat asset UUIDs (batch 2):** `633399ad…`, `fc6572fc…`, `645fdf9e…`, `64ffb77d…`, `2b3f2cdd…`, `a53c0bdf…`, `8556cdbf…`.
 
 **Breezeblock lineage:** Production **`breezeblock-tile.png`** aligns with **REF-BREEZE-FRAMED** inner art (lower MSE vs inverted). Repo tile remains **second-choice exterior** only when faded on cream; **REF-PATTERN-GRID** stays **first choice** for light-field brand repeat.
+
+### Batch 3 — arcs, bloops, ArcTable duplicates
+
+| Audit ID | Evidence copy | Size | Visual role | vs repo | Rec |
+|----------|---------------|------|-------------|---------|-----|
+| **REF-MOTIF-CREAM-RING** | `motif-cream-disc-green-stroke-792.png` | 792×792 | Cream **disc** + pine stroke ring | No match | **POSSIBLE** — quiet **3D** signature (sage tint) alt. to terracotta stroke ring |
+| **REF-ARCTABLE-TIMER** | `arctable-timer-ring-green-780-DUP.png` | 780×780 | Green **C-arc** timer ring | **Byte-identical** to `public/assets/arctable/timer-ring.png` | **KEEP** — ArcTable only; **not** Plan shell / course motif |
+| **REF-ARCTABLE-TIMER-CLEANUP** | `arctable-timer-ring-cleanup-780-DUP.png` | 780×780 | Terracotta/mustard **concentric C** | **Byte-identical** to `timer-ring-cleanup.png` | **KEEP** — ArcTable only |
+| **REF-BLOOP-TERRA** | `bloop-terracotta-trapezoid-712x292.png` | 712×292 | Textured **trapezoid cap** (terracotta) | No match | **REJECT** Plan — illustrative bloop; keep **CSS `--radius-bloop`** |
+| **REF-BLOOP-BLUE** | `bloop-dusty-blue-trapezoid-632x252.png` | 632×252 | Blue trapezoid pair | No match | **REJECT** Plan (same) |
+| **REF-QUAD-SCATTER** | `mark-four-quadrants-scatter-1920x1080.png` | 1920×1080 | Four **corner quadrants** on black (palette board) | Palette cousin of breezeblock | **POSSIBLE** — brand reference only; not a tile |
+| **REF-SEMI-GREEN** | `motif-green-semicircle-vertical-1400.png` | 1400×1400 | Large pine **semicircle** (flat edge left) | No match | **POSSIBLE** — **2D arc** motif alt. to blue dot |
+
+**Chat asset UUIDs (batch 3):** `5f4b5e57…`, `c9e1f9fe…`, `758fb230…`, `c11a27bc…`, `f6b5964f…`, `d7a4d73c…`, `7825ae40…`.
+
+**Duplicate note:** Batch 3 confirms assets910 (or Kelly exports) **shares ArcTable timer rings already in repo** — do not re-import under new Plan paths.
 
 ---
 
@@ -138,7 +154,7 @@ Single pattern file can supply multiple crops if assets910 confirms one master a
 | Planner interior | `paper-cream.png` | keep | `--plan-surface-paper` |
 | Arc mark | `arc-mark.png` until @2x from assets910 | keep | Header wordmark |
 | AP motif | REF-MOTIF-WEDGE | `public/assets/arc/motif-apah-wedge.png` | Small background in course band |
-| 2D motif | blue crop from REF-MARK-COMP | `public/assets/arc/motif-2d-quadrant.png` | Course band signature |
+| 2D motif | **REF-MOTIF-BLUE-DOT** | `public/assets/arc/motif-2d-dot-blue.png` | Course band signature |
 | 3D motif | REF-MOTIF-RING | `public/assets/arc/motif-3d-ring.png` | Course band; sage tint |
 | AP mustard wash (optional) | REF-TEXTURE-MUSTARD | `public/assets/arc/texture-mustard-field.png` | Section accent only |
 
@@ -148,7 +164,7 @@ Single pattern file can supply multiple crops if assets910 confirms one master a
 
 | Key | Answer |
 |-----|--------|
-| **A.** assets910 inspected | **12** Kelly reference samples + **18** repo PNGs; full archive **not** on disk |
+| **A.** assets910 inspected | **19** Kelly reference samples + **18** repo PNGs; full archive **not** on disk |
 | **B.** Strongest logo source | **`arc-mark.png`** in repo; watch assets910 for **same geometry @2x/SVG** — REF-MARK-COMP is related artboard, not verified production export |
 | **C.** Strongest exterior pattern | **REF-PATTERN-GRID** (`pattern-grid-dots-semicircles-2048.png`) |
 | **D.** Second exterior | **`breezeblock-tile.png`** (repo), faded on cream |
@@ -156,10 +172,10 @@ Single pattern file can supply multiple crops if assets910 confirms one master a
 | **F.** 2D motif | **REF-MOTIF-BLUE-DOT** (filled disc); fallback quadrant crop |
 | **G.** 3D motif | **REF-MOTIF-RING** (tint sage) |
 | **H.** Texture | **`paper-cream.png`** primary; optional **REF-TEXTURE-MUSTARD** for AP |
-| **I.** Exact repo duplicates | **None** among the 5 samples |
+| **I.** Exact repo duplicates | **None** among batch 1–2 samples; batch 3: **`timer-ring.png`**, **`timer-ring-cleanup.png`** (MD5 match) |
 | **J.** Recommended import files | pattern grid tile, wedge, ring, 2D crop export, optional mustard field — **pending assets910 filename confirmation** |
 | **K.** Proposed destinations | See mapping table (`public/assets/arc/…`) |
-| **L.** Rejected | **`green.png`** exterior; **`header-compact*`** as Plan mark; **REF-BREEZE-INVERT** / **REF-PATTERN-STRIPES** / **REF-PATTERN-FINE-GRID** as primary exterior; full-strength dark breezeblock wash; REF-MARK-COMP hero as live header without parity review |
+| **L.** Rejected | **`green.png`** exterior; **`header-compact*`** as Plan mark; **REF-BREEZE-INVERT** / **REF-PATTERN-STRIPES** / **REF-PATTERN-FINE-GRID** as primary exterior; full-strength dark breezeblock wash; REF-MARK-COMP hero as live header without parity review; **REF-BLOOP-*** trapezoids for Plan (use CSS bloops); re-import **timer rings** to `public/assets/arc/` or as course motifs |
 
 **STOP:** Await Kelly approval of shortlist + full assets910 ingest to confirm original filenames and any superior mark export.
 
@@ -380,5 +396,5 @@ Aligns with `docs/overnight/evidence/final-skin/VISUAL-SYSTEM.md` (*Explicitly n
 - [x] Logo authority vs `arc-mark.png`  
 - [x] Stop-condition sections A–G  
 - [x] Rejection criteria  
-- [x] Kelly reference sample pack — **12** PNGs (2 batches) — pattern family + shortlist  
+- [x] Kelly reference sample pack — **19** PNGs (3 batches) — pattern family + shortlist  
 - [ ] assets910 **full** filename-level reconciliation — blocked until `.local/assets910/` populated (option 3 snapshot) or zip ingest  
