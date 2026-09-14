@@ -1,6 +1,6 @@
 # ARC Repair Pass 3 — Capture, Chrome, Onboarding, Settings, Tabs (Report)
 
-**Branch:** `cursor/arc-production-integration` (feature work: `cursor/arc-pass-3-tabs-drawer-43c2`)  
+**Branch:** `cursor/arc-production-integration` (merged from `cursor/arc-pass-3-tabs-drawer-43c2`)  
 **Scope:** UX and setup surfaces only — **no** changes to planning law (Now / Needs Attention, Move / Shift / Recovery, Month / Year structure, ArcTable semantics, or exact-return-on-close behavior).
 
 ## Stop condition
