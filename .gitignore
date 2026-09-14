@@ -9,6 +9,8 @@ coverage/
 .vercel/
 tests/generated/
 artifacts/
+.local/assets910/*
+!.local/assets910/README.md
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts

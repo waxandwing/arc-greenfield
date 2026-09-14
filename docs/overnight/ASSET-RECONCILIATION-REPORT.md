@@ -15,7 +15,8 @@
 | **Production raster assets in repo** | **18 PNG** under `public/assets/` (+ **3 font** files) |
 | **`src/assets/`** | Does not exist |
 | **SVG brand assets in `public/`** | None |
-| **Kelly local library** `/Users/knyhagen/assets910` | **Not accessible** in cloud VM (path absent) |
+| **Kelly local library** `/Users/knyhagen/assets910` | Not mounted on Mac path in cloud VM |
+| **Cloud ingest path (option 3)** | `/workspace/.local/assets910/` — **scaffold only**; library not present yet (see **Phase 2 ingest**) |
 | **Canonical Arc mark (in repo)** | `public/assets/arc/arc-mark.png` — no higher-fidelity alternate found in repo |
 
 Palette reference (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
@@ -24,21 +25,28 @@ Shell direction (from Stage 7 docs): **exterior branded** (green frame + breezeb
 
 ---
 
-## Candidate source library (not available in cloud agent)
+## Candidate source library — Phase 2 ingest
 
-**Path checked:** `/Users/knyhagen/assets910`  
-**Result:** `No such file or directory` — expected on Cloud Agent (Kelly’s Mac path is not mounted).
+### Where the library is *not*
 
-**Instructions for Kelly (when continuing on a local machine or after upload):**
+| Location | Result (2026-09-14 cloud search) |
+|----------|-----------------------------------|
+| `/Users/knyhagen/assets910` | Not mounted (Mac-only path) |
+| `/workspace/uploads/` | Absent |
+| `*.zip` under `/workspace`, `/opt/cursor`, `/cursor` | No `ARC ASSETS 910` / `assets910` archive |
+| Chat attachments | `/home/ubuntu/.cursor/projects/workspace/assets/` — **reference PNGs only** (e.g. planner spread refs), not the 317-file library |
+| Git `origin` | No committed assets910 tree; multiprep **function audit** (`ARC_MULTIPREP_ARCTABLE_REPORT.md`) described an archive that lived on a **prior ephemeral VM**, not in repo |
 
-1. Confirm the library exists locally: `ls -la /Users/knyhagen/assets910`
-2. To enable a future cloud pass, either:
-   - Add a read-only export subtree to the repo (e.g. `docs/asset-library/manifest.json` + checksums only), or
-   - Upload a zip to shared storage and attach path/URL to the agent run, or
-   - Mount/sync via environment snapshot after placing assets under a workspace path (e.g. `/workspace/.local/assets910/` — **not created in this audit**).
-3. Re-run reconciliation with the same report template; section **F** should list concrete filenames from `assets910` matched to gaps below (e.g. vector Arc mark, `@2x` marks, unused motifs).
+### Approved ingest — **option 3 (environment snapshot)**
 
-**Section A (assets910 total):** **N/A** — count and inventory unknown without filesystem access.
+Kelly selected **option 3**: populate **`/workspace/.local/assets910/`**, then save a Cloud Agent **environment snapshot** so later runs inherit the library without re-attaching the zip.
+
+- Scaffold: `.local/assets910/README.md` (tracked); binaries **gitignored**
+- After snapshot: agent verifies with `find .local/assets910 -type f ! -name README.md | wc -l` and looks for archive markers (`AUDIT_STATUS.txt`, `PLACEMENT.md`, `GOLD-AUDIT.md` if shipped in zip)
+
+**Alternatives (still valid):** (1) attach zip to agent message + extract to `.local/assets910/` in-session; (2) commit checksum manifest only under `docs/asset-library/` — no binaries in git.
+
+**Section A (assets910 total):** **N/A until `.local/assets910/` is populated or zip is extracted in workspace.**
 
 ---
 
@@ -256,4 +264,4 @@ Aligns with `docs/overnight/evidence/final-skin/VISUAL-SYSTEM.md` (*Explicitly n
 - [x] Logo authority vs `arc-mark.png`  
 - [x] Stop-condition sections A–G  
 - [x] Rejection criteria  
-- [ ] assets910 filename-level reconciliation — blocked on library access  
+- [ ] assets910 filename-level reconciliation — **blocked** until `.local/assets910/` populated (option 3 snapshot) or zip ingest  
