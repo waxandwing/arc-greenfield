@@ -1,4 +1,4 @@
-import { mkdirSync, copyFileSync, existsSync } from 'node:fs'
+import { mkdirSync, copyFileSync, existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { chromium } from 'playwright'
 import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
@@ -73,20 +73,28 @@ async function sideBySide(refPath, implPath, outPath) {
   return ok
 }
 
+function pngDataUrl(filePath) {
+  const b64 = readFileSync(filePath).toString('base64')
+  return `data:image/png;base64,${b64}`
+}
+
 async function pageSideBySide(refPath, implPath, outPath) {
   const browser = await chromium.launch({ headless: true })
   try {
+    const refSrc = pngDataUrl(refPath)
+    const implSrc = pngDataUrl(implPath)
     const html = `<!DOCTYPE html><html><head><style>
       body{margin:0;background:#ddd;display:flex;gap:0;align-items:flex-start}
       img{display:block;max-height:1254px;width:auto}
       .label{font:12px sans-serif;padding:8px;background:#222;color:#fff;position:absolute;top:0;left:0}
       .pane{position:relative}
     </style></head><body>
-      <div class="pane"><span class="label">Figma ref</span><img src="file://${refPath}" /></div>
-      <div class="pane"><span class="label">Implementation</span><img src="file://${implPath}" /></div>
+      <div class="pane"><span class="label">Figma ref</span><img src="${refSrc}" /></div>
+      <div class="pane"><span class="label">Implementation</span><img src="${implSrc}" /></div>
     </body></html>`
     const page = await browser.newPage({ viewport: { width: 3400, height: 1300 } })
     await page.setContent(html, { waitUntil: 'load' })
+    await page.locator('img').nth(1).waitFor({ state: 'visible' })
     await page.screenshot({ path: outPath })
     return true
   } finally {
@@ -132,7 +140,11 @@ try {
   await trayDock.waitFor({ state: 'visible' })
   const trayCard = trayDock.locator('.workspace-capture-card-select').first()
   await trayCard.waitFor({ state: 'visible', timeout: 10000 })
-  await trayCard.hover()
+  await page.evaluate(() => {
+    const sticky = document.querySelector('[data-testid="arc-desk-quick-capture"]')
+    if (sticky instanceof HTMLElement) sticky.style.pointerEvents = 'none'
+  })
+  await trayCard.hover({ force: true })
   await page.mouse.down()
   await page.waitForTimeout(120)
   await shot(page, '06-tray-drag.png')

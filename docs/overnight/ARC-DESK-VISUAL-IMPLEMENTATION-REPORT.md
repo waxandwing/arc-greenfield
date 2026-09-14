@@ -1,7 +1,7 @@
 # ARC Desk Visual Implementation Report
 
 **Branch:** `cursor/arc-production-integration`  
-**Implementation SHA:** `5b7b767` (desk visual: `c8f79ae` + evidence/report: `5b7b767`; baseline `2d72807`)  
+**Implementation SHA:** `TBD` (desk visual: `c8f79ae`; follow-up tests/evidence on integration after `4701345`)  
 **Figma authority:** file `CfWcuQPY4ljYXondICj2ZX`, frame node `6:3194` (1696×1254 ref; wood field 1440×1024)  
 **Behavioral authority:** Arc on branch (planning, tray, MSC, edit workspace, stacks unchanged)
 
@@ -48,7 +48,7 @@ Recomposed Plan calendar mode into a **physical desk**: centered light-wood **ta
 | `npm run test:arc-desk-pass` | **GREEN** — tray, MSC, ArcTable, edit workspace, layout persistence, year desk |
 | `npm run test:edit-workspace` | **GREEN** — stacks, pin, tray drag |
 | `npm run test:arc-desk-mark` | **GREEN** — AT-001 mark, quadrants, entitlements |
-| `npm run test:plan-year` | **RED** — Year → Home heading assertion (`.day-continuity` / tab hit target); likely pre-existing planner header IA, not desk-specific |
+| `npm run test:plan-year` | **GREEN** — Year semantics intact; smoke fix removed duplicate `getByText('My Teaching Day')` strict-mode clash with settings `<option>` (unrelated to desk layout) |
 | Preview `4173` + `?demo=1` | Rebuilt bundle; preview restarted on port 4173 |
 
 Preserved (not modified): planning domain, capture persistence, tray↔planner DnD, MSC promote, day notes laws, ArcTable session surfaces, shift/recovery, onboarding logic.
@@ -63,15 +63,15 @@ Preserved (not modified): planning domain, capture persistence, tray↔planner D
 | Item | Severity | Notes |
 |------|----------|-------|
 | Figma `6:3194` export via MCP | **YELLOW** | Node not resolved in MCP session; `01-figma-reference.png` seeded from prior desk pass reference |
-| `06-tray-drag.png` | **YELLOW** | Not captured (hover-only step; no drag simulation in evidence script) |
+| `06-tray-drag.png` | — | Captured via evidence script (tray post-it hover + pointer down; quick-capture overlay pointer-events disabled for shot) |
 | Pixel parity vs Figma | **YELLOW** | Proportional CSS slots, not literal px engine; reconciliation pass 04–09 captured |
-| `test:plan-year` | **RED** | Failed on Teaching Day header after Year → Home (see above) |
+| `test:plan-year` (historical) | — | Was **RED** on duplicate-text Playwright strict mode; fixed in smoke selector only |
 | Mobile desk | **YELLOW** | Unchanged: tray/MSC hidden `<900px`; tabs wrap on planner |
 
 ## RED / YELLOW rollup
 
-- **RED:** `test:plan-year` smoke (1 assertion path).
-- **YELLOW:** Figma MCP frame export; tray-drag evidence frame; sub-pixel Figma parity; mobile desk unchanged.
+- **RED:** none at this SHA.
+- **YELLOW:** Figma MCP frame export; sub-pixel Figma parity; mobile desk unchanged.
 
 ## Evidence list
 
@@ -79,9 +79,10 @@ Preserved (not modified): planning domain, capture persistence, tray↔planner D
 
 - `01-figma-reference.png`
 - `02-implementation-pass-1.png`
-- `03-side-by-side.png`
+- `03-side-by-side.png` (ref + impl composite, base64 embed)
 - `04-final-desk.png`
 - `05-edit-workspace.png`
+- `06-tray-drag.png`
 - `07-day.png`, `08-week.png`, `09-month.png`
 
 ## Preview
