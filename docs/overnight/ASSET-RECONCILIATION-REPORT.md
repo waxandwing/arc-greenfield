@@ -3,7 +3,7 @@
 **Repo:** waxandwing/arc-greenfield  
 **Branch:** `cursor/arc-production-integration`  
 **Audit HEAD (repo-only pass):** `4f6610d`  
-**Supplement:** Kelly reference sample pack (5 PNGs) + ingest scaffold `f3ed6e8`  
+**Supplement:** Kelly reference samples **12 PNGs** (2 chat batches) + ingest scaffold `f3ed6e8` + batch-1 report `0ef13dc`  
 **Date:** 2026-09-14  
 **Mode:** Audit only — no copies into `public/assets/`, no CSS, no imports.
 
@@ -47,7 +47,7 @@ Kelly selected **option 3**: populate **`/workspace/.local/assets910/`**, then s
 
 **Alternatives (still valid):** (1) attach zip to agent message + extract to `.local/assets910/` in-session; (2) commit checksum manifest only under `docs/asset-library/` — no binaries in git.
 
-**Section A (assets910 total):** **5 reference samples audited** (chat attachments); **full library still N/A** until `.local/assets910/` populated. Prior multiprep audit cited ~317 production rasters + manifests in archive — filenames not verified on this VM.
+**Section A (assets910 total):** **12 reference samples audited** (chat attachments); **full library still N/A** until `.local/assets910/` populated. Prior multiprep audit cited ~317 production rasters + manifests in archive — filenames not verified on this VM.
 
 ---
 
@@ -63,7 +63,23 @@ Kelly attached five approved-family samples (saved under Cursor chat assets, cop
 | **REF-MOTIF-RING** | `motif-terracotta-ring-562.png` | 562×562 | ~88% transparent | Terracotta **stroke ring** on transparent | No repo match | **POSSIBLE** — **3D Art 1** dot/circle signature (recolor to sage in CSS overlay, not redraw) |
 | **REF-MOTIF-WEDGE** | `motif-green-wedge-256.png` | 256×256 | ~78% transparent | Pine **120° wedge** / fan on transparent | No repo match | **KEEP** — **AP Art History** arch / sector motif (mustard placement via tint) |
 
-**Chat asset UUIDs (ephemeral path):** `0ffe9532…`, `00a60a93…`, `e445eb68…`, `591a06d1…`, `72cd61c6…` under `/home/ubuntu/.cursor/projects/workspace/assets/`.
+**Chat asset UUIDs (batch 1):** `0ffe9532…`, `00a60a93…`, `e445eb68…`, `591a06d1…`, `72cd61c6…`.
+
+### Batch 2 — breezeblock variants, primitives, rejects
+
+| Audit ID | Evidence copy | Size | Visual role | vs repo | Rec |
+|----------|---------------|------|-------------|---------|-----|
+| **REF-BREEZE-FRAMED** | `breezeblock-framed-green-border-1000.png` | 1000×1000 | Same **corner-quadrant breezeblock** as production tile, plus **thick pine frame** on cream — hero/board, not a seamless field tile | Same geometry family as **`breezeblock-tile.png`** (1024, no frame; MD5 differs) | **POSSIBLE** — frame proportion reference for planner chrome; **not** full-page exterior |
+| **REF-BREEZE-INVERT** | `breezeblock-inverted-green-dominant-1000.png` | 1000×1000 | **Green cross/star** dominates; cream quadrants in corners | Inverse of breezeblock family | **REJECT** — repeats Stage 7.2.2 “too dark outside planner” failure mode |
+| **REF-MOTIF-MUSTARD-DOT** | `motif-mustard-fill-circle-392.png` | 392×392 | Textured **mustard fill disc** on transparent/black | No repo match | **POSSIBLE** — AP **dot** signature alt. to wedge |
+| **REF-MOTIF-BLUE-DOT** | `motif-dusty-blue-fill-circle-496.png` | 496×496 | Textured **dusty blue fill disc** | No repo match | **KEEP** — preferred **2D Art 1** small signature (filled circle) |
+| **REF-PATTERN-FINE-GRID** | `pattern-fine-line-grid-2048.png` | 2048×2048 | Neutral cream + **thin line graph grid** | No repo match | **REJECT** — not approved Arc dot/semicircle family; too technical for exterior |
+| **REF-PRIMITIVE-QUAD** | `primitive-green-quadrant-cream-2048.png` | 2048×2048 | Single **pine quadrant** on cream paper texture | Component of breezeblock / mark | **POSSIBLE** — crop source for 2D quadrant if dot not used |
+| **REF-PATTERN-STRIPES** | `pattern-vertical-green-cream-stripes-2048.png` | 2048×2048 | **Vertical awning stripes** pine + cream | No repo match | **REJECT** — off-brand for approved exterior (use dot grid instead) |
+
+**Chat asset UUIDs (batch 2):** `633399ad…`, `fc6572fc…`, `645fdf9e…`, `64ffb77d…`, `2b3f2cdd…`, `a53c0bdf…`, `8556cdbf…`.
+
+**Breezeblock lineage:** Production **`breezeblock-tile.png`** aligns with **REF-BREEZE-FRAMED** inner art (lower MSE vs inverted). Repo tile remains **second-choice exterior** only when faded on cream; **REF-PATTERN-GRID** stays **first choice** for light-field brand repeat.
 
 ---
 
@@ -89,7 +105,7 @@ Kelly attached five approved-family samples (saved under Cursor chat assets, cop
 | Course | Color | Recommended motif | Source | Notes |
 |--------|-------|-------------------|--------|-------|
 | **AP Art History** | Mustard `#E4B33D` | Green **wedge / sector** | REF-MOTIF-WEDGE → future `motif-apah-wedge.png` | Small signature; optional mustard field from REF-TEXTURE-MUSTARD for band only |
-| **2D Art 1** | Dusty blue `#7C9CAD` | **Blue quadrant** crop from mark composition or blue semicircle from pattern grid | REF-MARK-COMP or crop from REF-PATTERN-GRID | Prefer **crop from approved brand PNG**, not new CSS shape |
+| **2D Art 1** | Dusty blue `#7C9CAD` | **Filled blue disc** (preferred) or blue quadrant crop | **REF-MOTIF-BLUE-DOT** or REF-MARK-COMP / REF-PRIMITIVE-QUAD | Filled circle matches “dot” language for 3D/2D parity at small size |
 | **3D Art 1** | Sage `#9AAA89` | **Ring / circle** | REF-MOTIF-RING → future `motif-3d-ring.png` | Recolor/tint to sage at use time; keep thin stroke |
 
 Single pattern file can supply multiple crops if assets910 confirms one master artboard.
@@ -132,18 +148,18 @@ Single pattern file can supply multiple crops if assets910 confirms one master a
 
 | Key | Answer |
 |-----|--------|
-| **A.** assets910 inspected | **5** Kelly reference samples + **18** repo PNGs; full archive **not** on disk |
+| **A.** assets910 inspected | **12** Kelly reference samples + **18** repo PNGs; full archive **not** on disk |
 | **B.** Strongest logo source | **`arc-mark.png`** in repo; watch assets910 for **same geometry @2x/SVG** — REF-MARK-COMP is related artboard, not verified production export |
 | **C.** Strongest exterior pattern | **REF-PATTERN-GRID** (`pattern-grid-dots-semicircles-2048.png`) |
 | **D.** Second exterior | **`breezeblock-tile.png`** (repo), faded on cream |
 | **E.** AP motif | **REF-MOTIF-WEDGE** (green sector → mustard context in UI) |
-| **F.** 2D motif | **Blue quadrant** from REF-MARK-COMP (or grid crop) |
+| **F.** 2D motif | **REF-MOTIF-BLUE-DOT** (filled disc); fallback quadrant crop |
 | **G.** 3D motif | **REF-MOTIF-RING** (tint sage) |
 | **H.** Texture | **`paper-cream.png`** primary; optional **REF-TEXTURE-MUSTARD** for AP |
 | **I.** Exact repo duplicates | **None** among the 5 samples |
 | **J.** Recommended import files | pattern grid tile, wedge, ring, 2D crop export, optional mustard field — **pending assets910 filename confirmation** |
 | **K.** Proposed destinations | See mapping table (`public/assets/arc/…`) |
-| **L.** Rejected | **`green.png`** exterior; **`header-compact*`** as Plan mark; full-strength dark breezeblock wash as **primary** exterior; treating REF-MARK-COMP hero as live header logo without parity review |
+| **L.** Rejected | **`green.png`** exterior; **`header-compact*`** as Plan mark; **REF-BREEZE-INVERT** / **REF-PATTERN-STRIPES** / **REF-PATTERN-FINE-GRID** as primary exterior; full-strength dark breezeblock wash; REF-MARK-COMP hero as live header without parity review |
 
 **STOP:** Await Kelly approval of shortlist + full assets910 ingest to confirm original filenames and any superior mark export.
 
@@ -364,5 +380,5 @@ Aligns with `docs/overnight/evidence/final-skin/VISUAL-SYSTEM.md` (*Explicitly n
 - [x] Logo authority vs `arc-mark.png`  
 - [x] Stop-condition sections A–G  
 - [x] Rejection criteria  
-- [x] Kelly reference sample pack (5) — pattern family + shortlist  
+- [x] Kelly reference sample pack — **12** PNGs (2 batches) — pattern family + shortlist  
 - [ ] assets910 **full** filename-level reconciliation — blocked until `.local/assets910/` populated (option 3 snapshot) or zip ingest  
