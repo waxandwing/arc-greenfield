@@ -2,9 +2,19 @@
 
 Use the **integration branch** for the Arc desk (wood tabletop, tray, MSC pad, ArcTable). `main` does not carry this build by default.
 
-## One-time setup
+## Run every command from the repo root
+
+Git and npm only work when your shell’s current directory is the cloned **arc-greenfield** folder (the directory that contains `package.json`).
+
+- **Do not** run `git` or `npm` from your home directory (`~`, e.g. `/Users/kellynyhagen`). You will see `fatal: not a git repository` and `ENOENT` for `package.json`.
+- If you already cloned the repo somewhere else, **`cd` to that path first**, then run the commands below.
+- After a fresh clone, you **must** `cd arc-greenfield` before checkout, install, or preview.
+
+## First-time setup (full flow)
 
 ```bash
+git clone https://github.com/waxandwing/arc-greenfield.git
+cd arc-greenfield
 git fetch origin
 git checkout cursor/arc-production-integration
 git pull origin cursor/arc-production-integration
@@ -13,9 +23,21 @@ npm install
 
 Node version: see `.node-version` in the repo root (`npm ci` is fine if you prefer a clean install).
 
+## Already cloned?
+
+```bash
+cd /path/to/arc-greenfield
+git fetch origin
+git checkout cursor/arc-production-integration
+git pull origin cursor/arc-production-integration
+npm install
+```
+
+Replace `/path/to/arc-greenfield` with wherever you cloned the repo on your machine.
+
 ## Production bundle + preview (recommended)
 
-Builds the Vite production bundle, then serves it locally (same flow CI smokes expect on port **4173**):
+From the repo root, builds the Vite production bundle, then serves it locally (same flow CI smokes expect on port **4173**):
 
 ```bash
 npm run preview:desk

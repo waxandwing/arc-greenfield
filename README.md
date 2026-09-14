@@ -136,10 +136,17 @@ Example preview URL: `http://127.0.0.1:4173/?demo=1`
 
 ### Local desk preview (integration branch)
 
-The Arc **desk** build lives on `cursor/arc-production-integration`, not on `main`. On your laptop:
+The Arc **desk** build lives on `cursor/arc-production-integration`, not on `main`.
+
+**Run all commands from the repo root** (the folder that contains `package.json`). Running `git` or `npm` from home (`~`) fails with “not a git repository” and missing `package.json`. If the repo is already on disk, `cd` to that clone first.
 
 ```bash
-git checkout cursor/arc-production-integration && npm install
+git clone https://github.com/waxandwing/arc-greenfield.git
+cd arc-greenfield
+git fetch origin
+git checkout cursor/arc-production-integration
+git pull origin cursor/arc-production-integration
+npm install
 npm run preview:desk
 ```
 
