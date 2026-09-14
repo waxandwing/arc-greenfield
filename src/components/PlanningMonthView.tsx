@@ -3,7 +3,7 @@ import type { ISODate, PlanNavigationContext } from '../calendar'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
 import { formatLongDate, formatMonthKey, formatShortDate } from './dateLabels'
 
-const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+import { PLAN_WEEKDAY_LABELS } from '../calendar/dateMath'
 
 export function PlanningMonthView({
   month,
@@ -11,6 +11,7 @@ export function PlanningMonthView({
   focusDate,
   planContext,
   onSelectDate,
+  onSelectUnit,
   onBeginPlanLessonMove,
 }: {
   month: MonthProjection
@@ -18,12 +19,13 @@ export function PlanningMonthView({
   focusDate?: ISODate
   planContext?: PlanNavigationContext | null
   onSelectDate?: (date: ISODate) => void
+  onSelectUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
 }) {
   return (
     <div className="planning-month" aria-label={`${formatMonthKey(month.monthKey)} planning calendar`} data-focus-date={focusDate ?? ''}>
       <div className="planning-month-weekdays" aria-hidden="true">
-        {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
+        {PLAN_WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
       </div>
       {month.weeks.map((calendarWeek, weekIndex) => {
         const planningWeek = planning.weeks[weekIndex]
@@ -31,7 +33,9 @@ export function PlanningMonthView({
           <section className="planning-month-week" key={calendarWeek.startDate} aria-label={`Week of ${formatShortDate(calendarWeek.startDate)}`}>
             {planningWeek?.unitSegments.length ? (
               <div className="planning-month-unit-stack" aria-label="Unit pacing">
-                {planningWeek.unitSegments.map((segment) => <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} />)}
+                {planningWeek.unitSegments.map((segment) => (
+                  <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} onSelectUnit={onSelectUnit} />
+                ))}
               </div>
             ) : null}
             <div className="planning-month-days">
@@ -55,20 +59,30 @@ export function PlanningMonthView({
   )
 }
 
-function MonthUnitLane({ segment }: { segment: MonthUnitSegment }) {
+function MonthUnitLane({
+  segment,
+  onSelectUnit,
+}: {
+  segment: MonthUnitSegment
+  onSelectUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
+}) {
   const continuation = [segment.continuesBefore ? 'continues from prior week' : null, segment.continuesAfter ? 'continues next week' : null]
     .filter(Boolean)
     .join(', ')
+  const label = `${segment.courseTitle} · ${segment.title}`
   return (
-    <div className="planning-month-unit-lane" aria-label={`${segment.courseTitle}, ${segment.title}${continuation ? `, ${continuation}` : ''}`}>
-      <div
+    <div className="planning-month-unit-lane" data-course-id={segment.courseId} aria-label={`${segment.courseTitle}, ${segment.title}${continuation ? `, ${continuation}` : ''}`}>
+      <button
+        type="button"
         className="planning-month-unit-band"
         style={{ gridColumn: `${segment.startColumn + 1} / ${segment.endColumn + 2}` }}
-        title={`${segment.courseTitle} · ${segment.title}`}
+        title={label}
+        aria-label={`Open ${label} in Month at unit start`}
+        onClick={() => onSelectUnit?.({ date: segment.unitStartDate, courseId: segment.courseId, unitId: segment.unitId })}
       >
         <span className="planning-month-unit-course">{segment.courseTitle}</span>
         <span className="planning-month-unit-title">{segment.title}</span>
-      </div>
+      </button>
     </div>
   )
 }
@@ -90,7 +104,9 @@ function MonthDayCell({
   onSelectDate?: (date: ISODate) => void
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
 }) {
-  const dayStatus = day.kind === 'instructional' ? null : day.label || humanizeKind(day.kind)
+  const nonTeaching = day.kind === 'no-school' || day.kind === 'holiday' || day.kind === 'break' || day.kind === 'teacher-workday'
+  const dayStatus = day.kind === 'instructional' || day.kind === 'unknown' || nonTeaching ? null : day.label || humanizeKind(day.kind)
+  const ariaStatus = nonTeaching ? humanizeKind(day.kind) : dayStatus
   const classes = [
     'planning-month-day',
     `planning-month-day--${day.kind}`,
@@ -101,7 +117,7 @@ function MonthDayCell({
   ].filter(Boolean).join(' ')
 
   return (
-    <div className={classes} aria-label={`${formatLongDate(day.date)}${dayStatus ? `. ${dayStatus}` : ''}`}>
+    <div className={classes} aria-label={`${formatLongDate(day.date)}${ariaStatus ? `. ${ariaStatus}` : ''}`}>
       <div className="planning-month-day-heading">
         <button type="button" className="planning-month-date" aria-current={selected ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>{Number(day.date.slice(8))}</button>
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}

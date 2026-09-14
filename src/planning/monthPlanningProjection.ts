@@ -13,6 +13,7 @@ export type MonthUnitSegment = {
   courseId: string
   courseTitle: string
   title: string
+  unitStartDate: ISODate
   weekIndex: number
   startColumn: number
   endColumn: number
@@ -88,6 +89,7 @@ function projectUnitSegments(
         courseId: unit.courseId,
         courseTitle: course.title,
         title: unit.title,
+        unitStartDate: unit.startDate,
         weekIndex,
         startColumn: indexByDate.get(visibleStart) ?? 0,
         endColumn: indexByDate.get(visibleEnd) ?? weekDates.length - 1,

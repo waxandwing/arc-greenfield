@@ -205,28 +205,42 @@
 
 .plan-state-header {
   display: grid;
-  gap: 2px;
-  margin: 8px 0 4px;
+  gap: 0;
+  margin: 8px 0 12px;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid var(--line-subtle);
 }
 
 .plan-state-kicker {
   margin: 0;
-  font-size: 12px;
-  font-weight: 800;
+  padding: 8px 12px;
+  font: var(--type-section);
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--soft-charcoal);
+  background: var(--plan-surface-view) var(--plan-surface-paper) repeat;
 }
 
 .plan-state-primary {
   margin: 0;
-  font: 500 28px/1.1 var(--font-editorial);
+  padding: 10px 12px;
+  font: var(--type-view-title);
+  background: var(--plan-surface-context) var(--plan-surface-paper) repeat;
+  border-top: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  box-shadow: var(--shadow-hairline);
 }
 
 .plan-state-secondary {
   margin: 0;
+  padding: 8px 12px 8px 12px;
   color: var(--soft-charcoal);
   font-size: 15px;
+  font-weight: 600;
+  background:
+    var(--plan-surface-time)
+    var(--plan-surface-people) right -20px top / min(220px, 42%) auto no-repeat;
 }
 
 .plan-back-link {

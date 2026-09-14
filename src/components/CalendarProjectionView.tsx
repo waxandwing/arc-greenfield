@@ -3,6 +3,7 @@ import type { CalendarView } from '../navigation/calendarViews'
 import { projectDay, projectMonth, projectQuarter, projectSemester, projectWeek, projectYearMap, type ProjectedDay } from '../calendar/projections'
 import type { PlanNavigationContext } from '../calendar/navigationContext'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
+import { PLAN_WEEKDAY_LABELS } from '../calendar/dateMath'
 import { projectDayContinuity } from '../planning/dayContinuityProjection'
 import { projectPlanningRange } from '../planning/planningProjection'
 import { projectMonthPlanning } from '../planning/monthPlanningProjection'
@@ -45,8 +46,6 @@ type Props = {
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
 }
-
-const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending = false, captureWorkspace = null, onAddNote, onDeleteNote, onBeginPlanLessonMove, onOpenRecoveryForSection }: Props) {
   if (!calendar || !anchorDate) {
@@ -137,7 +136,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
             </p>
           ) : null}
           {monthPlanning ? (
-            <><PlanningNotes notes={planningContext?.planning.notes ?? []} dates={projection.weeks.flatMap((week) => week.days.map((day) => day.date))} focusDate={anchorDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningMonthView month={projection} planning={monthPlanning} focusDate={planContext?.anchorDate ?? anchorDate} planContext={planContext} onSelectDate={(date) => onSelectDate?.(date, 'Day')} onBeginPlanLessonMove={onBeginPlanLessonMove} /></div></>
+            <><PlanningNotes notes={planningContext?.planning.notes ?? []} dates={projection.weeks.flatMap((week) => week.days.map((day) => day.date))} focusDate={anchorDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningMonthView month={projection} planning={monthPlanning} focusDate={planContext?.anchorDate ?? anchorDate} planContext={planContext} onSelectDate={(date) => onSelectDate?.(date, 'Day')} onSelectUnit={onSelectYearUnit} onBeginPlanLessonMove={onBeginPlanLessonMove} /></div></>
           ) : (
             <CalendarOnlyMonth projection={projection} label={formatMonth(anchorDate)} />
           )}
@@ -291,7 +290,7 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
       data-plan-section={planContext?.sectionId ?? ''}
       data-plan-lesson={planContext?.lessonId ?? ''}
     >
-      <ProjectionHeading title={title} termContext={termContext} />
+      {termContext ? <div className="projection-heading-row projection-heading-row--terms-only">{termContext}</div> : null}
       {planningPeriodReturnPending && onReturnToPlanningPeriod ? (
         <p className="planning-week-actions"><button type="button" className="plan-back-link" onClick={onReturnToPlanningPeriod}>Back to Planning period</button></p>
       ) : null}
@@ -315,7 +314,7 @@ function CalendarOnlyMonth({ projection, label }: { projection: ReturnType<typeo
   return (
     <>
       <div className="month-weekday-row" aria-hidden="true">
-        {WEEKDAY_LABELS.map((weekday) => <span key={weekday}>{weekday}</span>)}
+        {PLAN_WEEKDAY_LABELS.map((weekday) => <span key={weekday}>{weekday}</span>)}
       </div>
       <div className="month-projection" role="region" aria-label={`${label} calendar grid`}>
         {projection.weeks.map((week) => (

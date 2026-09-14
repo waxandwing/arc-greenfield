@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
+import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const evidenceDir = new URL('../docs/overnight/evidence/plan-week/', import.meta.url).pathname
@@ -125,11 +126,6 @@ async function withPage(browser, seed, run) {
 
 const dayContext = { schemaVersion: 2, calendarId: 'arc-plan-gauntlet-2026', view: 'Day', anchorDate: '2026-09-15', focus: 'day' }
 
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('button', { name: view, exact: true }).click()
-}
-
 const browser = await chromium.launch({ headless: true })
 try {
   const data = fixture()
@@ -140,7 +136,7 @@ try {
   }
 
   await withPage(browser, storageEntries(data, dayContext), async (page, runtimeErrors) => {
-    await selectCalendarView(page, 'Week')
+    await selectView(page, 'Week')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Week', 'Day → Week did not enter Week.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Day → Week did not preserve the anchor date.')
     assert(await page.locator('.planning-week').getAttribute('data-plan-date') === '2026-09-15', 'Week surface did not keep the selected instructional day.')
@@ -153,7 +149,7 @@ try {
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
-    await selectCalendarView(page, 'Week')
+    await selectView(page, 'Week')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Week', 'Class → Week did not enter Week.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Class → Week did not preserve the date.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Class → Week did not preserve Course.')
@@ -168,7 +164,7 @@ try {
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
-    await selectCalendarView(page, 'Week')
+    await selectView(page, 'Week')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Week', 'Lesson → Week did not enter Week.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Lesson → Week did not preserve the date.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-course') === 'course-2d', 'Lesson → Week dropped Course.')
@@ -182,7 +178,7 @@ try {
   })
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
-    await selectCalendarView(page, 'Week')
+    await selectView(page, 'Week')
     await page.getByRole('button', { name: 'Open Day for Monday, September 14, 2026' }).click()
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Week → Day did not open Teaching Day.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-14', 'Week → Day did not use the selected date.')
@@ -198,10 +194,10 @@ try {
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
-    await selectCalendarView(page, 'Week')
+    await selectView(page, 'Week')
     const before = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1')))
     await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
-    assert(await page.getByRole('button', { name: 'Workspace', exact: true }).getAttribute('aria-expanded') === 'true', 'Week did not open Workspace as an overlay.')
+    assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).getAttribute('aria-expanded') === 'true', 'Week did not open Workspace as an overlay.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-overlay') === 'workspace', 'Workspace overlay was not reflected from Week.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-view') === 'Week', 'Opening Workspace from Week mutated Plan view.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Opening Workspace from Week mutated the date.')
@@ -219,7 +215,7 @@ try {
   })
 
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
-    await selectCalendarView(page, 'Week')
+    await selectView(page, 'Week')
     await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Week → Home did not land on Teaching Day.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Week → Home moved the anchored date.')
@@ -268,7 +264,7 @@ try {
     await page.getByRole('button', { name: 'Plan View', exact: true }).click()
     const before = await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
-    await selectCalendarView(page, 'Week')
+    await selectView(page, 'Week')
     await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
     await page.getByRole('button', { name: 'Close Workspace', exact: true }).click()
     await page.getByRole('button', { name: 'Return to Teaching Day' }).click()

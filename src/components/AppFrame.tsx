@@ -74,6 +74,46 @@ export function AppFrame() {
     ? onboardingStageTitle(onboardingDraft, setupCapabilities)
     : stageTitleFor(workspaceMode.mode, workspace.activeView)
   const showPlanFurniture = Boolean(workspace.calendar && workspaceMode.mode === 'calendar' && !onboardingActive)
+  const planningIndexActive = Boolean(
+    showPlanFurniture
+    && workspace.activeView === 'Day'
+    && workspace.planContext?.focus === 'class'
+    && workspace.planContext.teachingBlockId
+    && workspace.planningWorkspace
+    && workspace.unitWorkspace
+    && workspace.lessonWorkspace
+    && workspace.anchorDate
+    && (() => {
+      try {
+        const continuity = projectDayContinuity({
+          date: workspace.anchorDate!,
+          planning: workspace.planningWorkspace!,
+          units: workspace.unitWorkspace!,
+          lessons: workspace.lessonWorkspace!,
+          overrides: workspace.shiftState?.overrides ?? [],
+        })
+        const rail = buildTeachingDayRail(workspace.planningWorkspace!, continuity)
+        const block = rail.find((item) => item.id === workspace.planContext!.teachingBlockId)
+        return block?.type === 'planning'
+      } catch {
+        return false
+      }
+    })(),
+  )
+
+  function openPlanningPeriodFromIndex() {
+    if (!workspace.calendar || !workspace.anchorDate || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+    workspace.setActiveView('Day')
+    const continuity = projectDayContinuity({
+      date: workspace.anchorDate,
+      planning: workspace.planningWorkspace,
+      units: workspace.unitWorkspace,
+      lessons: workspace.lessonWorkspace,
+      overrides: workspace.shiftState?.overrides ?? [],
+    })
+    const planningBlock = buildTeachingDayRail(workspace.planningWorkspace, continuity).find((item) => item.type === 'planning')
+    if (planningBlock) workspace.selectTeachingBlock(planningBlock)
+  }
 
   function updateOnboarding(next: OnboardingDraft) {
     setOnboardingDraft(next)
@@ -314,6 +354,14 @@ export function AppFrame() {
             openRequest={workspaceOpenToken ? { name: 'workspace', token: workspaceOpenToken } : null}
             workspaceOpen={workspaceOverlayOpen}
             onWorkspaceOpenChange={setWorkspaceOverlayOpen}
+            indexNav={showPlanFurniture ? {
+              activeView: workspace.activeView,
+              planningIndexActive,
+              viewSelectionDisabled: workspaceBusy || onboardingActive,
+              availabilityFor: workspace.viewAvailability,
+              onSelectView: selectView,
+              onOpenPlanningPeriod: openPlanningPeriodFromIndex,
+            } : null}
           >
             <section className={`calendar-canvas${onboardingActive ? ' calendar-canvas--onboarding' : ''}`} aria-label={onboardingActive ? `${headerStageTitle} setup` : `${headerStageTitle} workspace`}>
               {onboardingActive ? (

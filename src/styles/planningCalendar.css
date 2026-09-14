@@ -132,15 +132,30 @@
   align-self:center;
   min-width:0;
   margin:4px 6px;
-  padding:7px 10px;
+  padding:10px 12px;
   overflow:hidden;
-  border-left:4px solid var(--terracotta);
-  background:var(--terracotta-soft);
-  font-size:14px;
+  border-left:6px solid var(--terracotta);
+  background:rgba(201,104,69,.12);
+  font-size:15px;
   font-weight:700;
   color:var(--ink);
   text-overflow:ellipsis;
   white-space:nowrap;
+}
+
+.planning-course[data-course-id='course-apah'] .planning-unit-span{
+  border-left-color:var(--course-apah-accent);
+  background:var(--course-apah-band);
+}
+
+.planning-course[data-course-id='course-2d'] .planning-unit-span{
+  border-left-color:var(--course-2d-accent);
+  background:var(--course-2d-band);
+}
+
+.planning-course[data-course-id='course-3d'] .planning-unit-span{
+  border-left-color:var(--course-3d-accent);
+  background:var(--course-3d-band);
 }
 
 .planning-section-list{
@@ -169,26 +184,74 @@
   background:linear-gradient(180deg,var(--accent-blue-soft),rgba(255,255,255,.18));
 }
 
+.planning-date-heading--off,
+.planning-day-slot--off{
+  background-color:var(--accent-blue-soft);
+  background-image:repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    rgba(101, 127, 144, 0.1) 6px,
+    rgba(101, 127, 144, 0.1) 12px
+  );
+}
+
+.planning-date-heading--off{
+  cursor:pointer;
+}
+
 .planning-day-slot--no-school,
 .planning-day-slot--holiday,
 .planning-day-slot--break,
-.planning-day-slot--teacher-workday{
-  background:rgba(74,73,69,.045);
+.planning-day-slot--teacher-workday,
+.planning-day-slot--unknown{
+  /* off-day column uses --off pattern above */
 }
 
 .planning-day-slot--unknown{
-  background:repeating-linear-gradient(135deg,rgba(74,73,69,.04),rgba(74,73,69,.04) 6px,transparent 6px,transparent 12px);
+  /* legacy hook; pattern from --off */
 }
 
 .planning-lesson{
   display:grid;
-  gap:6px;
-  padding:10px 11px;
-  border:0;
-  border-left:4px solid var(--dusty-blue);
-  border-radius:0;
-  background:rgba(243,235,221,.68);
+  gap:4px;
+  padding:8px 10px;
+  border:1px solid var(--line-subtle);
+  border-left:3px solid var(--dusty-blue);
+  border-radius:4px;
+  background:rgba(255,253,248,.72);
   color:var(--ink);
+  font-size:14px;
+}
+
+.planning-lesson-meta{
+  font-size:12px;
+  color:var(--muted-ink);
+}
+
+.planning-lesson-title{
+  font-weight:650;
+}
+
+.planning-lesson-actions{
+  margin-top:2px;
+  gap:var(--space-2);
+}
+
+.planning-lesson-actions .planning-lesson-more-toggle{
+  color:var(--soft-charcoal);
+  font-weight:650;
+}
+
+.planning-lesson-more-panel{
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--space-2);
+  width:100%;
+}
+
+.planning-lesson-actions:not(.is-expanded) .planning-lesson-more-panel{
+  display:none;
 }
 
 .planning-lesson--in-progress{

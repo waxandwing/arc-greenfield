@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
+import { selectPlanView as selectCalendarView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -23,15 +24,8 @@ async function configureCalendar(page, { label = '2026–27', first = '2026-09-0
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 }
 
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  const navigation = page.getByRole('navigation', { name: 'Calendar views' })
-  assert(await navigation.isVisible(), 'Calendar views: current-view control did not reveal the view choices.')
-  await navigation.getByRole('button', { name: view, exact: true }).click()
-}
-
 async function openSettingsAction(page, name) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
   return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
 }
@@ -87,27 +81,22 @@ async function auditShellHierarchyAndZoom(browser) {
 
   assert(await page.getByRole('heading', { level: 1, name: 'Month' }).count() === 1, 'Shell hierarchy: Month must be the single level-one workspace heading.')
   assert(await page.locator('h1').count() === 1, 'Shell hierarchy: expected exactly one h1 after calendar setup.')
-  assert(await page.getByRole('button', { name: 'Change calendar view, current Month' }).count() === 1, 'Shell navigation: current view name must be the single always-reachable view switch control.')
+  const indexNav = page.getByRole('navigation', { name: 'Planner index' })
+  assert(await indexNav.count() === 1, 'Shell navigation: planner index tabs must be the always-reachable view controls.')
+  assert(await indexNav.getByRole('button', { name: 'MONTH', exact: true }).getAttribute('aria-current') === 'page', 'Shell navigation: Month tab must reflect the active view.')
   assert(await page.getByRole('group', { name: 'Month date navigation' }).count() === 1, 'Shell semantics: date navigation must be an explicit named control group.')
   assert(await page.getByRole('region', { name: /calendar grid$/ }).count() === 1, 'Shell semantics: Month grid must expose a named region.')
   assert(await page.locator('div[aria-label]:not([role])').count() === 0, 'Shell semantics: generic divs must not rely on aria-label without a semantic role.')
 
-  const switcher = page.getByRole('button', { name: 'Change calendar view, current Month' })
-  await switcher.click()
-  const viewNavigation = page.getByRole('navigation', { name: 'Calendar views' })
-  assert(await viewNavigation.isVisible(), 'Shell navigation: activating current view name must reveal calendar views.')
-  const viewNames = await viewNavigation.getByRole('button').allTextContents()
-  assert(JSON.stringify(viewNames) === JSON.stringify(['Day', 'Week', 'Month', 'Year']), `Shell navigation: visible product law must be Day/Week/Month/Year (${viewNames.join(', ')}).`)
-  await page.keyboard.press('Escape')
-  assert(await viewNavigation.count() === 0, 'Shell navigation: Escape must close the view choices.')
-  assert(await switcher.evaluate((node) => document.activeElement === node), 'Shell navigation: Escape must restore focus to the current-view control.')
+  const viewNames = await indexNav.getByRole('button').filter({ hasText: /^(DAY|WEEK|MONTH|YEAR)$/ }).allTextContents()
+  assert(JSON.stringify(viewNames) === JSON.stringify(['DAY', 'WEEK', 'MONTH', 'YEAR']), `Shell navigation: visible product law must be DAY/WEEK/MONTH/YEAR (${viewNames.join(', ')}).`)
 
   const options = page.getByText('View options', { exact: true })
   assert(await options.count() === 1, 'Shell hierarchy: View options disclosure is missing or duplicated.')
 
   await selectCalendarView(page, 'Week')
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'B01 evidence: exact shell artifact must render Week as the level-one workspace heading.')
-  assert(await page.getByRole('button', { name: 'Change calendar view, current Week' }).count() === 1, 'B01 evidence: Week must retain the always-reachable current-view switch control.')
+  assert(await indexNav.getByRole('button', { name: 'WEEK', exact: true }).getAttribute('aria-current') === 'page', 'B01 evidence: Week tab must reflect the active view.')
   assert(await page.getByRole('group', { name: 'Week date navigation' }).count() === 1, 'B01 evidence: Week date navigation must remain explicitly named.')
 
   mkdirSync('artifacts', { recursive: true })
@@ -118,13 +107,13 @@ async function auditShellHierarchyAndZoom(browser) {
   const zoom200 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(zoom200.scroll <= zoom200.width + 1, `200% zoom: document overflowed horizontally (${zoom200.scroll} > ${zoom200.width}).`)
   assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '200% zoom: primary workspace heading became unavailable.')
-  assert(await page.getByRole('button', { name: 'Change calendar view, current Month' }).isVisible(), '200% zoom: current-view navigation control became unavailable.')
+  assert(await indexNav.getByRole('button', { name: 'MONTH', exact: true }).isVisible(), '200% zoom: planner index Month tab became unavailable.')
 
   await page.evaluate(() => { document.documentElement.style.zoom = '4' })
   const zoom400 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(zoom400.scroll <= zoom400.width + 1, `400% zoom: document overflowed horizontally (${zoom400.scroll} > ${zoom400.width}).`)
   assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '400% zoom: primary workspace heading became unavailable.')
-  assert(await page.getByRole('button', { name: 'Change calendar view, current Month' }).isVisible(), '400% zoom: current-view navigation control became unavailable.')
+  assert(await indexNav.getByRole('button', { name: 'MONTH', exact: true }).isVisible(), '400% zoom: planner index Month tab became unavailable.')
 
   assert(runtimeErrors.length === 0, `Shell hierarchy/zoom runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()

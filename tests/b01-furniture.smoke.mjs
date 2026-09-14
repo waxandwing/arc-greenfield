@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
+import { selectPlanView as selectCalendarView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -12,14 +13,9 @@ function headerAction(page, text) {
 }
 
 async function settingsAction(page, text) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
   return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: text, exact: true })
-}
-
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
 }
 
 async function seedReferenceWeek(page) {
@@ -95,9 +91,9 @@ try {
   assert(await page.getByText('Color intro', { exact: true }).count() > 0, 'B01: representative Lesson truth is missing.')
   assert(await page.getByText('Period 1', { exact: true }).count() > 0, 'B01: representative Section row is missing.')
 
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
-  const fridge = page.getByRole('button', { name: 'Workspace', exact: true })
-  const tasks = page.getByRole('button', { name: 'Tasks', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  const fridge = page.getByRole('button', { name: 'WORKSPACE', exact: true })
+  const tasks = page.getByRole('button', { name: 'TASKS', exact: true })
   const settingsSurface = page.locator('.b01-settings-surface')
   const fridgeSurface = page.locator('.b01-fridge-surface')
   const taskSurface = page.locator('.b01-task-surface')

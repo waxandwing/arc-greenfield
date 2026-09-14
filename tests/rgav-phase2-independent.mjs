@@ -11,7 +11,7 @@ function headerAction(page, text) {
 }
 
 async function settingsAction(page, text) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
   return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: text, exact: true })
 }
@@ -31,13 +31,8 @@ async function press(locator, key = 'Enter') {
   await locator.press(key)
 }
 
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
-}
-
 async function openViewOptions(page) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
   await page.getByText('View options', { exact: true }).click()
 }

@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
+import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const calendarId = 'calendar-multiprep'
@@ -29,10 +30,6 @@ const lessons = [
 ]
 
 function assert(condition, message) { if (!condition) throw new Error(message) }
-async function selectView(page, name) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name, exact: true }).click()
-}
 async function capture(page, name) {
   mkdirSync('artifacts/arc-multiprep', { recursive: true })
   await page.screenshot({ path: `artifacts/arc-multiprep/${name}`, fullPage: true })
@@ -63,11 +60,11 @@ try {
   await selectView(page, 'Week')
   const widths = await page.locator('.planning-date-heading').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width))
   assert(Math.max(...widths) > Math.min(...widths) * 1.25, 'Week must expand the selected instructional day instead of using equal columns.')
-  await page.getByRole('button', { name: 'Workspace', exact: true }).click()
+  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
   assert(await page.getByRole('textbox', { name: 'Quick capture', exact: true }).count() === 1, 'Workspace must expose real capture before Course placement.')
   assert(!(await page.locator('body').innerText()).includes('Fridge'), 'Visible product language must say Workspace while internal fridge compatibility seams remain untouched.')
   await capture(page, '02-week-workspace.png')
-  await page.getByRole('button', { name: 'Workspace', exact: true }).click()
+  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
 
   await selectView(page, 'Month')
   assert(await page.locator('.planning-month-day').count() > 0, 'Month must remain a continuity lens over the instructional calendar.')

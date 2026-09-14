@@ -21,7 +21,7 @@ function headerAction(page, text) {
 }
 
 async function settingsAction(page, name) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
   return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
 }

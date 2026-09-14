@@ -1,41 +1,19 @@
-/* Arc Plan shell: cream field, editorial hierarchy, cropped brand bloops (not furniture chrome). */
+/* Arc Plan shell: dark green frame, brand pattern outside cream planner object. */
 
 .arc-shell {
   min-height: 100dvh;
-  background:
-    radial-gradient(ellipse 112% 76% at 102% -12%, var(--accent-blue-soft), transparent 53%),
-    radial-gradient(ellipse 84% 58% at -4% 102%, var(--mustard-soft), transparent 48%),
-    var(--field);
+  background-color: var(--shell-frame-green);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--shell-frame-green) 68%, transparent), color-mix(in srgb, var(--shell-frame-green) 68%, transparent)),
+    var(--shell-pattern);
+  background-size: auto, 280px;
+  background-repeat: no-repeat, repeat;
   color: var(--ink);
 }
 
 .arc-shell::before,
 .arc-shell::after {
-  content: '';
-  position: fixed;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 1;
-}
-
-.arc-shell::before {
-  top: -126px;
-  right: -72px;
-  width: 360px;
-  height: 280px;
-  border-radius: var(--radius-bloop);
-  background: var(--accent-blue-field);
-  transform: rotate(13deg);
-}
-
-.arc-shell::after {
-  bottom: -118px;
-  left: -74px;
-  width: 270px;
-  height: 236px;
-  border-radius: var(--radius-bloop);
-  background: var(--mustard-soft);
-  transform: rotate(-18deg);
+  content: none;
 }
 
 .arc-header {
@@ -47,9 +25,12 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-2) var(--page-gutter);
-  border-bottom: 1px solid var(--line-strong);
-  background: color-mix(in srgb, var(--field) 92%, transparent);
-  backdrop-filter: blur(10px);
+  border-bottom: 1px solid color-mix(in srgb, var(--field-elevated) 22%, transparent);
+  background: color-mix(in srgb, var(--shell-frame-green) 88%, black);
+}
+
+.arc-header .arc-wordmark img {
+  filter: brightness(0) invert(1);
 }
 
 .arc-layout {
@@ -61,6 +42,10 @@
   font: var(--type-section);
   letter-spacing: 0.11em;
   text-transform: uppercase;
+  color: color-mix(in srgb, var(--field-elevated) 72%, transparent);
+}
+
+.calendar-stage-header .section-label {
   color: var(--soft-charcoal);
 }
 
@@ -135,19 +120,8 @@
 }
 
 @media (max-width: 520px) {
-  .arc-shell::before,
-  .arc-shell::after {
-    opacity: 0.7;
-  }
-
-  .arc-shell::before {
-    top: -116px;
-    right: -126px;
-  }
-
-  .arc-shell::after {
-    bottom: -140px;
-    left: -130px;
+  .arc-shell {
+    background-size: auto, 220px;
   }
 }
 

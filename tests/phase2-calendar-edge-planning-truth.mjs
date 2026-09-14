@@ -20,18 +20,13 @@ function headerAction(page, text) {
 }
 
 async function settingsAction(page, name) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
   return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
 }
 
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
-}
-
 async function openViewOptions(page) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
   await page.getByText('View options', { exact: true }).click()
 }
@@ -153,7 +148,7 @@ try {
   assert(await calendarSurface.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: hiding weekends mutated/deleted Saturday planning data.')
 
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: /Change calendar view, current/ }).waitFor({ state: 'visible' })
+  await page.getByRole('navigation', { name: 'Planner index' }).waitFor({ state: 'visible' })
   if (await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).count() === 0) {
     await selectCalendarView(page, 'Month')
   }

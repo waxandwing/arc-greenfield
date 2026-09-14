@@ -21,7 +21,7 @@ function reuseShot(name) {
 }
 
 async function openSettings(page) {
-  const button = page.getByRole('button', { name: 'Settings', exact: true })
+  const button = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if (await button.getAttribute('aria-expanded') !== 'true') await button.click()
 }
 

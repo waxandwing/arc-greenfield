@@ -1,7 +1,7 @@
 import type { ISODate, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
-import { CalendarViewSwitcher } from './CalendarViewSwitcher'
+import { calendarViewLabel } from '../navigation/calendarViews'
 
 type ViewAvailability = { available: boolean; reason?: string }
 
@@ -38,9 +38,6 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     recoveryCount,
     undoAvailable,
     stageTitle,
-    viewSelectionDisabled,
-    availabilityFor,
-    onSelectView,
     onMovePrevious,
     onMoveNext,
     onToday,
@@ -55,12 +52,7 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
       <div>
         <p className="section-label">Calendar</p>
         {calendar && isCalendarMode ? (
-          <CalendarViewSwitcher
-            activeView={activeView}
-            disabled={viewSelectionDisabled}
-            availabilityFor={availabilityFor}
-            onSelect={onSelectView}
-          />
+          <h1 className="view-title" aria-live="polite">{calendarViewLabel(activeView)}</h1>
         ) : (
           <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
         )}

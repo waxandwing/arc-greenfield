@@ -1,4 +1,5 @@
 import { chromium } from 'playwright'
+import { selectPlanView as selectCalendarView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -20,7 +21,7 @@ function headerAction(page, text) {
 }
 
 async function settingsAction(page, name) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
   return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
 }
@@ -75,13 +76,6 @@ async function createRecoveryLessons(page) {
   const p5 = page.locator('.delivery-row').filter({ hasText: 'Period 5' })
   assert(await p5.getByRole('combobox', { name: 'Status', exact: true }).inputValue() === 'not-started', 'Recovery setup leaked Period 2 delivery state into Period 5.')
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
-}
-
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  const navigation = page.getByRole('navigation', { name: 'Calendar views' })
-  assert(await navigation.isVisible(), 'Recovery gate: current-view control did not reveal the view choices.')
-  await navigation.getByRole('button', { name: view, exact: true }).click()
 }
 
 async function moveToWeekOfSeptember14(page) {
@@ -184,7 +178,7 @@ try {
   assert(await fixedTiles.count() === 0, 'Fixed checkpoint should remain outside the Sep 14 Week rather than being pulled into recovery movement.')
 
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: /Change calendar view, current/ }).waitFor({ state: 'visible' })
+  await page.getByRole('navigation', { name: 'Planner index' }).waitFor({ state: 'visible' })
   assert(await headerAction(page, 'Undo last Shift').count() === 1, 'Reload lost the persisted Recovery Undo token.')
   await moveToWeekOfSeptember14(page)
   await assertShiftedWeek(page)
@@ -197,7 +191,7 @@ try {
   await assertRestoredWeek(page)
 
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: /Change calendar view, current/ }).waitFor({ state: 'visible' })
+  await page.getByRole('navigation', { name: 'Planner index' }).waitFor({ state: 'visible' })
   assert(await headerAction(page, 'Undo last Shift').count() === 0, 'Consumed Undo token returned after reload.')
   await moveToWeekOfSeptember14(page)
   await assertRestoredWeek(page)

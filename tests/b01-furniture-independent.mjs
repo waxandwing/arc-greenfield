@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
+import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -12,19 +13,11 @@ function headerAction(page, text) {
 }
 
 async function settingsAction(page, text) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
   return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: text, exact: true })
 }
 
-async function selectView(page, view) {
-  const switcher = page.getByRole('button', { name: /Change calendar view, current/ })
-  await switcher.focus()
-  await switcher.press('Enter')
-  const choice = page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true })
-  await choice.focus()
-  await choice.press('Enter')
-}
 
 async function seed(page) {
   await page.locator('#school-year-label').fill('2026–27')
@@ -101,9 +94,9 @@ try {
   const calendar = page.locator('.calendar-canvas')
   const calendarBefore = await documentRect(calendar, page)
   const viewportBefore = await geometrySnapshot(page)
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
-  const fridge = page.getByRole('button', { name: 'Workspace', exact: true })
-  const tasks = page.getByRole('button', { name: 'Tasks', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  const fridge = page.getByRole('button', { name: 'WORKSPACE', exact: true })
+  const tasks = page.getByRole('button', { name: 'TASKS', exact: true })
   const controls = [settings, fridge, tasks]
 
   for (const control of [tasks, fridge, settings]) {

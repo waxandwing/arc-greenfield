@@ -6,7 +6,7 @@ const evidenceDir = new URL('../docs/overnight/evidence/import-onboarding/', imp
 mkdirSync(evidenceDir, { recursive: true })
 function assert(condition, message) { if (!condition) throw new Error(message) }
 async function shot(page, name) { await page.screenshot({ path: `${evidenceDir}${name}`, fullPage: true }) }
-async function openSettings(page) { const button = page.getByRole('button', { name: 'Settings', exact: true }); if (await button.getAttribute('aria-expanded') !== 'true') await button.click() }
+async function openSettings(page) { const button = page.getByRole('button', { name: 'SETTINGS', exact: true }); if (await button.getAttribute('aria-expanded') !== 'true') await button.click() }
 
 const csv = 'Course,Order,Unit,Unit Length,Item Type,Title,Item Length,Content/Resources,Homework/Next Up,Important Notes\nAP Art History,1,Looking & Meaning,2 weeks,Lesson,Reading images,45 min,https://example.com/images,Compare two works,Model evidence first\nAP Art History,2,Looking & Meaning,2 weeks,Lesson,Formal analysis relay,45 min,,Bring notes,Use partner talk'
 

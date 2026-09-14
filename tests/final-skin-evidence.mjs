@@ -1,4 +1,5 @@
 import { mkdirSync, readFileSync } from 'node:fs'
+import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
 import { chromium } from 'playwright'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
@@ -8,11 +9,6 @@ mkdirSync(evidenceDir, { recursive: true })
 
 async function shot(page, name) {
   await page.screenshot({ path: `${evidenceDir}${name}`, fullPage: true })
-}
-
-async function selectView(page, name) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name, exact: true }).click()
 }
 
 async function contactSheet(browser) {
@@ -184,7 +180,7 @@ try {
       'arc.onboarding.v1': JSON.stringify({ schemaVersion: 1, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }),
     })
     await page.goto(baseUrl, { waitUntil: 'networkidle' })
-    await page.getByRole('button', { name: 'Settings', exact: true }).click()
+    await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
     await page.getByRole('button', { name: 'Import curriculum' }).click()
     await page.getByLabel('Choose a CSV file').setInputFiles({ name: 'apah-2026.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) })
     await page.getByText('source rows ready for review').waitFor()

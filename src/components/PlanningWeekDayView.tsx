@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { ISODate, PlanNavigationContext } from '../calendar'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
@@ -41,10 +42,12 @@ function PlanningDateHeader({ days, single, focusDate, onSelectDate }: { days: P
     <div className="planning-date-header" style={gridTemplate(days, focusDate)}>
       <span className="planning-row-label planning-row-label--header" aria-hidden="true">Class</span>
       {days.map((day) => (
-        <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}${day.date === focusDate ? ' planning-date-heading--focus' : ''}`} aria-current={day.date === focusDate ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>
+        <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}${day.kind !== 'instructional' ? ' planning-date-heading--off' : ''}${day.date === focusDate ? ' planning-date-heading--focus' : ''}`} aria-current={day.date === focusDate ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}${day.kind !== 'instructional' ? `. ${day.label || humanizeKind(day.kind)}` : ''}`} onClick={() => onSelectDate?.(day.date)}>
           {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
           <span>{formatShortDate(day.date)}</span>
-          {day.kind !== 'instructional' ? <span className="planning-date-kind">{day.label || humanizeKind(day.kind)}</span> : null}
+          {day.kind !== 'instructional' && day.kind !== 'unknown' && day.kind !== 'no-school' ? (
+            <span className="planning-date-kind">{day.label || humanizeKind(day.kind)}</span>
+          ) : null}
         </button>
       ))}
     </div>
@@ -69,7 +72,7 @@ function PlanningCourse({
   onOpenRecoveryForSection?: (sectionId: string) => void
 }) {
   return (
-    <section className="planning-course" aria-label={`${course.course.title} planning`}>
+    <section className="planning-course" data-course-id={course.course.id} aria-label={`${course.course.title} planning`}>
       <div className="planning-course-heading">
         <h2>{course.course.title}</h2>
       </div>
@@ -97,11 +100,14 @@ function PlanningCourse({
             <div className="planning-row-label">
               <strong>{row.section.name}</strong>
             </div>
-            {row.days.map((slot, index) => (
+            {row.days.map((slot, index) => {
+              const dayKind = days[index]?.kind ?? 'unknown'
+              const offDay = dayKind !== 'instructional'
+              return (
               <div
                 key={slot.date}
-                className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}${slot.date === focusDate ? ' planning-day-slot--focus' : ''}`}
-                aria-label={`${row.section.name}, ${formatLongDate(slot.date)}`}
+                className={`planning-day-slot planning-day-slot--${dayKind}${offDay ? ' planning-day-slot--off' : ''}${slot.date === focusDate ? ' planning-day-slot--focus' : ''}`}
+                aria-label={`${row.section.name}, ${formatLongDate(slot.date)}${offDay ? `. ${days[index]?.label || humanizeKind(dayKind)}` : ''}`}
               >
                 {slot.lessons.map((lesson) => (
                   <LessonTile
@@ -115,7 +121,8 @@ function PlanningCourse({
                 ))}
                 {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
               </div>
-            ))}
+              )
+            })}
           </div>
         ))}
       </div>
@@ -155,16 +162,55 @@ function LessonTile({ lesson, sectionId, showActions, onBeginPlanLessonMove, onO
         <p className="planning-resume-note">Continue: {lesson.resumeNote}</p>
       ) : null}
       {showActions && (onBeginPlanLessonMove || onOpenRecoveryForSection) ? (
-        <div className="planning-lesson-actions">
-          {onBeginPlanLessonMove ? (
-            <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: lesson.lessonId, sectionId, defaultDestination: lesson.effectiveDate })}>Move</button>
-          ) : null}
-          {onOpenRecoveryForSection && lesson.deliveryStatus === 'in-progress' ? (
-            <button type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Review Shift</button>
-          ) : null}
-        </div>
+        <LessonProgressiveActions
+          lessonId={lesson.lessonId}
+          sectionId={sectionId}
+          effectiveDate={lesson.effectiveDate}
+          inProgress={lesson.deliveryStatus === 'in-progress'}
+          onBeginPlanLessonMove={onBeginPlanLessonMove}
+          onOpenRecoveryForSection={onOpenRecoveryForSection}
+        />
       ) : null}
     </article>
+  )
+}
+
+function LessonProgressiveActions({
+  lessonId,
+  sectionId,
+  effectiveDate,
+  inProgress,
+  onBeginPlanLessonMove,
+  onOpenRecoveryForSection,
+}: {
+  lessonId: string
+  sectionId: string
+  effectiveDate: ISODate
+  inProgress: boolean
+  onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
+  onOpenRecoveryForSection?: (sectionId: string) => void
+}) {
+  const [moreOpen, setMoreOpen] = useState(false)
+  const secondary = [
+    onBeginPlanLessonMove ? (
+      <button key="move" type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId, sectionId, defaultDestination: effectiveDate })}>Move</button>
+    ) : null,
+    onOpenRecoveryForSection && inProgress ? (
+      <button key="shift" type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Review Shift</button>
+    ) : null,
+  ].filter(Boolean)
+
+  return (
+    <div className={`planning-lesson-actions${moreOpen ? ' is-expanded' : ''}`}>
+      <button type="button" className="text-button planning-lesson-open" aria-pressed="true">Open</button>
+      {onBeginPlanLessonMove ? (
+        <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId, sectionId, defaultDestination: effectiveDate })}>Move</button>
+      ) : null}
+      {secondary.length > 0 ? (
+        <button type="button" className="text-button planning-lesson-more-toggle" aria-expanded={moreOpen} onClick={() => setMoreOpen((value) => !value)}>More</button>
+      ) : null}
+      {moreOpen && secondary.length > 0 ? <div className="planning-lesson-more-panel">{secondary}</div> : null}
+    </div>
   )
 }
 

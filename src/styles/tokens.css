@@ -29,6 +29,27 @@
   --pine-live: #1F4B3A;
   --pine-live-soft: rgba(31, 75, 58, 0.12);
 
+  /* Plan shell frame (Stage 7.2) */
+  --shell-frame-green: #1F4B3A;
+  --shell-frame-inset: 8px;
+  --shell-frame-radius: 10px;
+  --shell-pattern: url('/assets/arctable/breezeblock-tile.png');
+
+  /* Course band colors */
+  --course-apah-accent: var(--mustard);
+  --course-2d-accent: var(--dusty-blue);
+  --course-3d-accent: var(--sage);
+  --course-apah-band: rgba(228, 179, 61, 0.2);
+  --course-2d-band: rgba(124, 156, 173, 0.22);
+  --course-3d-band: rgba(154, 170, 137, 0.22);
+
+  /* Plan state header bands (aligned with ArcTable surface family) */
+  --plan-surface-view: rgba(255, 253, 248, 0.78);
+  --plan-surface-context: rgba(255, 253, 248, 0.92);
+  --plan-surface-time: rgba(225, 233, 213, 0.92);
+  --plan-surface-paper: url('/assets/arctable/paper-cream.png');
+  --plan-surface-people: url('/assets/arctable/people-surface-open.png');
+
   /* —— Lines & shadows —— */
   --line-subtle: rgba(44, 46, 46, 0.12);
   --line-strong: rgba(44, 46, 46, 0.22);

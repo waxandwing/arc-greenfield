@@ -71,7 +71,7 @@ await page.addInitScript((value) => {
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
 assert(await page.getByRole('heading', { level: 1, name: 'Month' }).count() === 1, 'Source review: seeded source-backed calendar did not restore into the planner.')
 
-await page.getByRole('button', { name: 'Settings', exact: true }).click()
+await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
 await page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: 'Calendar dates', exact: true }).click()
 const review = page.getByRole('region', { name: 'Check the school-year truth before you change it.' })
 assert(await review.count() === 1, 'Source review: source-backed calendar review region is missing.')
@@ -117,7 +117,7 @@ assert(editedException?.source === 'manual', `Source review: teacher-edited exce
 assert(editedException?.confidence === 'confirmed', `Source review: teacher-edited exception did not become confirmed (${editedException?.confidence}).`)
 
 await page.reload({ waitUntil: 'networkidle' })
-await page.getByRole('button', { name: 'Settings', exact: true }).click()
+await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
 await page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: 'Calendar dates', exact: true }).click()
 const reloadedReview = page.getByRole('region', { name: 'Check the school-year truth before you change it.' })
 assert(await reloadedReview.count() === 1, 'Source review: provenance review surface disappeared after save/reload.')

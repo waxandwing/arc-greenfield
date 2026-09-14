@@ -1,4 +1,5 @@
 import { mkdirSync } from 'node:fs'
+import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
 import { chromium } from 'playwright'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
@@ -52,11 +53,6 @@ function storageEntries(data, context) {
 
 async function shot(page, name) {
   await page.screenshot({ path: `${evidenceDir}${name}`, fullPage: true })
-}
-
-async function selectView(page, name) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name, exact: true }).click()
 }
 
 const dayContext = {

@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
+import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const evidenceDir = new URL('../docs/overnight/evidence/plan-p5/', import.meta.url).pathname
@@ -87,11 +88,6 @@ function storageEntries(data, context) {
 
 async function shot(page, name) {
   await page.screenshot({ path: `${evidenceDir}${name}`, fullPage: true })
-}
-
-async function selectView(page, name) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name, exact: true }).click()
 }
 
 const dayContext = { schemaVersion: 2, calendarId: 'arc-plan-gauntlet-2026', view: 'Day', anchorDate: '2026-09-15', focus: 'day' }
