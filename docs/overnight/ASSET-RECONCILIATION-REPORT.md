@@ -84,8 +84,8 @@ Kelly attached five approved-family samples (saved under Cursor chat assets, cop
 
 | Audit ID | Evidence copy | Size | Visual role | vs repo | Rec |
 |----------|---------------|------|-------------|---------|-----|
-| **REF-BREEZE-FRAMED** | `breezeblock-framed-green-border-1000.png` | 1000×1000 | Same **corner-quadrant breezeblock** as production tile, plus **thick pine frame** on cream — hero/board, not a seamless field tile | Same geometry family as **`breezeblock-tile.png`** (1024, no frame; MD5 differs) | **POSSIBLE** — frame proportion reference for planner chrome; **not** full-page exterior |
-| **REF-BREEZE-INVERT** | `breezeblock-inverted-green-dominant-1000.png` | 1000×1000 | **Green cross/star** dominates; cream quadrants in corners | Inverse of breezeblock family | **REJECT** — repeats Stage 7.2.2 “too dark outside planner” failure mode |
+| **REF-BREEZE-FRAMED** | `breezeblock-framed-green-border-1000.png` | 1000×1000 | **ArcTable logo icon** (quadrant breezeblock + pine frame) — Kelly 2026-09-14 | Same file as **arctable-logo-icon-01** (MD5 `c709168d…` / batch 2 `c11a239…` export) | **KEEP ArcTable only** — **not** Plan shell / exterior |
+| **REF-BREEZE-INVERT** | `breezeblock-inverted-green-dominant-1000.png` | 1000×1000 | **ArcTable logo icon** (inverted green star) | Same as **arctable-logo-icon-02** | **KEEP ArcTable only** — **REJECT** Plan exterior |
 | **REF-MOTIF-MUSTARD-DOT** | `motif-mustard-fill-circle-392.png` | 392×392 | Textured **mustard fill disc** on transparent/black | No repo match | **POSSIBLE** — AP **dot** signature alt. to wedge |
 | **REF-MOTIF-BLUE-DOT** | `motif-dusty-blue-fill-circle-496.png` | 496×496 | Textured **dusty blue fill disc** | No repo match | **KEEP** — preferred **2D Art 1** small signature (filled circle) |
 | **REF-PATTERN-FINE-GRID** | `pattern-fine-line-grid-2048.png` | 2048×2048 | Neutral cream + **thin line graph grid** | No repo match | **REJECT** — not approved Arc dot/semicircle family; too technical for exterior |
@@ -94,9 +94,26 @@ Kelly attached five approved-family samples (saved under Cursor chat assets, cop
 
 **Chat asset UUIDs (batch 2):** `633399ad…`, `fc6572fc…`, `645fdf9e…`, `64ffb77d…`, `2b3f2cdd…`, `a53c0bdf…`, `8556cdbf…`.
 
-**Breezeblock lineage:** Production **`breezeblock-tile.png`** aligns with **REF-BREEZE-FRAMED** inner art (lower MSE vs inverted). Repo tile remains **second-choice exterior** only when faded on cream; **REF-PATTERN-GRID** stays **first choice** for light-field brand repeat.
+**Breezeblock lineage:** Repo **`breezeblock-tile.png`** (1024 tile, no frame) remains the **Plan second-choice exterior** when faded on cream. **Framed / inverted 1000² icons** are **ArcTable logo variants**, not Plan field tiles. **REF-PATTERN-GRID** stays **first choice** for Plan light exterior.
 
-### Batch 3 — arcs, bloops, ArcTable duplicates
+### ArcTable logo icon family (Kelly clarification, 2026-09-14)
+
+Kelly confirmed the **six 1000×1000 quadrant / breezeblock frame variants** (chat batch + batch 2 duplicates) are **ArcTable logo icons**, not Plan planner chrome or shell patterns.
+
+| Evidence | MD5 prefix | Role |
+|----------|------------|------|
+| `arctable-logo-icons/arctable-logo-icon-01-1000.png` | `c709168d…` | Color quadrant breezeblock + green frame (logo tile) |
+| `arctable-logo-icon-02-1000.png` | `3b4fb4de…` | Inverted green-dominant variant |
+| `arctable-logo-icon-03-1000.png` | `6f3e4666…` | Green-frame / cream-quadrant variant |
+| `arctable-logo-icon-04-1000.png` | `c709168d…` | **Duplicate of icon-01** |
+| `arctable-logo-icon-05-1000.png` | `b8f69ec8…` | Green star / cream corners variant |
+| `arctable-logo-icon-06-1000.png` | `9c87102a…` | Thick green frame + color quadrants |
+
+**Production today:** ArcTable teacher/student headers use **`header-compact.png`** / **`header-compact-dark.png`** (“TABLE” lockup), not these square icons.
+
+**Proposal (no import yet):** Pick **one** icon variant for ArcTable mark/splash experiments under `public/assets/arctable/logo-icon-*.png`; **do not** wire to Plan `AppFrame` wordmark (`arc-mark.png`) or `--shell-pattern`.
+
+---
 
 | Audit ID | Evidence copy | Size | Visual role | vs repo | Rec |
 |----------|---------------|------|-------------|---------|-----|

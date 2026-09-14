@@ -22,8 +22,8 @@ Kelly-approved family excerpts for asset reconciliation. **Not** production path
 
 | File | Role |
 |------|------|
-| `breezeblock-framed-green-border-1000.png` | Breezeblock + frame proportion reference |
-| `breezeblock-inverted-green-dominant-1000.png` | Rejected dark exterior |
+| `breezeblock-framed-green-border-1000.png` | **ArcTable logo icon** (≡ arctable-logo-icon-01) |
+| `breezeblock-inverted-green-dominant-1000.png` | **ArcTable logo icon** (≡ arctable-logo-icon-02) |
 | `motif-mustard-fill-circle-392.png` | Optional AP dot |
 | `motif-dusty-blue-fill-circle-496.png` | Preferred 2D dot motif |
 | `pattern-fine-line-grid-2048.png` | Rejected (not brand family) |
