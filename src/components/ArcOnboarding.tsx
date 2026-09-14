@@ -43,6 +43,10 @@ export function ArcOnboarding(props: Props) {
 }
 
 export function resolveOnboardingStage(draft: OnboardingDraft, capabilities: SetupCapabilities): OnboardingDraft['stage'] {
+  if (draft.stage === 'landed') return 'landed'
+  if (draft.stage === 'day') return 'day'
+  if (draft.stage === 'classes') return capabilities.calendarEstablished ? 'classes' : 'calendar'
+  if (draft.stage === 'calendar') return 'calendar'
   if (draft.stage === 'welcome' && !capabilities.calendarEstablished) return 'welcome'
   if (!capabilities.calendarEstablished) return 'calendar'
   if (!capabilities.coursesEstablished || !capabilities.sectionsEstablished) return 'classes'
