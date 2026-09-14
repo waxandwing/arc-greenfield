@@ -23,4 +23,13 @@ assert(maybeApplyDemoSeed({ search: '?demo=gauntlet', pathname: '/', hash: '' },
 assert(fakeStorage.getItem('arc.calendar.v1'), 'Demo seed must persist calendar.')
 assert(JSON.parse(fakeStorage.getItem('arc.onboarding.v1') ?? '{}').draft.dismissed === true, 'Demo seed must dismiss onboarding.')
 
+const staleStorage = new Map<string, string>([['arc.calendar.v1', '{"schemaVersion":1}']])
+const staleFakeStorage = {
+  getItem: (key: string) => staleStorage.get(key) ?? null,
+  setItem: (key: string, value: string) => { staleStorage.set(key, value) },
+  removeItem: (key: string) => { staleStorage.delete(key) },
+} as Storage
+assert(maybeApplyDemoSeed({ search: '?demo=1', pathname: '/', hash: '' }, staleFakeStorage), '?demo=1 must reseed even when a calendar already exists.')
+assert(JSON.parse(staleFakeStorage.getItem('arc.onboarding.v1') ?? '{}').draft.dismissed === true, 'Demo reseed must dismiss onboarding for desk shell.')
+
 console.log('demo seed contract passed')

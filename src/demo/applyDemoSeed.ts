@@ -50,7 +50,6 @@ export function maybeApplyDemoSeed(
   if (!request) return false
 
   const hadCalendar = Boolean(storage.getItem(CALENDAR_STORAGE_KEY))
-  if (hadCalendar && !request.force) return false
 
   if (request.mode === 'gauntlet') writeGauntletDemo(storage)
 
@@ -61,7 +60,7 @@ export function maybeApplyDemoSeed(
     const query = params.toString()
     const nextUrl = `${location.pathname}${query ? `?${query}` : ''}${location.hash}`
     if (typeof window !== 'undefined') {
-      if (request.force && hadCalendar) {
+      if (hadCalendar) {
         window.location.replace(nextUrl)
         return true
       }
