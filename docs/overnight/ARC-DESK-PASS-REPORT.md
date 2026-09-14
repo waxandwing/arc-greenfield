@@ -1,7 +1,7 @@
 # ARC Desk Pass Report
 
 Branch: `cursor/arc-production-integration`  
-Baseline: workspace layout migration + desk integration fixes (`698e130`)
+Baseline: Edit Workspace + stack MVP land on integration (`938ad19`)
 
 ## Stop condition (A–Z)
 
@@ -18,7 +18,7 @@ Baseline: workspace layout migration + desk integration fixes (`698e130`)
 | I | MSC pad on desk (not in tray) | **GREEN** — `DeskPriorityPad` column |
 | J | Capture → tray + feedback | **GREEN** — existing global capture + "Captured." |
 | K | Capture → MSC (canonical move) | **GREEN** — drag capture to lane promotes to task + removes capture |
-| L | Drag audit | **YELLOW** — HTML5 DnD reused/extended (`deskDrag.ts`); tray↔calendar lesson DnD not expanded |
+| L | Drag audit | **YELLOW** — capture tray↔Month DATE DnD added; lesson tray↔calendar DnD not expanded |
 | M | Day notes / Important laws | **GREEN** — untouched through integration (`2079ff4`) |
 | N | Settings Desk setup addendum | **GREEN** — teacher IA (My school year … Data / import / reuse); **Edit Workspace** → live edit mode; **Pin it down** / **Reset desk** |
 | O | Onboarding / school lookup / logo | **GREEN** — no regressions in touched paths |
@@ -41,7 +41,7 @@ Baseline: workspace layout migration + desk integration fixes (`698e130`)
 | Day note move | HTML5 drag in `CalendarDayNotes` | Unchanged |
 | Task priority | Select menu in task bar | + desk pad drag + drop between lanes |
 | Tray capture | Click/select promote | + drag to MSC lanes (removes capture id) |
-| Tray ↔ calendar | Not implemented in source | **YELLOW** — still promote/place via menus |
+| Tray ↔ calendar | Not implemented in source | **GREEN** — capture anchor drag to Month DATE + return to TRAY drop surface |
 
 ## Visual addendum compliance
 
@@ -71,7 +71,7 @@ Baseline: workspace layout migration + desk integration fixes (`698e130`)
 | Open stack / unstack / reorder; collapsed stack drag | **GREEN** |
 | Stack ≠ Unit | **GREEN** — `interactionLaws.contract.ts` |
 | Unit magnet UI | **YELLOW** — `UNIT_MAGNET` typed only |
-| Stack bulk calendar drop | **YELLOW** — deferred (needs placement preview) |
+| Stack bulk calendar drop | **YELLOW** — single-capture DATE drop only; stack-as-unit drop deferred |
 
 ## Drag targets (§6, 20–24)
 

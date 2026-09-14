@@ -7,6 +7,14 @@ export const TRAY_STACK_DRAG_MIME = 'application/x-arc-tray-stack+json'
 
 export const STACK_DWELL_MS = 450
 
+export function stackDwellMs(): number {
+  if (typeof window !== 'undefined') {
+    const override = (window as unknown as { __ARC_STACK_DWELL_MS?: number }).__ARC_STACK_DWELL_MS
+    if (typeof override === 'number' && override >= 0) return override
+  }
+  return STACK_DWELL_MS
+}
+
 export type TrayCaptureDragPayload = {
   kind: 'capture'
   captureId: string

@@ -4,7 +4,7 @@ import type { CaptureWorkspace, Lesson, PlanningCapture, UnitWorkspace } from '.
 import type { ObjectStack, StackWorkspace } from '../planning/stacks'
 import { trayRowsForCaptures } from '../planning/stacks'
 import {
-  STACK_DWELL_MS,
+  stackDwellMs,
   TRAY_CAPTURE_DRAG_MIME,
   TRAY_STACK_DRAG_MIME,
   encodeTrayCaptureDrag,
@@ -84,7 +84,7 @@ export function WorkspacePanel(props: Props) {
       props.onCombineCaptures(targetCaptureId, draggingCaptureId)
       clearDwell()
       setDraggingCaptureId(null)
-    }, STACK_DWELL_MS)
+    }, stackDwellMs())
   }
 
   function acceptTrayReturnDrop(event: DragEvent) {
@@ -140,6 +140,7 @@ export function WorkspacePanel(props: Props) {
                   onDragEnd={() => { setDraggingCaptureId(null); clearDwell() }}
                   onDragEnterStack={() => scheduleStackDwell(capture.id)}
                   onDragLeaveStack={clearDwell}
+                  onDropIncomingCapture={(incomingCaptureId) => props.onCombineCaptures(capture.id, incomingCaptureId)}
                 />
               )
             }
@@ -317,7 +318,7 @@ function TrayCaptureStack(props: {
   )
 }
 
-function CaptureCard({ capture, units, defaultDate, selected, planningDragDisabled = false, dragDisabled = false, stackHighlight = false, embeddedInStack = false, onSelect, onPromote, onDelete, onSetImportant, onMoveToDate, onDragStart, onDragEnd, onDragEnterStack, onDragLeaveStack }: {
+function CaptureCard({ capture, units, defaultDate, selected, planningDragDisabled = false, dragDisabled = false, stackHighlight = false, embeddedInStack = false, onSelect, onPromote, onDelete, onSetImportant, onMoveToDate, onDragStart, onDragEnd, onDragEnterStack, onDragLeaveStack, onDropIncomingCapture }: {
   capture: PlanningCapture
   units: UnitWorkspace | null
   defaultDate: ISODate | ''
@@ -335,6 +336,7 @@ function CaptureCard({ capture, units, defaultDate, selected, planningDragDisabl
   onDragEnd?: () => void
   onDragEnterStack?: () => void
   onDragLeaveStack?: () => void
+  onDropIncomingCapture?: (incomingCaptureId: string) => void
 }) {
   const placedUnits = useMemo(() => units?.units.filter((unit) => unit.placement) ?? [], [units])
   const [unitId, setUnitId] = useState(placedUnits[0]?.id ?? units?.units[0]?.id ?? '')
@@ -387,6 +389,13 @@ function CaptureCard({ capture, units, defaultDate, selected, planningDragDisabl
             onDragEnterStack?.()
           }}
           onDragLeave={() => onDragLeaveStack?.()}
+          onDrop={(event) => {
+            if (planningDragDisabled) return
+            const payload = readTrayCaptureDrag(event.dataTransfer)
+            if (!payload || payload.captureId === capture.id || !onDropIncomingCapture) return
+            event.preventDefault()
+            onDropIncomingCapture(payload.captureId)
+          }}
           onClick={onSelect}
         >
           <strong>{capture.text}</strong>
