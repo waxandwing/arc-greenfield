@@ -96,18 +96,21 @@ try {
   const viewportBefore = await geometrySnapshot(page)
   const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   const fridge = page.getByRole('button', { name: 'WORKSPACE', exact: true })
-  const tasks = page.getByRole('button', { name: 'TASKS', exact: true })
-  const controls = [settings, fridge, tasks]
+  const tabControls = [settings, fridge]
 
-  for (const control of [tasks, fridge, settings]) {
+  for (const control of tabControls) {
     const box = await control.boundingBox()
     assert(box && box.width >= 44 && box.height >= 44, `B01-B: furniture trigger is below 44px target (${box?.width ?? 0}×${box?.height ?? 0}).`)
     await control.focus()
     await control.press('Enter')
     assert(await control.getAttribute('aria-expanded') === 'true', 'B01-B: keyboard did not open a furniture owner.')
-    const expandedCount = (await Promise.all(controls.map(async (candidate) => (await candidate.getAttribute('aria-expanded')) === 'true'))).filter(Boolean).length
+    const expandedCount = (await Promise.all(tabControls.map(async (candidate) => (await candidate.getAttribute('aria-expanded')) === 'true'))).filter(Boolean).length
     assert(expandedCount === 1, `B01-B: more than one contextual planning tool remained open (${expandedCount}).`)
   }
+
+  await settings.click()
+  await page.getByRole('button', { name: 'Task bar', exact: true }).click()
+  assert(await page.locator('.b01-task-surface').evaluate((node) => getComputedStyle(node).visibility) === 'visible', 'B01-B: Task bar did not open from Settings.')
 
   const calendarAfter = await documentRect(calendar, page)
   const viewportAfter = await geometrySnapshot(page)
@@ -122,7 +125,7 @@ try {
   assert(doc.scroll <= doc.width + 1, `B01-B: 1366×768 all-open path overflowed (${doc.scroll} > ${doc.width}).`)
 
   await page.keyboard.press('Escape')
-  assert((await Promise.all(controls.map(async (control) => (await control.getAttribute('aria-expanded')) === 'true'))).filter(Boolean).length === 0, 'B01-B: Escape did not close the active contextual tool.')
+  assert((await Promise.all(tabControls.map(async (control) => (await control.getAttribute('aria-expanded')) === 'true'))).filter(Boolean).length === 0, 'B01-B: Escape did not close the active contextual tool.')
   assert(await settings.evaluate((node) => document.activeElement === node), 'B01-B: Escape did not restore focus to the active contextual tool trigger.')
   assert(runtimeErrors.length === 0, `B01-B runtime errors: ${runtimeErrors.join(' | ')}`)
 

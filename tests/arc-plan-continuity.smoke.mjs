@@ -224,7 +224,7 @@ try {
   await shot(page, '19-plan-cross-view-continuity.png')
 
   await selectView(page, 'Day')
-  assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).isVisible() && await page.getByRole('button', { name: 'TASKS', exact: true }).isVisible(), 'Arc Plan core controls require ArcTable unexpectedly.')
+  assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).isVisible() && await page.getByRole('button', { name: 'SETTINGS', exact: true }).isVisible(), 'Arc Plan core controls require ArcTable unexpectedly.')
   assert(await page.getByText('Return to ArcTable', { exact: true }).count() === 0, 'Free-only scenario entered an ArcTable live session.')
   await shot(page, '20-plan-free-only.png')
 

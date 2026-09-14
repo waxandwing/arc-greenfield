@@ -15,6 +15,7 @@ type Props = {
   onOpenImport: () => void
   onOpenUnits: () => void
   onOpenLessons: () => void
+  onOpenTaskBar?: () => void
 }
 
 export function SettingsFurnitureContent({
@@ -31,6 +32,7 @@ export function SettingsFurnitureContent({
   onOpenImport,
   onOpenUnits,
   onOpenLessons,
+  onOpenTaskBar,
 }: Props) {
   return (
     <div className="b01-settings-content">
@@ -52,6 +54,7 @@ export function SettingsFurnitureContent({
       <section className="b01-settings-group" aria-labelledby="settings-view-options">
         <h2 id="settings-view-options">Planner</h2>
         <CalendarViewPreferences preferences={preferences} onChange={onChangePreferences} />
+        {onOpenTaskBar ? <button type="button" className="b01-settings-action" onClick={onOpenTaskBar}>Task bar</button> : null}
       </section>
     </div>
   )

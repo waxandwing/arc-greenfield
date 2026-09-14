@@ -1,0 +1,244 @@
+/* Stage 7.2.1 — visual emphasis: dominant planner object, quiet interior, branded exterior. */
+
+.arc-shell {
+  background-color: var(--shell-exterior-base);
+  background-image:
+    radial-gradient(ellipse 90% 70% at 8% 12%, rgba(124, 156, 173, 0.14), transparent 58%),
+    radial-gradient(ellipse 72% 55% at 94% 88%, rgba(228, 179, 61, 0.12), transparent 52%),
+    linear-gradient(color-mix(in srgb, var(--shell-exterior-base) 78%, transparent), color-mix(in srgb, var(--shell-exterior-base) 78%, transparent)),
+    var(--shell-pattern);
+  background-size:
+    auto,
+    auto,
+    auto,
+    var(--shell-pattern-size);
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-blend-mode: normal, normal, normal, multiply;
+}
+
+.b01-furniture-composition {
+  margin: var(--space-2) 0 var(--space-4);
+  padding: var(--shell-frame-inset);
+  border: var(--shell-frame-border) solid color-mix(in srgb, var(--shell-frame-green) 88%, black);
+  border-radius: calc(var(--shell-frame-radius) + 2px);
+  background-color: var(--shell-exterior-base);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--shell-exterior-base) 72%, transparent), color-mix(in srgb, var(--shell-exterior-base) 72%, transparent)),
+    var(--shell-pattern);
+  background-size: auto, var(--shell-pattern-size);
+  background-repeat: no-repeat, repeat;
+  background-blend-mode: normal, multiply;
+  box-shadow: var(--shell-frame-outer-shadow);
+}
+
+.arc-planner-object {
+  border: var(--shell-planner-border) solid var(--shell-frame-green);
+  border-radius: calc(var(--shell-frame-radius) - 2px);
+  background: var(--field-elevated);
+  box-shadow:
+    var(--shell-planner-shadow),
+    inset 0 1px 0 rgba(255, 253, 248, 0.88);
+}
+
+.b01-furniture-composition[data-workspace-open='true'] .arc-planner-object,
+.b01-furniture-composition:has(.b01-settings-owner[data-state='open']) .arc-planner-object,
+.b01-furniture-composition:has(.b01-task-owner[data-state='open']) .arc-planner-object {
+  box-shadow:
+    var(--shell-planner-shadow),
+    inset 0 0 0 1px rgba(31, 75, 58, 0.08);
+}
+
+.arc-index-tabs {
+  align-self: stretch;
+  justify-content: center;
+  gap: 0;
+  min-width: 48px;
+  margin-left: -1px;
+  padding: 10px 0 10px 4px;
+  border-left: 2px solid color-mix(in srgb, var(--field-elevated) 35%, transparent);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--shell-frame-green) 94%, black);
+  box-shadow: inset 1px 0 0 rgba(255, 253, 248, 0.08);
+}
+
+.arc-index-tab {
+  border-radius: 4px 0 0 4px;
+  color: color-mix(in srgb, var(--field-elevated) 78%, transparent);
+  letter-spacing: 0.1em;
+}
+
+.arc-index-tab:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--field-elevated) 12%, transparent);
+  color: var(--field-elevated);
+}
+
+.arc-index-tab[aria-current='page'] {
+  background: var(--field-elevated);
+  color: var(--shell-frame-green);
+  font-weight: 800;
+  box-shadow:
+    inset 4px 0 0 var(--mustard),
+    -2px 0 12px -6px rgba(15, 35, 28, 0.45);
+}
+
+.arc-header .arc-wordmark {
+  width: 40px;
+  height: 40px;
+  opacity: 0.92;
+}
+
+.arc-header .arc-wordmark img {
+  width: 32px;
+  height: 32px;
+}
+
+.b01-fridge-surface,
+.b01-settings-surface,
+.b01-task-surface {
+  border: var(--shell-planner-border) solid var(--shell-frame-green);
+  border-radius: calc(var(--shell-frame-radius) - 2px);
+  background: color-mix(in srgb, var(--field-elevated) 98%, var(--paper));
+  box-shadow:
+    var(--shell-planner-shadow),
+    8px 0 0 -4px color-mix(in srgb, var(--shell-frame-green) 35%, transparent);
+}
+
+.b01-fridge-surface {
+  border-top-color: var(--dusty-blue);
+}
+
+.b01-settings-surface {
+  border-top-color: var(--mustard);
+}
+
+.b01-task-surface {
+  border-top-color: var(--sage);
+}
+
+.planning-grid:not(.planning-grid--day) {
+  gap: var(--space-6);
+  min-width: 880px;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-date-header {
+  background: var(--field-elevated);
+  border-bottom: 2px solid color-mix(in srgb, var(--shell-frame-green) 18%, var(--line-subtle));
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course {
+  gap: 0;
+  padding: var(--space-3) 0 var(--space-4) var(--space-3);
+  border-top: 0;
+  border-left: 7px solid var(--terracotta);
+  background: linear-gradient(90deg, rgba(201, 104, 69, 0.1), transparent 52%);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-apah'] {
+  border-left-color: var(--course-apah-accent);
+  background: linear-gradient(90deg, var(--course-apah-band), transparent 55%);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-2d'] {
+  border-left-color: var(--course-2d-accent);
+  background: linear-gradient(90deg, var(--course-2d-band), transparent 55%);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-3d'] {
+  border-left-color: var(--course-3d-accent);
+  background: linear-gradient(90deg, var(--course-3d-band), transparent 55%);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course-heading h2 {
+  font-size: clamp(20px, 2.2vw, 26px);
+  letter-spacing: -0.02em;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-section-list {
+  border-top: 0;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-section-row {
+  min-height: 92px;
+  border-bottom: 0;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-section-row > .planning-row-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--soft-charcoal);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-day-slot {
+  gap: 4px;
+  padding: var(--space-2) var(--space-2) var(--space-3);
+  border-right-color: rgba(44, 46, 46, 0.05);
+  background: transparent;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-unit-span {
+  margin: 2px 4px;
+  padding: 8px 12px;
+  border-left-width: 5px;
+  border-radius: 0;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-lesson {
+  gap: 2px;
+  padding: 4px 6px 6px 10px;
+  border: 0;
+  border-left: 2px solid color-mix(in srgb, var(--dusty-blue) 70%, transparent);
+  border-radius: 0;
+  background: transparent;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-apah'] .planning-lesson {
+  border-left-color: color-mix(in srgb, var(--course-apah-accent) 75%, var(--ink));
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-2d'] .planning-lesson {
+  border-left-color: color-mix(in srgb, var(--course-2d-accent) 80%, var(--ink));
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-3d'] .planning-lesson {
+  border-left-color: color-mix(in srgb, var(--course-3d-accent) 80%, var(--ink));
+}
+
+.planning-month-signal {
+  padding: 4px 6px 4px 10px;
+  background: transparent;
+}
+
+.planning-month-day {
+  padding: 8px;
+  background: rgba(255, 253, 248, 0.35);
+}
+
+.planning-month-day-heading .planning-month-day-status {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.day-continuity[data-plan-focus='class']::before,
+.day-continuity[data-plan-focus='lesson']::before {
+  content: none;
+}
+
+.day-continuity[data-plan-focus='class'] .day-continuity-course {
+  padding-left: var(--space-3);
+  border-left: 6px solid var(--dusty-blue);
+  background: linear-gradient(90deg, var(--accent-blue-soft), transparent 62%);
+}
+
+.day-continuity[data-plan-focus='lesson'] .day-continuity-lesson {
+  padding-top: var(--space-2);
+}
+
+@media (max-width: 520px) {
+  .arc-shell,
+  .b01-furniture-composition {
+    background-size: auto, auto, auto, var(--shell-pattern-size-mobile);
+  }
+}

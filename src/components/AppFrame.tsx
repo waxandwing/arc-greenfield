@@ -51,6 +51,7 @@ export function AppFrame() {
   const [showFirstCapturePrompt, setShowFirstCapturePrompt] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
   const [workspaceOpenToken, setWorkspaceOpenToken] = useState(0)
   const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
+  const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
 
   function openRecovery(sectionId?: string) {
@@ -296,6 +297,7 @@ export function AppFrame() {
       onOpenImport={() => workspaceMode.open('import')}
       onOpenUnits={() => workspaceMode.open('units')}
       onOpenLessons={() => workspaceMode.open('lessons')}
+      onOpenTaskBar={() => setTasksOverlayOpen(true)}
     />
   ) : <p className="b01-furniture-empty">Settings are available from the planner.</p>
 
@@ -354,6 +356,8 @@ export function AppFrame() {
             openRequest={workspaceOpenToken ? { name: 'workspace', token: workspaceOpenToken } : null}
             workspaceOpen={workspaceOverlayOpen}
             onWorkspaceOpenChange={setWorkspaceOverlayOpen}
+            tasksOpen={tasksOverlayOpen}
+            onTasksOpenChange={setTasksOverlayOpen}
             indexNav={showPlanFurniture ? {
               activeView: workspace.activeView,
               planningIndexActive,

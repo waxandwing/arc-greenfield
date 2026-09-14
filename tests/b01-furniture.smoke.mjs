@@ -63,7 +63,7 @@ async function documentRect(locator, page) {
 }
 
 async function calendarRect(page) {
-  return documentRect(page.locator('.calendar-canvas'), page)
+  return documentRect(page.locator('.arc-planner-object'), page)
 }
 
 function sameRect(a, b) {
@@ -93,13 +93,12 @@ try {
 
   const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   const fridge = page.getByRole('button', { name: 'WORKSPACE', exact: true })
-  const tasks = page.getByRole('button', { name: 'TASKS', exact: true })
   const settingsSurface = page.locator('.b01-settings-surface')
   const fridgeSurface = page.locator('.b01-fridge-surface')
   const taskSurface = page.locator('.b01-task-surface')
   const baseline = await calendarRect(page)
   assert(baseline, 'B01: calendar geometry is unavailable.')
-  assert(baseline.width >= 1280, `B01: planner object must keep dominant width beside index tabs (${baseline.width}px).`)
+  assert(baseline.width >= 1180, `B01: planner object must keep dominant width beside index tabs (${baseline.width}px).`)
   const shellStyle = await page.locator('.b01-calendar-owner > .calendar-canvas').evaluate((node) => {
     const style = getComputedStyle(node)
     return { borderWidth: style.borderWidth, borderRadius: style.borderRadius, backgroundImage: style.backgroundImage, boxShadow: style.boxShadow }
@@ -122,14 +121,15 @@ try {
   await capture(page, '03-workspace-open-1440')
   await fridge.click()
 
-  await tasks.click()
+  await settings.click()
+  await page.getByRole('button', { name: 'Task bar', exact: true }).click()
   assert(sameRect(baseline, await calendarRect(page)), 'B01: Tasks opening reflowed the working territory.')
   assert(await taskSurface.evaluate((node) => getComputedStyle(node).visibility) === 'visible', 'B01: open Task surface is not visible.')
   await capture(page, '04-tasks-open-1440')
 
   await settings.click()
   await fridge.click()
-  const expanded = await Promise.all([settings, fridge, tasks].map(async (control) => (await control.getAttribute('aria-expanded')) === 'true'))
+  const expanded = await Promise.all([settings, fridge].map(async (control) => (await control.getAttribute('aria-expanded')) === 'true'))
   assert(expanded.filter(Boolean).length === 1 && expanded[1], `B01: utility rail must allow one contextual expansion at a time (${expanded}).`)
   assert(sameRect(baseline, await calendarRect(page)), 'B01: contextual switching reflowed the working territory.')
   await capture(page, '05-context-switch-1440')
