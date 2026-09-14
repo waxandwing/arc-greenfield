@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { maybeApplyDemoSeed } from './demo/applyDemoSeed'
 import App from './App'
 import './styles/tokens.css'
 import './styles/arc-fonts.css'
@@ -26,6 +27,8 @@ import './styles/schoolIdentitySearch.css'
 import './styles/visual-reconciliation.css'
 import './styles/repair-pass-1-chrome.css'
 import './styles/repair-pass-2-chrome.css'
+
+maybeApplyDemoSeed(window.location, window.localStorage, { envDemo: import.meta.env.VITE_ARC_DEMO === 'true' })
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>,

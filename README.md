@@ -122,6 +122,18 @@ CI reports separate gates for:
 
 `tests/run-contracts.mjs` verifies that every discovered `*.contract.ts` file is represented in the contract runner. Adding a contract that CI does not execute must fail the gate.
 
+### Skip setup (demo calendar)
+
+To open Arc straight on **My Teaching Day** with prefilled AP / 2D / 3D content (same data as plan smokes):
+
+- **URL:** add `?demo=1` or `?demo=gauntlet` (first visit, or when local storage is empty).
+- **Reset and re-seed:** `?demo=1&demoReset=1` overwrites saved data and reloads.
+- **Build flag:** set `VITE_ARC_DEMO=true` before `npm run build` so empty browsers auto-seed without a query string.
+
+Onboarding, first-capture prompt, and progressive setup are skipped once the demo bundle is written.
+
+Example preview URL: `http://127.0.0.1:4173/?demo=1`
+
 ## Integration rule
 
 No material feature is GREEN merely because it compiles.

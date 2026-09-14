@@ -56,6 +56,7 @@ const contracts = [
   'tests/generated/src/planning/planContextResolution.contract.js',
   'tests/generated/src/planning/planningPeriodAttention.contract.js',
   'tests/generated/src/planning/planMoveShift.contract.js',
+  'tests/generated/src/demo/demoSeed.contract.js',
 ]
 
 assertManifestComplete()
@@ -65,6 +66,7 @@ function assertManifestComplete() {
   const discovered = [
     ...discoverContracts('src/calendar'),
     ...discoverContracts('src/planning'),
+    ...discoverContracts('src/demo'),
     ...discoverContracts('tests', { topLevelOnly: true }),
   ].map(toGeneratedPath).sort()
 

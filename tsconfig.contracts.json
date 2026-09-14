@@ -11,6 +11,7 @@
   "include": [
     "src/calendar/**/*.ts",
     "src/planning/**/*.ts",
+    "src/demo/**/*.ts",
     "tests/calendar.contract.ts"
   ]
 }
