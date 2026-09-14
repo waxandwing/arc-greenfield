@@ -100,7 +100,7 @@ function PlanningCourse({
             {row.days.map((slot, index) => (
               <div
                 key={slot.date}
-                className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}`}
+                className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}${slot.date === focusDate ? ' planning-day-slot--focus' : ''}`}
                 aria-label={`${row.section.name}, ${formatLongDate(slot.date)}`}
               >
                 {slot.lessons.map((lesson) => (

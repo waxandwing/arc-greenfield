@@ -3,8 +3,8 @@
 .arc-shell {
   min-height: 100dvh;
   background:
-    radial-gradient(ellipse 120% 80% at 100% -8%, var(--accent-blue-soft), transparent 55%),
-    radial-gradient(ellipse 90% 60% at -6% 102%, rgba(228, 179, 61, 0.08), transparent 50%),
+    radial-gradient(ellipse 112% 76% at 102% -12%, var(--accent-blue-soft), transparent 53%),
+    radial-gradient(ellipse 84% 58% at -4% 102%, var(--mustard-soft), transparent 48%),
     var(--field);
   color: var(--ink);
 }
@@ -15,27 +15,27 @@
   position: fixed;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.55;
+  opacity: 1;
 }
 
 .arc-shell::before {
-  top: -72px;
-  right: -48px;
-  width: 220px;
-  height: 220px;
+  top: -126px;
+  right: -72px;
+  width: 360px;
+  height: 280px;
   border-radius: var(--radius-bloop);
-  background: rgba(124, 156, 173, 0.22);
-  transform: rotate(8deg);
+  background: var(--accent-blue-field);
+  transform: rotate(13deg);
 }
 
 .arc-shell::after {
-  bottom: -96px;
-  left: -64px;
-  width: 180px;
-  height: 180px;
+  bottom: -118px;
+  left: -74px;
+  width: 270px;
+  height: 236px;
   border-radius: var(--radius-bloop);
-  background: rgba(228, 179, 61, 0.18);
-  transform: rotate(-12deg);
+  background: var(--mustard-soft);
+  transform: rotate(-18deg);
 }
 
 .arc-header {
@@ -49,6 +49,7 @@
   padding: var(--space-2) var(--page-gutter);
   border-bottom: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--field) 92%, transparent);
+  backdrop-filter: blur(10px);
 }
 
 .arc-layout {
@@ -66,6 +67,21 @@
 .view-title {
   font: var(--type-view-title);
   letter-spacing: -0.035em;
+}
+
+.plan-state-header[data-plan-focus='class'] .plan-state-primary {
+  font-size: 32px;
+}
+
+.plan-state-header[data-plan-focus='lesson'] .plan-state-primary {
+  max-width: 20ch;
+  font-size: clamp(36px, 4.4vw, 46px);
+  line-height: 1;
+}
+
+.plan-state-header[data-plan-focus='class'] .plan-state-kicker,
+.plan-state-header[data-plan-focus='lesson'] .plan-state-kicker {
+  color: var(--accent-blue-deep);
 }
 
 .calendar-canvas {
@@ -121,7 +137,17 @@
 @media (max-width: 520px) {
   .arc-shell::before,
   .arc-shell::after {
-    opacity: 0.35;
+    opacity: 0.7;
+  }
+
+  .arc-shell::before {
+    top: -116px;
+    right: -126px;
+  }
+
+  .arc-shell::after {
+    bottom: -140px;
+    left: -130px;
   }
 }
 

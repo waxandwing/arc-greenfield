@@ -17,6 +17,11 @@
   --accent-blue: #657F90;
   --accent-blue-deep: #4A6678;
   --accent-blue-soft: rgba(124, 156, 173, 0.14);
+  --accent-blue-field: rgba(124, 156, 173, 0.24);
+  --mustard-soft: rgba(228, 179, 61, 0.18);
+  --terracotta-soft: rgba(201, 104, 69, 0.14);
+  --sage-soft: rgba(154, 170, 137, 0.16);
+  --lavender-soft: rgba(170, 160, 184, 0.16);
   --sage: #9AAA89;
   --dusty-pink: #C99A9E;
   --lavender: #AAA0B8;

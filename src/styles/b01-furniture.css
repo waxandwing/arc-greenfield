@@ -8,10 +8,10 @@
 .b01-calendar-owner{position:relative;z-index:1}
 .b01-calendar-owner>.calendar-canvas{min-height:calc(100dvh - 205px);border:0;border-radius:0;background:transparent;box-shadow:none}
 .b01-calendar-owner>.calendar-canvas::before{display:none}
-.b01-furniture-surface{position:fixed;z-index:50;top:196px;right:max(24px,var(--page-gutter));bottom:24px;width:min(440px,calc(100vw - 32px));overflow:auto;padding:22px 24px 28px;border:1px solid rgba(33,29,23,.16);border-top:3px solid #9b4a26;border-radius:7px;background:rgba(251,248,240,.98);box-shadow:0 24px 65px -30px rgba(33,29,23,.55);pointer-events:auto}
-.b01-settings-surface{border-top-color:#9b4a26}
-.b01-fridge-surface{border-top-color:#4f7a46}
-.b01-task-surface{border-top-color:#6b5b95;width:min(760px,calc(100vw - 32px))}
+.b01-furniture-surface{position:fixed;z-index:50;top:196px;right:max(24px,var(--page-gutter));bottom:24px;width:min(420px,calc(100vw - 32px));overflow:auto;padding:28px 26px 30px;border:0;border-top:5px solid var(--terracotta);border-radius:34px 4px 18px 4px;background:color-mix(in srgb,var(--field) 94%,transparent);box-shadow:var(--shadow-overlay);backdrop-filter:blur(14px);pointer-events:auto}
+.b01-settings-surface{border-top-color:var(--terracotta)}
+.b01-fridge-surface{border-top-color:var(--sage)}
+.b01-task-surface{border-top-color:var(--lavender);width:min(760px,calc(100vw - 32px))}
 .b01-surface-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(33,29,23,.14)}
 .b01-surface-heading button{min-width:44px;min-height:44px;border:0;border-radius:3px;background:transparent;color:var(--soft-charcoal);font-size:12px;font-weight:750;cursor:pointer}
 .b01-furniture-kicker{margin:0;font:700 11px/1 var(--font-ui);letter-spacing:.14em;text-transform:uppercase;color:var(--soft-charcoal)}

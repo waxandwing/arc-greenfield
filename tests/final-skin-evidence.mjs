@@ -1,8 +1,9 @@
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
 import { chromium } from 'playwright'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
-const evidenceDir = new URL('../docs/overnight/evidence/final-skin/', import.meta.url).pathname
+const stage71 = process.env.ARC_EVIDENCE_STAGE === '7.1'
+const evidenceDir = new URL(stage71 ? '../docs/overnight/evidence/final-skin-review-7-1/' : '../docs/overnight/evidence/final-skin/', import.meta.url).pathname
 mkdirSync(evidenceDir, { recursive: true })
 
 async function shot(page, name) {
@@ -12,6 +13,27 @@ async function shot(page, name) {
 async function selectView(page, name) {
   await page.getByRole('button', { name: /Change calendar view, current/ }).click()
   await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name, exact: true }).click()
+}
+
+async function contactSheet(browser) {
+  const names = [
+    '01-teaching-day.png', '02-class-focus.png', '03-lesson-focus.png', '04-week.png',
+    '05-month.png', '06-year.png', '07-planning-p5.png', '08-workspace.png',
+    '09-move-shift-recovery.png', '10-onboarding.png', '11-import-review.png',
+    '12-arctable-teacher.png', '13-arctable-student.png',
+  ]
+  const cards = names.map((name) => {
+    const data = readFileSync(`${evidenceDir}${name}`).toString('base64')
+    return `<figure><figcaption>${name.replace('.png', '')}</figcaption><img src="data:image/png;base64,${data}" alt=""></figure>`
+  }).join('')
+  const page = await browser.newPage({ viewport: { width: 2000, height: 1200 } })
+  await page.setContent(`<style>html,body{margin:0;background:#fbf8f0;color:#2c2e2e;font:14px system-ui}main{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;padding:28px}figure{margin:0}figcaption{margin:0 0 8px;font-weight:700}img{display:block;width:100%;height:auto}</style><main>${cards}</main>`)
+  await page.screenshot({ path: `${evidenceDir}00-contact-sheet.png`, fullPage: true })
+  await page.close()
+}
+
+function evidenceName(stage7Name, stage71Name) {
+  return stage71 ? stage71Name : stage7Name
 }
 
 function gauntletFixture() {
@@ -103,9 +125,9 @@ try {
     await page.goto(baseUrl, { waitUntil: 'networkidle' })
     await shot(page, '01-teaching-day.png')
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
-    await shot(page, '02-class.png')
+    await shot(page, evidenceName('02-class.png', '02-class-focus.png'))
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
-    await shot(page, '03-lesson.png')
+    await shot(page, evidenceName('03-lesson.png', '03-lesson-focus.png'))
     await selectView(page, 'Week')
     await shot(page, '04-week.png')
     await selectView(page, 'Month')
@@ -114,7 +136,7 @@ try {
     await shot(page, '06-year.png')
     await selectView(page, 'Day')
     await page.locator('.day-period-gap').filter({ hasText: 'Planning time' }).click()
-    await shot(page, '07-p5.png')
+    await shot(page, evidenceName('07-p5.png', '07-planning-p5.png'))
     await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
     await shot(page, '08-workspace.png')
     await context.close()
@@ -167,7 +189,7 @@ try {
     await page.getByLabel('Choose a CSV file').setInputFiles({ name: 'apah-2026.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) })
     await page.getByText('source rows ready for review').waitFor()
     await page.getByRole('button', { name: 'Review proposal', exact: true }).click()
-    await shot(page, '11-import.png')
+    await shot(page, evidenceName('11-import.png', '11-import-review.png'))
     await context.close()
   }
 
@@ -197,6 +219,7 @@ try {
     await context.close()
   }
 
+  if (stage71) await contactSheet(browser)
   console.log(`Final skin evidence captured in ${evidenceDir}`)
 } finally {
   await browser.close()

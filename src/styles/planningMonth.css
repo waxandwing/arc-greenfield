@@ -1,8 +1,7 @@
 .planning-month{
   display:grid;
   min-width:840px;
-  border-top:1px solid var(--line-subtle);
-  border-left:1px solid var(--line-subtle);
+  border-top:3px solid var(--ink);
 }
 
 .planning-month-weekdays,
@@ -21,7 +20,6 @@
 
 .planning-month-weekdays span{
   padding:8px 10px;
-  border-right:1px solid var(--line-subtle);
   border-bottom:1px solid var(--line-subtle);
   font-size:14px;
   font-weight:700;
@@ -36,9 +34,8 @@
   display:grid;
   gap:3px;
   padding:4px 0;
-  border-right:1px solid var(--line-subtle);
-  border-bottom:1px solid var(--line-subtle);
-  background:rgba(198,167,125,.055);
+  border-bottom:1px solid var(--line-strong);
+  background:linear-gradient(90deg,var(--mustard-soft),rgba(198,167,125,.04) 64%,transparent);
 }
 
 .planning-month-unit-lane{
@@ -53,10 +50,21 @@
   margin:2px 4px;
   padding:6px 8px;
   overflow:hidden;
-  border-left:4px solid var(--terracotta);
-  background:rgba(201,104,69,.12);
+  border-left:5px solid var(--terracotta);
+  background:var(--terracotta-soft);
   color:var(--ink);
   white-space:nowrap;
+}
+
+.planning-month-unit-lane:nth-child(3n + 2) .planning-month-unit-band{border-left-color:var(--dusty-blue);background:var(--accent-blue-soft)}
+.planning-month-unit-lane:nth-child(3n + 3) .planning-month-unit-band{border-left-color:var(--sage);background:var(--sage-soft)}
+
+.planning-month-day{
+  min-height:112px;
+  padding:10px;
+  border-right:1px solid rgba(44,46,46,.07);
+  border-bottom:1px solid rgba(44,46,46,.1);
+  background:rgba(255,253,248,.22);
 }
 
 .planning-month-unit-course{
@@ -75,8 +83,9 @@
 }
 
 .planning-month-day--focus{
-  outline:2px solid var(--ink, #1c1b18);
-  outline-offset:-2px;
+  outline:3px solid var(--dusty-blue);
+  outline-offset:-3px;
+  background:var(--accent-blue-soft);
 }
 
 .planning-month-day--weekend,
@@ -142,10 +151,10 @@
   gap:3px;
   min-width:0;
   padding:7px 8px;
-  border:1px solid var(--line-subtle);
+  border:0;
   border-left:3px solid var(--dusty-blue);
-  border-radius:4px;
-  background:rgba(243,235,221,.84);
+  border-radius:0;
+  background:rgba(243,235,221,.7);
   color:var(--ink);
 }
 
