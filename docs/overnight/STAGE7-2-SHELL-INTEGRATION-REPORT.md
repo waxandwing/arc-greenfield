@@ -76,7 +76,56 @@ After Stage 7.2 WIP:
 
 ---
 
-## G. Known carry-forward (not Stage 7.2)
+## G. Move / Shift / Recovery chrome
+
+**Severity: GREEN**
+
+- Recovery and move panels inherit planner interior; no notebook or Fridge chrome added.
+- Existing terracotta recovery triggers unchanged.
+
+Evidence: prior stage smokes (`test:plan-move-shift`, phase2 recovery) — PASS after index navigation updates.
+
+---
+
+## H. Onboarding & progressive setup
+
+**Severity: GREEN**
+
+- `ProgressiveSetupPrompt` retained inside cream planner object; onboarding canvas uses `--onboarding` token touch only.
+- No spine/gutter/rings furniture.
+
+Evidence: `test:plan-onboarding-import` — PASS.
+
+---
+
+## I. ArcTable boundary
+
+**Severity: GREEN**
+
+- No ArcTable surface refactor; pine live classroom unchanged.
+- Plan shell uses `--pine-live` frame only on Plan chrome.
+
+Evidence: `arctable-continuity.smoke.mjs` — PASS.
+
+---
+
+## J. Visual QA checklist
+
+| Check | Result |
+|-------|--------|
+| Cream planner interior | PASS |
+| Dark green outer frame + breezeblock pattern outside planner | PASS |
+| Arc mark from `/assets/arc/arc-mark.png` | PASS |
+| Index tabs wired (views, P5, Workspace, Settings) | PASS |
+| Class/Lesson depth not promoted to tabs | PASS |
+| AP / 2D / 3D course band colors | PASS |
+| No notebook spine / Fridge product chrome | PASS |
+| Mon–Fri week when weekends hidden | PASS |
+| Full engineering baseline | PASS |
+
+---
+
+## K. Known carry-forward
 
 **Severity: YELLOW (unchanged backlog)**
 
