@@ -10,7 +10,7 @@ Locked Planning Period **Now** to post–Period 5 actionable prep (not “all of
 
 | Item | Result |
 |------|--------|
-| **A. commit SHA** | _(filled after push)_ |
+| **A. commit SHA** | `07cec30` |
 | **B. files changed** | `src/planning/planningPeriodAttention.ts`, `src/planning/planContextResolution.ts` (prior), `src/planning/*.contract.ts`, `src/components/AppFrame.tsx` (prior), `tests/helpers/selectPlanView.mjs`, `tests/repair-pass-2-1.smoke.mjs`, `tests/plan-navigation.smoke.mjs`, other smoke imports, `package.json`, this report |
 | **C. old Now behavior** | Every lesson scheduled today across all sections appeared in Now (“all of today”). |
 | **D. new Now behavior** | Only upcoming teaching blocks after canonical Planning time (legacy Period 5 pivot); excludes completed/skipped/in-progress stopped prep; orders by next period; shared canonical lesson → one row. |
