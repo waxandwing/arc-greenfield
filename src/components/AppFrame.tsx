@@ -69,6 +69,8 @@ import { PlannerShellBar } from './PlannerShellBar'
 import { ArcTableDeskFixture } from './ArcTableDeskFixture'
 import { DeskPriorityPad } from './DeskPriorityPad'
 import { DeskEditToolbar } from './DeskEditToolbar'
+import { DeskQuickCaptureSticky } from './DeskQuickCaptureSticky'
+import { DeskNotesObject } from './DeskNotesObject'
 import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
 import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
 
@@ -589,10 +591,26 @@ export function AppFrame() {
             yearExpanded={yearExpanded}
             deskTrayDock={deskTrayCompact}
             deskPriorityDock={deskPriorityPad}
-            deskNotesDock={activeDeskPreferences.desk.showDeskNotes ? <p className="b01-furniture-empty">Desk notes stay optional in this pass.</p> : null}
+            deskNotesDock={activeDeskPreferences.desk.showDeskNotes ? <DeskNotesObject /> : null}
+            deskQuickCapture={
+              deskEnabled && globalCaptureEnabled ? (
+                <DeskQuickCaptureSticky>
+                  <GlobalCaptureAffordance
+                    disabled={workspaceBusy}
+                    units={workspace.unitWorkspace}
+                    defaultUnitId={workspace.planContext?.unitId ?? null}
+                    onSave={saveGlobalCapture}
+                  />
+                  {minimumPlanningSetupEstablished(setupCapabilities) && showCaptureCoachMark && !onboardingDraft.firstCapturePromptDismissed ? (
+                    <CaptureCoachMark onDismiss={dismissCaptureCoachMark} />
+                  ) : null}
+                </DeskQuickCaptureSticky>
+              ) : null
+            }
             deskArcTableFixture={
               deskEnabled && activeDeskPreferences.desk.showArcTable ? (
                 <ArcTableDeskFixture
+                  markSize={132}
                   liveActive={Boolean(arcTable.live)}
                   contextLine={deskArcTableContextLine()}
                   interactionsDisabled={deskEditActive}
@@ -642,7 +660,7 @@ export function AppFrame() {
                       <span>Return to ArcTable</span>
                     </button>
                   ) : null}
-                  capture={globalCaptureEnabled ? (
+                  capture={globalCaptureEnabled && !deskEnabled ? (
                     <>
                       <GlobalCaptureAffordance
                         disabled={workspaceBusy}

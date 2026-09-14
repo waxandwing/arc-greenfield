@@ -14,9 +14,10 @@ import {
 } from '../planning/arcTableDeskAccess'
 import { ArcTableDeskMarkSvg } from './ArcTableDeskMarkSvg'
 
-const MARK_SIZE = 96
+const DEFAULT_MARK_SIZE = 96
 
 type Props = {
+  markSize?: number
   access?: ArcTableDeskAccess
   liveActive: boolean
   contextLine?: string | null
@@ -27,6 +28,7 @@ type Props = {
 }
 
 export function ArcTableDeskFixture({
+  markSize = DEFAULT_MARK_SIZE,
   access = normalizeArcTableDeskAccess(import.meta.env.VITE_ARCTABLE_DESK_ACCESS),
   liveActive,
   contextLine = null,
@@ -40,8 +42,8 @@ export function ArcTableDeskFixture({
   const [hovered, setHovered] = useState<ArcTableDeskTarget | null>(null)
 
   useEffect(() => {
-    setQuadrantMode(quadrantLauncherMeetsA11y(MARK_SIZE))
-  }, [])
+    setQuadrantMode(quadrantLauncherMeetsA11y(markSize))
+  }, [markSize])
 
   function openPreview(action: ArcTableDeskAction) {
     setPreviewAction(action)
@@ -93,7 +95,7 @@ export function ArcTableDeskFixture({
         <div className="arc-desk-arctable-mark-wrap">
           {quadrantMode ? (
             <ArcTableDeskMarkSvg
-              size={MARK_SIZE}
+              size={markSize}
               interactive={!interactionsDisabled}
               liveActive={liveActive}
               hovered={hovered}
@@ -109,7 +111,7 @@ export function ArcTableDeskFixture({
               onClick={singleEntry}
             >
               <ArcTableDeskMarkSvg
-                size={MARK_SIZE}
+                size={markSize}
                 interactive={false}
                 liveActive={liveActive}
                 hovered={null}

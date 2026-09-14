@@ -39,6 +39,7 @@ type Props = {
   deskPriorityDock?: ReactNode
   deskNotesDock?: ReactNode
   deskArcTableFixture?: ReactNode
+  deskQuickCapture?: ReactNode
   deskEditMode?: boolean
   deskLayout?: DeskLayoutState | null
   deskViewportProfile?: DeskViewportProfile
@@ -75,6 +76,7 @@ export function B01Furniture({
   deskPriorityDock = null,
   deskNotesDock = null,
   deskArcTableFixture = null,
+  deskQuickCapture = null,
   deskEditMode = false,
   deskLayout = null,
   deskViewportProfile = 'desktop',
@@ -243,16 +245,6 @@ export function B01Furniture({
     )
   }
 
-  const plannerBlock = (
-    <div className="arc-planner-object">
-      <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
-        {spreadChrome}
-        {deskEditToolbar}
-        <div className={`b01-calendar-owner${deskEditMode ? ' b01-calendar-owner--workspace-edit' : ''}`}>{children}</div>
-      </div>
-    </div>
-  )
-
   useEffect(() => {
     if (!openRequest) return
     setOpen({
@@ -268,6 +260,75 @@ export function B01Furniture({
   const workspacePanelLabel = deskEnabled ? 'Tray' : 'Workspace'
   const layoutGridActive = deskEnabled && Boolean(deskLayout)
 
+  function renderIndexTabs(className: string) {
+    if (!indexNav) return null
+    return (
+      <nav className={className} aria-label="Planner index">
+        {VIEW_TABS.map(({ view, label, tabClass }) => {
+          const availability = indexNav.availabilityFor(view)
+          const unavailable = !availability.available
+          const isCurrent = !indexNav.planningIndexActive && view === indexNav.activeView && !workspaceIsOpen && !open.settings && !tasksIsOpen
+          return (
+            <button
+              key={view}
+              type="button"
+              className={`arc-index-tab ${tabClass}`}
+              aria-current={isCurrent ? 'page' : undefined}
+              aria-disabled={unavailable || indexNav.viewSelectionDisabled ? 'true' : undefined}
+              title={unavailable ? availability.reason : calendarViewLabel(view)}
+              disabled={indexNav.viewSelectionDisabled || unavailable}
+              onClick={() => selectViewTab(view)}
+            >
+              {label}
+            </button>
+          )
+        })}
+        <button
+          type="button"
+          className="arc-index-tab arc-index-tab--planning"
+          aria-current={indexNav.planningIndexActive && !workspaceIsOpen && !open.settings && !tasksIsOpen ? 'page' : undefined}
+          disabled={indexNav.viewSelectionDisabled}
+          onClick={openPlanningTab}
+        >
+          PLANNING
+        </button>
+        <button
+          ref={workspaceButton}
+          type="button"
+          className="arc-index-tab arc-index-tab--workspace"
+          aria-expanded={workspaceIsOpen}
+          aria-controls="b01-fridge-surface"
+          aria-current={workspaceIsOpen ? 'page' : undefined}
+          onClick={() => toggle('workspace')}
+        >
+          {workspaceTabLabel}
+        </button>
+        <button
+          ref={settingsButton}
+          type="button"
+          className="arc-index-tab arc-index-tab--settings"
+          aria-expanded={open.settings}
+          aria-controls="b01-settings-surface"
+          aria-current={open.settings ? 'page' : undefined}
+          onClick={() => toggle('settings')}
+        >
+          SETTINGS
+        </button>
+      </nav>
+    )
+  }
+
+  const plannerBlock = (
+    <div className="arc-planner-object">
+      {deskEnabled ? renderIndexTabs('arc-index-tabs arc-planner-physical-tabs') : null}
+      <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
+        {spreadChrome}
+        {deskEditToolbar}
+        <div className={`b01-calendar-owner${deskEditMode ? ' b01-calendar-owner--workspace-edit' : ''}`}>{children}</div>
+      </div>
+    </div>
+  )
+
   return (
     <div
       className={`b01-furniture-composition${deskEnabled ? ' b01-furniture-composition--desk' : ''}${yearExpanded ? ' b01-furniture-composition--year-expanded' : ''}${deskEditMode ? ' b01-furniture-composition--desk-edit' : ''}`}
@@ -280,119 +341,71 @@ export function B01Furniture({
       data-year-expanded={yearExpanded ? 'true' : 'false'}
     >
       {deskEnabled ? (
-        <div
-          className={`arc-desk-surface${deskEditMode ? ' arc-desk-surface--edit' : ''}`}
-          data-layout-grid={layoutGridActive ? 'true' : 'false'}
-          data-furniture-locked={deskEditMode ? 'false' : 'true'}
-        >
-          {deskEditMode ? <div className="arc-desk-zone-grid" aria-hidden="true" /> : null}
-          {layoutGridActive ? (
-            <>
-              {wrapDeskObject('planner', 'Planner', plannerBlock)}
-              {wrapDeskObject('tray', 'Tray', deskTrayDock ? (
-                <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
-                  <div className="arc-desk-tray-rim">
-                    <p className="b01-furniture-kicker">Tray</p>
-                    <div className="arc-desk-tray-well">{deskTrayDock}</div>
-                  </div>
-                </aside>
-              ) : null)}
-              {wrapDeskObject('msc', 'Must Should Could', deskPriorityDock ? (
-                <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
-                  {deskPriorityDock}
-                </aside>
-              ) : null)}
-              {wrapDeskObject('arctable', 'ArcTable', deskArcTableFixture ? (
-                <div className="arc-desk-arctable-anchor" data-testid="arc-desk-arctable-anchor">{deskArcTableFixture}</div>
-              ) : null)}
-              {wrapDeskObject('notes', 'Desk notes', deskNotesDock ? (
-                <aside className="arc-desk-notes-dock" aria-label="Desk notes">{deskNotesDock}</aside>
-              ) : null)}
-            </>
-          ) : (
-            <>
-              {plannerBlock}
-              {deskTrayDock ? (
-                <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
-                  <div className="arc-desk-tray-rim">
-                    <p className="b01-furniture-kicker">Tray</p>
-                    <div className="arc-desk-tray-well">{deskTrayDock}</div>
-                  </div>
-                </aside>
-              ) : null}
-              {deskPriorityDock ? (
-                <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
-                  {deskPriorityDock}
-                </aside>
-              ) : null}
-              {deskNotesDock ? (
-                <aside className="arc-desk-notes-dock" aria-label="Desk notes">{deskNotesDock}</aside>
-              ) : null}
-              {deskArcTableFixture ? (
-                <div className="arc-desk-arctable-anchor" data-testid="arc-desk-arctable-anchor">{deskArcTableFixture}</div>
-              ) : null}
-            </>
-          )}
+        <div className="arc-desk-viewport" data-testid="arc-desk-viewport">
+          <div className="arc-desk-tabletop" data-testid="arc-desk-tabletop">
+            <div
+              className={`arc-desk-surface${deskEditMode ? ' arc-desk-surface--edit' : ''}`}
+              data-layout-grid={layoutGridActive ? 'true' : 'false'}
+              data-furniture-locked={deskEditMode ? 'false' : 'true'}
+            >
+              {deskEditMode ? <div className="arc-desk-zone-grid" aria-hidden="true" /> : null}
+              {layoutGridActive ? (
+                <>
+                  {wrapDeskObject('planner', 'Planner', plannerBlock)}
+                  {wrapDeskObject('tray', 'Tray', deskTrayDock ? (
+                    <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
+                      <div className="arc-desk-tray-rim">
+                        <p className="b01-furniture-kicker">Tray</p>
+                        <div className="arc-desk-tray-well">{deskTrayDock}</div>
+                      </div>
+                    </aside>
+                  ) : null)}
+                  {wrapDeskObject('msc', 'Must Should Could', deskPriorityDock ? (
+                    <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
+                      {deskPriorityDock}
+                    </aside>
+                  ) : null)}
+                  {wrapDeskObject('arctable', 'ArcTable', deskArcTableFixture ? (
+                    <div className="arc-desk-arctable-anchor" data-testid="arc-desk-arctable-anchor">{deskArcTableFixture}</div>
+                  ) : null)}
+                  {wrapDeskObject('notes', 'Desk notes', deskNotesDock ? (
+                    <aside className="arc-desk-notes-dock" aria-label="Desk notes">{deskNotesDock}</aside>
+                  ) : null)}
+                </>
+              ) : (
+                <>
+                  {plannerBlock}
+                  {deskTrayDock ? (
+                    <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
+                      <div className="arc-desk-tray-rim">
+                        <p className="b01-furniture-kicker">Tray</p>
+                        <div className="arc-desk-tray-well">{deskTrayDock}</div>
+                      </div>
+                    </aside>
+                  ) : null}
+                  {deskPriorityDock ? (
+                    <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
+                      {deskPriorityDock}
+                    </aside>
+                  ) : null}
+                  {deskNotesDock ? (
+                    <aside className="arc-desk-notes-dock" aria-label="Desk notes">{deskNotesDock}</aside>
+                  ) : null}
+                  {deskArcTableFixture ? (
+                    <div className="arc-desk-arctable-anchor" data-testid="arc-desk-arctable-anchor">{deskArcTableFixture}</div>
+                  ) : null}
+                </>
+              )}
+              {deskQuickCapture ? deskQuickCapture : null}
+            </div>
+          </div>
         </div>
       ) : (
         plannerBlock
       )}
 
-      <div className="b01-side-rail">
-        {indexNav ? (
-          <nav className="arc-index-tabs" aria-label="Planner index">
-            {VIEW_TABS.map(({ view, label, tabClass }) => {
-              const availability = indexNav.availabilityFor(view)
-              const unavailable = !availability.available
-              const isCurrent = !indexNav.planningIndexActive && view === indexNav.activeView && !workspaceIsOpen && !open.settings && !tasksIsOpen
-              return (
-                <button
-                  key={view}
-                  type="button"
-                  className={`arc-index-tab ${tabClass}`}
-                  aria-current={isCurrent ? 'page' : undefined}
-                  aria-disabled={unavailable || indexNav.viewSelectionDisabled ? 'true' : undefined}
-                  title={unavailable ? availability.reason : calendarViewLabel(view)}
-                  disabled={indexNav.viewSelectionDisabled || unavailable}
-                  onClick={() => selectViewTab(view)}
-                >
-                  {label}
-                </button>
-              )
-            })}
-            <button
-              type="button"
-              className="arc-index-tab arc-index-tab--planning"
-              aria-current={indexNav.planningIndexActive && !workspaceIsOpen && !open.settings && !tasksIsOpen ? 'page' : undefined}
-              disabled={indexNav.viewSelectionDisabled}
-              onClick={openPlanningTab}
-            >
-              PLANNING
-            </button>
-            <button
-              ref={workspaceButton}
-              type="button"
-              className="arc-index-tab arc-index-tab--workspace"
-              aria-expanded={workspaceIsOpen}
-              aria-controls="b01-fridge-surface"
-              aria-current={workspaceIsOpen ? 'page' : undefined}
-              onClick={() => toggle('workspace')}
-            >
-              {workspaceTabLabel}
-            </button>
-            <button
-              ref={settingsButton}
-              type="button"
-              className="arc-index-tab arc-index-tab--settings"
-              aria-expanded={open.settings}
-              aria-controls="b01-settings-surface"
-              aria-current={open.settings ? 'page' : undefined}
-              onClick={() => toggle('settings')}
-            >
-              SETTINGS
-            </button>
-          </nav>
-        ) : null}
+      <div className={`b01-side-rail${deskEnabled ? ' b01-side-rail--desk-overlays' : ''}`}>
+        {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
 
         <div className="b01-side-panels">
           <aside className="b01-tool-owner b01-settings-owner" data-state={open.settings ? 'open' : 'closed'} aria-label="Settings furniture">

@@ -1,5 +1,23 @@
 :root{scrollbar-gutter:stable}
 
+.b01-furniture-composition--desk{
+  grid-template-columns:minmax(0,1fr);
+}
+
+.b01-side-rail--desk-overlays{
+  position:fixed;
+  inset:0;
+  width:0;
+  height:0;
+  overflow:visible;
+  pointer-events:none;
+  z-index:60;
+}
+
+.b01-side-rail--desk-overlays .b01-furniture-surface{
+  pointer-events:auto;
+}
+
 .b01-furniture-composition{
   position:relative;
   isolation:isolate;

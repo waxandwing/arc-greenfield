@@ -1,21 +1,47 @@
-/* ARC Desk Pass — full-viewport wood desktop (lighter wash on canonical light-wood grain). */
+/* ARC Desk — physical tabletop composition (Figma ref 1696×1254, wood field 1440×1024). */
 
 .arc-shell--desk {
   height: 100dvh;
   min-height: 100dvh;
   overflow: hidden;
+  background-color: color-mix(in srgb, var(--paper) 88%, var(--soft-charcoal) 6%);
+  background-image: none;
+}
+
+.arc-desk-viewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: clamp(8px, 2vmin, 24px);
+  overflow: visible;
+}
+
+.arc-desk-tabletop {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(100%, calc(100dvh * 1440 / 1024), 1440px);
+  aspect-ratio: 1440 / 1024;
+  max-height: min(100dvh - 16px, 1024px);
+  border-radius: 6px;
   background-color: var(--arc-desk-wood-field);
   background-image:
     linear-gradient(
       180deg,
       var(--arc-desk-wood-highlight) 0%,
-      transparent 40%,
+      transparent 42%,
       var(--arc-desk-wood-shadow-tint) 100%
     ),
     var(--arc-wood-surface-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  box-shadow:
+    0 32px 64px -28px rgba(33, 29, 23, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.35);
+  overflow: visible;
 }
 
 .arc-shell--desk .arc-layout {
@@ -27,7 +53,7 @@
 .arc-shell--desk .arc-calendar-stage {
   height: 100%;
   padding-bottom: 12px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .arc-shell--desk body {
@@ -43,40 +69,110 @@ html:has(.arc-shell--desk) body {
 }
 
 .b01-furniture-composition--desk {
-  height: calc(100dvh - 24px);
-  max-height: calc(100dvh - 24px);
+  height: 100%;
+  max-height: 100dvh;
   margin: 0;
-  padding: 10px 8px 12px;
-  overflow: hidden;
+  padding: 0;
+  overflow: visible;
   align-content: stretch;
   border: none;
   border-radius: 0;
   background: none;
   background-image: none;
   box-shadow: none;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .arc-desk-surface {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
+  display: block;
   min-width: 0;
   min-height: 0;
+  width: 100%;
   height: 100%;
   padding: 0;
-  gap: 10px;
-  align-items: stretch;
   background: none;
   box-shadow: none;
 }
 
-.b01-furniture-composition--desk .arc-desk-surface {
-  grid-template-columns: minmax(0, 1fr) minmax(148px, 200px) minmax(132px, 168px);
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-object {
+  position: absolute;
+  left: 17.2%;
+  top: 26%;
+  width: 65.6%;
+  height: 63.7%;
+  z-index: 4;
 }
 
-.b01-furniture-composition--desk.b01-furniture-composition--year-expanded .arc-desk-surface {
-  grid-template-columns: minmax(0, 1.35fr) minmax(112px, 148px) minmax(96px, 128px);
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock {
+  position: absolute;
+  left: 36%;
+  top: 4.5%;
+  width: 24%;
+  height: 26%;
+  z-index: 5;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
+  position: absolute;
+  left: 3.5%;
+  top: 22%;
+  width: 15.6%;
+  height: 51%;
+  z-index: 3;
+  transform: rotate(-2.2deg);
+  transform-origin: 50% 20%;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-notes-dock {
+  position: absolute;
+  left: 20%;
+  bottom: 6%;
+  width: 14%;
+  height: 18%;
+  z-index: 2;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor {
+  position: absolute;
+  right: 5%;
+  bottom: 7%;
+  width: 9.2%;
+  aspect-ratio: 1;
+  z-index: 6;
+  left: auto;
+  pointer-events: none;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-capture-sticky {
+  position: absolute;
+  right: 4.5%;
+  top: 4%;
+  width: 15.9%;
+  height: 20.3%;
+  z-index: 7;
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-object {
+  width: 72%;
+  height: 68%;
+  left: 14%;
+  top: 22%;
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock,
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
+  opacity: 0.92;
+  transform: scale(0.88);
+  transform-origin: top center;
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
+  transform: rotate(-2.2deg) scale(0.88);
 }
 
 .b01-furniture-composition--desk .arc-planner-object {
@@ -88,11 +184,15 @@ html:has(.arc-shell--desk) body {
   border: none;
   background: transparent;
   box-shadow: none;
+  filter: drop-shadow(0 28px 52px -22px rgba(33, 29, 23, 0.62));
+  overflow: visible;
+  z-index: 10;
 }
 
 .b01-furniture-composition--desk .arc-calendar-spread--desk {
   min-height: 0;
   flex: 1 1 auto;
+  height: 100%;
   border: 3px solid var(--shell-frame-green);
   border-radius: 22px;
   background-color: var(--field-elevated);
@@ -100,7 +200,49 @@ html:has(.arc-shell--desk) body {
     linear-gradient(color-mix(in srgb, var(--field-elevated) 96%, transparent), color-mix(in srgb, var(--field-elevated) 96%, transparent)),
     var(--plan-surface-paper-texture),
     var(--plan-surface-paper);
-  box-shadow: 0 22px 48px -28px rgba(33, 29, 23, 0.55);
+  box-shadow:
+    0 22px 48px -28px rgba(33, 29, 23, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.65);
+}
+
+.arc-planner-physical-tabs {
+  position: absolute;
+  left: 18px;
+  top: 0;
+  transform: translateY(calc(-100% + 6px));
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-end;
+  gap: 3px;
+  max-width: calc(100% - 24px);
+  z-index: 40;
+  pointer-events: auto;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.arc-planner-physical-tabs .arc-index-tab {
+  min-width: 52px;
+  min-height: 30px;
+  padding: 6px 10px 7px;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 65%, transparent);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  box-shadow: 0 -2px 8px -6px rgba(33, 29, 23, 0.35);
+}
+
+.arc-planner-physical-tabs .arc-index-tab[aria-current='page'] {
+  transform: translateY(2px);
+  padding-bottom: 9px;
+}
+
+.arc-planner-physical-tabs .arc-index-tab:hover:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .b01-furniture-composition--desk .arc-calendar-spread--desk,
@@ -133,7 +275,8 @@ html:has(.arc-shell--desk) body {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.06)),
     url('/assets/desk/blue-molded-tray.png') center / cover no-repeat;
-  box-shadow: 0 18px 40px -26px rgba(33, 29, 23, 0.52);
+  box-shadow: 0 20px 44px -24px rgba(33, 29, 23, 0.58);
+  filter: drop-shadow(0 8px 16px -10px rgba(15, 35, 48, 0.35));
 }
 
 .arc-desk-tray-well {
@@ -167,8 +310,66 @@ html:has(.arc-shell--desk) body {
   padding: 8px 6px;
   border-radius: 12px;
   background: linear-gradient(180deg, var(--paper-raised), var(--field-elevated));
-  box-shadow: 0 18px 40px -26px rgba(33, 29, 23, 0.52);
+  box-shadow: 0 16px 36px -24px rgba(33, 29, 23, 0.5);
   overflow: auto;
+}
+
+.arc-desk-capture-sticky {
+  padding: 10px 10px 12px;
+  border-radius: 4px 14px 12px 8px;
+  background: linear-gradient(165deg, #f5e083 0%, #e8c84a 48%, #d9b63a 100%);
+  box-shadow:
+    0 14px 32px -18px rgba(33, 29, 23, 0.52),
+    inset 0 1px 0 rgba(255, 253, 248, 0.55);
+  transform: rotate(1.4deg);
+}
+
+.arc-desk-capture-sticky-title {
+  margin: 0 0 8px;
+  font: 800 9px/1 var(--font-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 78%, var(--mustard));
+}
+
+.arc-desk-capture-sticky-well {
+  display: grid;
+  gap: 6px;
+}
+
+.arc-desk-capture-sticky .arc-capture-trigger {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.arc-desk-notes-object {
+  height: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fff9ef, var(--field-elevated));
+  box-shadow: 0 10px 28px -20px rgba(33, 29, 23, 0.45);
+  transform: rotate(-1deg);
+  overflow: auto;
+}
+
+.arc-desk-notes-object-label {
+  margin: 0 0 6px;
+  font: 800 8px/1 var(--font-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--soft-charcoal);
+}
+
+.arc-desk-notes-object-body {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.arc-desk-notes-object-body .b01-furniture-empty {
+  font-size: 11px;
+  margin: 0;
 }
 
 .desk-priority-pad-heading h2 {
@@ -435,8 +636,18 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-surface[data-layout-grid='true'] {
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.arc-desk-surface[data-layout-grid='true'] > .arc-desk-capture-sticky {
+  position: absolute;
+  right: 4.5%;
+  top: 4%;
+  width: 15.9%;
+  height: 20.3%;
+  z-index: 7;
 }
 
 .arc-desk-object-slot {
@@ -562,14 +773,8 @@ html:has(.arc-shell--desk) body {
 }
 
 @media (max-width: 1100px) {
-  .b01-furniture-composition--desk .arc-desk-surface:not([data-layout-grid='true']) {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto auto;
-  }
-
-  .arc-desk-tray-dock,
-  .arc-desk-priority-dock {
-    max-height: 220px;
+  .arc-desk-tabletop {
+    width: min(100%, calc(100dvh * 1440 / 1024));
   }
 }
 
@@ -588,19 +793,31 @@ html:has(.arc-shell--desk) body {
 
 /* ArcTable AT-001 desk mark — inline SVG quadrants (public/assets/arctable/AT-001_table-mark.svg). */
 .arc-desk-arctable-anchor {
-  position: absolute;
-  left: 12px;
-  bottom: 10px;
-  z-index: 12;
   pointer-events: none;
 }
 
 .arc-desk-arctable {
   pointer-events: auto;
   display: grid;
-  gap: 6px;
-  max-width: min(280px, 42vw);
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
   position: relative;
+}
+
+.arc-desk-arctable-context {
+  display: none;
+}
+
+.b01-furniture-composition--desk .planner-shell-bar {
+  padding: 8px 12px 4px;
+  min-height: 0;
+  border-bottom: 0;
+  background: transparent;
+}
+
+.b01-furniture-composition--desk .planner-shell-bar-controls {
+  gap: 6px;
 }
 
 .arc-desk-arctable-mark-wrap {
