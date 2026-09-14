@@ -51,17 +51,47 @@ Baseline: workspace layout migration + desk integration fixes (`698e130`)
 - Mustard tab: texture on `.arc-index-tab--workspace`
 - Year authority: mini-month grid, countdown, caught-up X, quarter legend
 
+## Edit Workspace (Addendum §1–4, 30)
+
+| Item | Status |
+|------|--------|
+| Settings → **Edit Workspace** (no tray/planner coordinate dropdowns) | **GREEN** |
+| Real desk arrangement mode + grid; size presets in edit toolbar | **GREEN** |
+| Planning drag de-emphasized during edit | **GREEN** |
+| Finish copy | **GREEN** — primary **Pin it down** (alternatives: Set my desk / Looks good / Keep it here) |
+| `workspaceLayout` persisted (`arc.workspace-layout.v1`) separate from planning placement | **GREEN** |
+| Furniture locked after pin; tray post-its still draggable | **GREEN** |
+
+## Stacks (Addendum §7–31) — MVP
+
+| Item | Status |
+|------|--------|
+| `stackId`, `memberIds`, `memberOrder`, label — `stacks.ts` + `arc.object-stacks.v1` | **GREEN** |
+| Dwell stack create (tray captures) | **GREEN** |
+| Open stack / unstack / reorder; collapsed stack drag | **GREEN** |
+| Stack ≠ Unit | **GREEN** — `interactionLaws.contract.ts` |
+| Unit magnet UI | **YELLOW** — `UNIT_MAGNET` typed only |
+| Stack bulk calendar drop | **YELLOW** — deferred (needs placement preview) |
+
+## Drag targets (§6, 20–24)
+
+| Target | Status |
+|--------|--------|
+| DATE, TRAY, PRIORITY_LANE, STACK_GROUP, UNIT_MAGNET, EMPTY | **GREEN** — `dragTargets.ts` |
+| Tray↔calendar canonical unplace/place | **YELLOW** — unchanged |
+
 ## Honest scope notes
 
 - **Desk notes strip**: preference only; placeholder copy (optional surface not fully built).
 - **Mobile desk**: tray/MSC docks hidden `<900px`; index TRAY drawer remains.
-- **Full photoreal desk clutter**: intentionally omitted (editorial/tactile CSS only).
+- **Lesson stack UI**: data model + contracts; capture stacks are the happy path.
 
 ## Tests
 
 ```bash
 npm run test:contracts
 npm run test:arc-desk-pass
+npm run test:edit-workspace
 npm run test:plan-year
 ```
 
