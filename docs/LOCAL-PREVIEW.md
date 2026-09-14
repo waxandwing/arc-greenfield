@@ -132,6 +132,40 @@ npm run test:arc-desk-pass
 
 Override base URL if needed: `ARC_BASE_URL=http://127.0.0.1:4173 npm run test:arc-desk-pass`
 
+## Shareable preview on GitHub (no local server)
+
+Pushes to **`cursor/arc-production-integration`** run [`.github/workflows/desk-preview-pages.yml`](../.github/workflows/desk-preview-pages.yml), which builds the stamped **desk-v2** bundle with base path `/arc-greenfield/` and publishes it to **GitHub Pages**.
+
+**Public URL (Kelly bookmark):**
+
+```text
+https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1
+```
+
+- `demo=1` — seed demo teaching-week content when storage is empty.
+- `demoReset=1` — wipe saved local data, re-seed, then reload (same as local preview).
+
+After you push (or someone runs **Actions → Desk preview (GitHub Pages) → Run workflow**), the site is usually live within **about 2–5 minutes** (build ~1–3 min, deploy ~30–90 s). Hard-refresh if you still see an old bundle; check the **`desk-v2 · <sha>`** stamp matches the commit you expect.
+
+### One-time repo setup (Kelly / repo admin)
+
+GitHub Pages must be set to deploy **from GitHub Actions** (not “Deploy from a branch”):
+
+1. Open **https://github.com/waxandwing/arc-greenfield/settings/pages**
+2. Under **Build and deployment → Source**, choose **GitHub Actions**
+3. Save if prompted
+
+Until that is enabled, the workflow may fail on deploy or Pages will stay 404 — enabling Actions as the source is a one-time step per repo.
+
+### Match the Pages build locally
+
+```bash
+GITHUB_PAGES=true VITE_ARC_DESK_PREVIEW=true VITE_ARC_BUILD_LABEL=desk-v2 VITE_ARC_GIT_SHA=$(git rev-parse --short HEAD) npm run build:bundle
+npx vite preview --host 127.0.0.1 --port 4173 --strictPort --base /arc-greenfield/
+```
+
+Then open `http://127.0.0.1:4173/arc-greenfield/?demo=1&demoReset=1`.
+
 ## Cloud agent vs your laptop
 
 Cloud agents sometimes keep a long-lived preview in tmux (e.g. `arc-desk-preview-4173`). **On your machine you do not need tmux** — run `npm run preview:desk` in a terminal and stop it with Ctrl+C when done.

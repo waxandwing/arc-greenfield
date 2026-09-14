@@ -19,6 +19,17 @@ function deskPreviewBuildActive(): boolean {
   )
 }
 
+function viteBasePath(): string {
+  const fromEnv = process.env.VITE_BASE_PATH?.trim()
+  if (fromEnv) {
+    return fromEnv.endsWith('/') ? fromEnv : `${fromEnv}/`
+  }
+  if (process.env.GITHUB_PAGES === 'true') {
+    return '/arc-greenfield/'
+  }
+  return '/'
+}
+
 /** Bakes desk-v2 stamp into dist/index.html for every preview:desk production build. */
 function arcDeskBuildStampPlugin(): Plugin {
   return {
@@ -56,6 +67,7 @@ function arcDeskBuildStampPlugin(): Plugin {
 }
 
 export default defineConfig({
+  base: viteBasePath(),
   plugins: [react(), arcDeskBuildStampPlugin()],
   define: {
     'import.meta.env.VITE_ARC_GIT_SHA': JSON.stringify(gitSha()),
