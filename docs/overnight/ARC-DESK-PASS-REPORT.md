@@ -1,7 +1,7 @@
 # ARC Desk Pass Report
 
 Branch: `cursor/arc-production-integration`  
-Baseline: Repair 2.1 + Pass 3 chrome + interaction laws (`ce01bee`)
+Baseline: Repair 2.1 + Pass 3 chrome + AT-001 desk mark on integration (`2079ff4`)
 
 ## Stop condition (A–Z)
 
@@ -19,10 +19,10 @@ Baseline: Repair 2.1 + Pass 3 chrome + interaction laws (`ce01bee`)
 | J | Capture → tray + feedback | **GREEN** — existing global capture + "Captured." |
 | K | Capture → MSC (canonical move) | **GREEN** — drag capture to lane promotes to task + removes capture |
 | L | Drag audit | **YELLOW** — HTML5 DnD reused/extended (`deskDrag.ts`); tray↔calendar lesson DnD not expanded |
-| M | Day notes / Important laws | **GREEN** — untouched (`ce01bee`) |
+| M | Day notes / Important laws | **GREEN** — untouched through integration (`2079ff4`) |
 | N | Settings §43 Home desk | **GREEN** — `HomeDeskPreferences` |
 | O | Onboarding / school lookup / logo | **GREEN** — no regressions in touched paths |
-| P | ArcTable entry | **GREEN** — internals untouched; Plan View return chip restored in shell bar |
+| P | ArcTable entry | **GREEN** — AT-001 desk mark on wood; ArcTable session internals unchanged |
 | Q | Move/Shift/Recovery | **GREEN** — out of scope, unchanged |
 | R | Now/Needs Attention | **GREEN** — unchanged |
 | S | Day retreat law | **GREEN** — unchanged |
