@@ -1,0 +1,282 @@
+/* Stage 7.2.2 — shell visibility lock: structural contrast only (no behavior changes). */
+
+/* —— 1. Exterior vs interior —— */
+.arc-shell {
+  background-image:
+    radial-gradient(ellipse 85% 65% at 6% 8%, rgba(124, 156, 173, 0.2), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 96% 92%, rgba(228, 179, 61, 0.14), transparent 50%),
+    linear-gradient(color-mix(in srgb, var(--shell-exterior-base) 58%, transparent), color-mix(in srgb, var(--shell-exterior-base) 58%, transparent)),
+    var(--shell-pattern);
+  background-blend-mode: normal, normal, normal, soft-light;
+}
+
+.b01-furniture-composition {
+  padding: calc(var(--shell-frame-inset) + 2px);
+  border-width: var(--shell-frame-border);
+  border-color: color-mix(in srgb, var(--shell-frame-green) 72%, black);
+  outline: 2px solid rgba(0, 0, 0, 0.28);
+  outline-offset: -1px;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--shell-exterior-base) 48%, transparent), color-mix(in srgb, var(--shell-exterior-base) 48%, transparent)),
+    var(--shell-pattern);
+  background-blend-mode: normal, soft-light;
+}
+
+.arc-planner-object {
+  border-width: var(--shell-planner-border);
+  border-color: color-mix(in srgb, var(--shell-frame-green) 92%, black);
+  box-shadow:
+    var(--shell-planner-shadow),
+    inset 0 2px 0 rgba(255, 253, 248, 0.95),
+    inset 0 -1px 0 rgba(31, 75, 58, 0.12);
+}
+
+/* —— 2. Index tabs —— */
+.arc-index-tabs {
+  min-width: 54px;
+  margin-left: -3px;
+  padding: 14px 0 14px 6px;
+  border-left: 3px solid rgba(255, 253, 248, 0.12);
+  background: color-mix(in srgb, var(--shell-frame-green) 82%, black);
+  box-shadow:
+    inset 2px 0 0 rgba(255, 253, 248, 0.06),
+    4px 0 18px -6px rgba(0, 0, 0, 0.45);
+}
+
+.arc-index-tab {
+  min-width: 48px;
+  min-height: 48px;
+  margin-right: 2px;
+  padding: 12px 6px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--field-elevated) 68%, transparent);
+  transform: rotate(180deg) translateX(-1px);
+}
+
+.arc-index-tab[aria-current='page'] {
+  margin-right: 0;
+  padding-right: 8px;
+  color: var(--shell-frame-green);
+  box-shadow:
+    inset 5px 0 0 var(--mustard),
+    -3px 0 16px -4px rgba(8, 22, 16, 0.55),
+    0 0 0 1px rgba(255, 253, 248, 0.65);
+  transform: rotate(180deg) translateX(-4px);
+}
+
+.arc-index-tab--workspace[aria-current='page'],
+.arc-index-tab--workspace:hover:not(:disabled) {
+  box-shadow:
+    inset 5px 0 0 var(--dusty-blue),
+    -3px 0 16px -4px rgba(8, 22, 16, 0.55);
+}
+
+.arc-index-tab--settings[aria-current='page'] {
+  box-shadow:
+    inset 5px 0 0 var(--mustard),
+    -3px 0 16px -4px rgba(8, 22, 16, 0.55);
+}
+
+/* —— 3–5. Week + course territories —— */
+.planning-grid:not(.planning-grid--day) {
+  padding-top: var(--space-2);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course {
+  min-height: 108px;
+  padding: var(--space-4) 0 var(--space-5) var(--space-4);
+  border-left-width: 9px;
+  background: linear-gradient(90deg, rgba(201, 104, 69, 0.14), transparent 48%);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-apah'] {
+  background: linear-gradient(90deg, var(--course-apah-band), transparent 42%);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-2d'] {
+  background: linear-gradient(90deg, var(--course-2d-band), transparent 42%);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-3d'] {
+  background: linear-gradient(90deg, var(--course-3d-band), transparent 42%);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course-heading {
+  min-width: 200px;
+  padding-right: var(--space-4);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course-heading h2 {
+  font-size: clamp(22px, 2.4vw, 28px);
+  line-height: 1.08;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course-heading span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--soft-charcoal);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-unit-span {
+  min-height: 44px;
+  margin: 4px 6px;
+  padding: 10px 14px;
+  border-left-width: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--field-elevated) 55%, transparent);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-apah'] .planning-unit-span {
+  border-left-color: var(--course-apah-accent);
+  background: color-mix(in srgb, var(--course-apah-band) 65%, var(--field-elevated));
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-2d'] .planning-unit-span {
+  border-left-color: var(--course-2d-accent);
+  background: color-mix(in srgb, var(--course-2d-band) 65%, var(--field-elevated));
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-3d'] .planning-unit-span {
+  border-left-color: var(--course-3d-accent);
+  background: color-mix(in srgb, var(--course-3d-band) 65%, var(--field-elevated));
+}
+
+.planning-grid:not(.planning-grid--day) .planning-day-slot {
+  border-right-color: transparent;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-date-header {
+  border-bottom-width: 3px;
+  border-bottom-color: color-mix(in srgb, var(--shell-frame-green) 28%, var(--line-subtle));
+}
+
+/* —— 6. Month noise reduction —— */
+.planning-month-day {
+  border-right-color: rgba(44, 46, 46, 0.04);
+  border-bottom-color: rgba(44, 46, 46, 0.05);
+  background: rgba(255, 253, 248, 0.5);
+}
+
+.planning-month-unit-band {
+  min-height: 32px;
+  margin: 3px 6px;
+  padding: 8px 10px;
+  border-left-width: 7px;
+  font-weight: 700;
+}
+
+.planning-month-unit-lane[data-course-id='course-apah'] .planning-month-unit-band {
+  background: var(--course-apah-band);
+}
+
+.planning-month-unit-lane[data-course-id='course-2d'] .planning-month-unit-band {
+  background: var(--course-2d-band);
+}
+
+.planning-month-unit-lane[data-course-id='course-3d'] .planning-month-unit-band {
+  background: var(--course-3d-band);
+}
+
+.planning-month-signals {
+  gap: 2px;
+}
+
+.planning-month-day-status {
+  font-size: 11px;
+  opacity: 0.72;
+}
+
+/* —— 7. Day → Class → Lesson depth —— */
+.plan-state-header[data-plan-focus='day'] {
+  border-color: color-mix(in srgb, var(--shell-frame-green) 12%, var(--line-subtle));
+}
+
+.plan-state-header[data-plan-focus='day'] .plan-state-primary {
+  font-size: clamp(34px, 4vw, 42px);
+}
+
+.plan-state-header[data-plan-focus='class'] {
+  border-left: 7px solid var(--dusty-blue);
+  background: linear-gradient(90deg, var(--accent-blue-soft), transparent 70%);
+}
+
+.plan-state-header[data-plan-focus='lesson'] {
+  border-left: 7px solid var(--mustard);
+  background: linear-gradient(108deg, var(--mustard-soft), transparent 65%);
+}
+
+.plan-state-header[data-plan-focus='class'] .plan-state-primary,
+.plan-state-header[data-plan-focus='lesson'] .plan-state-primary {
+  border-top: 0;
+}
+
+.day-continuity[data-plan-focus='day'] {
+  padding-top: var(--space-2);
+}
+
+.day-continuity[data-plan-focus='class'] .day-continuity-course:not(.day-continuity-course--focus) {
+  opacity: 0.52;
+}
+
+.day-continuity[data-plan-focus='class'] .day-continuity-course--focus {
+  padding: var(--space-4) var(--space-3);
+  border-left-width: 8px;
+  box-shadow: inset 0 0 0 1px rgba(74, 102, 120, 0.12);
+}
+
+.day-continuity[data-plan-focus='lesson'] .day-continuity-course:not(:has(.day-continuity-lesson)) {
+  opacity: 0.45;
+}
+
+.day-continuity[data-plan-focus='lesson'] .lesson-focus {
+  margin-top: var(--space-2);
+  padding: 32px 40px 24px;
+  border-left-width: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.8);
+}
+
+/* —— 8. Workspace attachment —— */
+.b01-furniture-composition[data-workspace-open='true'] .arc-planner-object {
+  box-shadow:
+    var(--shell-planner-shadow),
+    inset 0 0 0 2px rgba(31, 75, 58, 0.1);
+}
+
+.b01-furniture-composition[data-workspace-open='true'] .b01-fridge-surface {
+  top: 188px;
+  right: max(78px, calc(var(--page-gutter) + 46px));
+  width: min(420px, calc(100vw - 120px));
+  border-width: var(--shell-planner-border);
+  border-right-width: calc(var(--shell-planner-border) + 1px);
+  box-shadow:
+    var(--shell-planner-shadow),
+    12px 0 0 -6px color-mix(in srgb, var(--shell-frame-green) 55%, transparent),
+    -8px 0 32px -12px rgba(8, 22, 16, 0.35);
+}
+
+.b01-furniture-composition[data-workspace-open='true'] .b01-settings-surface,
+.b01-furniture-composition:has(.b01-settings-owner[data-state='open']) .b01-settings-surface {
+  border-width: var(--shell-planner-border);
+  box-shadow:
+    var(--shell-planner-shadow),
+    10px 0 0 -5px color-mix(in srgb, var(--shell-frame-green) 50%, transparent);
+}
+
+@media (max-width: 800px) {
+  .arc-index-tab {
+    transform: none;
+  }
+
+  .arc-index-tab[aria-current='page'] {
+    transform: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .arc-shell,
+  .b01-furniture-composition {
+    background-blend-mode: normal, soft-light;
+  }
+}
