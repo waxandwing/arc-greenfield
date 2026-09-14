@@ -20,7 +20,7 @@ Baseline: Edit Workspace + stack MVP land on integration (`80c8953`)
 | K | Capture → MSC (canonical move) | **GREEN** — drag capture to lane promotes to task + removes capture |
 | L | Drag audit | **YELLOW** — capture tray↔Month DATE DnD added; lesson tray↔calendar DnD not expanded |
 | M | Day notes / Important laws | **GREEN** — untouched through integration (`2079ff4`) |
-| N | Settings Desk setup addendum | **GREEN** — teacher IA (My school year … Data / import / reuse); **Edit Workspace** → live edit mode; **Pin it down** / **Reset desk** |
+| N | Settings Desk setup addendum | **GREEN** — teacher IA (My school year … Data / import / reuse); **Customize desk** → live edit mode; **Pin it down** / **Reset desk** |
 | O | Onboarding / school lookup / logo | **GREEN** — no regressions in touched paths |
 | P | ArcTable entry | **GREEN** — AT-001 desk mark on wood; ArcTable session internals unchanged |
 | Q | Move/Shift/Recovery | **GREEN** — out of scope, unchanged |
@@ -55,7 +55,7 @@ Baseline: Edit Workspace + stack MVP land on integration (`80c8953`)
 
 | Item | Status |
 |------|--------|
-| Settings → **Edit Workspace** (no tray/planner coordinate dropdowns) | **GREEN** |
+| Settings → **Customize desk** (no tray/planner coordinate dropdowns) | **GREEN** |
 | Real desk edit mode + normalized zones/grid; size presets in edit toolbar | **GREEN** |
 | Planning drag de-emphasized during edit (tray captures + MSC tasks) | **GREEN** |
 | Finish copy | **GREEN** — primary **Pin it down**; **Reset desk** with confirm when customized |
