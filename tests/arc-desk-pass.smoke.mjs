@@ -129,7 +129,7 @@ try {
   assert(await page.getByTestId('school-year-desk').count() === 1, 'Year must render school year desk grid.')
   await shot(page, '03-year-desk-grid.png')
 
-  console.log('Arc desk pass smoke passed: desk setup IA, edit mode entry/exit, layout persistence.')
+  console.log('Arc desk pass smoke passed: desk setup IA, edit mode entry/exit, layout persistence, year desk.')
   await context.close()
 } finally {
   await browser.close()

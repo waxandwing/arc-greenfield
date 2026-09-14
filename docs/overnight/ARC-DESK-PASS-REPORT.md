@@ -1,7 +1,7 @@
 # ARC Desk Pass Report
 
 Branch: `cursor/arc-production-integration`  
-Baseline: Edit Workspace + stack MVP land on integration (`4f15d8b`)
+Baseline: Edit Workspace + stack MVP land on integration (`80c8953`)
 
 ## Stop condition (A–Z)
 
