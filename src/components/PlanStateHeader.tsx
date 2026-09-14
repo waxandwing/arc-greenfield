@@ -25,9 +25,10 @@ export function PlanStateHeader(props: {
   const dateLabel = props.date ? formatPlanHeaderDate(props.date) : null
   const primary = primaryLine(props)
   const secondary = secondaryLine(props, dateLabel)
+  const showKicker = props.overlay === 'workspace' || props.focus === 'class' || props.focus === 'lesson'
 
   return (
-    <div
+    <header
       className="plan-state-header"
       data-plan-view={props.view}
       data-plan-focus={props.focus}
@@ -36,12 +37,27 @@ export function PlanStateHeader(props: {
       data-plan-course={props.courseId ?? ''}
       data-plan-section={props.sectionId ?? ''}
       data-plan-lesson={props.lessonId ?? ''}
+      aria-label={`${primary}${secondary ? `, ${secondary}` : ''}`}
     >
-      <p className="plan-state-kicker">{props.overlay === 'workspace' ? 'Workspace' : props.viewLabel}</p>
-      <p className="plan-state-primary">{primary}</p>
+      {showKicker ? <p className="plan-state-kicker">{props.overlay === 'workspace' ? 'Workspace' : kickerLine(props)}</p> : null}
+      <h1 className="plan-state-primary">{primary}</h1>
       {secondary ? <p className="plan-state-secondary">{secondary}</p> : null}
-    </div>
+    </header>
   )
+}
+
+function kickerLine(props: {
+  focus: PlanFocus
+  sectionName?: string | null
+  courseTitle?: string | null
+  blockLabel?: string | null
+  blockType?: 'teaching' | 'planning' | 'non-teaching' | null
+}) {
+  if (props.focus === 'lesson') return 'Lesson focus'
+  if (props.focus === 'class' && props.blockType === 'planning') return 'Planning period'
+  if (props.focus === 'class' && props.blockType === 'non-teaching') return props.blockLabel ?? 'Non-teaching time'
+  if (props.focus === 'class') return [props.sectionName, props.courseTitle].filter(Boolean).join(' · ') || 'Class focus'
+  return 'Teaching focus'
 }
 
 function primaryLine(props: {

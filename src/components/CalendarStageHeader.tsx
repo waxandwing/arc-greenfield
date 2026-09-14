@@ -16,6 +16,8 @@ type CalendarStageHeaderProps = {
   recoveryCount: number
   undoAvailable: boolean
   stageTitle: string
+  /** Plan state header owns the visible h1; spread shows period tools only. */
+  editorialTitleManaged?: boolean
   viewSelectionDisabled: boolean
   availabilityFor: (view: CalendarView) => ViewAvailability
   onSelectView: (view: CalendarView) => void
@@ -38,6 +40,7 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     recoveryCount,
     undoAvailable,
     stageTitle,
+    editorialTitleManaged = false,
     onMovePrevious,
     onMoveNext,
     onToday,
@@ -47,14 +50,22 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
 
   const isCalendarMode = mode === 'calendar'
 
+  const showSpreadTitle = !editorialTitleManaged
+
   return (
-    <header className="calendar-stage-header">
+    <header className={`calendar-stage-header${editorialTitleManaged ? ' calendar-stage-header--tools-only' : ''}`}>
       <div>
-        <p className="section-label">Calendar</p>
-        {calendar && isCalendarMode ? (
-          <h1 className="view-title" aria-live="polite">{calendarViewLabel(activeView)}</h1>
+        {showSpreadTitle ? (
+          <>
+            <p className="section-label">Calendar</p>
+            {calendar && isCalendarMode ? (
+              <h1 className="view-title" aria-live="polite">{calendarViewLabel(activeView)}</h1>
+            ) : (
+              <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
+            )}
+          </>
         ) : (
-          <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
+          <span className="section-label">{calendar && isCalendarMode ? `${calendarViewLabel(activeView)} navigation` : stageTitle}</span>
         )}
       </div>
 

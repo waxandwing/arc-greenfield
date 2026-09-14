@@ -156,7 +156,7 @@ try {
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'lesson', 'Class → Lesson did not enter Lesson Focus.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-section') === 'section-p6', 'Lesson Focus did not preserve Section.')
     assert(await page.locator('[data-lesson-focus="lesson-2d-5"]').count() === 1, 'Lesson Focus did not keep the canonical Lesson.')
-    assert(await page.getByRole('heading', { name: 'Value scale' }).isVisible(), 'Lesson Focus did not show the canonical Lesson title.')
+    assert(await page.getByRole('heading', { level: 1, name: 'Value scale' }).isVisible(), 'Lesson Focus did not show the canonical Lesson title.')
     await shot(page, '03-lesson-focus.png')
 
     await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
@@ -231,7 +231,7 @@ try {
     await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Class → Home did not land on Teaching Day.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Class → Home moved the anchored date.')
-    assert(await page.getByRole('heading', { level: 1, name: 'Day' }).isVisible(), 'Class → Home did not open the Day view.')
+    assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Class → Home did not open the Day view.')
     assert(await page.getByText('My Teaching Day', { exact: true }).isVisible(), 'Class → Home did not restore the Teaching Day header.')
     assert(!await page.locator('.day-continuity').getAttribute('data-plan-section'), 'Class → Home left Class Focus selected.')
   })
@@ -281,7 +281,7 @@ try {
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Refresh after Home did not restore the same Teaching Day date.')
     assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).view === 'Day', 'Refresh after Home did not persist Day view.')
     assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1'))).focus === 'day', 'Refresh after Home did not persist Teaching Day focus.')
-    assert(await page.getByRole('heading', { level: 1, name: 'Month' }).count() === 0, 'Refresh after Home restored Month home instead of Teaching Day.')
+    assert(await page.getByRole('heading', { level: 1, name: 'This Month' }).count() === 0, 'Refresh after Home restored Month home instead of Teaching Day.')
   })
 
   console.log('Arc Plan navigation spine gate passed: Day → Class → Lesson → Workspace return, Home to Teaching Day, refresh, stale IDs, Section divergence, ArcTable isolation.')

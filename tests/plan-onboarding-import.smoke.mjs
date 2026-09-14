@@ -94,7 +94,7 @@ try {
   await page.getByRole('button', { name: 'Use this teaching day' }).click()
 
   // 7 — Teaching Day v2 spine landing
-  assert(await page.getByRole('heading', { level: 1, name: 'Day' }).isVisible(), 'Onboarding did not land in the real Day view.')
+  assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Onboarding did not land in the real Day view.')
   assert(await page.getByText('Teaching Day', { exact: true }).first().isVisible(), 'Plan state header must show Teaching Day on first landing.')
   assert(await page.getByRole('button', { name: 'Planning, planning time' }).count() === 1, 'Day did not project the explicit Planning block.')
   assert(await page.getByText('Try Capture', { exact: true }).isVisible(), 'First-use Capture prompt did not appear in Arc.')
@@ -164,7 +164,7 @@ try {
   await page.getByRole('button', { name: 'Confirm import' }).click()
   assert(await page.getByRole('heading', { name: 'The confirmed curriculum is now in Arc.' }).isVisible(), 'Confirmed import did not produce a receipt.')
   await page.getByRole('button', { name: 'Return to Day' }).click()
-  assert(await page.getByRole('heading', { level: 1, name: 'Day' }).isVisible(), 'Return to Day did not restore Teaching Day.')
+  assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Return to Day did not restore Teaching Day.')
   assert(await page.getByText('Teaching Day', { exact: true }).first().isVisible(), 'Return to Arc must restore Plan Teaching Day spine.')
   await shot(page, '12-return-to-arc.png')
 

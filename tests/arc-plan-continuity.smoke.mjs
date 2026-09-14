@@ -118,7 +118,7 @@ try {
   await page.addInitScript((seed) => { if (localStorage.getItem('arc.calendar.v1') === null) for (const [key, value] of Object.entries(seed)) localStorage.setItem(key, value) }, entries)
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
 
-  assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), 'Fixture did not restore into Arc Plan Month.')
+  assert(await page.getByRole('heading', { level: 1, name: 'This Month' }).isVisible(), 'Fixture did not restore into Arc Plan Month.')
   assert(await page.getByText('AP Art History', { exact: true }).count() > 0, 'Month did not show AP Art History planning.')
   assert(await page.getByText('Fixed visual analysis assessment', { exact: true }).count() > 0, 'Month did not expose the fixed assessment constraint.')
 
@@ -126,6 +126,7 @@ try {
   assert(await page.getByRole('button', { name: 'Period 5, planning time' }).count() === 1, 'P5 Planning was not represented as teacher time.')
   assert(await page.getByText('Period 1', { exact: true }).count() > 0 && await page.getByText('Period 7', { exact: true }).count() > 0, 'Day did not preserve teaching-period order.')
   assert(await page.getByText('Photograph 2D work before cleanup.', { exact: true }).isVisible(), 'Day did not project the seeded teacher Note.')
+  await page.getByRole('button', { name: '+ Note', exact: true }).click()
   await page.getByRole('textbox', { name: 'New Note', exact: true }).fill('Email kiln schedule before Friday.')
   await page.getByRole('button', { name: 'Add Note', exact: true }).click()
   assert(await page.getByText('Email kiln schedule before Friday.', { exact: true }).isVisible(), 'Day Note authoring did not update canonical planning state.')
@@ -218,7 +219,7 @@ try {
 
   await selectView(page, 'Year')
   await page.getByRole('button', { name: 'Open Power & Place in Month', exact: true }).click()
-  assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), 'Year → Month deep navigation failed.')
+  assert(await page.getByRole('heading', { level: 1, name: 'This Month' }).isVisible(), 'Year → Month deep navigation failed.')
   await page.reload({ waitUntil: 'networkidle' })
   assert(await page.getByText('Power & Place', { exact: true }).count() > 0, 'Selected planning date/context was not restored after refresh.')
   await shot(page, '19-plan-cross-view-continuity.png')

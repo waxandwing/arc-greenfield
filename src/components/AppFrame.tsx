@@ -339,6 +339,7 @@ export function AppFrame() {
                   recoveryCount={workspace.recoveryCount}
                   undoAvailable={Boolean(workspace.shiftState?.undo)}
                   stageTitle={headerStageTitle}
+                  editorialTitleManaged={workspaceMode.mode === 'calendar' && Boolean(workspace.calendar && workspace.anchorDate) && !onboardingActive}
                   viewSelectionDisabled={workspaceBusy || onboardingActive}
                   availabilityFor={workspace.viewAvailability}
                   onSelectView={selectView}
@@ -387,7 +388,9 @@ export function AppFrame() {
                 />
               ) : (
                 <>
-              {!onboardingActive && workspaceMode.mode === 'calendar' ? <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} onOpenImport={() => workspaceMode.open('import')} /> : null}
+              {!onboardingActive && workspaceMode.mode === 'calendar' && workspace.activeView === 'Day' ? (
+                <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} />
+              ) : null}
               {workspaceMode.mode === 'calendar' && minimumPlanningSetupEstablished(setupCapabilities) && showFirstCapturePrompt && !onboardingDraft.firstCapturePromptDismissed ? <FirstCapturePrompt onSave={workspace.addCapture} onPlace={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }); setWorkspaceOpenToken((token) => token + 1) }} onDismiss={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }) }} /> : null}
               {workspaceMode.mode === 'calendar' && workspace.calendar && workspace.anchorDate ? (
                 <PlanStateHeader

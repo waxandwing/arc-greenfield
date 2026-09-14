@@ -17,8 +17,8 @@
   padding: calc(var(--shell-frame-inset) + 2px);
   border-width: var(--shell-frame-border);
   border-color: color-mix(in srgb, var(--shell-frame-green) 72%, black);
-  outline: 2px solid rgba(0, 0, 0, 0.28);
-  outline-offset: -1px;
+  outline: none;
+  outline-offset: 0;
   background-color: transparent;
   background-image:
     linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),

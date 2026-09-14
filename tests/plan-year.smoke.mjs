@@ -223,7 +223,7 @@ try {
     await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Year → Home did not land on Teaching Day.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Year → Home moved the anchored date.')
-    assert(await page.getByRole('heading', { level: 1, name: 'Day' }).isVisible(), 'Year → Home did not open the Day view.')
+    assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Year → Home did not open the Day view.')
     assert(await page.getByText('My Teaching Day', { exact: true }).isVisible(), 'Year → Home did not restore the Teaching Day header.')
   })
 

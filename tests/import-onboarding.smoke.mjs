@@ -54,7 +54,7 @@ try {
   await planningBlock.getByLabel('Starts (optional)').fill('')
   await page.getByRole('button', { name: 'Use this teaching day' }).click()
 
-  assert(await page.getByRole('heading', { level: 1, name: 'Day' }).isVisible(), 'Onboarding did not land in the real Day view.')
+  assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Onboarding did not land in the real Day view.')
   assert(await page.getByRole('button', { name: 'Planning, planning time' }).count() === 1, 'Day did not project the explicit Planning block.')
   assert(await page.getByText('Try Capture', { exact: true }).isVisible(), 'First-use Capture prompt did not appear in Arc.')
   await shot(page, '06-first-day.png')
