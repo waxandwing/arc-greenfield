@@ -1,5 +1,5 @@
 import type { MonthProjection, ProjectedDay } from '../calendar/projections'
-import type { ISODate } from '../calendar'
+import type { ISODate, PlanNavigationContext } from '../calendar'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
 import { formatLongDate, formatMonthKey, formatShortDate } from './dateLabels'
 
@@ -9,12 +9,16 @@ export function PlanningMonthView({
   month,
   planning,
   focusDate,
+  planContext,
   onSelectDate,
+  onBeginPlanLessonMove,
 }: {
   month: MonthProjection
   planning: MonthPlanningProjection
   focusDate?: ISODate
+  planContext?: PlanNavigationContext | null
   onSelectDate?: (date: ISODate) => void
+  onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
 }) {
   return (
     <div className="planning-month" aria-label={`${formatMonthKey(month.monthKey)} planning calendar`} data-focus-date={focusDate ?? ''}>
@@ -38,7 +42,9 @@ export function PlanningMonthView({
                   inAnchorMonth={day.date.slice(0, 7) === month.monthKey}
                   selected={day.date === focusDate}
                   signals={planningWeek?.days[dayIndex]?.lessonSignals ?? []}
+                  planContext={planContext}
                   onSelectDate={onSelectDate}
+                  onBeginPlanLessonMove={onBeginPlanLessonMove}
                 />
               ))}
             </div>
@@ -72,13 +78,17 @@ function MonthDayCell({
   inAnchorMonth,
   selected,
   signals,
+  planContext,
   onSelectDate,
+  onBeginPlanLessonMove,
 }: {
   day: ProjectedDay
   inAnchorMonth: boolean
   selected: boolean
   signals: MonthLessonSignal[]
+  planContext?: PlanNavigationContext | null
   onSelectDate?: (date: ISODate) => void
+  onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
 }) {
   const dayStatus = day.kind === 'instructional' ? null : day.label || humanizeKind(day.kind)
   const classes = [
@@ -97,13 +107,26 @@ function MonthDayCell({
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
       </div>
       <div className="planning-month-signals">
-        {signals.map((signal) => <MonthLessonSignalView key={`${signal.courseId}:${signal.lessonId}`} signal={signal} />)}
+        {signals.map((signal) => (
+          <MonthLessonSignalView
+            key={`${signal.courseId}:${signal.lessonId}`}
+            signal={signal}
+            dayDate={day.date}
+            planContext={planContext}
+            onBeginPlanLessonMove={onBeginPlanLessonMove}
+          />
+        ))}
       </div>
     </div>
   )
 }
 
-function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
+function MonthLessonSignalView({ signal, dayDate, planContext, onBeginPlanLessonMove }: { signal: MonthLessonSignal; dayDate: ISODate; planContext?: PlanNavigationContext | null; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void }) {
+  const focusedSection = planContext?.sectionId
+    ? signal.sections.find((section) => section.sectionId === planContext.sectionId)
+    : planContext?.courseId === signal.courseId
+      ? signal.sections[0]
+      : null
   const statusSummary = summarizeStatuses(signal)
   const shiftedNames = signal.sections.filter((section) => section.isSectionOverride).map((section) => section.sectionName)
   const sectionNames = signal.sections.map((section) => section.sectionName)
@@ -126,6 +149,11 @@ function MonthLessonSignalView({ signal }: { signal: MonthLessonSignal }) {
       <span className="planning-month-signal-sections">{sectionNames.join(' · ')}</span>
       {shiftedNames.length ? <span className="planning-month-shifted">Shifted: {shiftedNames.join(', ')}</span> : null}
       {statusSummary ? <span className="planning-month-status-summary">{statusSummary}</span> : null}
+      {onBeginPlanLessonMove && focusedSection && planContext?.view === 'Month' ? (
+        <div className="planning-lesson-actions">
+          <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: signal.lessonId, sectionId: focusedSection.sectionId, defaultDestination: dayDate })}>Move</button>
+        </div>
+      ) : null}
     </article>
   )
 }

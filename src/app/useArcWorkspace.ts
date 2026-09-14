@@ -51,12 +51,16 @@ import {
   focusLesson,
   focusTeachingBlock,
   goPlanHome,
+  moveLesson,
   prepareCurriculumCommit,
   projectDayContinuity,
   buildTeachingDayRail,
   restorePlanningPeriodBlock,
   resolvePlanContext,
   retreatPlanFocus,
+  contextAfterSharedLessonMove,
+  contextAfterRecoveryShift,
+  type LessonMovePreview,
   type PlanningPeriodAttentionItem,
   type ReimportDecision,
   type TeachingDayRailItem,
@@ -112,6 +116,7 @@ export function useArcWorkspace(onCloseMode: () => void) {
   )
   const [storageNotice, setStorageNotice] = useState<string | null>(snapshot.storageNotice)
   const [planningPeriodReturnBlockId, setPlanningPeriodReturnBlockId] = useState<string | null>(null)
+  const [planMoveIntent, setPlanMoveIntent] = useState<{ lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null } | null>(null)
 
   function persistReconciledShift(next: ShiftPersistenceInput | null): boolean {
     if (!next) return true
@@ -521,6 +526,9 @@ export function useArcWorkspace(onCloseMode: () => void) {
 
       const persisted = saveShiftStateToBrowser(candidate)
       setShiftState(candidate)
+      if (planContext) {
+        commitPlan(contextAfterRecoveryShift(planContext, { sectionId: operation.sectionId }), { shift: candidate })
+      }
       setStorageNotice(persisted
         ? `Shift applied to ${section.name}. Undo is available.`
         : `Shift applied to ${section.name} for this session, but Arc could not save the Section schedule in this browser.`)
@@ -595,6 +603,57 @@ export function useArcWorkspace(onCloseMode: () => void) {
     if (!context || context.focus !== 'class' || !context.teachingBlockId) return false
     const block = planningRail().find((item) => item.id === context.teachingBlockId)
     return block?.type === 'planning'
+  }
+
+  function beginPlanLessonMove(input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) {
+    setPlanMoveIntent(input)
+  }
+
+  function cancelPlanLessonMove() {
+    setPlanMoveIntent(null)
+  }
+
+  function confirmPlanLessonMove(destination: ISODate, _preview: LessonMovePreview): boolean {
+    if (!calendar || !planningWorkspace || !unitWorkspace || !lessonWorkspace || !shiftState || !planMoveIntent) return false
+    const lesson = lessonWorkspace.lessons.find((candidate) => candidate.id === planMoveIntent.lessonId)
+    if (!lesson) {
+      setStorageNotice('That Lesson is no longer available. Nothing changed.')
+      setPlanMoveIntent(null)
+      return false
+    }
+    const fromDate = lesson.plannedDate
+    try {
+      const nextLessons = moveLesson({
+        calendar,
+        units: unitWorkspace,
+        lessons: lessonWorkspace,
+        overrides: shiftState.overrides,
+        lessonId: planMoveIntent.lessonId,
+        plannedDate: destination,
+      })
+      const input: LessonWorkspaceInput = {
+        calendarId: calendar.id,
+        lessons: nextLessons.lessons,
+        deliveryStates: nextLessons.deliveryStates,
+      }
+      const saved = useLessons(input, nextLessons, shiftState)
+      if (!saved) return false
+      const current = planContext ?? createPlanNavigationContext({
+        calendarId: calendar.id,
+        anchorDate: anchorDate ?? calendar.firstDay,
+        view: activeView,
+      })
+      commitPlan(
+        contextAfterSharedLessonMove(current, { lessonId: planMoveIntent.lessonId, fromDate, toDate: destination }),
+        { lessons: nextLessons, shift: shiftState },
+      )
+      setPlanMoveIntent(null)
+      setStorageNotice('Lesson moved. Identity and teaching history were preserved.')
+      return true
+    } catch (error) {
+      setStorageNotice(error instanceof Error ? error.message : String(error))
+      return false
+    }
   }
 
   function followPlanningAttention(item: PlanningPeriodAttentionItem) {
@@ -714,6 +773,10 @@ export function useArcWorkspace(onCloseMode: () => void) {
     followPlanningAttention,
     returnToPlanningPeriod,
     planningPeriodReturnBlockId,
+    planMoveIntent,
+    beginPlanLessonMove,
+    cancelPlanLessonMove,
+    confirmPlanLessonMove,
   }
 }
 

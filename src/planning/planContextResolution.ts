@@ -1,6 +1,6 @@
 import { compareISODate } from '../calendar/dateMath'
 import { createPlanNavigationContext, sparsePlanContext, type PlanNavigationContext } from '../calendar/navigationContext'
-import type { SchoolCalendar } from '../calendar/types'
+import type { ISODate, SchoolCalendar } from '../calendar/types'
 import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarViews'
 import { projectDayContinuity } from './dayContinuityProjection'
 import type { LessonWorkspace } from './lessonWorkspace'
@@ -175,6 +175,93 @@ export function goPlanHome(context: PlanNavigationContext): PlanNavigationContex
     view: 'Day',
     anchorDate: context.anchorDate,
     focus: 'day',
+  })
+}
+
+/** Keeps v2 Plan spine valid after a governed shared-Lesson move (not Section Shift). */
+export function contextAfterSharedLessonMove(
+  context: PlanNavigationContext,
+  input: { lessonId: string; fromDate: ISODate | null; toDate: ISODate },
+): PlanNavigationContext {
+  const movedAwayFromAnchor = input.fromDate !== null
+    && context.anchorDate === input.fromDate
+    && input.toDate !== input.fromDate
+
+  if (context.view === 'Day') {
+    if (context.focus === 'lesson' && context.lessonId === input.lessonId) {
+      return sparsePlanContext({
+        ...context,
+        view: 'Day',
+        anchorDate: input.toDate,
+        focus: 'lesson',
+      })
+    }
+    if (context.focus === 'lesson' && movedAwayFromAnchor) {
+      return sparsePlanContext({
+        ...context,
+        lessonId: undefined,
+        unitId: undefined,
+        focus: context.sectionId || context.teachingBlockId ? 'class' : 'day',
+      })
+    }
+    if (context.focus === 'class' && movedAwayFromAnchor && context.lessonId === input.lessonId) {
+      return sparsePlanContext({
+        ...context,
+        lessonId: undefined,
+        unitId: undefined,
+      })
+    }
+    return context
+  }
+
+  if (context.view === 'Week' || context.view === 'Month') {
+    return sparsePlanContext({
+      ...context,
+      lessonId: undefined,
+      teachingBlockId: undefined,
+      focus: context.sectionId ? 'class' : 'day',
+    })
+  }
+
+  if (context.view === 'Year Map') {
+    return sparsePlanContext({
+      ...context,
+      lessonId: undefined,
+      sectionId: undefined,
+      teachingBlockId: undefined,
+      focus: 'day',
+    })
+  }
+
+  return context
+}
+
+/** Keeps Week/Class recovery context after a governed Section Shift apply. */
+export function contextAfterRecoveryShift(
+  context: PlanNavigationContext,
+  input: { sectionId: string },
+): PlanNavigationContext {
+  if (context.view === 'Week' && context.sectionId === input.sectionId) {
+    return sparsePlanContext({
+      ...context,
+      lessonId: undefined,
+      teachingBlockId: undefined,
+      focus: 'class',
+    })
+  }
+  if (context.view === 'Day' && context.focus === 'lesson' && context.sectionId === input.sectionId) {
+    return sparsePlanContext({
+      ...context,
+      lessonId: undefined,
+      unitId: undefined,
+      focus: 'class',
+    })
+  }
+  return sparsePlanContext({
+    ...context,
+    lessonId: undefined,
+    teachingBlockId: undefined,
+    focus: context.sectionId ? 'class' : context.focus,
   })
 }
 

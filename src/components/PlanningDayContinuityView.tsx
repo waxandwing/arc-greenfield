@@ -28,6 +28,8 @@ export function PlanningDayContinuityView({
   units,
   captures,
   overrides = [],
+  onBeginPlanLessonMove,
+  onOpenRecoveryForSection,
 }: {
   day: ProjectedDay
   continuity: DayContinuityProjection
@@ -47,6 +49,8 @@ export function PlanningDayContinuityView({
   units: UnitWorkspace
   captures: CaptureWorkspace | null
   overrides?: SectionLessonDateOverride[]
+  onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
+  onOpenRecoveryForSection?: (sectionId: string) => void
 }) {
   const periodRail = buildTeachingDayRail(planning, continuity)
   const selectedRail = periodRail.find((item) => item.id === selectedBlockId) ?? null
@@ -94,6 +98,8 @@ export function PlanningDayContinuityView({
           onRetreat={onRetreat}
           onOpenWorkspace={onOpenWorkspace}
           onReturnToPlanningPeriod={planningReturnPending ? onReturnToPlanningPeriod : undefined}
+          onBeginPlanLessonMove={onBeginPlanLessonMove}
+          onOpenRecoveryForSection={onOpenRecoveryForSection}
         />
       ) : surfaceSection && surfaceRail?.course ? (
         <section className="day-continuity-course day-continuity-course--focus" aria-label={`${surfaceRail.course.courseTitle} today`}>
@@ -120,7 +126,7 @@ export function PlanningDayContinuityView({
                   <section className="day-continuity-held" aria-label={`${surfaceSection.sectionName} unfinished teaching`}>
                     <p className="day-continuity-kicker">Arc is holding your place</p>
                     {surfaceSection.carryovers.map((lesson) => (
-                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} carryover />
+                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} onBeginPlanLessonMove={onBeginPlanLessonMove} onOpenRecoveryForSection={onOpenRecoveryForSection} carryover />
                     ))}
                   </section>
                 ) : null}
@@ -128,7 +134,7 @@ export function PlanningDayContinuityView({
                   <p className="day-continuity-kicker">Today’s plan</p>
                   {surfaceSection.scheduledLessons.length > 0 ? (
                     surfaceSection.scheduledLessons.map((lesson) => (
-                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} />
+                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} onBeginPlanLessonMove={onBeginPlanLessonMove} onOpenRecoveryForSection={onOpenRecoveryForSection} />
                     ))
                   ) : (
                     <p className="day-continuity-empty">No Lesson placed for this class.</p>
@@ -171,6 +177,8 @@ function LessonFocus({
   onRetreat,
   onOpenWorkspace,
   onReturnToPlanningPeriod,
+  onBeginPlanLessonMove,
+  onOpenRecoveryForSection,
 }: {
   lessonId?: string
   section: DayContinuitySection
@@ -180,6 +188,8 @@ function LessonFocus({
   onRetreat?: () => void
   onOpenWorkspace?: () => void
   onReturnToPlanningPeriod?: () => void
+  onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
+  onOpenRecoveryForSection?: (sectionId: string) => void
 }) {
   const projected = [...section.carryovers, ...section.scheduledLessons].find((item) => item.lessonId === lessonId) ?? null
   const source = canonical.find((item) => item.id === lessonId) ?? null
@@ -207,8 +217,17 @@ function LessonFocus({
       {source.directions.length > 0 ? <LessonField label="Directions" items={source.directions} /> : null}
       {source.materials.length > 0 ? <LessonField label="Materials" items={source.materials} /> : null}
       {source.phases.length > 0 ? <LessonField label="Teaching phases" items={source.phases} /> : null}
-      <div className="day-continuity-lesson-actions">
+      <div className="day-continuity-lesson-actions plan-lesson-action-row">
         {onOpenWorkspace ? <button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button> : null}
+        {onBeginPlanLessonMove && projected.datePolicy !== 'fixed' ? (
+          <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: source.id, sectionId: section.sectionId, defaultDestination: projected.effectiveDate })}>Move</button>
+        ) : null}
+        {onBeginPlanLessonMove && projected.datePolicy === 'fixed' ? (
+          <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: source.id, sectionId: section.sectionId, defaultDestination: projected.effectiveDate })}>Move fixed Lesson</button>
+        ) : null}
+        {onOpenRecoveryForSection && projected.deliveryStatus === 'in-progress' ? (
+          <button type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(section.sectionId)}>Review Shift</button>
+        ) : null}
         {onStartClass && (projected.deliveryStatus === 'not-started' || projected.deliveryStatus === 'in-progress') ? (
           <button type="button" className="day-start-class" onClick={() => onStartClass(section.sectionId, source.id)}>{projected.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
         ) : null}
@@ -316,7 +335,7 @@ function blockTimes(block: TeachingDayBlock | null): string {
   return block?.startTime && block.endTime ? ` · ${block.startTime}–${block.endTime}` : ''
 }
 
-function ContinuityLesson({ lesson, sectionId, onStartClass, onSelectLesson, carryover = false }: { lesson: DayContinuityLesson; sectionId: string; onStartClass?: (sectionId: string, lessonId: string) => void; onSelectLesson?: (lesson: DayContinuityLesson) => void; carryover?: boolean }) {
+function ContinuityLesson({ lesson, sectionId, onStartClass, onSelectLesson, onBeginPlanLessonMove, onOpenRecoveryForSection, carryover = false }: { lesson: DayContinuityLesson; sectionId: string; onStartClass?: (sectionId: string, lessonId: string) => void; onSelectLesson?: (lesson: DayContinuityLesson) => void; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onOpenRecoveryForSection?: (sectionId: string) => void; carryover?: boolean }) {
   const status = humanizeStatus(lesson.deliveryStatus)
   const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
   const accessible = [
@@ -350,8 +369,14 @@ function ContinuityLesson({ lesson, sectionId, onStartClass, onSelectLesson, car
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</p>
       ) : null}
-      <div className="day-continuity-lesson-actions">
+      <div className="day-continuity-lesson-actions plan-lesson-action-row">
         {onSelectLesson ? <button type="button" className="text-button" onClick={() => onSelectLesson(lesson)}>Open lesson</button> : null}
+        {onBeginPlanLessonMove ? (
+          <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: lesson.lessonId, sectionId, defaultDestination: lesson.effectiveDate })}>Move</button>
+        ) : null}
+        {onOpenRecoveryForSection && lesson.deliveryStatus === 'in-progress' ? (
+          <button type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Review Shift</button>
+        ) : null}
         {onStartClass && (lesson.deliveryStatus === 'not-started' || lesson.deliveryStatus === 'in-progress') ? (
           <button type="button" className="day-start-class" onClick={() => onStartClass(sectionId, lesson.lessonId)}>{lesson.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
         ) : null}

@@ -50,6 +50,17 @@ export function AppFrame() {
   const [showFirstCapturePrompt, setShowFirstCapturePrompt] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
   const [workspaceOpenToken, setWorkspaceOpenToken] = useState(0)
   const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
+  const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
+
+  function openRecovery(sectionId?: string) {
+    setRecoveryFocusSectionId(sectionId ?? null)
+    workspaceMode.open('recovery')
+  }
+
+  function closeRecoveryMode() {
+    setRecoveryFocusSectionId(null)
+    workspaceMode.close()
+  }
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
@@ -274,7 +285,7 @@ export function AppFrame() {
             onMovePrevious={() => workspace.movePeriod('previous')}
             onMoveNext={() => workspace.movePeriod('next')}
             onToday={workspace.goToday}
-            onOpenRecovery={() => workspaceMode.open('recovery')}
+            onOpenRecovery={() => openRecovery()}
             onUndoShift={workspace.undoLastShift}
           />
 
@@ -351,8 +362,14 @@ export function AppFrame() {
                 captureWorkspace={workspace.captureWorkspace}
                 onAddNote={workspace.addCalendarNote}
                 onDeleteNote={workspace.deleteCalendarNote}
-                onCloseMode={workspaceMode.close}
+                onCloseMode={workspaceMode.mode === 'recovery' ? closeRecoveryMode : workspaceMode.close}
                 onOpenMode={workspaceMode.open}
+                planMoveIntent={workspace.planMoveIntent}
+                onBeginPlanLessonMove={workspace.beginPlanLessonMove}
+                onCancelPlanLessonMove={workspace.cancelPlanLessonMove}
+                onConfirmPlanLessonMove={workspace.confirmPlanLessonMove}
+                onOpenRecoveryForSection={(sectionId) => openRecovery(sectionId)}
+                recoveryFocusSectionId={recoveryFocusSectionId}
               />
             </section>
           </B01Furniture>

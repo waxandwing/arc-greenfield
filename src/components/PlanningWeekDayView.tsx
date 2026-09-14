@@ -1,5 +1,5 @@
 import type { ProjectedDay } from '../calendar/projections'
-import type { ISODate } from '../calendar'
+import type { ISODate, PlanNavigationContext } from '../calendar'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
 import { formatLongDate, formatShortDate, formatWeekday } from './dateLabels'
 
@@ -8,13 +8,19 @@ export function PlanningWeekDayView({
   planning,
   single = false,
   focusDate,
+  planContext,
   onSelectDate,
+  onBeginPlanLessonMove,
+  onOpenRecoveryForSection,
 }: {
   days: ProjectedDay[]
   planning: PlanningRangeProjection
   single?: boolean
   focusDate?: string
+  planContext?: PlanNavigationContext | null
   onSelectDate?: (date: ISODate) => void
+  onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
+  onOpenRecoveryForSection?: (sectionId: string) => void
 }) {
   if (planning.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -24,7 +30,7 @@ export function PlanningWeekDayView({
     <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'} data-focus-date={focusDate ?? ''}>
       <PlanningDateHeader days={days} single={single} focusDate={focusDate} onSelectDate={onSelectDate} />
       {planning.courses.map((course) => (
-        <PlanningCourse key={course.course.id} course={course} days={days} single={single} focusDate={focusDate} />
+        <PlanningCourse key={course.course.id} course={course} days={days} single={single} focusDate={focusDate} planContext={planContext} onBeginPlanLessonMove={onBeginPlanLessonMove} onOpenRecoveryForSection={onOpenRecoveryForSection} />
       ))}
     </div>
   )
@@ -50,11 +56,17 @@ function PlanningCourse({
   days,
   single,
   focusDate,
+  planContext,
+  onBeginPlanLessonMove,
+  onOpenRecoveryForSection,
 }: {
   course: PlanningCourseGroup
   days: ProjectedDay[]
   single: boolean
   focusDate?: string
+  planContext?: PlanNavigationContext | null
+  onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
+  onOpenRecoveryForSection?: (sectionId: string) => void
 }) {
   return (
     <section className="planning-course" aria-label={`${course.course.title} planning`}>
@@ -91,7 +103,16 @@ function PlanningCourse({
                 className={`planning-day-slot planning-day-slot--${days[index]?.kind ?? 'unknown'}`}
                 aria-label={`${row.section.name}, ${formatLongDate(slot.date)}`}
               >
-                {slot.lessons.map((lesson) => <LessonTile key={lesson.lessonId} lesson={lesson} />)}
+                {slot.lessons.map((lesson) => (
+                  <LessonTile
+                    key={lesson.lessonId}
+                    lesson={lesson}
+                    sectionId={row.section.id}
+                    showActions={planContext?.sectionId === row.section.id || planContext?.courseId === course.course.id}
+                    onBeginPlanLessonMove={onBeginPlanLessonMove}
+                    onOpenRecoveryForSection={onOpenRecoveryForSection}
+                  />
+                ))}
                 {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
               </div>
             ))}
@@ -102,7 +123,7 @@ function PlanningCourse({
   )
 }
 
-function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
+function LessonTile({ lesson, sectionId, showActions, onBeginPlanLessonMove, onOpenRecoveryForSection }: { lesson: PlanningLessonPlacement; sectionId: string; showActions?: boolean; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onOpenRecoveryForSection?: (sectionId: string) => void }) {
   const statusLabel = humanizeStatus(lesson.deliveryStatus)
   const taughtLabel = lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate
     ? `Taught ${formatShortDate(lesson.taughtDate)}`
@@ -132,6 +153,16 @@ function LessonTile({ lesson }: { lesson: PlanningLessonPlacement }) {
       </div>
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="planning-resume-note">Continue: {lesson.resumeNote}</p>
+      ) : null}
+      {showActions && (onBeginPlanLessonMove || onOpenRecoveryForSection) ? (
+        <div className="planning-lesson-actions">
+          {onBeginPlanLessonMove ? (
+            <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: lesson.lessonId, sectionId, defaultDestination: lesson.effectiveDate })}>Move</button>
+          ) : null}
+          {onOpenRecoveryForSection && lesson.deliveryStatus === 'in-progress' ? (
+            <button type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Review Shift</button>
+          ) : null}
+        </div>
       ) : null}
     </article>
   )

@@ -16,6 +16,7 @@ import './styles/onboarding.css'
 import './styles/unitSetup.css'
 import './styles/lessonSetup.css'
 import './styles/recoveryReview.css'
+import './styles/planMoveShift.css'
 import './styles/sourceCalendarReview.css'
 import './styles/schoolIdentitySearch.css'
 

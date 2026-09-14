@@ -7,6 +7,8 @@ import { TermBoundarySetup } from './TermBoundarySetup'
 import { UnitSetup } from './UnitSetup'
 import { TeachingDaySetup } from './TeachingDaySetup'
 import { CurriculumImport } from './CurriculumImport'
+import { PlanLessonMovePanel } from './PlanLessonMovePanel'
+import type { LessonMovePreview } from '../planning'
 import type { CalendarHydrationInput, ISODate, PlanNavigationContext, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
@@ -66,6 +68,12 @@ type WorkspaceStageProps = {
   onDeleteNote: (noteId: string) => void
   onCloseMode: () => void
   onOpenMode: (mode: WorkspaceMode) => void
+  planMoveIntent?: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null } | null
+  onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
+  onCancelPlanLessonMove?: () => void
+  onConfirmPlanLessonMove?: (destination: ISODate, preview: LessonMovePreview) => void
+  onOpenRecoveryForSection?: (sectionId: string) => void
+  recoveryFocusSectionId?: string | null
 }
 
 export function WorkspaceStage(props: WorkspaceStageProps) {
@@ -109,6 +117,12 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onDeleteNote,
     onCloseMode,
     onOpenMode,
+    planMoveIntent,
+    onBeginPlanLessonMove,
+    onCancelPlanLessonMove,
+    onConfirmPlanLessonMove,
+    onOpenRecoveryForSection,
+    recoveryFocusSectionId,
   } = props
 
   const needsCalendarSetup = !calendar || !anchorDate || mode === 'calendar-setup'
@@ -187,6 +201,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         overrides={shiftState?.overrides ?? []}
         onApply={onApplyRecoveryShift}
         onClose={onCloseMode}
+        focusSectionId={recoveryFocusSectionId}
       />
     )
   }
@@ -201,27 +216,45 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     : null
 
   return (
-    <CalendarProjectionView
-      view={activeView}
-      showWeekends={showWeekends}
-      calendar={calendar}
-      anchorDate={anchorDate}
-      planningContext={planningContext}
-      planContext={planContext}
-      onStartClass={onStartClass}
-      onSelectDate={onSelectDate}
-      onSelectYearUnit={onSelectYearUnit}
-      onSelectTeachingBlock={onSelectTeachingBlock}
-      onSelectLesson={onSelectLesson}
-      onRetreatPlanFocus={onRetreatPlanFocus}
-      onOpenWorkspace={onOpenWorkspace}
-      onFollowPlanningAttention={onFollowPlanningAttention}
-      onReturnToPlanningPeriod={onReturnToPlanningPeriod}
-      planningPeriodReturnPending={planningPeriodReturnPending}
-      captureWorkspace={captureWorkspace}
-      onAddNote={onAddNote}
-      onDeleteNote={onDeleteNote}
-    />
+    <>
+      {planMoveIntent && planningWorkspace && unitWorkspace && lessonWorkspace && shiftState && onCancelPlanLessonMove && onConfirmPlanLessonMove ? (
+        <PlanLessonMovePanel
+          calendar={calendar}
+          planning={planningWorkspace}
+          units={unitWorkspace}
+          lessons={lessonWorkspace}
+          shiftState={shiftState}
+          lessonId={planMoveIntent.lessonId}
+          sectionId={planMoveIntent.sectionId}
+          defaultDestination={planMoveIntent.defaultDestination}
+          onConfirm={onConfirmPlanLessonMove}
+          onCancel={onCancelPlanLessonMove}
+        />
+      ) : null}
+      <CalendarProjectionView
+        view={activeView}
+        showWeekends={showWeekends}
+        calendar={calendar}
+        anchorDate={anchorDate}
+        planningContext={planningContext}
+        planContext={planContext}
+        onStartClass={onStartClass}
+        onSelectDate={onSelectDate}
+        onSelectYearUnit={onSelectYearUnit}
+        onSelectTeachingBlock={onSelectTeachingBlock}
+        onSelectLesson={onSelectLesson}
+        onRetreatPlanFocus={onRetreatPlanFocus}
+        onOpenWorkspace={onOpenWorkspace}
+        onFollowPlanningAttention={onFollowPlanningAttention}
+        onReturnToPlanningPeriod={onReturnToPlanningPeriod}
+        planningPeriodReturnPending={planningPeriodReturnPending}
+        captureWorkspace={captureWorkspace}
+        onAddNote={onAddNote}
+        onDeleteNote={onDeleteNote}
+        onBeginPlanLessonMove={onBeginPlanLessonMove}
+        onOpenRecoveryForSection={onOpenRecoveryForSection}
+      />
+    </>
   )
 }
 
