@@ -23,12 +23,96 @@
 }
 
 .arc-planner-object {
-  border-width: var(--shell-planner-border);
-  border-color: color-mix(in srgb, var(--shell-frame-green) 92%, black);
+  padding: 6px;
+  border-width: calc(var(--shell-planner-border) + 2px);
+  border-color: color-mix(in srgb, var(--shell-frame-green) 94%, black);
+  border-radius: calc(var(--shell-frame-radius) - 2px);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--shell-frame-green) 88%, white),
+    var(--shell-frame-green) 42%,
+    color-mix(in srgb, var(--shell-frame-green) 92%, black)
+  );
   box-shadow:
     var(--shell-planner-shadow),
-    inset 0 2px 0 rgba(255, 253, 248, 0.95),
-    inset 0 -1px 0 rgba(31, 75, 58, 0.12);
+    inset 0 2px 0 rgba(255, 253, 248, 0.22),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+}
+
+/* Central planner spread: cream paper + book gutter (Kelly reference) */
+.arc-calendar-spread {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: calc(100dvh - 108px);
+  border-radius: calc(var(--shell-frame-radius) - 6px);
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--field-elevated);
+  background-image: var(--plan-surface-paper);
+  background-size: 512px 512px;
+  background-repeat: repeat;
+}
+
+.arc-calendar-spread::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent calc(50% - 18px),
+      rgba(44, 46, 46, 0.035) calc(50% - 2px),
+      rgba(255, 253, 248, 0.55) 50%,
+      rgba(44, 46, 46, 0.05) calc(50% + 2px),
+      transparent calc(50% + 18px),
+      transparent 100%
+    );
+}
+
+.arc-calendar-spread::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  z-index: 0;
+  width: 1px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: color-mix(in srgb, var(--shell-frame-green) 12%, transparent);
+  box-shadow:
+    -3px 0 8px -2px rgba(8, 22, 16, 0.12),
+    2px 0 6px -2px rgba(255, 253, 248, 0.65);
+}
+
+.arc-calendar-spread > .calendar-stage-header,
+.arc-calendar-spread > .storage-notice,
+.arc-calendar-spread > .b01-calendar-owner {
+  position: relative;
+  z-index: 1;
+}
+
+.arc-calendar-spread > .calendar-stage-header {
+  flex: 0 0 auto;
+  padding: 10px var(--space-6) 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-frame-green) 10%, var(--line-subtle));
+}
+
+.arc-calendar-spread > .storage-notice {
+  flex: 0 0 auto;
+  margin: 0 var(--space-6) var(--space-3);
+}
+
+.arc-calendar-spread > .b01-calendar-owner {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* —— 2. Index tabs —— */
@@ -265,6 +349,19 @@
 }
 
 @media (max-width: 800px) {
+  .arc-calendar-spread {
+    min-height: calc(100dvh - 116px);
+  }
+
+  .arc-calendar-spread > .calendar-stage-header,
+  .arc-calendar-spread > .storage-notice {
+    padding-inline: var(--mobile-gutter);
+  }
+
+  .arc-calendar-spread > .storage-notice {
+    margin-inline: var(--mobile-gutter);
+  }
+
   .arc-index-tab {
     transform: none;
   }

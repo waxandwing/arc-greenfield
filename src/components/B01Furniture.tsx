@@ -29,6 +29,7 @@ type Props = {
   tasksOpen?: boolean
   onTasksOpenChange?: (open: boolean) => void
   indexNav?: IndexNavProps | null
+  spreadChrome?: ReactNode
 }
 
 const VIEW_TABS: { view: CalendarView; label: string }[] = [
@@ -50,6 +51,7 @@ export function B01Furniture({
   tasksOpen,
   onTasksOpenChange,
   indexNav = null,
+  spreadChrome = null,
 }: Props) {
   const [open, setOpen] = useState<Record<DrawerName, boolean>>({ settings: false, workspace: false, tasks: false })
   const settingsButton = useRef<HTMLButtonElement>(null)
@@ -160,7 +162,10 @@ export function B01Furniture({
   return (
     <div className="b01-furniture-composition" data-testid="b01-furniture-composition" data-workspace-open={workspaceIsOpen ? 'true' : 'false'}>
       <div className="arc-planner-object">
-        <div className="b01-calendar-owner">{children}</div>
+        <div className="arc-calendar-spread">
+          {spreadChrome}
+          <div className="b01-calendar-owner">{children}</div>
+        </div>
       </div>
 
       {indexNav ? (

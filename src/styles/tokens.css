@@ -36,6 +36,7 @@
   --shell-frame-radius: 14px;
   --shell-frame-border: 5px;
   --shell-planner-border: 3px;
+  --shell-spread-gutter-width: 1px;
   --shell-pattern: url('/assets/arctable/breezeblock-tile.png');
   --shell-pattern-size: 440px;
   --shell-pattern-size-mobile: 300px;

@@ -325,30 +325,34 @@ export function AppFrame() {
 
       <div className="arc-layout">
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
-          <CalendarStageHeader
-            activeView={workspace.activeView}
-            mode={headerMode}
-            calendar={workspace.calendar}
-            anchorDate={workspace.anchorDate}
-            previousTarget={workspace.previousTarget}
-            nextTarget={workspace.nextTarget}
-            todayTarget={workspace.todayTarget}
-            recoveryCount={workspace.recoveryCount}
-            undoAvailable={Boolean(workspace.shiftState?.undo)}
-            stageTitle={headerStageTitle}
-            viewSelectionDisabled={workspaceBusy || onboardingActive}
-            availabilityFor={workspace.viewAvailability}
-            onSelectView={selectView}
-            onMovePrevious={() => workspace.movePeriod('previous')}
-            onMoveNext={() => workspace.movePeriod('next')}
-            onToday={workspace.goToday}
-            onOpenRecovery={() => openRecovery()}
-            onUndoShift={workspace.undoLastShift}
-          />
-
-          {workspace.storageNotice && <p className="storage-notice" role="status">{workspace.storageNotice}</p>}
-
           <B01Furniture
+            spreadChrome={
+              <>
+                <CalendarStageHeader
+                  activeView={workspace.activeView}
+                  mode={headerMode}
+                  calendar={workspace.calendar}
+                  anchorDate={workspace.anchorDate}
+                  previousTarget={workspace.previousTarget}
+                  nextTarget={workspace.nextTarget}
+                  todayTarget={workspace.todayTarget}
+                  recoveryCount={workspace.recoveryCount}
+                  undoAvailable={Boolean(workspace.shiftState?.undo)}
+                  stageTitle={headerStageTitle}
+                  viewSelectionDisabled={workspaceBusy || onboardingActive}
+                  availabilityFor={workspace.viewAvailability}
+                  onSelectView={selectView}
+                  onMovePrevious={() => workspace.movePeriod('previous')}
+                  onMoveNext={() => workspace.movePeriod('next')}
+                  onToday={workspace.goToday}
+                  onOpenRecovery={() => openRecovery()}
+                  onUndoShift={workspace.undoLastShift}
+                />
+                {workspace.storageNotice ? (
+                  <p className="storage-notice" role="status">{workspace.storageNotice}</p>
+                ) : null}
+              </>
+            }
             settings={settingsContent}
             workspace={fridgeContent}
             tasks={taskContent}
