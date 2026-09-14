@@ -10,7 +10,7 @@ Branch: `cursor/arc-production-integration`
 
 | ID | Item | Result |
 |----|------|--------|
-| **A** | Commit SHA | _(see git push output below)_ |
+| **A** | Commit SHA | `3c11653` |
 | **B** | Global + Capture on primary planner states | `GlobalCaptureAffordance` on Day/Week/Month/Year/Planning/class depth via shared shell; dialog saves with plan anchor metadata; success “Captured.” closes without opening Workspace |
 | **C** | Try Capture banner removed | Permanent `FirstCapturePrompt` removed; one-time `CaptureCoachMark` with `firstCapturePromptDismissed` persistence |
 | **D** | Workspace visual burden reduced | Captures-first panel; lessons/units/curriculum in `<details>`; organize/convert/delete on selected capture card |
