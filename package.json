@@ -10,7 +10,7 @@
     "build:bundle": "vite build",
     "build": "npm run test:contracts && npm run typecheck && npm run build:bundle",
     "preview": "vite preview",
-    "preview:desk": "VITE_ARC_DESK_PREVIEW=true VITE_ARC_BUILD_LABEL=desk-v2 npm run build:bundle && vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "preview:desk": "VITE_ARC_DESK_PREVIEW=true VITE_ARC_BUILD_LABEL=desk-v2 VITE_ARC_GIT_SHA=$(git rev-parse --short HEAD) npm run build:bundle && vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "dev:desk": "vite --host 127.0.0.1 --port 4317 --strictPort",
     "start:desk": "npm run preview:desk",
     "test:browser-a11y": "node tests/browser-a11y.smoke.mjs",
