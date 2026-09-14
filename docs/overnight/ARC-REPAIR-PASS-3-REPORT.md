@@ -7,7 +7,7 @@
 
 ### A. Commit SHA
 
-*(Filled at commit time.)*
+**`cb035af`** (Pass 3 code + tab evidence; tab smoke regenerates `docs/overnight/evidence/repair-pass-3-tabs/`).
 
 ### B. Pass 3 themes (§33–48 + capture/header/onboarding)
 

@@ -69,7 +69,10 @@ export function AppFrame() {
   const unscheduledUnits = workspace.unitWorkspace?.units.filter((unit) => unit.placement === null) ?? []
   const setupCapabilities = assessSetupCapabilities({ calendar: workspace.calendar, planning: workspace.planningWorkspace, lessons: workspace.lessonWorkspace })
   const returningTeacher = Boolean(workspace.calendar && workspace.planningWorkspace?.courses.length && workspace.planningWorkspace.sections.length && onboardingDraft.stage === 'welcome')
-  const showOnboarding = !returningTeacher && !onboardingDraft.dismissed && !minimumPlanningSetupEstablished(setupCapabilities)
+  const onboardingFlowActive = onboardingDraft.stage !== 'landed'
+  const showOnboarding = !returningTeacher && !onboardingDraft.dismissed && (
+    onboardingFlowActive || !minimumPlanningSetupEstablished(setupCapabilities)
+  )
   const onboardingActive = showOnboarding && workspaceMode.mode === 'calendar'
   const headerMode: WorkspaceMode = onboardingActive ? 'onboarding' : workspaceMode.mode
   const headerStageTitle = onboardingActive
