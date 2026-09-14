@@ -3,9 +3,9 @@
 .arc-shell {
   background-color: var(--shell-exterior-base);
   background-image:
-    radial-gradient(ellipse 90% 70% at 8% 12%, rgba(124, 156, 173, 0.14), transparent 58%),
-    radial-gradient(ellipse 72% 55% at 94% 88%, rgba(228, 179, 61, 0.12), transparent 52%),
-    linear-gradient(color-mix(in srgb, var(--shell-exterior-base) 78%, transparent), color-mix(in srgb, var(--shell-exterior-base) 78%, transparent)),
+    radial-gradient(ellipse 90% 70% at 8% 12%, rgba(124, 156, 173, 0.1), transparent 58%),
+    radial-gradient(ellipse 72% 55% at 94% 88%, rgba(228, 179, 61, 0.08), transparent 52%),
+    linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),
     var(--shell-pattern);
   background-size:
     auto,
@@ -13,7 +13,7 @@
     auto,
     var(--shell-pattern-size);
   background-repeat: no-repeat, no-repeat, no-repeat, repeat;
-  background-blend-mode: normal, normal, normal, multiply;
+  background-blend-mode: normal, normal, normal, soft-light;
 }
 
 .b01-furniture-composition {
@@ -21,13 +21,13 @@
   padding: var(--shell-frame-inset);
   border: var(--shell-frame-border) solid color-mix(in srgb, var(--shell-frame-green) 88%, black);
   border-radius: calc(var(--shell-frame-radius) + 2px);
-  background-color: var(--shell-exterior-base);
+  background-color: transparent;
   background-image:
-    linear-gradient(color-mix(in srgb, var(--shell-exterior-base) 72%, transparent), color-mix(in srgb, var(--shell-exterior-base) 72%, transparent)),
+    linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),
     var(--shell-pattern);
   background-size: auto, var(--shell-pattern-size);
   background-repeat: no-repeat, repeat;
-  background-blend-mode: normal, multiply;
+  background-blend-mode: normal, soft-light;
   box-shadow: var(--shell-frame-outer-shadow);
 }
 

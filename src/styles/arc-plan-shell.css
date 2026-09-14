@@ -2,12 +2,13 @@
 
 .arc-shell {
   min-height: 100dvh;
-  background-color: var(--shell-frame-green);
+  background-color: var(--shell-exterior-base);
   background-image:
-    linear-gradient(color-mix(in srgb, var(--shell-frame-green) 68%, transparent), color-mix(in srgb, var(--shell-frame-green) 68%, transparent)),
+    linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),
     var(--shell-pattern);
-  background-size: auto, 280px;
+  background-size: auto, var(--shell-pattern-size);
   background-repeat: no-repeat, repeat;
+  background-blend-mode: normal, soft-light;
   color: var(--ink);
 }
 
@@ -121,7 +122,7 @@
 
 @media (max-width: 520px) {
   .arc-shell {
-    background-size: auto, 220px;
+    background-size: auto, var(--shell-pattern-size-mobile);
   }
 }
 

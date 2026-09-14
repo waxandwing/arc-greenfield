@@ -2,11 +2,14 @@
 
 /* —— 1. Exterior vs interior —— */
 .arc-shell {
+  background-color: var(--shell-exterior-base);
   background-image:
-    radial-gradient(ellipse 85% 65% at 6% 8%, rgba(124, 156, 173, 0.2), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 96% 92%, rgba(228, 179, 61, 0.14), transparent 50%),
-    linear-gradient(color-mix(in srgb, var(--shell-exterior-base) 58%, transparent), color-mix(in srgb, var(--shell-exterior-base) 58%, transparent)),
+    radial-gradient(ellipse 85% 65% at 6% 8%, rgba(124, 156, 173, 0.12), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 96% 92%, rgba(228, 179, 61, 0.08), transparent 50%),
+    linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),
     var(--shell-pattern);
+  background-size: auto, auto, auto, var(--shell-pattern-size);
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
   background-blend-mode: normal, normal, normal, soft-light;
 }
 
@@ -16,9 +19,12 @@
   border-color: color-mix(in srgb, var(--shell-frame-green) 72%, black);
   outline: 2px solid rgba(0, 0, 0, 0.28);
   outline-offset: -1px;
+  background-color: transparent;
   background-image:
-    linear-gradient(color-mix(in srgb, var(--shell-exterior-base) 48%, transparent), color-mix(in srgb, var(--shell-exterior-base) 48%, transparent)),
+    linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),
     var(--shell-pattern);
+  background-size: auto, var(--shell-pattern-size);
+  background-repeat: no-repeat, repeat;
   background-blend-mode: normal, soft-light;
 }
 
@@ -339,6 +345,11 @@
 @media (max-width: 520px) {
   .arc-shell,
   .b01-furniture-composition {
-    background-blend-mode: normal, soft-light;
+    background-size: auto, auto, auto, var(--shell-pattern-size-mobile);
+    background-blend-mode: normal, normal, normal, soft-light;
+  }
+
+  .b01-furniture-composition {
+    background-size: auto, var(--shell-pattern-size-mobile);
   }
 }

@@ -11,12 +11,13 @@
   padding:var(--shell-frame-inset);
   overflow:visible;
   border-radius:var(--shell-frame-radius);
-  background-color:var(--shell-frame-green);
+  background-color:transparent;
   background-image:
-    linear-gradient(color-mix(in srgb, var(--shell-frame-green) 62%, transparent), color-mix(in srgb, var(--shell-frame-green) 62%, transparent)),
+    linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),
     var(--shell-pattern);
-  background-size:auto, 240px;
+  background-size:auto, var(--shell-pattern-size);
   background-repeat:no-repeat, repeat;
+  background-blend-mode:normal, soft-light;
   box-shadow:var(--shadow-overlay);
 }
 

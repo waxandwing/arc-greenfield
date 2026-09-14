@@ -31,19 +31,23 @@
 
   /* Plan shell frame (Stage 7.2.2 visibility lock) */
   --shell-frame-green: #1F4B3A;
-  --shell-exterior-base: #0f241c;
+  /* Light cream field + faded Arc pattern (Kelly / Photoroom AT-PATTERN remakes) */
+  --shell-exterior-base: var(--paper);
+  --shell-pattern-wash: color-mix(in srgb, var(--shell-exterior-base) 76%, transparent);
   --shell-frame-inset: 22px;
   --shell-frame-radius: 14px;
   --shell-frame-border: 5px;
   --shell-planner-border: 3px;
   --shell-spread-gutter-width: 1px;
-  --shell-pattern: url('/assets/arctable/breezeblock-tile.png');
-  --shell-pattern-size: 440px;
-  --shell-pattern-size-mobile: 300px;
+  --shell-pattern: url('/assets/arc/patterns/at-pattern-05-semicircle-columns-512.png');
+  --shell-pattern-dots: url('/assets/arc/patterns/at-pattern-06-small-dots-512.png');
+  --shell-pattern-legacy-breezeblock: url('/assets/arctable/breezeblock-tile.png');
+  --shell-pattern-size: 380px;
+  --shell-pattern-size-mobile: 260px;
   --shell-frame-outer-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 36px 80px -24px rgba(4, 14, 10, 0.78),
-    0 12px 28px -8px rgba(8, 22, 16, 0.55);
+    0 0 0 1px rgba(44, 46, 46, 0.12),
+    0 36px 80px -24px rgba(44, 46, 46, 0.22),
+    0 12px 28px -8px rgba(44, 46, 46, 0.14);
   --shell-planner-shadow:
     0 22px 52px -18px rgba(8, 22, 16, 0.55),
     0 6px 18px -4px rgba(15, 35, 28, 0.35),
