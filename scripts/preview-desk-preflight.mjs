@@ -49,8 +49,11 @@ console.log('')
 
 let originHead = null
 try {
-  run('git fetch origin')
-  originHead = runOptional(`git rev-parse ${ORIGIN_REF}`)
+  // Remote may use a narrow fetch refspec; always fetch integration explicitly.
+  run(`git fetch origin ${REQUIRED_BRANCH}`)
+  originHead =
+    runOptional(`git rev-parse ${ORIGIN_REF}`)
+    ?? runOptional('git rev-parse FETCH_HEAD')
 } catch {
   console.error('[preview:desk] git fetch origin failed (network or missing remote).')
   console.error('  Fix network, then retry. To create the integration branch locally:')
