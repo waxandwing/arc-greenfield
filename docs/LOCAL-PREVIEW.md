@@ -105,6 +105,7 @@ http://127.0.0.1:4317/?demo=1&demoReset=1
 | Script | What it does |
 |--------|----------------|
 | `npm run preview:desk` | `build:bundle` → Vite preview @ 127.0.0.1:4173 (stamped `desk-v2`) |
+| `npm run preview:desk:stop` | Stop whatever is listening on port 4173 (Mac/Linux `lsof`) |
 | `npm run start:desk` | Same as `preview:desk` |
 | `npm run dev:desk` | Vite dev @ 127.0.0.1:4317 |
 
@@ -174,6 +175,23 @@ Cloud agents sometimes keep a long-lived preview in tmux (e.g. `arc-desk-preview
 
 <!-- Kelly: cream UI with no desk-v2 footer stamp = wrong repo folder, still on main, or you did not run npm run preview:desk (old bundle). Fix: cd arc-greenfield, checkout cursor/arc-production-integration, npm run preview:desk, open ?demo=1&demoReset=1 — bottom-right must say desk-v2 · <git sha>. -->
 
+### Port 4173 already in use
+
+**Kelly-simple:** If `npm run preview:desk` fails with **Port 4173 is already in use** after the build finishes, the preview is **often already running** from an earlier terminal tab or session. You do not need to start it again.
+
+1. Open the desk in the browser:
+   ```text
+   http://127.0.0.1:4173/?demo=1&demoReset=1
+   ```
+2. To free the port and start fresh:
+   ```bash
+   npm run preview:desk:stop
+   ```
+   Or on Mac/Linux: `lsof -ti :4173 | xargs kill` (harmless if nothing is listening).
+3. Or switch to the terminal where preview is still running and press **Ctrl+C**.
+
+A large **chunk size** warning during `build:bundle` is normal and does not block preview.
+
 **Kelly-simple:** If the planner looks like **cream everywhere** and there is **no** tiny **`desk-v2 · …`** stamp in the bottom-right corner, you are **not** running the new desk build. That is almost always the **wrong folder**, **`main`** (or another branch), or you ran **`npm run dev`** / plain **`npm run preview`** instead of **`npm run preview:desk`**.
 
 | Symptom | Likely cause | Fix |
@@ -183,6 +201,7 @@ Cloud agents sometimes keep a long-lived preview in tmux (e.g. `arc-desk-preview
 | Preflight fails on branch | Not on integration branch and commit ≠ `origin/cursor/arc-production-integration` | `git fetch origin`, then checkout integration **or** pull until your commit matches origin; see switch command above if checkout fails |
 | Said **"nope"** after preflight blocked you | Wrong branch **and** old commit, or checkout failed silently | From repo root: `git fetch origin`, then either `git switch cursor/arc-production-integration && git pull` **or** stay on your repair branch but `git merge origin/cursor/arc-production-integration` so HEAD matches origin; run `npm run preview:desk` again; open `?demo=1&demoReset=1` — you need **wood** + **`desk-v2 · …`** stamp |
 | Still wrong after pull | Preview from another clone or port | Stop other servers; use `http://127.0.0.1:4173/?demo=1&demoReset=1` |
+| **Port 4173 already in use** (build OK, preview fails) | Preview already running | Open `http://127.0.0.1:4173/?demo=1&demoReset=1` **or** `npm run preview:desk:stop`, then retry |
 
 ### Verify the stamp (proves you have new JS + HTML)
 
