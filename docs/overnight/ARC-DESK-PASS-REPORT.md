@@ -8,7 +8,7 @@ Baseline: workspace layout migration + desk integration fixes (`698e130`)
 | ID | Item | Status |
 |----|------|--------|
 | A | Arc IS the Desk — single viewport, internal scroll only | **GREEN** — `.arc-shell--desk` locks page overflow; planner canvas scrolls internally |
-| B | Material hierarchy (pattern → wood → cream/blue/paper) | **GREEN** — wood slab + pattern shell + molded tray asset |
+| B | Material hierarchy (pattern → wood → cream/blue/paper) | **GREEN** — full-viewport wood on `.arc-shell--desk`; pattern reserved for onboarding/non-desk shell |
 | C | Planner object (Day/Week/Month/Year index) | **GREEN** — existing index tabs retained |
 | D | Preferred desk planner view persisted | **GREEN** — `arc.desk-preferences.v1` + Settings → Home desk |
 | E | Year view IA (mini months, remain, caught-up, quarters) | **GREEN** — `SchoolYearDeskView` + open course progression |
@@ -45,7 +45,8 @@ Baseline: workspace layout migration + desk integration fixes (`698e130`)
 
 ## Visual addendum compliance
 
-- Light wood desk: `public/assets/desk/light-wood-desk.png` on `.arc-desk-wood-frame`
+- Light wood desk: `public/assets/desk/light-wood-desk.png` edge-to-edge on `.arc-shell--desk` (not a nested frame)
+- ArcTable mark: `logo-icon-framed-arc-primary-512.png` raster in desk fixture (vector hit targets only)
 - Blue molded tray: rim/well uses `blue-molded-tray.png` + inset shadows
 - Mustard tab: texture on `.arc-index-tab--workspace`
 - Year authority: mini-month grid, countdown, caught-up X, quarter legend

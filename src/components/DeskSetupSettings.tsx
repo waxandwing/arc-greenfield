@@ -24,10 +24,10 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
     <section className="b01-settings-group desk-setup-settings" aria-labelledby="settings-desk-setup">
       <h2 id="settings-desk-setup">Desk setup</h2>
       <p className="desk-setup-overview">
-        Customize desk arranges planner, tray, Must/Should/Could, and ArcTable on your real desk — not a miniature preview.
+        Edit Workspace arranges planner, tray, Must/Should/Could, and ArcTable on your real desk — not a miniature preview.
       </p>
       <button type="button" className="b01-settings-action b01-settings-action--primary" onClick={onEditWorkspace}>
-        Customize desk
+        Edit Workspace
       </button>
       {layoutCustomized ? <p className="desk-setup-hint" role="status">Your desk layout is customized.</p> : null}
 
@@ -42,9 +42,38 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
       </label>
 
       <label className="view-preferences-check">
-        <input type="checkbox" checked={preferences.showWeekends} onChange={(event) => patchView({ showWeekends: event.target.checked })} />
+        <input
+          type="checkbox"
+          checked={preferences.showWeekends}
+          onChange={(event) => patchView({ showWeekends: event.target.checked })}
+        />
         <span>Show weekends in Week view</span>
       </label>
+
+      <fieldset className="desk-setup-presets">
+        <legend>Object sizes</legend>
+        <label>
+          <span>Planner</span>
+          <select value={preferences.desk.plannerSize} onChange={(event) => patchDesk({ plannerSize: event.target.value as DeskSurfacePreferences['plannerSize'] })}>
+            <option value="standard">Standard</option>
+            <option value="large">Large</option>
+          </select>
+        </label>
+        <label>
+          <span>Tray</span>
+          <select value={preferences.desk.traySize} onChange={(event) => patchDesk({ traySize: event.target.value as DeskSurfacePreferences['traySize'] })}>
+            <option value="standard">Standard</option>
+            <option value="wide">Wide</option>
+          </select>
+        </label>
+        <label>
+          <span>Must / Should / Could</span>
+          <select value={preferences.desk.mscSize} onChange={(event) => patchDesk({ mscSize: event.target.value as DeskSurfacePreferences['mscSize'] })}>
+            <option value="compact">Compact</option>
+            <option value="standard">Standard</option>
+          </select>
+        </label>
+      </fieldset>
 
       <fieldset className="desk-setup-visibility">
         <legend>Show on desk</legend>

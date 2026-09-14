@@ -3,9 +3,8 @@ import {
   ARC_TABLE_DESK_QUADRANT_HIT_PATHS,
   ARC_TABLE_DESK_CENTER_HIT_PATH,
   ARC_TABLE_DESK_QUADRANT_ORDER,
-  ARC_TABLE_MARK_ASSET_SVG,
+  ARC_TABLE_MARK_ASSET,
   ARC_TABLE_MARK_VIEWBOX,
-  type ArcTableDeskQuadrant,
 } from '../planning/arcTableDeskMark'
 import { deskTargetToAction, resolveDeskActionLabel, type ArcTableDeskTarget } from '../planning/arcTableDeskActions'
 
@@ -30,7 +29,7 @@ export function ArcTableDeskMarkSvg({ size, interactive, liveActive, hovered, on
       aria-label={interactive ? 'ArcTable desk mark' : 'ArcTable mark'}
     >
       <image
-        href={ARC_TABLE_MARK_ASSET_SVG}
+        href={ARC_TABLE_MARK_ASSET}
         width={ARC_TABLE_MARK_VIEWBOX}
         height={ARC_TABLE_MARK_VIEWBOX}
         pointerEvents="none"

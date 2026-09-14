@@ -4,12 +4,12 @@ type Props = {
   selectedObject: DeskObjectKind
   sizes: { planner: PlannerSizePreset; tray: TraySizePreset; msc: MscSizePreset }
   onSizeChange: (patch: Partial<{ planner: PlannerSizePreset; tray: TraySizePreset; msc: MscSizePreset }>) => void
-  onDone: () => void
+  onPinDown: () => void
   onReset: () => void
   resetNeedsConfirm: boolean
 }
 
-export function DeskEditToolbar({ selectedObject, sizes, onSizeChange, onDone, onReset, resetNeedsConfirm }: Props) {
+export function DeskEditToolbar({ selectedObject, sizes, onSizeChange, onPinDown, onReset, resetNeedsConfirm }: Props) {
   const sizeField =
     selectedObject === 'planner' ? (
       <label className="desk-edit-size-control">
@@ -38,17 +38,17 @@ export function DeskEditToolbar({ selectedObject, sizes, onSizeChange, onDone, o
     ) : null
 
   return (
-    <div className="desk-edit-toolbar" role="region" aria-label="Desk edit mode" data-testid="desk-edit-toolbar">
+    <div className="desk-edit-toolbar" role="region" aria-label="Edit Workspace" data-testid="desk-edit-toolbar">
       <p className="desk-edit-toolbar-label">
-        Desk edit mode — select objects, use arrow keys to move; planning drag is paused.
+        Edit Workspace — select furniture, use arrow keys to move; planning drag is paused.
       </p>
       <div className="desk-edit-toolbar-actions">
         {sizeField}
         <button type="button" className="quiet-button" onClick={onReset}>
-          {resetNeedsConfirm ? 'Confirm reset desk' : 'Reset desk'}
+          {resetNeedsConfirm ? 'Confirm reset layout' : 'Reset layout'}
         </button>
-        <button type="button" className="b01-settings-action b01-settings-action--primary" onClick={onDone}>
-          Done
+        <button type="button" className="b01-settings-action b01-settings-action--primary" onClick={onPinDown}>
+          Pin it down
         </button>
       </div>
     </div>

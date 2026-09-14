@@ -75,20 +75,25 @@ try {
 
   const fixture = page.getByTestId('arc-desk-arctable')
   assert(await fixture.getAttribute('data-quadrant-mode') === 'true', 'Default viewport must enable five-target launcher.')
-  await page.getByRole('button', { name: 'Start class', exact: true }).hover()
+  await fixture.locator('.arc-desk-mark-quadrant--live').hover({ force: true })
   await shot(page, '02-live-quadrant-hover.png')
 
-  await page.getByRole('button', { name: 'Start class', exact: true }).click()
+  await page.getByRole('button', { name: 'Start class', exact: true }).focus()
+  await page.keyboard.press('Enter')
   assert(await page.getByRole('heading', { name: 'Start or resume today’s class' }).isVisible(), 'Free preview must open contextual Start class dialog.')
   await shot(page, '03-explore-arctable-preview.png')
 
   await page.getByRole('button', { name: 'Close', exact: true }).click()
-  await page.getByRole('button', { name: 'Timer & cleanup', exact: true }).click()
+  await page.locator('.arc-desk-arctable-preview-layer').waitFor({ state: 'hidden' })
+  await page.getByRole('button', { name: 'Timer & cleanup', exact: true }).focus()
+  await page.keyboard.press('Enter')
   assert(await page.getByRole('heading', { name: 'Preview classroom timer' }).isVisible(), 'Free timer quadrant must show contextual preview.')
   await shot(page, '04-timer-preview.png')
 
   await page.getByRole('button', { name: 'Close', exact: true }).click()
-  await page.getByRole('button', { name: 'Open ArcTable', exact: true }).click()
+  await page.locator('.arc-desk-arctable-preview-layer').waitFor({ state: 'hidden' })
+  await page.getByRole('button', { name: 'Open ArcTable', exact: true }).focus()
+  await page.keyboard.press('Enter')
   assert(await page.getByRole('heading', { name: 'Open ArcTable from your desk' }).isVisible(), 'Center cream must open ArcTable home preview when not entitled.')
   await shot(page, '05-center-open-preview.png')
 
