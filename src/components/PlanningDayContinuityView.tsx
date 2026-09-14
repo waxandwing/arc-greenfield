@@ -8,7 +8,7 @@ import type { Lesson, LessonWorkspace, PlanningPeriodAttentionItem, PlanningWork
 import type { SectionLessonDateOverride } from '../planning/sectionSchedule'
 import { projectPlanningPeriodAttention } from '../planning/planningPeriodAttention'
 import { buildTeachingDayRail, type TeachingDayRailItem } from '../planning/teachingDayRail'
-import { formatShortDate, formatPlanHeaderDate } from './dateLabels'
+import { formatShortDate } from './dateLabels'
 
 export function PlanningDayContinuityView({
   day,
@@ -22,7 +22,6 @@ export function PlanningDayContinuityView({
   onSelectBlock,
   onSelectLesson,
   onRetreat,
-  onOpenWorkspace,
   onFollowAttention,
   onReturnToPlanningPeriod,
   planningReturnPending = false,
@@ -43,7 +42,6 @@ export function PlanningDayContinuityView({
   onSelectBlock?: (block: TeachingDayRailItem) => void
   onSelectLesson?: (lesson: DayContinuityLesson) => void
   onRetreat?: () => void
-  onOpenWorkspace?: () => void
   onFollowAttention?: (item: PlanningPeriodAttentionItem) => void
   onReturnToPlanningPeriod?: () => void
   planningReturnPending?: boolean
@@ -111,7 +109,6 @@ export function PlanningDayContinuityView({
           canonical={lessons.lessons}
           onStartClass={onStartClass}
           onRetreat={onRetreat}
-          onOpenWorkspace={onOpenWorkspace}
           onReturnToPlanningPeriod={planningReturnPending ? onReturnToPlanningPeriod : undefined}
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
@@ -119,9 +116,7 @@ export function PlanningDayContinuityView({
       ) : surfaceSection && surfaceRail?.course ? (
         <section className="day-continuity-course day-continuity-course--focus" data-course-id={surfaceRail.course.courseId} aria-label={`${surfaceRail.course.courseTitle} today`}>
           {planningReturnPending && onReturnToPlanningPeriod ? <button type="button" className="plan-back-link" onClick={onReturnToPlanningPeriod}>Back to Planning period</button> : null}
-          {classFocused && onRetreat && !planningReturnPending ? <button type="button" className="plan-back-link" onClick={onRetreat}>Back to Teaching Day</button> : null}
           <header className="day-continuity-course-heading">
-            <div><p className="day-continuity-kicker">{classFocused ? `Focused teaching moment · ${surfaceSection.sectionName}` : `${surfaceSection.sectionName}`}</p><h2>{surfaceRail.course.courseTitle}</h2></div>
             {surfaceRail.course.activeUnits.length > 0 ? (
               <p className="day-continuity-units">
                 <span>Unit</span>
@@ -129,7 +124,6 @@ export function PlanningDayContinuityView({
               </p>
             ) : null}
           </header>
-          {classFocused && onOpenWorkspace ? <p className="day-continuity-lesson-actions"><button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button></p> : null}
 
           <div className="day-continuity-sections">
             <article className="day-continuity-section">
@@ -171,7 +165,6 @@ export function PlanningDayContinuityView({
           overrides={overrides}
           classFocused={planningPeriodFocused}
           onRetreat={planningPeriodFocused ? onRetreat : undefined}
-          onOpenWorkspace={planningPeriodFocused ? onOpenWorkspace : undefined}
           onFollowAttention={planningPeriodFocused ? onFollowAttention : undefined}
         />
       ) : surfaceRail ? (
@@ -190,7 +183,6 @@ function LessonFocus({
   canonical,
   onStartClass,
   onRetreat,
-  onOpenWorkspace,
   onReturnToPlanningPeriod,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
@@ -201,7 +193,6 @@ function LessonFocus({
   canonical: Lesson[]
   onStartClass?: (sectionId: string, lessonId: string) => void
   onRetreat?: () => void
-  onOpenWorkspace?: () => void
   onReturnToPlanningPeriod?: () => void
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
@@ -217,11 +208,9 @@ function LessonFocus({
       {onReturnToPlanningPeriod ? <button type="button" className="plan-back-link" onClick={onReturnToPlanningPeriod}>Back to Planning period</button> : null}
       {onRetreat && !onReturnToPlanningPeriod ? <button type="button" className="plan-back-link" onClick={onRetreat}>Back to class</button> : null}
       <header className="lesson-focus-heading">
-        <p className="day-continuity-kicker">{section.sectionName} · {courseTitle}</p>
-        <h2>{source.title}</h2>
-        <p className="day-continuity-lesson-meta">
+        <p className="day-continuity-lesson-meta lesson-focus-context">
+          <span>{section.sectionName} · {courseTitle}</span>
           <span>{projected.unitTitle}</span>
-          <span>{humanizeStatus(projected.deliveryStatus)}</span>
           {projected.datePolicy === 'fixed' ? <span className="day-continuity-fixed">Fixed</span> : null}
           {projected.isSectionOverride ? <span>Shifted for this class</span> : null}
         </p>
@@ -233,7 +222,9 @@ function LessonFocus({
       {source.materials.length > 0 ? <LessonField label="Materials" items={source.materials} /> : null}
       {source.phases.length > 0 ? <LessonField label="Teaching phases" items={source.phases} /> : null}
       <div className="day-continuity-lesson-actions plan-lesson-action-row">
-        {onOpenWorkspace ? <button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button> : null}
+        {onStartClass && (projected.deliveryStatus === 'not-started' || projected.deliveryStatus === 'in-progress') ? (
+          <button type="button" className="day-start-class" onClick={() => onStartClass(section.sectionId, source.id)}>{projected.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
+        ) : null}
         {onBeginPlanLessonMove && projected.datePolicy !== 'fixed' ? (
           <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: source.id, sectionId: section.sectionId, defaultDestination: projected.effectiveDate })}>Move</button>
         ) : null}
@@ -242,9 +233,6 @@ function LessonFocus({
         ) : null}
         {onOpenRecoveryForSection && projected.deliveryStatus === 'in-progress' ? (
           <button type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(section.sectionId)}>Review Shift</button>
-        ) : null}
-        {onStartClass && (projected.deliveryStatus === 'not-started' || projected.deliveryStatus === 'in-progress') ? (
-          <button type="button" className="day-start-class" onClick={() => onStartClass(section.sectionId, source.id)}>{projected.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
         ) : null}
       </div>
     </section>
@@ -269,9 +257,8 @@ function PlanningPeriodLens({
   lessons,
   captures,
   overrides,
-  classFocused,
-  onRetreat,
-  onOpenWorkspace,
+  classFocused: _classFocused,
+  onRetreat: _onRetreat,
   onFollowAttention,
 }: {
   label: string
@@ -284,7 +271,6 @@ function PlanningPeriodLens({
   overrides: SectionLessonDateOverride[]
   classFocused: boolean
   onRetreat?: () => void
-  onOpenWorkspace?: () => void
   onFollowAttention?: (item: PlanningPeriodAttentionItem) => void
 }) {
   const attention = projectPlanningPeriodAttention({ date, planning, units, lessons, captures, overrides, continuity })
@@ -296,21 +282,12 @@ function PlanningPeriodLens({
 
   return (
     <section className="planning-period-lens" aria-label={`${label} planning time`} data-planning-period-date={date}>
-      {classFocused && onRetreat ? <button type="button" className="plan-back-link" onClick={onRetreat}>Back to Teaching Day</button> : null}
-      <header className="planning-period-heading">
-        <div>
-          <p className="day-continuity-kicker">{label} · Planning period</p>
-          <h2>Planning period</h2>
-          <p className="planning-period-secondary">Across My Preps · {formatPlanHeaderDate(date)}</p>
-        </div>
-      </header>
-      {classFocused && onOpenWorkspace ? <p className="day-continuity-lesson-actions"><button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button></p> : null}
       <div className="planning-period-buckets">
         {(Object.keys(attention.buckets) as Array<keyof typeof attention.buckets>).map((bucket) => (
           <section key={bucket} className="planning-period-bucket" aria-label={bucketLabels[bucket]}>
             <h3>{bucketLabels[bucket]}</h3>
             {attention.buckets[bucket].length === 0 ? (
-              <p className="planning-period-empty">Nothing here from canonical planning data.</p>
+              <p className="planning-period-empty" aria-hidden="true" />
             ) : (
               <ul className="planning-period-items">
                 {attention.buckets[bucket].map((item) => (
@@ -337,11 +314,10 @@ function PlanningPeriodLens({
   )
 }
 
-function NonTeachingLens({ label, onRetreat }: { label: string; onRetreat?: () => void }) {
+function NonTeachingLens({ label }: { label: string; onRetreat?: () => void }) {
   return (
-    <section className="planning-period-lens" aria-label={`${label}, non-teaching time`}>
-      {onRetreat ? <button type="button" className="plan-back-link" onClick={onRetreat}>Back to Teaching Day</button> : null}
-      <header><div><p className="day-continuity-kicker">{label}</p><h2>This part of the day is yours.</h2></div><p>Arc keeps class plans quiet during lunch and other non-teaching blocks.</p></header>
+    <section className="planning-period-lens planning-period-lens--quiet" aria-label={`${label}, non-teaching time`}>
+      <p className="day-continuity-empty">Non-teaching time — class plans stay quiet.</p>
     </section>
   )
 }
@@ -398,15 +374,15 @@ function ContinuityLesson({ lesson, sectionId, onStartClass, onSelectLesson, onB
         <p className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</p>
       ) : null}
       <div className="day-continuity-lesson-actions plan-lesson-action-row">
+        {onStartClass && (lesson.deliveryStatus === 'not-started' || lesson.deliveryStatus === 'in-progress') ? (
+          <button type="button" className="day-start-class" onClick={() => onStartClass(sectionId, lesson.lessonId)}>{lesson.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
+        ) : null}
         {onSelectLesson ? <button type="button" className="text-button" onClick={() => onSelectLesson(lesson)}>Open lesson</button> : null}
         {onBeginPlanLessonMove ? (
           <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: lesson.lessonId, sectionId, defaultDestination: lesson.effectiveDate })}>Move</button>
         ) : null}
         {onOpenRecoveryForSection && lesson.deliveryStatus === 'in-progress' ? (
           <button type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Review Shift</button>
-        ) : null}
-        {onStartClass && (lesson.deliveryStatus === 'not-started' || lesson.deliveryStatus === 'in-progress') ? (
-          <button type="button" className="day-start-class" onClick={() => onStartClass(sectionId, lesson.lessonId)}>{lesson.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
         ) : null}
       </div>
     </article>

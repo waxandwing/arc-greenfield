@@ -117,7 +117,7 @@ function PlanningCourse({
                     key={lesson.lessonId}
                     lesson={lesson}
                     sectionId={row.section.id}
-                    showActions={planContext?.sectionId === row.section.id || planContext?.courseId === course.course.id}
+                    selected={planContext?.lessonId === lesson.lessonId}
                     onBeginPlanLessonMove={onBeginPlanLessonMove}
                     onOpenRecoveryForSection={onOpenRecoveryForSection}
                   />
@@ -133,8 +133,10 @@ function PlanningCourse({
   )
 }
 
-function LessonTile({ lesson, sectionId, showActions, onBeginPlanLessonMove, onOpenRecoveryForSection }: { lesson: PlanningLessonPlacement; sectionId: string; showActions?: boolean; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onOpenRecoveryForSection?: (sectionId: string) => void }) {
+function LessonTile({ lesson, sectionId, selected, onBeginPlanLessonMove, onOpenRecoveryForSection }: { lesson: PlanningLessonPlacement; sectionId: string; selected?: boolean; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onOpenRecoveryForSection?: (sectionId: string) => void }) {
+  const [touchRevealed, setTouchRevealed] = useState(false)
   const statusLabel = humanizeStatus(lesson.deliveryStatus)
+  const showStatus = lesson.deliveryStatus !== 'not-started' || lesson.datePolicy === 'fixed' || lesson.isSectionOverride
   const taughtLabel = lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate
     ? `Taught ${formatShortDate(lesson.taughtDate)}`
     : null
@@ -146,25 +148,33 @@ function LessonTile({ lesson, sectionId, showActions, onBeginPlanLessonMove, onO
     taughtLabel,
     lesson.resumeNote ? `Resume note: ${lesson.resumeNote}` : null,
   ].filter(Boolean).join('. ')
+  const hasActions = Boolean(onBeginPlanLessonMove || (onOpenRecoveryForSection && lesson.deliveryStatus === 'in-progress'))
 
   return (
     <article
-      className={`planning-lesson planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}`}
+      className={`planning-lesson planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}${selected || touchRevealed ? ' is-actions-revealed' : ''}`}
       aria-label={accessible}
+      tabIndex={hasActions ? 0 : undefined}
+      onClick={(event) => {
+        if (!hasActions || event.target !== event.currentTarget) return
+        setTouchRevealed((value) => !value)
+      }}
     >
       <div className="planning-lesson-title-row">
-        <span className="planning-lesson-title">{lesson.title}</span>
-        {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title="Fixed date">Fixed</span> : null}
+        <span className="planning-lesson-title" title={lesson.title}>{lesson.title}</span>
+        {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title={lesson.title}>Fixed</span> : null}
       </div>
-      <div className="planning-lesson-meta">
-        <span>{statusLabel}</span>
-        {taughtLabel ? <span>{taughtLabel}</span> : null}
-        {lesson.isSectionOverride ? <span>Shifted for this class</span> : null}
-      </div>
+      {showStatus ? (
+        <div className="planning-lesson-meta">
+          {lesson.deliveryStatus !== 'not-started' ? <span>{statusLabel}</span> : null}
+          {taughtLabel ? <span>{taughtLabel}</span> : null}
+          {lesson.isSectionOverride ? <span>Shifted for this class</span> : null}
+        </div>
+      ) : null}
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="planning-resume-note">Continue: {lesson.resumeNote}</p>
       ) : null}
-      {showActions && (onBeginPlanLessonMove || onOpenRecoveryForSection) ? (
+      {hasActions ? (
         <LessonProgressiveActions
           lessonId={lesson.lessonId}
           sectionId={sectionId}
@@ -194,25 +204,23 @@ function LessonProgressiveActions({
   onOpenRecoveryForSection?: (sectionId: string) => void
 }) {
   const [moreOpen, setMoreOpen] = useState(false)
-  const secondary = [
-    onBeginPlanLessonMove ? (
-      <button key="move" type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId, sectionId, defaultDestination: effectiveDate })}>Move</button>
-    ) : null,
+  const extras = [
     onOpenRecoveryForSection && inProgress ? (
       <button key="shift" type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Review Shift</button>
     ) : null,
   ].filter(Boolean)
 
+  if (!onBeginPlanLessonMove && extras.length === 0) return null
+
   return (
     <div className={`planning-lesson-actions${moreOpen ? ' is-expanded' : ''}`}>
-      <button type="button" className="text-button planning-lesson-open" aria-pressed="true">Open</button>
       {onBeginPlanLessonMove ? (
         <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId, sectionId, defaultDestination: effectiveDate })}>Move</button>
       ) : null}
-      {secondary.length > 0 ? (
+      {extras.length > 0 ? (
         <button type="button" className="text-button planning-lesson-more-toggle" aria-expanded={moreOpen} onClick={() => setMoreOpen((value) => !value)}>More</button>
       ) : null}
-      {moreOpen && secondary.length > 0 ? <div className="planning-lesson-more-panel">{secondary}</div> : null}
+      {moreOpen && extras.length > 0 ? <div className="planning-lesson-more-panel">{extras}</div> : null}
     </div>
   )
 }

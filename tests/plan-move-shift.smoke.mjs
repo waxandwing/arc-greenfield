@@ -97,8 +97,8 @@ async function pageFlow(browser, data, context) {
   if (await page.getByRole('button', { name: 'Back to class', exact: true }).count()) {
     await page.getByRole('button', { name: 'Back to class', exact: true }).click()
   }
-  if (await page.getByRole('button', { name: 'Back to Teaching Day', exact: true }).count()) {
-    await page.getByRole('button', { name: 'Back to Teaching Day', exact: true }).click()
+  if (await page.getByRole('button', { name: 'Return to Teaching Day', exact: true }).count()) {
+    await page.getByRole('button', { name: 'Return to Teaching Day', exact: true }).click()
   }
   await page.getByRole('button', { name: /Period 4 AP Art History/ }).click()
   await shot(page, '05-week-shift-entry.png')

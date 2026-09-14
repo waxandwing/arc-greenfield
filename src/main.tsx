@@ -25,6 +25,7 @@ import './styles/sourceCalendarReview.css'
 import './styles/schoolIdentitySearch.css'
 import './styles/visual-reconciliation.css'
 import './styles/repair-pass-1-chrome.css'
+import './styles/repair-pass-2-chrome.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>,

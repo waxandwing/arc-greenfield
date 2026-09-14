@@ -12,4 +12,13 @@ assert(minimumPlanningSetupEstablished(partial), 'Calendar, Course, Section, exp
 assert(!partial.bellTimesEstablished, 'Bell times must remain independently optional.')
 assert(!partial.curriculumEstablished && !partial.profileEstablished, 'Optional capabilities must not block planning access.')
 
+const gauntletSections = [
+  { id: 'section-p1', courseId: 'course', calendarId: calendar.id, name: 'Period 1' },
+  { id: 'section-p2', courseId: 'course', calendarId: calendar.id, name: 'Period 2' },
+  { id: 'section-p4', courseId: 'course', calendarId: calendar.id, name: 'Period 4' },
+]
+const gauntletPlanning = { calendarId: calendar.id, courses: [{ id: 'course', title: 'Art' }], sections: gauntletSections }
+const gauntlet = assessSetupCapabilities({ calendar, planning: gauntletPlanning, lessons: null })
+assert(minimumPlanningSetupEstablished(gauntlet), 'Legacy period rail with a planning gap must satisfy minimum teaching-day setup.')
+
 console.log('setup capability contract passed')

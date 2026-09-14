@@ -133,6 +133,7 @@ try {
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Teaching Day did not restore as the starting focus.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Teaching Day did not keep the persisted date.')
     assert(await page.getByText('My Teaching Day', { exact: true }).isVisible(), 'State header did not name Teaching Day.')
+    assert(await page.locator('.progressive-setup').count() === 0, 'Complete gauntlet fixture must not show setup banner on Day.')
     await shot(page, '01-teaching-day.png')
 
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
@@ -143,7 +144,7 @@ try {
     await shot(page, '02-class-focus.png')
 
     const liveBeforeClassWorkspace = await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))
-    await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
+    await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
     assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).getAttribute('aria-expanded') === 'true', 'Class Focus did not open Workspace as an overlay.')
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-overlay') === 'workspace', 'Workspace overlay was not reflected in the state header.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'class', 'Opening Workspace from Class mutated Plan focus.')
@@ -159,7 +160,7 @@ try {
     assert(await page.getByRole('heading', { level: 1, name: 'Value scale' }).isVisible(), 'Lesson Focus did not show the canonical Lesson title.')
     await shot(page, '03-lesson-focus.png')
 
-    await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
+    await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
     assert(await page.getByText('Museum label mini-lesson', { exact: true }).isVisible(), 'Workspace did not open over Lesson Focus.')
     await shot(page, '04-lesson-workspace.png')
     await page.getByRole('button', { name: 'Close Workspace', exact: true }).click()
@@ -173,8 +174,8 @@ try {
     assert(await page.locator('.day-continuity').getAttribute('data-plan-section') === 'section-p6', 'Lesson → Back lost Section.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Lesson → Back lost the Day date.')
 
-    await page.getByRole('button', { name: 'Back to Teaching Day', exact: true }).click()
-    assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Class → Back did not restore Teaching Day.')
+    await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
+    assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'day', 'Class → Home did not restore Teaching Day.')
     assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Class → Back did not restore the same date.')
     assert(!await page.locator('.day-continuity').getAttribute('data-plan-section'), 'Class → Back left a Section selected on Teaching Day.')
 
@@ -218,7 +219,7 @@ try {
     const before = await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
-    await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
+    await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
     await page.getByRole('button', { name: 'Close Workspace', exact: true }).click()
     const after = await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))
     assert(before === after, 'Plan navigation mutated ArcTable live state.')
@@ -249,7 +250,7 @@ try {
   await withPage(browser, storageEntries(data, dayContext), async (page) => {
     await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
     await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
-    await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
+    await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
     assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).getAttribute('aria-expanded') === 'true', 'Workspace did not open before Home.')
     await page.getByRole('button', { name: 'Return to Teaching Day' }).click()
     assert(await page.getByRole('button', { name: 'WORKSPACE', exact: true }).getAttribute('aria-expanded') === 'false', 'Home from Workspace did not close the overlay.')

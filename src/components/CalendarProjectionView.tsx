@@ -129,11 +129,6 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
             <p className="projection-range-label">{formatMonth(anchorDate)}</p>
             <TermContext quarters={projection.quarters} semesters={projection.semesters} />
           </div>
-          {onOpenWorkspace ? (
-            <p className="planning-week-actions">
-              <button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button>
-            </p>
-          ) : null}
           {monthPlanning ? (
             <><PlanningNotes notes={planningContext?.planning.notes ?? []} dates={projection.weeks.flatMap((week) => week.days.map((day) => day.date))} focusDate={anchorDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningMonthView month={projection} planning={monthPlanning} focusDate={planContext?.anchorDate ?? anchorDate} planContext={planContext} onSelectDate={(date) => onSelectDate?.(date, 'Day')} onSelectUnit={onSelectYearUnit} onBeginPlanLessonMove={onBeginPlanLessonMove} /></div></>
           ) : (
@@ -175,11 +170,6 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
               </div>
               <TermContext quarters={projection.quarters} semesters={projection.semesters} detailed />
             </div>
-            {onOpenWorkspace ? (
-              <p className="planning-week-actions">
-                <button type="button" className="text-button" onClick={onOpenWorkspace}>Open Workspace</button>
-              </p>
-            ) : null}
             <div className="planning-scroll-frame">
               <PlanningYearView calendar={calendar} planning={planningContext.planning} units={planningContext.units} onSelectUnit={(input) => onSelectYearUnit?.(input)} />
             </div>
@@ -202,7 +192,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, planContext, termContext, onStartClass, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending, captureWorkspace, onAddNote, onDeleteNote, onBeginPlanLessonMove, onOpenRecoveryForSection }: {
+function PlanningDayStrip({ title, day, planningContext, planContext, termContext, onStartClass, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending, captureWorkspace, onAddNote, onDeleteNote, onBeginPlanLessonMove, onOpenRecoveryForSection }: {
   title: string
   day: ProjectedDay
   planningContext?: PlanningContext | null
@@ -244,7 +234,6 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
           onSelectBlock={onSelectTeachingBlock}
           onSelectLesson={onSelectLesson}
           onRetreat={onRetreatPlanFocus}
-          onOpenWorkspace={onOpenWorkspace}
           onFollowAttention={onFollowPlanningAttention}
           onReturnToPlanningPeriod={onReturnToPlanningPeriod}
           planningReturnPending={planningPeriodReturnPending}

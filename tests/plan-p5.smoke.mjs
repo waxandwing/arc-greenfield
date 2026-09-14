@@ -111,8 +111,8 @@ try {
 
   await page.getByRole('button', { name: 'Period 5, planning time' }).click()
   assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'class', 'Planning period did not deepen like Class Focus.')
-  assert(await page.getByRole('heading', { name: 'Planning period' }).isVisible(), 'Planning period lens did not render.')
-  assert(await page.getByText('Across My Preps', { exact: true }).isVisible(), 'Planning period did not show cross-prep secondary copy.')
+  assert(await page.getByRole('heading', { level: 1, name: 'Planning period' }).isVisible(), 'Planning period lens did not render.')
+  assert(await page.getByText('Across my preps', { exact: true }).isVisible(), 'Planning period did not show cross-prep context.')
   assert(await page.getByRole('heading', { name: 'Now', exact: true }).isVisible(), 'Planning period did not render NOW bucket.')
   assert(await page.getByRole('heading', { name: 'Needs attention', exact: true }).isVisible(), 'Planning period did not render NEEDS ATTENTION bucket.')
   assert(await page.getByRole('heading', { name: 'Next planned', exact: true }).isVisible(), 'Planning period did not render NEXT PLANNED bucket.')
@@ -137,7 +137,7 @@ try {
   await page.getByRole('button', { name: 'Back to Planning period', exact: true }).click()
   assert(await page.getByRole('heading', { name: 'Planning period' }).isVisible(), 'Week deep link did not return to Planning period.')
 
-  await page.getByRole('button', { name: 'Open Workspace', exact: true }).click()
+  await page.getByRole('button', { name: 'WORKSPACE', exact: true }).click()
   assert(await page.locator('.plan-state-header').getAttribute('data-plan-overlay') === 'workspace', 'Planning period did not open Workspace overlay.')
   await shot(page, '06-planning-workspace.png')
   await page.getByRole('button', { name: 'Close Workspace', exact: true }).click()

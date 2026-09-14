@@ -25,6 +25,7 @@ export function PlanStateHeader(props: {
   const dateLabel = props.date ? formatPlanHeaderDate(props.date) : null
   const primary = primaryLine(props)
   const secondary = secondaryLine(props, dateLabel)
+  const contextLine = contextLineFor(props)
   const showKicker = props.overlay === 'workspace' || props.focus === 'class' || props.focus === 'lesson'
 
   return (
@@ -37,11 +38,12 @@ export function PlanStateHeader(props: {
       data-plan-course={props.courseId ?? ''}
       data-plan-section={props.sectionId ?? ''}
       data-plan-lesson={props.lessonId ?? ''}
-      aria-label={`${primary}${secondary ? `, ${secondary}` : ''}`}
+      aria-label={`${primary}${secondary ? `, ${secondary}` : ''}${contextLine ? `, ${contextLine}` : ''}`}
     >
       {showKicker ? <p className="plan-state-kicker">{props.overlay === 'workspace' ? 'Workspace' : kickerLine(props)}</p> : null}
       <h1 className="plan-state-primary">{primary}</h1>
       {secondary ? <p className="plan-state-secondary">{secondary}</p> : null}
+      {contextLine ? <p className="plan-state-context">{contextLine}</p> : null}
     </header>
   )
 }
@@ -80,7 +82,7 @@ function primaryLine(props: {
     return props.courseTitle ? `${props.courseTitle} · School Year` : 'School Year · All Courses'
   }
   if (props.focus === 'lesson' && props.lessonTitle) return props.lessonTitle
-  if (props.focus === 'class' && props.blockType === 'planning') return props.blockLabel ?? 'Planning time'
+  if (props.focus === 'class' && props.blockType === 'planning') return 'Planning period'
   if (props.focus === 'class' && props.blockType === 'non-teaching') return props.blockLabel ?? 'Non-teaching time'
   if (props.focus === 'class' && (props.sectionName || props.courseTitle)) {
     return [props.sectionName, props.courseTitle].filter(Boolean).join(' · ')
@@ -94,6 +96,7 @@ function secondaryLine(props: {
   courseTitle?: string | null
   sectionName?: string | null
   unitTitle?: string | null
+  blockLabel?: string | null
   blockType?: 'teaching' | 'planning' | 'non-teaching' | null
   weekRange?: string | null
   monthLabel?: string | null
@@ -105,6 +108,16 @@ function secondaryLine(props: {
   if (props.focus === 'lesson') {
     return [props.sectionName, props.courseTitle, props.unitTitle, dateLabel].filter(Boolean).join(' · ')
   }
-  if (props.focus === 'class' && props.blockType === 'planning') return 'Across My Preps'
+  if (props.focus === 'class' && props.blockType === 'planning') {
+    return [props.blockLabel, dateLabel].filter(Boolean).join(' · ')
+  }
   return dateLabel
+}
+
+function contextLineFor(props: {
+  focus: PlanFocus
+  blockType?: 'teaching' | 'planning' | 'non-teaching' | null
+}) {
+  if (props.focus === 'class' && props.blockType === 'planning') return 'Across my preps'
+  return null
 }

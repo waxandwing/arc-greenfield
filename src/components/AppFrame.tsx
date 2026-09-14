@@ -388,7 +388,7 @@ export function AppFrame() {
                 />
               ) : (
                 <>
-              {!onboardingActive && workspaceMode.mode === 'calendar' && workspace.activeView === 'Day' ? (
+              {!onboardingActive && workspaceMode.mode === 'calendar' && workspace.activeView === 'Day' && !minimumPlanningSetupEstablished(setupCapabilities) ? (
                 <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} />
               ) : null}
               {workspaceMode.mode === 'calendar' && minimumPlanningSetupEstablished(setupCapabilities) && showFirstCapturePrompt && !onboardingDraft.firstCapturePromptDismissed ? <FirstCapturePrompt onSave={workspace.addCapture} onPlace={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }); setWorkspaceOpenToken((token) => token + 1) }} onDismiss={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }) }} /> : null}

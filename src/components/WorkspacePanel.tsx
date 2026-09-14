@@ -32,7 +32,7 @@ export function WorkspacePanel(props: Props) {
 
   return (
     <div className="b01-fridge-content">
-      <p className="b01-furniture-empty">Capture first. Organize when the shape is clear. Workspace keeps loose ideas and deliberately unplaced Lessons out of the calendar without losing them.</p>
+      <p className="b01-furniture-empty">Loose ideas and unplaced lessons wait here until you are ready to place them.</p>
       <button type="button" className="workspace-import-link" onClick={props.onOpenImport}>Bring in curriculum CSV</button>
       <div className="workspace-quick-capture">
         <label htmlFor="workspace-capture-text">Quick capture</label>
