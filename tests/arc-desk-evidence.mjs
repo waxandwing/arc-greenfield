@@ -59,12 +59,12 @@ try {
   await capture('settings-desk-setup')
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
 
-  const mark = page.getByTestId('arc-desk-arctable')
-  if (await mark.getAttribute('data-quadrant-mode') === 'true') {
-    for (const label of ['Live class', 'Timer & cleanup', 'People & class tools', 'Media & directions']) {
-      await page.getByRole('button', { name: label, exact: true }).focus()
-      await capture(`arctable-quadrant-${label.toLowerCase().replace(/[^a-z]+/g, '-')}`)
-    }
+  const quadrantLabels = ['Live class', 'Timer & cleanup', 'People & class tools', 'Media & directions']
+  for (const label of quadrantLabels) {
+    const control = page.getByRole('button', { name: label, exact: true })
+    if (!(await control.isVisible().catch(() => false))) continue
+    await control.focus({ timeout: 2000 }).catch(() => {})
+    await capture(`arctable-quadrant-${label.toLowerCase().replace(/[^a-z]+/g, '-')}`)
   }
 
   await selectView(page, 'Week')

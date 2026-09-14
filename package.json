@@ -24,6 +24,7 @@
     "test:repair-pass-3-tabs": "node tests/repair-pass-3-tabs.smoke.mjs",
     "test:repair-pass-3": "node tests/repair-pass-3.smoke.mjs",
     "test:arc-desk-pass": "node tests/arc-desk-pass.smoke.mjs",
+    "test:edit-workspace": "node tests/edit-workspace.smoke.mjs",
     "test:arc-desk-mark": "node tests/arc-desk-mark.smoke.mjs",
     "test:import-onboarding": "node tests/import-onboarding.smoke.mjs"
   },

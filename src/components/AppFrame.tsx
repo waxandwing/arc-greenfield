@@ -621,7 +621,11 @@ export function AppFrame() {
                   tray: activeDeskPreferences.desk.traySize,
                   msc: activeDeskPreferences.desk.mscSize,
                 }}
-                onSizeChange={patchEditWorkspaceSizes}
+                onSizeChange={(patch) => patchEditWorkspaceSizes({
+                  ...(patch.planner ? { plannerSize: patch.planner } : {}),
+                  ...(patch.tray ? { traySize: patch.tray } : {}),
+                  ...(patch.msc ? { mscSize: patch.msc } : {}),
+                })}
                 onPinDown={() => completeDeskEdit(true)}
                 onReset={resetDeskLayoutDraft}
                 resetNeedsConfirm={deskResetArmed}

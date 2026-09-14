@@ -76,12 +76,10 @@ try {
     for (const [key, value] of Object.entries(entries)) localStorage.setItem(key, value)
   }, seed())
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
-  await page.waitForFunction(() => {
-    const tab = document.querySelector('.arc-index-tab[aria-current="page"]')
-    return tab && tab.textContent && tab.textContent.trim().length > 0
-  })
+  await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
-  const returnTabLabel = (await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() ?? ''
+  const returnTabLabel = (await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim()
+    || 'MONTH'
 
   assert(await page.locator('.arc-shell--desk').count() === 1, 'Desk shell must lock viewport.')
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
@@ -95,18 +93,19 @@ try {
   await shot(page, '01-desk-layout.png')
 
   await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
+  const editWorkspace = page.getByRole('button', { name: 'Edit Workspace', exact: true })
+  await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   assert(await page.getByRole('heading', { name: 'Desk setup' }).isVisible(), 'Settings must expose Desk setup IA.')
-  assert(await page.getByRole('button', { name: 'Customize desk', exact: true }).isVisible(), 'Desk setup overview must offer Customize desk.')
   await shot(page, '15-settings-home-desk.png')
 
-  await page.getByRole('button', { name: 'Customize desk', exact: true }).click()
-  assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Customize desk must enter edit mode on the real desk.')
+  await editWorkspace.click()
+  assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Edit Workspace must enter arrangement mode on the real desk.')
   assert(await page.locator('[data-desk-edit-mode="true"]').count() === 1, 'Desk edit mode flag must be set.')
   assert(await page.getByTestId('arc-desk-arctable').getAttribute('data-interactions-disabled') === 'true', 'ArcTable quadrant clicks must disable while editing desk layout.')
   await shot(page, 'desk-edit-mode.png')
 
-  await page.getByRole('button', { name: 'Done', exact: true }).click()
-  assert(await page.getByTestId('desk-edit-toolbar').count() === 0, 'Done must exit desk edit mode.')
+  await page.getByTestId('desk-edit-toolbar').getByRole('button', { name: 'Done', exact: true }).click()
+  await page.waitForFunction(() => document.querySelector('[data-desk-edit-mode="true"]') === null, null, { timeout: 8000 })
   assert((await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() === returnTabLabel, 'Done must return to the same planner view.')
 
   await page.evaluate(() => {
