@@ -73,6 +73,8 @@ import { DeskQuickCaptureSticky } from './DeskQuickCaptureSticky'
 import { DeskNotesObject } from './DeskNotesObject'
 import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
 import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
+import { readDeskPreviewSeededSession, shouldForceDeskShell } from '../demo/deskPreviewGate'
+import { deskPreviewBuildEnabled } from '../buildInfo'
 
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
@@ -109,6 +111,28 @@ export function AppFrame() {
     }
     setStackWorkspace(loadStackWorkspace(workspace.calendar.id))
   }, [workspace.calendar?.id])
+
+  const deskPreviewBuild = deskPreviewBuildEnabled()
+
+  useEffect(() => {
+    const forceDesk = shouldForceDeskShell({
+      deskPreview: deskPreviewBuild,
+      calendarId: workspace.calendar?.id,
+      sessionSeeded: readDeskPreviewSeededSession(deskPreviewBuild),
+    })
+    if (!forceDesk || !workspace.calendar) return
+    setOnboardingDraft((current) => {
+      if (current.dismissed && current.stage === 'landed') return current
+      const next: OnboardingDraft = {
+        ...current,
+        stage: 'landed',
+        dismissed: true,
+        firstCapturePromptDismissed: true,
+      }
+      saveOnboardingDraft(next)
+      return next
+    })
+  }, [workspace.calendar?.id, deskPreviewBuild])
 
   function persistStackWorkspace(next: StackWorkspace) {
     setStackWorkspace(next)
@@ -205,12 +229,17 @@ export function AppFrame() {
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const unscheduledUnits = workspace.unitWorkspace?.units.filter((unit) => unit.placement === null) ?? []
   const setupCapabilities = assessSetupCapabilities({ calendar: workspace.calendar, planning: workspace.planningWorkspace, lessons: workspace.lessonWorkspace })
+  const forceDeskShell = shouldForceDeskShell({
+    deskPreview: deskPreviewBuild,
+    calendarId: workspace.calendar?.id,
+    sessionSeeded: readDeskPreviewSeededSession(deskPreviewBuild),
+  })
   const returningTeacher = Boolean(workspace.calendar && workspace.planningWorkspace?.courses.length && workspace.planningWorkspace.sections.length && onboardingDraft.stage === 'welcome')
   const onboardingFlowActive = onboardingDraft.stage !== 'landed'
   const showOnboarding = !returningTeacher && !onboardingDraft.dismissed && (
     onboardingFlowActive || !minimumPlanningSetupEstablished(setupCapabilities)
   )
-  const onboardingActive = showOnboarding && workspaceMode.mode === 'calendar'
+  const onboardingActive = showOnboarding && workspaceMode.mode === 'calendar' && !forceDeskShell
   const headerMode: WorkspaceMode = onboardingActive ? 'onboarding' : workspaceMode.mode
   const headerStageTitle = onboardingActive
     ? onboardingStageTitle(onboardingDraft, setupCapabilities)

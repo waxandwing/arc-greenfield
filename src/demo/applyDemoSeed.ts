@@ -8,6 +8,10 @@ import { serializeUnits, UNIT_STORAGE_KEY } from '../planning/unitPersistence'
 import { serializePlanningWorkspace, PLANNING_WORKSPACE_STORAGE_KEY } from '../planning/workspacePersistence'
 import { DEFAULT_DESK_PREFERENCES } from '../navigation/deskPreferences'
 import { buildGauntletDemoBundle } from './gauntletDemo'
+import {
+  clearDeskPreviewSeededSession,
+  markDeskPreviewSeededSession,
+} from './deskPreviewGate'
 
 const CALENDAR_STORAGE_KEY = 'arc.calendar.v1'
 const VIEW_PREFERENCES_KEY = 'arc.view-preferences.v1'
@@ -53,10 +57,19 @@ function clearArcBrowserStorage(storage: Storage): void {
   for (const key of keys) storage.removeItem(key)
 }
 
+function clearArcSessionStorage(storage: Storage): void {
+  const keys: string[] = []
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index)
+    if (key?.startsWith('arc.')) keys.push(key)
+  }
+  for (const key of keys) storage.removeItem(key)
+}
+
 export function maybeApplyDemoSeed(
   location: Pick<Location, 'search' | 'pathname' | 'hash'> = window.location,
   storage: Storage = window.localStorage,
-  options?: { envDemo?: boolean },
+  options?: { envDemo?: boolean; deskPreview?: boolean },
 ): boolean {
   const request = resolveDemoSeedRequest(location, options?.envDemo === true)
   if (!request) return false
@@ -70,8 +83,17 @@ export function maybeApplyDemoSeed(
   })()
 
   if (request.mode === 'gauntlet') {
-    if (request.force) clearArcBrowserStorage(storage)
+    if (request.force) {
+      clearArcBrowserStorage(storage)
+      if (typeof sessionStorage !== 'undefined') {
+        clearArcSessionStorage(sessionStorage)
+        clearDeskPreviewSeededSession(sessionStorage)
+      }
+    }
     writeGauntletDemo(storage)
+    if (options?.deskPreview === true && typeof sessionStorage !== 'undefined') {
+      markDeskPreviewSeededSession(true, sessionStorage)
+    }
   }
 
   const params = new URLSearchParams(location.search)

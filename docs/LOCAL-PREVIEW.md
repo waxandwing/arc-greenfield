@@ -163,3 +163,5 @@ If step 3–5 fail, you do **not** have the integration desk build — CSS-only 
 ### CalendarStageHeader vs desk shell
 
 On the **desk** build, legacy **Calendar** chrome (`CALENDAR` label, month dropdown in the spread header) is **hidden by CSS** when `.arc-shell--desk` is active. If you still see that header, the app never entered the desk shell (onboarding / wrong branch / old bundle). **`?demo=1&demoReset=1`** re-seeds storage and reloads so onboarding is skipped and the wood desk shell (`arc-shell--desk`) can mount. No stamp ⇒ the new code path is not loaded at all.
+
+**Month view inside the desk:** The planner spread can stay **cream/paper** while the **outer** viewport is **wood** — that is normal. If the **full page** is cream with the green **pattern** mat and a **CALENDAR** stage header, you are still on the legacy plan shell, not `.arc-shell--desk`. Preview builds also honor **`?forceDesk=1`** (with `demo=1`) to bypass onboarding gating when stale storage blocked the desk path.
