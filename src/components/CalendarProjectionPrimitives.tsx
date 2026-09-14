@@ -82,7 +82,7 @@ export function CalendarDayCell({ day, compact = false, showWeekday = false }: {
       {showWeekday && !compact ? <span className="calendar-day-weekday">{formatWeekday(day.date)}</span> : null}
       <span className="calendar-day-date">{day.date.slice(8)}</span>
       {!compact && day.label ? <span className="calendar-day-label">{day.label}</span> : null}
-      {!compact && day.kind === 'unknown' ? <span className="calendar-day-status">Unknown</span> : null}
+      {!compact && day.kind === 'unknown' && day.inSchoolYear ? <span className="calendar-day-status">Unknown</span> : null}
     </div>
   )
 }

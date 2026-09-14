@@ -6,10 +6,12 @@ import { ONBOARDING_STORAGE_KEY, serializeOnboardingDraft } from '../planning/on
 import { serializeShiftState, SHIFT_STORAGE_KEY } from '../planning/shiftPersistence'
 import { serializeUnits, UNIT_STORAGE_KEY } from '../planning/unitPersistence'
 import { serializePlanningWorkspace, PLANNING_WORKSPACE_STORAGE_KEY } from '../planning/workspacePersistence'
+import { DEFAULT_DESK_PREFERENCES } from '../navigation/deskPreferences'
 import { buildGauntletDemoBundle } from './gauntletDemo'
 
 const CALENDAR_STORAGE_KEY = 'arc.calendar.v1'
 const VIEW_PREFERENCES_KEY = 'arc.view-preferences.v1'
+const DESK_PREFERENCES_KEY = 'arc.desk-preferences.v1'
 
 export type DemoSeedMode = 'gauntlet'
 
@@ -23,6 +25,7 @@ function writeGauntletDemo(storage: Storage): void {
   storage.setItem(CAPTURE_STORAGE_KEY, serializeCaptures(bundle.captures))
   storage.setItem(PLANNING_CONTEXT_STORAGE_KEY, JSON.stringify(bundle.planContext))
   storage.setItem(VIEW_PREFERENCES_KEY, JSON.stringify(bundle.viewPreferences))
+  storage.setItem(DESK_PREFERENCES_KEY, JSON.stringify(DEFAULT_DESK_PREFERENCES))
   storage.setItem(ONBOARDING_STORAGE_KEY, serializeOnboardingDraft({
     stage: 'landed',
     dismissed: true,
@@ -41,6 +44,15 @@ export function resolveDemoSeedRequest(location: Pick<Location, 'search'>, envDe
 }
 
 /** Seed local storage before first React render so onboarding is skipped and Day opens with demo content. */
+function clearArcBrowserStorage(storage: Storage): void {
+  const keys: string[] = []
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index)
+    if (key?.startsWith('arc.')) keys.push(key)
+  }
+  for (const key of keys) storage.removeItem(key)
+}
+
 export function maybeApplyDemoSeed(
   location: Pick<Location, 'search' | 'pathname' | 'hash'> = window.location,
   storage: Storage = window.localStorage,
@@ -51,7 +63,10 @@ export function maybeApplyDemoSeed(
 
   const hadCalendar = Boolean(storage.getItem(CALENDAR_STORAGE_KEY))
 
-  if (request.mode === 'gauntlet') writeGauntletDemo(storage)
+  if (request.mode === 'gauntlet') {
+    if (request.force) clearArcBrowserStorage(storage)
+    writeGauntletDemo(storage)
+  }
 
   const params = new URLSearchParams(location.search)
   if (params.has('demo') || params.has('demoReset')) {
@@ -60,7 +75,7 @@ export function maybeApplyDemoSeed(
     const query = params.toString()
     const nextUrl = `${location.pathname}${query ? `?${query}` : ''}${location.hash}`
     if (typeof window !== 'undefined') {
-      if (hadCalendar) {
+      if (hadCalendar || request.force) {
         window.location.replace(nextUrl)
         return true
       }

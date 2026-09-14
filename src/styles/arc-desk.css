@@ -816,6 +816,26 @@ html:has(.arc-shell--desk) body {
   background: transparent;
 }
 
+.b01-furniture-composition--desk .calendar-stage-header,
+.b01-furniture-composition--desk .calendar-view-switcher {
+  display: none !important;
+}
+
+.arc-desk-build-stamp {
+  position: fixed;
+  right: 8px;
+  bottom: 6px;
+  z-index: 9999;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font: 600 10px/1.2 var(--font-ui);
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--soft-charcoal) 72%, transparent);
+  background: color-mix(in srgb, var(--field-elevated) 82%, transparent);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
 .b01-furniture-composition--desk .planner-shell-bar-controls {
   gap: 6px;
 }

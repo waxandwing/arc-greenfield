@@ -147,13 +147,13 @@ export function buildGauntletDemoBundle(): GauntletDemoBundle {
     planContext: {
       schemaVersion: PLAN_NAVIGATION_SCHEMA_VERSION,
       calendarId,
-      view: 'Day',
+      view: 'Week',
       anchorDate: GAUNTLET_DEMO_ANCHOR_DATE,
       focus: 'day',
     },
     viewPreferences: {
-      home: { mode: 'fixed', view: 'Day' },
-      lastUsedView: 'Day',
+      home: { mode: 'fixed', view: 'Week' },
+      lastUsedView: 'Week',
       showWeekends: false,
     },
   }

@@ -2,6 +2,34 @@
 
 Use the **integration branch** for the Arc desk (wood tabletop, tray, MSC pad, ArcTable). `main` does not carry this build by default.
 
+## Three steps (Kelly-simple)
+
+1. **Open the project folder** in Terminal — the folder that has `package.json` (after clone: `cd arc-greenfield`).
+2. **Get the desk branch and install:**
+   ```bash
+   git fetch origin
+   git checkout cursor/arc-production-integration
+   git pull origin cursor/arc-production-integration
+   npm install
+   ```
+3. **Build and open the desk preview:**
+   ```bash
+   npm run preview:desk
+   ```
+   In the browser open:
+   ```text
+   http://127.0.0.1:4173/?demo=1&demoReset=1
+   ```
+
+### How to tell OLD vs NEW
+
+| You see… | Which build |
+|----------|-------------|
+| Green/cream **pattern** around the planner, **CALENDAR** label, **Month** dropdown, no wood | **OLD** shell — wrong branch, stale build, or preview not from this repo |
+| **Light wood desk**, planner tabs on top of the spread (**DAY / WEEK / MONTH**), **Teaching week** title, tray on the wood | **NEW** desk (`desk-v2`) |
+
+With `npm run preview:desk`, a tiny footer shows `desk-v2 · <git sha>` and the browser console logs the same. The `<html>` tag gets `data-build="desk-v2@<sha>"`.
+
 ## Run every command from the repo root
 
 Git and npm only work when your shell’s current directory is the cloned **arc-greenfield** folder (the directory that contains `package.json`).
@@ -49,7 +77,7 @@ Open in the browser:
 http://127.0.0.1:4173/?demo=1&demoReset=1
 ```
 
-- `demo=1` — seed demo teaching-day content (AP / 2D / 3D) when storage is empty or on first visit.
+- `demo=1` — seed demo teaching-week content (AP / 2D / 3D) when storage is empty or on first visit.
 - `demoReset=1` — wipe saved local data and re-seed, then reload.
 
 Without query params, use saved browser data or set `VITE_ARC_DEMO=true` before `npm run build:bundle` for auto-seed on empty storage.
@@ -72,11 +100,11 @@ http://127.0.0.1:4317/?demo=1&demoReset=1
 
 | Script | What it does |
 |--------|----------------|
-| `npm run preview:desk` | `build:bundle` → Vite preview @ 127.0.0.1:4173 |
+| `npm run preview:desk` | `build:bundle` → Vite preview @ 127.0.0.1:4173 (stamped `desk-v2`) |
 | `npm run start:desk` | Same as `preview:desk` |
 | `npm run dev:desk` | Vite dev @ 127.0.0.1:4317 |
 
-`npm run preview` (no `:desk`) still works but does not pin host/port; prefer `preview:desk` for desk verification.
+`npm run preview` (no `:desk`) still works but does not pin host/port or desk build stamp; prefer `preview:desk` for desk verification.
 
 ## Optional checks
 

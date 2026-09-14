@@ -650,55 +650,74 @@ export function AppFrame() {
               />
             ) : null}
             spreadChrome={
-              <>
-                <PlannerShellBar
-                  homeLabel={onboardingActive ? 'Exit setup to Arc' : 'Teaching Day home'}
-                  onHome={returnHome}
-                  trailing={arcTable.live && arcTable.surface === 'plan' ? (
-                    <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}>
-                      <strong>{arcTable.live.session.sectionName}</strong>
-                      <span>Return to ArcTable</span>
-                    </button>
+              deskEnabled ? (
+                <>
+                  <PlannerShellBar
+                    homeLabel="Teaching Day home"
+                    onHome={returnHome}
+                    capture={null}
+                    trailing={arcTable.live && arcTable.surface === 'plan' ? (
+                      <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}>
+                        <strong>{arcTable.live.session.sectionName}</strong>
+                        <span>Return to ArcTable</span>
+                      </button>
+                    ) : null}
+                  />
+                  {workspace.storageNotice ? (
+                    <p className="storage-notice" role="status">{workspace.storageNotice}</p>
                   ) : null}
-                  capture={globalCaptureEnabled && !deskEnabled ? (
-                    <>
-                      <GlobalCaptureAffordance
-                        disabled={workspaceBusy}
-                        units={workspace.unitWorkspace}
-                        defaultUnitId={workspace.planContext?.unitId ?? null}
-                        onSave={saveGlobalCapture}
-                      />
-                      {minimumPlanningSetupEstablished(setupCapabilities) && showCaptureCoachMark && !onboardingDraft.firstCapturePromptDismissed ? (
-                        <CaptureCoachMark onDismiss={dismissCaptureCoachMark} />
-                      ) : null}
-                    </>
+                </>
+              ) : (
+                <>
+                  <PlannerShellBar
+                    homeLabel={onboardingActive ? 'Exit setup to Arc' : 'Teaching Day home'}
+                    onHome={returnHome}
+                    trailing={arcTable.live && arcTable.surface === 'plan' ? (
+                      <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}>
+                        <strong>{arcTable.live.session.sectionName}</strong>
+                        <span>Return to ArcTable</span>
+                      </button>
+                    ) : null}
+                    capture={globalCaptureEnabled ? (
+                      <>
+                        <GlobalCaptureAffordance
+                          disabled={workspaceBusy}
+                          units={workspace.unitWorkspace}
+                          defaultUnitId={workspace.planContext?.unitId ?? null}
+                          onSave={saveGlobalCapture}
+                        />
+                        {minimumPlanningSetupEstablished(setupCapabilities) && showCaptureCoachMark && !onboardingDraft.firstCapturePromptDismissed ? (
+                          <CaptureCoachMark onDismiss={dismissCaptureCoachMark} />
+                        ) : null}
+                      </>
+                    ) : null}
+                  />
+                  <CalendarStageHeader
+                    activeView={workspace.activeView}
+                    mode={headerMode}
+                    calendar={workspace.calendar}
+                    anchorDate={workspace.anchorDate}
+                    previousTarget={workspace.previousTarget}
+                    nextTarget={workspace.nextTarget}
+                    todayTarget={workspace.todayTarget}
+                    recoveryCount={workspace.recoveryCount}
+                    undoAvailable={Boolean(workspace.shiftState?.undo)}
+                    stageTitle={headerStageTitle}
+                    editorialTitleManaged={workspaceMode.mode === 'calendar' && Boolean(workspace.calendar && workspace.anchorDate) && !onboardingActive}
+                    viewSelectionDisabled={workspaceBusy || onboardingActive}
+                    availabilityFor={workspace.viewAvailability}
+                    onSelectView={selectView}
+                    onMovePrevious={() => workspace.movePeriod('previous')}
+                    onMoveNext={() => workspace.movePeriod('next')}
+                    onToday={workspace.goToday}
+                    onOpenRecovery={() => openRecovery()}
+                    onUndoShift={workspace.undoLastShift}
+                  />
+                  {workspace.storageNotice ? (
+                    <p className="storage-notice" role="status">{workspace.storageNotice}</p>
                   ) : null}
-                />
-                <CalendarStageHeader
-                  activeView={workspace.activeView}
-                  mode={headerMode}
-                  calendar={workspace.calendar}
-                  anchorDate={workspace.anchorDate}
-                  previousTarget={workspace.previousTarget}
-                  nextTarget={workspace.nextTarget}
-                  todayTarget={workspace.todayTarget}
-                  recoveryCount={workspace.recoveryCount}
-                  undoAvailable={Boolean(workspace.shiftState?.undo)}
-                  stageTitle={headerStageTitle}
-                  editorialTitleManaged={workspaceMode.mode === 'calendar' && Boolean(workspace.calendar && workspace.anchorDate) && !onboardingActive}
-                  viewSelectionDisabled={workspaceBusy || onboardingActive}
-                  availabilityFor={workspace.viewAvailability}
-                  onSelectView={selectView}
-                  onMovePrevious={() => workspace.movePeriod('previous')}
-                  onMoveNext={() => workspace.movePeriod('next')}
-                  onToday={workspace.goToday}
-                  onOpenRecovery={() => openRecovery()}
-                  onUndoShift={workspace.undoLastShift}
-                />
-                {workspace.storageNotice ? (
-                  <p className="storage-notice" role="status">{workspace.storageNotice}</p>
-                ) : null}
-              </>
+                </>
+              )
             }
             settings={settingsContent}
             workspace={fridgeContent}

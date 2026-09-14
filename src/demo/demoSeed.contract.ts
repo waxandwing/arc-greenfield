@@ -32,4 +32,21 @@ const staleFakeStorage = {
 assert(maybeApplyDemoSeed({ search: '?demo=1', pathname: '/', hash: '' }, staleFakeStorage), '?demo=1 must reseed even when a calendar already exists.')
 assert(JSON.parse(staleFakeStorage.getItem('arc.onboarding.v1') ?? '{}').draft.dismissed === true, 'Demo reseed must dismiss onboarding for desk shell.')
 
+const resetStorage = new Map<string, string>([
+  ['arc.calendar.v1', '{"schemaVersion":1}'],
+  ['arc.planningWorkspace.v1', '{"schemaVersion":1}'],
+  ['arc.legacy.v1', 'keep-not'],
+])
+const resetFakeStorage = {
+  getItem: (key: string) => resetStorage.get(key) ?? null,
+  setItem: (key: string, value: string) => { resetStorage.set(key, value) },
+  removeItem: (key: string) => { resetStorage.delete(key) },
+  get length() { return resetStorage.size },
+  key: (index: number) => [...resetStorage.keys()][index] ?? null,
+  clear: () => resetStorage.clear(),
+} as Storage
+assert(maybeApplyDemoSeed({ search: '?demo=1&demoReset=1', pathname: '/', hash: '' }, resetFakeStorage), 'demoReset must seed gauntlet.')
+assert(resetFakeStorage.getItem('arc.legacy.v1') === null, 'demoReset must wipe prior arc.* storage.')
+assert(resetFakeStorage.getItem('arc.desk-preferences.v1'), 'demoReset must write desk preferences.')
+
 console.log('demo seed contract passed')

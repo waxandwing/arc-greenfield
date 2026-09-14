@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { applyArcBuildStamp } from './buildInfo'
 import { maybeApplyDemoSeed } from './demo/applyDemoSeed'
 import App from './App'
 import './styles/tokens.css'
@@ -32,6 +33,7 @@ import './styles/interaction-laws.css'
 import './styles/arc-desk.css'
 
 maybeApplyDemoSeed(window.location, window.localStorage, { envDemo: import.meta.env.VITE_ARC_DEMO === 'true' })
+applyArcBuildStamp()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>,
