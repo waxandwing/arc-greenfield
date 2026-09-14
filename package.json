@@ -19,6 +19,7 @@
     "test:plan-p5": "node tests/plan-p5.smoke.mjs",
     "test:plan-move-shift": "node tests/plan-move-shift.smoke.mjs",
     "test:plan-onboarding-import": "node tests/plan-onboarding-import.smoke.mjs",
+    "test:repair-pass-2": "node tests/repair-pass-2.smoke.mjs",
     "test:import-onboarding": "node tests/import-onboarding.smoke.mjs"
   },
   "dependencies": {
