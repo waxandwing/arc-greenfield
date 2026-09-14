@@ -56,8 +56,11 @@
   overflow: hidden;
   isolation: isolate;
   background-color: var(--field-elevated);
-  background-image: var(--plan-surface-paper);
-  background-size: 512px 512px;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--field-elevated) 94%, transparent), color-mix(in srgb, var(--field-elevated) 94%, transparent)),
+    var(--plan-surface-paper-texture),
+    var(--plan-surface-paper);
+  background-size: auto, 640px 640px, 512px 512px;
   background-repeat: repeat;
 }
 

@@ -117,7 +117,7 @@ export function PlanningDayContinuityView({
           onOpenRecoveryForSection={onOpenRecoveryForSection}
         />
       ) : surfaceSection && surfaceRail?.course ? (
-        <section className="day-continuity-course day-continuity-course--focus" aria-label={`${surfaceRail.course.courseTitle} today`}>
+        <section className="day-continuity-course day-continuity-course--focus" data-course-id={surfaceRail.course.courseId} aria-label={`${surfaceRail.course.courseTitle} today`}>
           {planningReturnPending && onReturnToPlanningPeriod ? <button type="button" className="plan-back-link" onClick={onReturnToPlanningPeriod}>Back to Planning period</button> : null}
           {classFocused && onRetreat && !planningReturnPending ? <button type="button" className="plan-back-link" onClick={onRetreat}>Back to Teaching Day</button> : null}
           <header className="day-continuity-course-heading">

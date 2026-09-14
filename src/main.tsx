@@ -23,6 +23,7 @@ import './styles/recoveryReview.css'
 import './styles/planMoveShift.css'
 import './styles/sourceCalendarReview.css'
 import './styles/schoolIdentitySearch.css'
+import './styles/visual-reconciliation.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode><App /></React.StrictMode>,

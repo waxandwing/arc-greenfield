@@ -40,7 +40,7 @@
 
 **Arc Table identity sheet (`sheet-02-brand-identity-arc-table.png`):** documents primary lockup, stacked lockup, app icon (green squircle), circular seal, five-color palette — aligns with **`AT-LOGO-*`** / **`arctable-logo-icon-*`** quadrant marks. Subtitle copy: “live classroom interface” (not “AN ARC CLASSROOM SPACE” on older `header-compact` PNG — **copy drift** to reconcile).
 
-Palette reference (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`. (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
+Palette reference (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
 
 **Approved visual target (Kelly, 2026-09-14):** dark green **planner frame** only; **light cream exterior** with **large, faded, desaturated** direct Arc pattern (not dark-green-dominant shell). Interior quiet; exterior branded. Stage 7.2.2 exterior reads too dark/heavy — future import should favor light-field pattern sources below, not `green.png` or full-strength breezeblock wash alone.
 

@@ -1,0 +1,197 @@
+/* Visual reconciliation pass — presentation only (Kelly 2026-09-14). */
+
+/* —— Calendar scale: shell breathes around working area —— */
+.arc-calendar-stage {
+  padding: var(--space-5) var(--page-gutter) var(--space-8);
+}
+
+.arc-calendar-spread {
+  min-height: min(720px, calc(100dvh - 168px));
+}
+
+.arc-calendar-spread > .b01-calendar-owner {
+  padding: var(--space-5) var(--space-6) var(--space-7);
+}
+
+.b01-calendar-owner > .calendar-canvas {
+  max-width: min(100%, 1180px);
+  margin-inline: auto;
+  min-height: min(360px, calc(100dvh - 380px)) !important;
+}
+
+.projection-section {
+  padding: var(--space-3) var(--space-2);
+}
+
+/* —— Top chrome: quieter always-visible layer —— */
+.arc-calendar-spread .calendar-stage-header .section-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.arc-calendar-spread .calendar-stage-header .view-title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.2vw, 38px);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.calendar-header-tools .calendar-context {
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.calendar-context-actions .text-button {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* —— Week: tighter rows, territory not cards —— */
+.planning-grid:not(.planning-grid--day) .planning-section-row {
+  min-height: 76px;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-course {
+  min-height: 84px;
+  border-left-width: 7px;
+  border-top-width: 0;
+  padding-top: var(--space-3);
+}
+
+.planning-grid:not(.planning-grid--day) .planning-unit-grid {
+  min-height: 34px;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-unit-span {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 0;
+  border-left: 5px solid var(--terracotta);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-lesson {
+  padding: 6px 8px;
+  border: 0;
+  border-left: 2px solid color-mix(in srgb, var(--dusty-blue) 55%, transparent);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.planning-grid:not(.planning-grid--day) .planning-lesson--fixed,
+.planning-grid:not(.planning-grid--day) .planning-lesson[data-fixed='true'] {
+  border-left-width: 3px;
+  border-left-style: solid;
+}
+
+/* —— Month: softer grid —— */
+.planning-month-day {
+  min-height: 96px;
+  padding: 8px;
+}
+
+.planning-month-day-heading {
+  font-size: 13px;
+}
+
+.planning-month-signal {
+  padding: 5px 6px;
+  border: 0;
+  background: transparent;
+}
+
+.planning-month-unit-stack {
+  border-bottom-color: color-mix(in srgb, var(--line-subtle) 80%, transparent);
+}
+
+/* —— Course motifs (one signature each) —— */
+.planning-course[data-course-id='course-apah'] .planning-course-heading h2::before,
+.day-continuity-course[data-course-id='course-apah'] .day-continuity-course-heading h2::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 10px;
+  vertical-align: 0.12em;
+  background: var(--course-apah-accent);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.planning-course[data-course-id='course-2d'] .planning-course-heading h2::before,
+.day-continuity-course[data-course-id='course-2d'] .day-continuity-course-heading h2::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 10px;
+  vertical-align: 0.1em;
+  border: 2px solid var(--course-2d-accent);
+  border-radius: 50% 50% 0 0;
+  border-bottom: 0;
+  background: transparent;
+}
+
+.planning-course[data-course-id='course-3d'] .planning-course-heading h2::before,
+.day-continuity-course[data-course-id='course-3d'] .day-continuity-course-heading h2::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 10px;
+  vertical-align: 0.15em;
+  border-radius: 50%;
+  background: var(--course-3d-accent);
+}
+
+/* —— Day → Class → Lesson depth —— */
+.day-continuity[data-plan-focus='day'] {
+  gap: var(--space-6);
+}
+
+.day-continuity[data-plan-focus='class'] .day-continuity-course:not(.day-continuity-course--focus) {
+  opacity: 0.42;
+}
+
+.day-continuity[data-plan-focus='lesson'] .day-continuity-course:not(.day-continuity-course--focus),
+.day-continuity[data-plan-focus='lesson'] .day-continuity-section:not(:has(.lesson-focus)) {
+  opacity: 0.38;
+}
+
+.plan-state-header[data-plan-focus='class'] .plan-state-primary,
+.plan-state-header[data-plan-focus='lesson'] .plan-state-primary {
+  font-family: var(--font-display);
+}
+
+.plan-state-header[data-plan-focus='lesson'] .plan-state-primary {
+  font-size: clamp(30px, 3.5vw, 40px);
+}
+
+@media (max-width: 800px) {
+  .arc-calendar-stage {
+    padding: var(--space-3) var(--mobile-gutter) var(--space-6);
+  }
+
+  .arc-calendar-spread > .b01-calendar-owner {
+    padding: var(--space-4) var(--mobile-gutter) var(--space-5);
+  }
+
+  .b01-calendar-owner > .calendar-canvas {
+    min-height: min(320px, calc(100dvh - 340px)) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .b01-calendar-owner > .calendar-canvas {
+    min-height: min(280px, calc(100dvh - 360px)) !important;
+  }
+}
