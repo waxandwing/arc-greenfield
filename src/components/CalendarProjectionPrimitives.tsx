@@ -68,7 +68,13 @@ export function CalendarDayCell({ day, compact = false, showWeekday = false }: {
     compact ? 'calendar-day-cell--compact' : '',
   ].filter(Boolean).join(' ')
 
-  const status = day.kind === 'instructional' ? 'Instructional day' : day.kind === 'unknown' ? 'Unknown calendar status' : day.label || humanizeKind(day.kind)
+  const status = day.kind === 'instructional'
+    ? 'Instructional day'
+    : day.kind === 'early-release'
+      ? (day.schoolEndTime ? `Early release · ends ${day.schoolEndTime}` : (day.label || 'Early release'))
+      : day.kind === 'unknown'
+        ? 'Unknown calendar status'
+        : day.label || humanizeKind(day.kind)
   const accessibleLabel = `${formatLongDate(day.date)}. ${status}.`
 
   return (
@@ -92,6 +98,7 @@ function humanizeKind(kind: ProjectedDay['kind']): string {
     case 'holiday': return 'Holiday'
     case 'break': return 'Break'
     case 'instructional': return 'Instructional day'
+    case 'early-release': return 'Early release'
     case 'unknown': return 'Unknown calendar status'
   }
 }

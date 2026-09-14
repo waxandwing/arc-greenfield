@@ -105,7 +105,9 @@ function MonthDayCell({
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
 }) {
   const nonTeaching = day.kind === 'no-school' || day.kind === 'holiday' || day.kind === 'break' || day.kind === 'teacher-workday'
-  const dayStatus = day.kind === 'instructional' || day.kind === 'unknown'
+  const dayStatus = day.kind === 'early-release'
+    ? (day.schoolEndTime ? `Early release · ends ${day.schoolEndTime}` : (day.label || 'Early release'))
+    : day.kind === 'instructional' || day.kind === 'unknown'
     ? null
     : day.label || humanizeKind(day.kind)
   const ariaStatus = nonTeaching ? (day.label || humanizeKind(day.kind)) : dayStatus
@@ -194,6 +196,7 @@ function humanizeKind(kind: ProjectedDay['kind']): string {
   switch (kind) {
     case 'no-school': return 'No school'
     case 'teacher-workday': return 'Teacher workday'
+    case 'early-release': return 'Early release'
     case 'holiday': return 'Holiday'
     case 'break': return 'Break'
     case 'instructional': return 'Instructional day'

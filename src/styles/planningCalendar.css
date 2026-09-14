@@ -184,6 +184,17 @@
   background:linear-gradient(180deg,var(--accent-blue-soft),rgba(255,255,255,.18));
 }
 
+.planning-date-heading--early-release,
+.planning-day-slot--early-release{
+  background:linear-gradient(180deg,rgba(201,162,74,.14),rgba(255,255,255,.18));
+  border-bottom:2px solid rgba(201,162,74,.35);
+}
+
+.planning-date-heading--early-release .planning-date-kind{
+  color:#7b5a22;
+  font-weight:700;
+}
+
 .planning-date-heading--off,
 .planning-day-slot--off{
   background-color:var(--accent-blue-soft);

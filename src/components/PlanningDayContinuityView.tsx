@@ -1,5 +1,6 @@
 import type { ISODate } from '../calendar/types'
 import type { ProjectedDay } from '../calendar/projections'
+import { isPlannableDayKind } from '../calendar/schoolCalendar'
 import type { PlanFocus } from '../calendar/navigationContext'
 import type { DayContinuityLesson, DayContinuityProjection, DayContinuitySection } from '../planning/dayContinuityProjection'
 import type { CaptureWorkspace } from '../planning/captureWorkspace'
@@ -67,7 +68,16 @@ export function PlanningDayContinuityView({
 
   return (
     <div className="day-continuity" data-plan-focus={planFocus} data-plan-date={day.date} data-plan-section={selectedRail?.sectionId ?? ''} data-plan-block={selectedRail?.id ?? ''} data-plan-lesson={selectedLessonId ?? ''}>
-      {day.kind !== 'instructional' ? (
+      {day.kind === 'early-release' ? (
+        <p className="day-continuity-day-note day-continuity-day-note--early-release" role="status">
+          <strong>{day.label?.trim() || 'Early release'}</strong>
+          <span>
+            {day.schoolEndTime
+              ? `School ends at ${formatClockTime(day.schoolEndTime)}. Periods after that time may not meet.`
+              : 'Add a school end time in calendar exceptions if your bell schedule shortens today.'}
+          </span>
+        </p>
+      ) : !isPlannableDayKind(day.kind) ? (
         <p className="day-continuity-day-note">
           <strong>{day.label || humanizeKind(day.kind)}</strong>
           <span>Day view stays available so notes and unfinished teaching context do not disappear.</span>
@@ -76,15 +86,20 @@ export function PlanningDayContinuityView({
 
       {periodRail.length > 0 ? (
         <nav className="day-period-rail" aria-label="Teaching day periods">
-          {periodRail.map((item) => item.course && item.sectionId ? (
-            <button type="button" className={`day-period-button${item.id === selectedRail?.id && classFocused ? ' is-selected' : ''}`} aria-current={item.id === selectedRail?.id && classFocused ? 'true' : undefined} onClick={() => onSelectBlock?.(item)} key={item.id}>
-              <span>{item.label}{blockTimes(item.block)}</span><strong>{item.courseTitle}</strong>
+          {periodRail.map((item) => {
+            const afterRelease = periodAfterSchoolEnd(item.block, day.schoolEndTime)
+            const periodClass = item.course && item.sectionId
+              ? `day-period-button${item.id === selectedRail?.id && classFocused ? ' is-selected' : ''}${afterRelease ? ' is-after-release' : ''}`
+              : `day-period-gap${item.id === selectedRail?.id && classFocused ? ' is-selected' : ''}${afterRelease ? ' is-after-release' : ''}`
+            return item.course && item.sectionId ? (
+            <button type="button" className={periodClass} aria-current={item.id === selectedRail?.id && classFocused ? 'true' : undefined} onClick={() => onSelectBlock?.(item)} key={item.id}>
+              <span>{item.label}{blockTimes(item.block)}{afterRelease ? ' · after release' : ''}</span><strong>{item.courseTitle}</strong>
             </button>
           ) : (
-            <button type="button" className={`day-period-gap${item.id === selectedRail?.id && classFocused ? ' is-selected' : ''}`} aria-current={item.id === selectedRail?.id && classFocused ? 'true' : undefined} aria-label={`${item.label}, ${item.type === 'planning' ? 'planning time' : 'non-teaching time'}`} onClick={() => onSelectBlock?.(item)} key={item.id}>
-              <span>{item.label}{blockTimes(item.block)}</span><strong>{item.type === 'planning' ? 'Planning time' : 'Lunch / other'}</strong>
+            <button type="button" className={periodClass} aria-current={item.id === selectedRail?.id && classFocused ? 'true' : undefined} aria-label={`${item.label}, ${item.type === 'planning' ? 'planning time' : 'non-teaching time'}${afterRelease ? ', after early release' : ''}`} onClick={() => onSelectBlock?.(item)} key={item.id}>
+              <span>{item.label}{blockTimes(item.block)}{afterRelease ? ' · after release' : ''}</span><strong>{item.type === 'planning' ? 'Planning time' : 'Lunch / other'}</strong>
             </button>
-          ))}
+          )})}
         </nav>
       ) : null}
 
@@ -335,6 +350,19 @@ function blockTimes(block: TeachingDayBlock | null): string {
   return block?.startTime && block.endTime ? ` · ${block.startTime}–${block.endTime}` : ''
 }
 
+function periodAfterSchoolEnd(block: TeachingDayBlock | null, schoolEndTime: string | undefined): boolean {
+  if (!schoolEndTime || !block?.startTime) return false
+  return block.startTime >= schoolEndTime
+}
+
+function formatClockTime(value: string): string {
+  const [hours, minutes] = value.split(':').map(Number)
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return value
+  const suffix = hours >= 12 ? 'PM' : 'AM'
+  const hour12 = hours % 12 || 12
+  return `${hour12}:${String(minutes).padStart(2, '0')} ${suffix}`
+}
+
 function ContinuityLesson({ lesson, sectionId, onStartClass, onSelectLesson, onBeginPlanLessonMove, onOpenRecoveryForSection, carryover = false }: { lesson: DayContinuityLesson; sectionId: string; onStartClass?: (sectionId: string, lessonId: string) => void; onSelectLesson?: (lesson: DayContinuityLesson) => void; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onOpenRecoveryForSection?: (sectionId: string) => void; carryover?: boolean }) {
   const status = humanizeStatus(lesson.deliveryStatus)
   const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
@@ -396,6 +424,7 @@ function humanizeKind(kind: ProjectedDay['kind']): string {
   if (kind === 'holiday') return 'Holiday'
   if (kind === 'no-school') return 'No school'
   if (kind === 'teacher-workday') return 'Teacher workday'
+  if (kind === 'early-release') return 'Early release'
   if (kind === 'break') return 'Break'
   if (kind === 'unknown') return 'Unconfirmed'
   return 'School day'

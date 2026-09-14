@@ -1,4 +1,4 @@
-import { getCalendarDay } from '../calendar/schoolCalendar'
+import { getCalendarDay, isPlannableDayKind } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Unit } from './units'
 import { normalizeImportProvenance, validateImportProvenance, type ImportProvenance } from './importProvenance'
@@ -131,7 +131,7 @@ export function validateLessonAgainstUnit(
     }
 
     const day = getCalendarDay(calendar, lesson.plannedDate)
-    if (!day || day.kind !== 'instructional' || day.confidence !== 'confirmed') {
+    if (!day || !isPlannableDayKind(day.kind) || day.confidence !== 'confirmed') {
       errors.push('Lesson planned date must be a confirmed instructional day.')
     }
   }

@@ -44,6 +44,20 @@
   color: var(--ink);
 }
 
+.day-continuity-day-note--early-release {
+  border-block-color: rgba(201, 162, 74, 0.35);
+  background: linear-gradient(180deg, rgba(201, 162, 74, 0.08), transparent 72%);
+}
+
+.day-period-button.is-after-release,
+.day-period-gap.is-after-release {
+  opacity: 0.45;
+}
+
+.day-period-button.is-after-release:not(.is-selected) {
+  border-style: dashed;
+}
+
 .day-continuity-course {
   display: grid;
   gap: var(--space-4);

@@ -1,5 +1,5 @@
 import { assessCalendarReadiness } from './readiness'
-import { getCalendarDay } from './schoolCalendar'
+import { getCalendarDay, isInstructionalDay } from './schoolCalendar'
 import { hydrateSchoolCalendar, validateHydrationInput, type CalendarHydrationInput } from './hydration'
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -73,6 +73,26 @@ const duplicateBoundaryIdErrors = validateHydrationInput({
   ],
 })
 assert(duplicateBoundaryIdErrors.some((error) => error.includes('id semester is duplicated')), 'Duplicate term-boundary ids must be rejected.')
+
+const earlyReleaseCalendar = hydrateSchoolCalendar({
+  ...input,
+  exceptions: [{ date: '2026-09-02', kind: 'early-release', label: 'District early release', schoolEndTime: '13:30' }],
+})
+assert(getCalendarDay(earlyReleaseCalendar, '2026-09-02').kind === 'early-release', 'Early release exception must override weekday pattern.')
+assert(getCalendarDay(earlyReleaseCalendar, '2026-09-02').schoolEndTime === '13:30', 'Early release end time must be preserved.')
+assert(isInstructionalDay(earlyReleaseCalendar, '2026-09-02'), 'Early release days must remain plannable instructional days.')
+
+const earlyReleaseNeedsDetail = validateHydrationInput({
+  ...input,
+  exceptions: [{ date: '2026-09-02', kind: 'early-release' }],
+})
+assert(earlyReleaseNeedsDetail.some((error) => error.includes('school end time or a label')), 'Early release without time or label must be rejected.')
+
+const endTimeOnHoliday = validateHydrationInput({
+  ...input,
+  exceptions: [{ date: '2026-09-02', kind: 'holiday', schoolEndTime: '13:00' }],
+})
+assert(endTimeOnHoliday.some((error) => error.includes('only allowed on early-release')), 'School end time on non-early-release days must be rejected.')
 
 const malformedBoundaryErrors = validateHydrationInput({
   ...input,

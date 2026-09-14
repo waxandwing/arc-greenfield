@@ -4,7 +4,7 @@ export type CalendarSource = 'manual' | 'import' | 'district-source'
 
 export type Confidence = 'confirmed' | 'mixed' | 'inferred'
 
-export type DayKind = 'instructional' | 'no-school' | 'teacher-workday' | 'holiday' | 'break' | 'unknown'
+export type DayKind = 'instructional' | 'early-release' | 'no-school' | 'teacher-workday' | 'holiday' | 'break' | 'unknown'
 
 export type CalendarProvenance = {
   id: string
@@ -18,6 +18,8 @@ export type CalendarDay = {
   date: ISODate
   kind: DayKind
   label?: string
+  /** When kind is early-release: official or declared school end time (24h HH:MM). */
+  schoolEndTime?: string
   source?: CalendarSource
   confidence?: Confidence
 }

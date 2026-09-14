@@ -114,6 +114,14 @@
   background:var(--accent-blue-soft);
 }
 
+.planning-month-day--early-release{
+  background:rgba(201,162,74,.14);
+}
+
+.planning-month-day--early-release .planning-month-day-status{
+  color:#7b5a22;
+}
+
 .planning-month-day--no-school,
 .planning-month-day--holiday,
 .planning-month-day--break,

@@ -45,6 +45,13 @@ export function validateHydrationInput(input: CalendarHydrationInput): string[] 
     }
     if (exceptionDates.has(exception.date)) errors.push(`Calendar exception ${exception.date} is duplicated.`)
     exceptionDates.add(exception.date)
+    if (exception.schoolEndTime !== undefined) {
+      if (exception.kind !== 'early-release') errors.push(`School end time is only allowed on early-release days (${exception.date}).`)
+      else if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(exception.schoolEndTime)) errors.push(`Early release end time for ${exception.date} must use HH:MM (24-hour).`)
+    }
+    if (exception.kind === 'early-release' && !exception.schoolEndTime && !exception.label?.trim()) {
+      errors.push(`Early release on ${exception.date} needs a school end time or a label.`)
+    }
   }
 
   if (validSchoolBounds) {

@@ -1,4 +1,4 @@
-import { getCalendarDay } from '../calendar/schoolCalendar'
+import { getCalendarDay, isPlannableDayKind } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Section } from './courses'
 import type { Lesson } from './lessons'
@@ -41,7 +41,7 @@ export function validateSectionLessonOverride(input: {
   }
 
   const day = getCalendarDay(calendar, override.plannedDate)
-  if (day.kind !== 'instructional' || day.confidence !== 'confirmed') {
+  if (!isPlannableDayKind(day.kind) || day.confidence !== 'confirmed') {
     errors.push('Section Lesson date override must use a confirmed instructional day.')
   }
 

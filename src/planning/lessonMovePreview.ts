@@ -1,5 +1,5 @@
 import type { ISODate } from '../calendar/types'
-import { getCalendarDay } from '../calendar/schoolCalendar'
+import { getCalendarDay, isPlannableDayKind } from '../calendar/schoolCalendar'
 import type { Lesson } from './lessons'
 import { moveLesson, type LessonActionContext } from './objectActions'
 import type { PlanningWorkspace } from './workspace'
@@ -23,7 +23,7 @@ export function createLessonMovePreview(
   if (!lesson) throw new Error('Cannot preview Lesson move. That Lesson no longer exists.')
 
   const day = getCalendarDay(input.calendar, input.plannedDate)
-  const dayKind = !day || day.kind !== 'instructional' || day.confidence !== 'confirmed' ? 'blocked-day' : 'instructional'
+  const dayKind = !day || !isPlannableDayKind(day.kind) || day.confidence !== 'confirmed' ? 'blocked-day' : 'instructional'
 
   const sectionOverridesOnLesson = input.overrides
     .filter((override) => override.lessonId === input.lessonId)

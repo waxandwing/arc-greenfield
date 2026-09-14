@@ -60,7 +60,9 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .exceptions-heading p,.empty-exceptions,.setup-actions p{margin:0;color:var(--soft-charcoal)}
 .exception-list{display:grid;gap:var(--space-2)}
 .exception-row{display:grid;grid-template-columns:minmax(150px,.9fr) minmax(170px,1fr) minmax(180px,1.4fr) auto;gap:var(--space-2);align-items:end}
-.exception-label-field{min-width:0}
+.exception-row--early-release{grid-template-columns:minmax(150px,.85fr) minmax(160px,.95fr) minmax(140px,1fr) minmax(120px,.75fr) auto}
+.exception-label-field,.exception-time-field{min-width:0}
+.exception-time-field input{width:100%}
 .quiet-button,.text-button,.primary-button{min-height:44px;cursor:pointer;font-weight:700}
 .quiet-button{border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:transparent;padding:8px 12px}
 .text-button{border:0;background:transparent;padding:8px;color:var(--terracotta-text);text-underline-offset:3px}
@@ -83,6 +85,7 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .calendar-day-label,.calendar-day-status{display:block;margin-top:6px;font-size:12px;line-height:1.25;color:var(--soft-charcoal)}
 .calendar-day-cell--weekend{background:rgba(74,73,69,.05)}
 .calendar-day-cell--outside-year{opacity:.42}
+.calendar-day-cell--early-release{background:rgba(201,162,74,.12)}
 .calendar-day-cell--no-school,.calendar-day-cell--holiday,.calendar-day-cell--break,.calendar-day-cell--teacher-workday{background:rgba(124,156,173,.08)}
 .calendar-day-cell--unknown{background:repeating-linear-gradient(135deg,rgba(44,46,46,.025) 0,rgba(44,46,46,.025) 6px,transparent 6px,transparent 12px)}
 .projection-empty-state{margin:0;padding:var(--space-4);color:var(--soft-charcoal)}

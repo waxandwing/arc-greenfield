@@ -31,6 +31,7 @@ const DAY_KINDS: Array<{ value: Exclude<DayKind, 'unknown'>; label: string }> = 
   { value: 'teacher-workday', label: 'Teacher workday' },
   { value: 'holiday', label: 'Holiday' },
   { value: 'break', label: 'Break' },
+  { value: 'early-release', label: 'Early release' },
   { value: 'instructional', label: 'Instructional day' },
 ]
 
@@ -39,11 +40,12 @@ type DraftException = {
   date: string
   kind: Exclude<DayKind, 'unknown'>
   label: string
+  schoolEndTime: string
   source?: CalendarSource
   confidence?: Confidence
 }
 
-type ExceptionPatch = Pick<Partial<DraftException>, 'date' | 'kind' | 'label'>
+type ExceptionPatch = Pick<Partial<DraftException>, 'date' | 'kind' | 'label' | 'schoolEndTime'>
 
 type Props = {
   initialValue?: CalendarHydrationInput | null
@@ -63,6 +65,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
     date: day.date,
     kind: day.kind === 'unknown' ? 'no-school' : day.kind,
     label: day.label ?? '',
+    schoolEndTime: day.schoolEndTime ?? '',
     source: day.source,
     confidence: day.confidence,
   })))
@@ -83,6 +86,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
         date: item.date as ISODate,
         kind: item.kind,
         label: item.label.trim() || undefined,
+        schoolEndTime: item.kind === 'early-release' && item.schoolEndTime.trim() ? item.schoolEndTime.trim() : undefined,
         source: item.source ?? 'manual',
         confidence: item.confidence ?? 'confirmed',
       })),
@@ -118,6 +122,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
       date: '',
       kind: 'no-school',
       label: '',
+      schoolEndTime: '',
       source: 'manual',
       confidence: 'confirmed',
     }])
@@ -127,6 +132,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
     setExceptions((current) => current.map((item) => item.id === id ? {
       ...item,
       ...patch,
+      schoolEndTime: patch.kind && patch.kind !== 'early-release' ? '' : patch.schoolEndTime ?? item.schoolEndTime,
       source: 'manual',
       confidence: 'confirmed',
     } : item))
@@ -239,7 +245,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
           <div className="exceptions-heading">
             <div>
               <h3>Exceptions</h3>
-              <p>Workdays, breaks, holidays, unusual Saturdays, or anything else that changes the normal week.</p>
+              <p>Workdays, breaks, holidays, early release days, unusual Saturdays, or anything else that changes the normal week.</p>
             </div>
             <button type="button" className="quiet-button" onClick={addException}>Add date</button>
           </div>
@@ -252,7 +258,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
                 const position = index + 1
                 const context = item.date ? ` for ${item.date}` : ''
                 return (
-                  <div className="exception-row" key={item.id}>
+                  <div className={`exception-row${item.kind === 'early-release' ? ' exception-row--early-release' : ''}`} key={item.id}>
                     <label>
                       <span className="sr-only">Exception {position} date</span>
                       <input type="date" value={item.date} onChange={(event) => updateException(item.id, { date: event.target.value })} />
@@ -265,8 +271,14 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
                     </label>
                     <label className="exception-label-field">
                       <span className="sr-only">Exception {position} optional label</span>
-                      <input value={item.label} onChange={(event) => updateException(item.id, { label: event.target.value })} placeholder="Optional label" />
+                      <input value={item.label} onChange={(event) => updateException(item.id, { label: event.target.value })} placeholder={item.kind === 'early-release' ? 'Optional note' : 'Optional label'} />
                     </label>
+                    {item.kind === 'early-release' ? (
+                      <label className="exception-time-field">
+                        <span className="sr-only">Exception {position} school end time</span>
+                        <input type="time" value={item.schoolEndTime} onChange={(event) => updateException(item.id, { schoolEndTime: event.target.value })} aria-label={`School end time for early release${context}`} />
+                      </label>
+                    ) : null}
                     <button
                       type="button"
                       className="text-button"

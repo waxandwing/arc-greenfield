@@ -151,10 +151,12 @@ function parseCalendarDays(value: unknown): CalendarDay[] | null {
     if (item.label !== undefined && typeof item.label !== 'string') return null
     if (item.source !== undefined && !isCalendarSource(item.source)) return null
     if (item.confidence !== undefined && !isConfidence(item.confidence)) return null
+    if (item.schoolEndTime !== undefined && typeof item.schoolEndTime !== 'string') return null
     days.push({
       date: item.date as ISODate,
       kind: item.kind,
       label: item.label as string | undefined,
+      schoolEndTime: item.schoolEndTime as string | undefined,
       source: item.source as CalendarSource | undefined,
       confidence: item.confidence as Confidence | undefined,
     })
@@ -223,5 +225,5 @@ function isConfidence(value: unknown): value is Confidence {
 }
 
 function isDayKind(value: unknown): value is DayKind {
-  return value === 'instructional' || value === 'no-school' || value === 'teacher-workday' || value === 'holiday' || value === 'break' || value === 'unknown'
+  return value === 'instructional' || value === 'early-release' || value === 'no-school' || value === 'teacher-workday' || value === 'holiday' || value === 'break' || value === 'unknown'
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { ISODate, PlanNavigationContext } from '../calendar'
+import { isPlannableDayKind } from '../calendar/schoolCalendar'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
 import { formatLongDate, formatShortDate, formatWeekday } from './dateLabels'
 
@@ -42,10 +43,12 @@ function PlanningDateHeader({ days, single, focusDate, onSelectDate }: { days: P
     <div className="planning-date-header" style={gridTemplate(days, focusDate)}>
       <span className="planning-row-label planning-row-label--header" aria-hidden="true">Class</span>
       {days.map((day) => (
-        <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}${day.kind !== 'instructional' ? ' planning-date-heading--off' : ''}${day.date === focusDate ? ' planning-date-heading--focus' : ''}`} aria-current={day.date === focusDate ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}${day.kind !== 'instructional' ? `. ${day.label || humanizeKind(day.kind)}` : ''}`} onClick={() => onSelectDate?.(day.date)}>
+        <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}${!isPlannableDayKind(day.kind) ? ' planning-date-heading--off' : ''}${day.kind === 'early-release' ? ' planning-date-heading--early-release' : ''}${day.date === focusDate ? ' planning-date-heading--focus' : ''}`} aria-current={day.date === focusDate ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}${!isPlannableDayKind(day.kind) ? `. ${day.label || humanizeKind(day.kind)}` : day.kind === 'early-release' ? `. Early release${day.schoolEndTime ? `, school ends ${day.schoolEndTime}` : ''}` : ''}`} onClick={() => onSelectDate?.(day.date)}>
           {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
           <span>{formatShortDate(day.date)}</span>
-          {day.kind !== 'instructional' && day.kind !== 'unknown' && day.kind !== 'no-school' ? (
+          {day.kind === 'early-release' ? (
+            <span className="planning-date-kind">{day.schoolEndTime ? `Ends ${day.schoolEndTime}` : (day.label || 'Early release')}</span>
+          ) : day.kind !== 'instructional' && day.kind !== 'unknown' && day.kind !== 'no-school' ? (
             <span className="planning-date-kind">{day.label || humanizeKind(day.kind)}</span>
           ) : null}
         </button>
@@ -102,7 +105,7 @@ function PlanningCourse({
             </div>
             {row.days.map((slot, index) => {
               const dayKind = days[index]?.kind ?? 'unknown'
-              const offDay = dayKind !== 'instructional'
+              const offDay = !isPlannableDayKind(dayKind)
               return (
               <div
                 key={slot.date}
@@ -223,6 +226,7 @@ function humanizeKind(kind: ProjectedDay['kind']): string {
   switch (kind) {
     case 'no-school': return 'No school'
     case 'teacher-workday': return 'Teacher workday'
+    case 'early-release': return 'Early release'
     case 'holiday': return 'Holiday'
     case 'break': return 'Break'
     case 'instructional': return 'Instructional day'
