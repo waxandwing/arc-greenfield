@@ -137,7 +137,12 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
             </p>
           ) : null}
           {monthPlanning ? (
-            <><PlanningNotes notes={planningContext?.planning.notes ?? []} dates={projection.weeks.flatMap((week) => week.days.map((day) => day.date))} focusDate={anchorDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningMonthView month={projection} planning={monthPlanning} focusDate={planContext?.anchorDate ?? anchorDate} planContext={planContext} onSelectDate={(date) => onSelectDate?.(date, 'Day')} onBeginPlanLessonMove={onBeginPlanLessonMove} /></div></>
+            <>
+              <div className="planning-scroll-frame planning-scroll-frame--month">
+                <PlanningMonthView month={projection} planning={monthPlanning} focusDate={planContext?.anchorDate ?? anchorDate} planContext={planContext} onSelectDate={(date) => onSelectDate?.(date, 'Day')} onBeginPlanLessonMove={onBeginPlanLessonMove} />
+              </div>
+              <PlanningNotes tone="secondary" notes={planningContext?.planning.notes ?? []} dates={projection.weeks.flatMap((week) => week.days.map((day) => day.date))} focusDate={anchorDate} onAdd={onAddNote} onDelete={onDeleteNote} />
+            </>
           ) : (
             <CalendarOnlyMonth projection={projection} label={formatMonth(anchorDate)} />
           )}

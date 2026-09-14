@@ -264,6 +264,10 @@
 }
 
 .planning-notes{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;margin:14px 0 22px;padding:12px 0;border-block:1px solid var(--line-subtle)}
+.planning-notes--secondary{margin:12px 0 0;padding:10px 0 0;border-block:0;border-top:1px solid var(--line-subtle);gap:16px}
+.planning-notes--secondary .planning-notes-list>strong{font-size:10px;letter-spacing:.12em;color:var(--soft-charcoal)}
+.planning-notes--secondary .planning-note-add{margin-top:0}
+.planning-scroll-frame--month{margin-bottom:0}
 .planning-notes-list{display:flex;align-items:center;flex-wrap:wrap;gap:10px;min-width:0}
 .planning-notes-list>strong{font:800 11px/1 var(--font-ui);letter-spacing:.1em;text-transform:uppercase}
 .planning-notes-list>span{color:var(--soft-charcoal);font-size:13px}

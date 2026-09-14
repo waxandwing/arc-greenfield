@@ -1,12 +1,28 @@
 .planning-month{
   display:grid;
   min-width:840px;
-  border-top:1px solid var(--line-subtle);
-  border-left:1px solid var(--line-subtle);
+  border:1px solid var(--line-subtle);
+  border-radius:2px;
+  background:var(--paper);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45);
+}
+
+.planning-month-horizon{
+  padding:10px 12px 8px;
+  border-bottom:1px solid var(--line-subtle);
+  background:var(--field, #f3ebdd);
+}
+
+.planning-month-horizon-lede{
+  margin:0;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.02em;
+  color:var(--soft-charcoal);
 }
 
 .planning-month-weekdays,
-.planning-month-days,
+.planning-month-week-grid,
 .planning-month-unit-lane{
   display:grid;
   grid-template-columns:repeat(7,minmax(0,1fr));
@@ -17,66 +33,112 @@
   top:0;
   z-index:3;
   background:var(--paper);
+  border-bottom:1px solid var(--line-subtle);
 }
 
 .planning-month-weekdays span{
   padding:8px 10px;
   border-right:1px solid var(--line-subtle);
-  border-bottom:1px solid var(--line-subtle);
-  font-size:14px;
+  font-size:12px;
   font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
   color:var(--soft-charcoal);
+}
+
+.planning-month-weekdays span:last-child{
+  border-right:0;
 }
 
 .planning-month-week{
   display:grid;
 }
 
-.planning-month-unit-stack{
-  display:grid;
-  gap:3px;
-  padding:4px 0;
-  border-right:1px solid var(--line-subtle);
+.planning-month-week-grid{
   border-bottom:1px solid var(--line-subtle);
-  background:rgba(198,167,125,.055);
+}
+
+.planning-month-unit-stack{
+  grid-column:1 / -1;
+  display:grid;
+  gap:2px;
+  padding:5px 0 4px;
+  border-bottom:1px dashed var(--line-subtle);
+  background:rgba(198,167,125,.04);
 }
 
 .planning-month-unit-lane{
-  min-height:36px;
+  min-height:28px;
 }
 
 .planning-month-unit-band{
   display:flex;
-  align-items:baseline;
-  gap:8px;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:1px;
   min-width:0;
-  margin:2px 4px;
-  padding:6px 8px;
+  margin:0 3px;
+  padding:5px 8px 4px;
   overflow:hidden;
-  border-left:4px solid var(--terracotta);
-  background:rgba(201,104,69,.12);
+  border-left:3px solid var(--terracotta);
+  background:rgba(201,104,69,.1);
   color:var(--ink);
-  white-space:nowrap;
+}
+
+.planning-month-unit-band--muted{
+  opacity:.72;
+  border-left-color:var(--line-subtle);
+  background:rgba(74,73,69,.06);
 }
 
 .planning-month-unit-course{
   overflow:hidden;
+  max-width:100%;
   text-overflow:ellipsis;
-  font-size:14px;
-  font-weight:600;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
   color:var(--soft-charcoal);
+  white-space:nowrap;
 }
 
 .planning-month-unit-title{
   overflow:hidden;
+  max-width:100%;
   text-overflow:ellipsis;
-  font-size:16px;
+  font-size:14px;
   font-weight:700;
+  line-height:1.2;
+  white-space:nowrap;
+}
+
+.planning-month-day{
+  display:flex;
+  flex-direction:column;
+  min-height:92px;
+  min-width:0;
+  padding:8px 10px 10px;
+  border-right:1px solid var(--line-subtle);
+  background:var(--paper);
 }
 
 .planning-month-day--focus{
-  outline:2px solid var(--ink, #1c1b18);
-  outline-offset:-2px;
+  position:relative;
+  z-index:1;
+  background:rgba(255,245,179,.55);
+  box-shadow:inset 0 0 0 2px var(--ink, #1c1b18);
+}
+
+.planning-month-day--focus .planning-month-date{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:1.75rem;
+  min-height:1.75rem;
+  border-radius:999px;
+  background:var(--ink, #1c1b18);
+  color:var(--paper, #f7f2e8);
 }
 
 .planning-month-day--weekend,
@@ -84,23 +146,24 @@
 .planning-month-day--holiday,
 .planning-month-day--break,
 .planning-month-day--teacher-workday{
-  background:rgba(74,73,69,.045);
+  background:rgba(74,73,69,.04);
 }
 
 .planning-month-day--unknown{
-  background:repeating-linear-gradient(135deg,rgba(74,73,69,.04),rgba(74,73,69,.04) 6px,transparent 6px,transparent 12px);
+  background:var(--paper);
 }
 
 .planning-month-day--outside-month{
-  background:rgba(74,73,69,.025);
+  background:rgba(74,73,69,.02);
 }
 
 .planning-month-day--outside-month .planning-month-date{
   color:var(--soft-charcoal);
+  font-weight:600;
 }
 
 .planning-month-day--outside-year{
-  background:rgba(74,73,69,.035);
+  background:rgba(74,73,69,.03);
 }
 
 .planning-month-day-heading{
@@ -123,12 +186,15 @@
 }
 
 .planning-month-day-status{
-  max-width:72%;
-  overflow-wrap:anywhere;
+  max-width:68%;
+  overflow:hidden;
+  text-overflow:ellipsis;
   text-align:right;
-  font-size:14px;
-  font-weight:600;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.02em;
   color:var(--soft-charcoal);
+  white-space:nowrap;
 }
 
 .planning-month-signals{
@@ -141,11 +207,11 @@
   display:grid;
   gap:3px;
   min-width:0;
-  padding:7px 8px;
+  padding:6px 7px;
   border:1px solid var(--line-subtle);
   border-left:3px solid var(--dusty-blue);
-  border-radius:4px;
-  background:rgba(243,235,221,.84);
+  border-radius:2px;
+  background:rgba(243,235,221,.72);
   color:var(--ink);
 }
 
@@ -163,7 +229,7 @@
 .planning-month-signal-title{
   min-width:0;
   overflow-wrap:anywhere;
-  font-size:16px;
+  font-size:14px;
   font-weight:700;
   line-height:1.25;
 }
@@ -174,7 +240,7 @@
 .planning-month-shifted,
 .planning-month-status-summary{
   overflow-wrap:anywhere;
-  font-size:14px;
+  font-size:12px;
   line-height:1.3;
 }
 

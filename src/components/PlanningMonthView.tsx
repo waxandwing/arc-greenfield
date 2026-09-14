@@ -1,4 +1,5 @@
 import type { MonthProjection, ProjectedDay } from '../calendar/projections'
+import { calendarDayAriaSuffix, visibleCalendarDayLabel } from '../calendar/dayPresentation'
 import type { ISODate, PlanNavigationContext } from '../calendar'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
 import { formatLongDate, formatMonthKey, formatShortDate } from './dateLabels'
@@ -20,8 +21,13 @@ export function PlanningMonthView({
   onSelectDate?: (date: ISODate) => void
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
 }) {
+  const focusCourseId = planContext?.courseId ?? null
+
   return (
     <div className="planning-month" aria-label={`${formatMonthKey(month.monthKey)} planning calendar`} data-focus-date={focusDate ?? ''}>
+      <header className="planning-month-horizon" aria-label="Month course and unit horizon">
+        <p className="planning-month-horizon-lede">Unit pacing across the month{focusDate ? ` · selected ${formatShortDate(focusDate)}` : ''}</p>
+      </header>
       <div className="planning-month-weekdays" aria-hidden="true">
         {WEEKDAY_LABELS.map((label) => <span key={label}>{label}</span>)}
       </div>
@@ -29,12 +35,14 @@ export function PlanningMonthView({
         const planningWeek = planning.weeks[weekIndex]
         return (
           <section className="planning-month-week" key={calendarWeek.startDate} aria-label={`Week of ${formatShortDate(calendarWeek.startDate)}`}>
-            {planningWeek?.unitSegments.length ? (
-              <div className="planning-month-unit-stack" aria-label="Unit pacing">
-                {planningWeek.unitSegments.map((segment) => <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} />)}
-              </div>
-            ) : null}
-            <div className="planning-month-days">
+            <div className="planning-month-week-grid">
+              {planningWeek?.unitSegments.length ? (
+                <div className="planning-month-unit-stack" aria-label="Unit pacing">
+                  {planningWeek.unitSegments.map((segment) => (
+                    <MonthUnitLane key={`${segment.unitId}:${segment.weekIndex}`} segment={segment} emphasized={!focusCourseId || segment.courseId === focusCourseId} />
+                  ))}
+                </div>
+              ) : null}
               {calendarWeek.days.map((day, dayIndex) => (
                 <MonthDayCell
                   key={day.date}
@@ -55,14 +63,14 @@ export function PlanningMonthView({
   )
 }
 
-function MonthUnitLane({ segment }: { segment: MonthUnitSegment }) {
+function MonthUnitLane({ segment, emphasized }: { segment: MonthUnitSegment; emphasized: boolean }) {
   const continuation = [segment.continuesBefore ? 'continues from prior week' : null, segment.continuesAfter ? 'continues next week' : null]
     .filter(Boolean)
     .join(', ')
   return (
     <div className="planning-month-unit-lane" aria-label={`${segment.courseTitle}, ${segment.title}${continuation ? `, ${continuation}` : ''}`}>
       <div
-        className="planning-month-unit-band"
+        className={`planning-month-unit-band${emphasized ? '' : ' planning-month-unit-band--muted'}`}
         style={{ gridColumn: `${segment.startColumn + 1} / ${segment.endColumn + 2}` }}
         title={`${segment.courseTitle} · ${segment.title}`}
       >
@@ -90,7 +98,7 @@ function MonthDayCell({
   onSelectDate?: (date: ISODate) => void
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
 }) {
-  const dayStatus = day.kind === 'instructional' ? null : day.label || humanizeKind(day.kind)
+  const dayStatus = visibleCalendarDayLabel(day)
   const classes = [
     'planning-month-day',
     `planning-month-day--${day.kind}`,
@@ -101,7 +109,7 @@ function MonthDayCell({
   ].filter(Boolean).join(' ')
 
   return (
-    <div className={classes} aria-label={`${formatLongDate(day.date)}${dayStatus ? `. ${dayStatus}` : ''}`}>
+    <div className={classes} data-date={day.date} data-kind={day.kind} aria-label={`${formatLongDate(day.date)}${calendarDayAriaSuffix(day)}`}>
       <div className="planning-month-day-heading">
         <button type="button" className="planning-month-date" aria-current={selected ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>{Number(day.date.slice(8))}</button>
         {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
@@ -170,15 +178,4 @@ function summarizeStatuses(signal: MonthLessonSignal): string | null {
   if (counts.completed) pieces.push(`${counts.completed} completed`)
   if (counts.skipped) pieces.push(`${counts.skipped} skipped`)
   return pieces.length ? pieces.join(' · ') : null
-}
-
-function humanizeKind(kind: ProjectedDay['kind']): string {
-  switch (kind) {
-    case 'no-school': return 'No school'
-    case 'teacher-workday': return 'Teacher workday'
-    case 'holiday': return 'Holiday'
-    case 'break': return 'Break'
-    case 'instructional': return 'Instructional day'
-    case 'unknown': return 'Unknown calendar status'
-  }
 }

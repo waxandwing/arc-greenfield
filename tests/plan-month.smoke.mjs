@@ -145,6 +145,8 @@ try {
     assert(await page.locator('.plan-state-header').getAttribute('data-plan-date') === '2026-09-15', 'Day → Month did not preserve the anchor date.')
     assert(await page.locator('.planning-month-stage').getAttribute('data-plan-date') === '2026-09-15', 'Month surface did not keep the selected instructional day.')
     assert(await page.locator('.planning-month').getAttribute('data-focus-date') === '2026-09-15', 'Month did not emphasize the selected day.')
+    assert(await page.getByText('Unknown calendar status').count() === 0, 'Month grid should not repeat unknown calendar placeholders in day cells.')
+    assert(await page.locator('.planning-month-day--focus').count() === 1, 'Month should mark exactly one selected day.')
     assert(await page.getByText('This Month', { exact: true }).isVisible(), 'Month state header did not name This Month.')
     assert(/September/.test((await page.locator('.plan-state-secondary').textContent()) ?? ''), 'Month state header did not name the month.')
     await shot(page, '01-month-from-day.png')

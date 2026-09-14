@@ -3,12 +3,13 @@ import type { ISODate } from '../calendar'
 import type { PlanningNote } from '../planning'
 import { formatShortDate } from './dateLabels'
 
-export function PlanningNotes({ notes, dates, focusDate, onAdd, onDelete }: {
+export function PlanningNotes({ notes, dates, focusDate, onAdd, onDelete, tone = 'primary' }: {
   notes: PlanningNote[]
   dates: ISODate[]
   focusDate: ISODate
   onAdd?: (date: ISODate, text: string) => boolean
   onDelete?: (noteId: string) => void
+  tone?: 'primary' | 'secondary'
 }) {
   const [draft, setDraft] = useState('')
   const [date, setDate] = useState<ISODate>(focusDate)
@@ -20,7 +21,7 @@ export function PlanningNotes({ notes, dates, focusDate, onAdd, onDelete }: {
   }
 
   return (
-    <section className="planning-notes" aria-label="Planning Notes">
+    <section className={`planning-notes${tone === 'secondary' ? ' planning-notes--secondary' : ''}`} aria-label="Planning Notes">
       <div className="planning-notes-list">
         <strong>Notes</strong>
         {visible.length === 0 ? <span>No Notes in this view.</span> : visible.map((note) => <article key={note.id}><span>{note.date ? formatShortDate(note.date) : ''}</span><p>{note.text}</p>{onDelete ? <button type="button" aria-label={`Delete Note ${note.text}`} onClick={() => onDelete(note.id)}>Delete</button> : null}</article>)}

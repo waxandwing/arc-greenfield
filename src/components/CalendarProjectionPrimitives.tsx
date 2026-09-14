@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { mondayFirstWeekdayIndex } from '../calendar/dateMath'
 import type { ProjectedDay } from '../calendar/projections'
+import { calendarDayAriaSuffix, visibleCalendarDayLabel } from '../calendar/dayPresentation'
 import type { TermBoundary } from '../calendar/types'
 import { formatDateRange, formatLongDate, formatWeekday } from './dateLabels'
 
@@ -68,15 +69,14 @@ export function CalendarDayCell({ day, compact = false, showWeekday = false }: {
     compact ? 'calendar-day-cell--compact' : '',
   ].filter(Boolean).join(' ')
 
-  const status = day.kind === 'instructional' ? 'Instructional day' : day.kind === 'unknown' ? 'Unknown calendar status' : day.label || humanizeKind(day.kind)
-  const accessibleLabel = `${formatLongDate(day.date)}. ${status}.`
+  const visibleLabel = visibleCalendarDayLabel(day)
+  const accessibleLabel = `${formatLongDate(day.date)}${calendarDayAriaSuffix(day)}.`
 
   return (
     <div className={classes} role="group" data-date={day.date} data-kind={day.kind} aria-label={accessibleLabel}>
       {showWeekday && !compact ? <span className="calendar-day-weekday">{formatWeekday(day.date)}</span> : null}
       <span className="calendar-day-date">{day.date.slice(8)}</span>
-      {!compact && day.label ? <span className="calendar-day-label">{day.label}</span> : null}
-      {!compact && day.kind === 'unknown' ? <span className="calendar-day-status">Unknown</span> : null}
+      {!compact && visibleLabel ? <span className="calendar-day-label">{visibleLabel}</span> : null}
     </div>
   )
 }
@@ -85,13 +85,3 @@ export function MissingBoundary({ label }: { label: string }) {
   return <p className="projection-empty-state">{label}</p>
 }
 
-function humanizeKind(kind: ProjectedDay['kind']): string {
-  switch (kind) {
-    case 'no-school': return 'No school'
-    case 'teacher-workday': return 'Teacher workday'
-    case 'holiday': return 'Holiday'
-    case 'break': return 'Break'
-    case 'instructional': return 'Instructional day'
-    case 'unknown': return 'Unknown calendar status'
-  }
-}
