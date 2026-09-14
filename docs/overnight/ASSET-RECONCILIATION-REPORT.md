@@ -18,6 +18,7 @@
 | **SVG brand assets in `public/`** | None |
 | **Kelly local library** `/Users/knyhagen/assets910` | Not mounted on Mac path in cloud VM |
 | **Cloud ingest path (option 3)** | `/workspace/.local/assets910/` — **scaffold only**; library not present yet (see **Phase 2 ingest**) |
+| **Icarus public assets repo** | [waxandwing/icarus](https://github.com/waxandwing/icarus) — **14 source PNGs** inventoried; see **`ICARUS-ASSET-INVENTORY-CROSSWALK.md`** (cloneable; not copied to `public/assets/` yet) |
 | **Canonical Arc mark (in repo)** | `public/assets/arc/arc-mark.png` — no higher-fidelity alternate found in repo |
 
 Palette reference (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
