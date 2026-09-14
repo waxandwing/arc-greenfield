@@ -29,13 +29,14 @@ export function ArcTableDeskMarkSvg({ size, interactive, hovered, onHover, onAct
       role={interactive ? 'group' : 'img'}
       aria-label={interactive ? 'ArcTable desk mark' : 'ArcTable mark'}
     >
-      <rect width={ARC_TABLE_MARK_VIEWBOX} height={ARC_TABLE_MARK_VIEWBOX} fill="#1F4B3A" />
+      <rect width={ARC_TABLE_MARK_VIEWBOX} height={ARC_TABLE_MARK_VIEWBOX} fill="#1F4B3A" pointerEvents="none" />
       <rect
         x={ARC_TABLE_MARK_INSET}
         y={ARC_TABLE_MARK_INSET}
         width={inner}
         height={inner}
         fill="#F4E9D1"
+        pointerEvents="none"
       />
       {ARC_TABLE_DESK_QUADRANT_ORDER.map((quadrant) => {
         const active = hovered === quadrant
@@ -43,6 +44,7 @@ export function ArcTableDeskMarkSvg({ size, interactive, hovered, onHover, onAct
           <path
             fill={ARC_TABLE_DESK_QUADRANT_COLORS[quadrant]}
             d={ARC_TABLE_DESK_QUADRANT_PATHS[quadrant]}
+            pointerEvents={interactive ? 'all' : 'none'}
           />
         )
         if (!interactive) {

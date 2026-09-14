@@ -615,6 +615,11 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-mark-svg {
   display: block;
+  pointer-events: none;
+}
+
+.arc-desk-mark-svg .arc-desk-mark-quadrant {
+  pointer-events: auto;
 }
 
 .arc-desk-mark-quadrant {

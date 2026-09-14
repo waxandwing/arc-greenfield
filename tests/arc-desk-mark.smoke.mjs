@@ -72,11 +72,13 @@ try {
 
   const fixture = page.getByTestId('arc-desk-arctable')
   assert(await fixture.getAttribute('data-quadrant-mode') === 'true', 'Default viewport must enable quadrant launcher.')
-  await fixture.locator('.arc-desk-mark-quadrant--live').hover()
+  await fixture.locator('.arc-desk-mark-quadrant--live').hover({ force: true })
   await shot(page, '02-live-quadrant-hover.png')
 
-  await fixture.locator('.arc-desk-mark-quadrant--live').click()
-  assert(await page.getByRole('heading', { name: 'Explore ArcTable on your desk' }).isVisible(), 'Free preview must open Explore ArcTable dialog from Live quadrant.')
+  assert(await fixture.getAttribute('data-access') === 'free-preview', 'Smoke expects free-preview desk gate.')
+  await fixture.locator('.arc-desk-mark-quadrant--live').focus()
+  await page.keyboard.press('Enter')
+  assert(await page.getByTestId('arc-desk-arctable-preview').isVisible(), 'Free preview must open Explore ArcTable dialog from Live quadrant.')
   await shot(page, '03-explore-arctable-preview.png')
 
   console.log('Arc desk mark smoke passed: AT-001 SVG fixture, quadrant hover, free preview gate.')

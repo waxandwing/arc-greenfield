@@ -115,7 +115,7 @@ export function ArcTableDeskFixture({
       </div>
 
       {previewOpen ? (
-        <div className="arc-desk-arctable-preview-layer" role="dialog" aria-modal="true" aria-labelledby="arc-desk-preview-title">
+        <div className="arc-desk-arctable-preview-layer" role="dialog" aria-modal="true" aria-labelledby="arc-desk-preview-title" data-testid="arc-desk-arctable-preview">
           <div className="arc-desk-arctable-preview-card">
             <p className="b01-furniture-kicker">ArcTable preview</p>
             <h2 id="arc-desk-preview-title">Explore ArcTable on your desk</h2>
