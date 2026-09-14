@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import type { ISODate } from '../calendar'
 import type { CaptureWorkspace, Lesson, PlanningCapture, UnitWorkspace } from '../planning'
 import type { ObjectStack, StackWorkspace } from '../planning/stacks'
@@ -10,6 +10,7 @@ import {
   encodeTrayCaptureDrag,
   encodeTrayStackDrag,
   hasTrayCaptureDrag,
+  readTrayCaptureDrag,
 } from '../planning/deskDrag'
 import { ArcImportantObject } from './ArcImportantObject'
 import { ArcObjectMenu, promptMoveToDate, type ArcObjectMenuItem } from './ArcObjectMenu'
@@ -86,8 +87,29 @@ export function WorkspacePanel(props: Props) {
     }, STACK_DWELL_MS)
   }
 
+  function acceptTrayReturnDrop(event: DragEvent) {
+    if (!props.onMoveCaptureToDate || props.planningDragDisabled) return
+    if (!hasTrayCaptureDrag(event.dataTransfer)) return
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+  }
+
+  function handleTrayReturnDrop(event: DragEvent) {
+    if (!props.onMoveCaptureToDate || props.planningDragDisabled) return
+    const payload = readTrayCaptureDrag(event.dataTransfer)
+    if (!payload) return
+    event.preventDefault()
+    props.onMoveCaptureToDate(payload.captureId, null)
+  }
+
   return (
-    <div className="b01-fridge-content b01-fridge-content--repair-pass-3 b01-tray-content">
+    <div
+      className="b01-fridge-content b01-fridge-content--repair-pass-3 b01-tray-content"
+      data-drag-target="TRAY"
+      data-testid="tray-drop-surface"
+      onDragOver={acceptTrayReturnDrop}
+      onDrop={handleTrayReturnDrop}
+    >
       <section aria-labelledby="workspace-captures-heading" className="workspace-captures-primary">
         <div className="workspace-captures-heading-row">
           <h2 id="workspace-captures-heading">Tray</h2>

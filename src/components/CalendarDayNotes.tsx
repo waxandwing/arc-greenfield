@@ -1,6 +1,7 @@
 import { useId, useState, type ReactNode } from 'react'
 import type { ISODate } from '../calendar/types'
-import type { PlanningNote } from '../planning'
+import type { PlanningCapture, PlanningNote } from '../planning'
+import { hasTrayCaptureDrag, readTrayCaptureDrag, TRAY_CAPTURE_DRAG_MIME, encodeTrayCaptureDrag } from '../planning/deskDrag'
 import { ArcImportantObject } from './ArcImportantObject'
 import { ArcObjectMenu, promptMoveToDate, type ArcObjectMenuItem } from './ArcObjectMenu'
 
@@ -178,25 +179,70 @@ function DayNoteCard({
   )
 }
 
+export function CalendarDayCaptures({
+  captures,
+  date,
+  onMoveCaptureToDate,
+}: {
+  captures: PlanningCapture[]
+  date: ISODate
+  onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
+}) {
+  const dayCaptures = captures.filter((capture) => capture.anchorDate === date)
+  if (!dayCaptures.length) return null
+  return (
+    <div className="calendar-day-captures" data-testid={`calendar-day-captures-${date}`}>
+      {dayCaptures.map((capture) => (
+        <button
+          key={capture.id}
+          type="button"
+          className="calendar-day-capture-chip"
+          data-testid={`calendar-capture-${capture.id}`}
+          draggable={Boolean(onMoveCaptureToDate)}
+          onDragStart={(event) => {
+            if (!onMoveCaptureToDate) return
+            event.dataTransfer.effectAllowed = 'move'
+            event.dataTransfer.setData(TRAY_CAPTURE_DRAG_MIME, encodeTrayCaptureDrag({ kind: 'capture', captureId: capture.id }))
+          }}
+        >
+          {capture.text}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function CalendarDayNoteDropTarget({
   date,
   onDropNote,
+  onDropCapture,
   children,
 }: {
   date: ISODate
   onDropNote?: (noteId: string, date: ISODate) => boolean
+  onDropCapture?: (captureId: string, date: ISODate) => boolean
   children: ReactNode
 }) {
   return (
     <div
       className="calendar-day-note-drop"
+      data-drag-target="DATE"
+      data-plan-drop-date={date}
       onDragOver={(event) => {
-        if (event.dataTransfer.types.includes('application/x-arc-day-note-id')) {
+        const acceptsNote = event.dataTransfer.types.includes('application/x-arc-day-note-id')
+        const acceptsCapture = hasTrayCaptureDrag(event.dataTransfer)
+        if (acceptsNote || acceptsCapture) {
           event.preventDefault()
           event.dataTransfer.dropEffect = 'move'
         }
       }}
       onDrop={(event) => {
+        const capturePayload = readTrayCaptureDrag(event.dataTransfer)
+        if (capturePayload && onDropCapture) {
+          event.preventDefault()
+          onDropCapture(capturePayload.captureId, date)
+          return
+        }
         const noteId = event.dataTransfer.getData('application/x-arc-day-note-id')
         if (!noteId || !onDropNote) return
         event.preventDefault()

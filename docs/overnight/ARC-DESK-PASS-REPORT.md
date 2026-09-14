@@ -20,7 +20,7 @@ Baseline: workspace layout migration + desk integration fixes (`698e130`)
 | K | Capture → MSC (canonical move) | **GREEN** — drag capture to lane promotes to task + removes capture |
 | L | Drag audit | **YELLOW** — HTML5 DnD reused/extended (`deskDrag.ts`); tray↔calendar lesson DnD not expanded |
 | M | Day notes / Important laws | **GREEN** — untouched through integration (`2079ff4`) |
-| N | Settings Desk setup addendum | **GREEN** — teacher IA (My school year … Data / import / reuse); **Customize desk** → live edit mode; **Done** / **Reset desk** |
+| N | Settings Desk setup addendum | **GREEN** — teacher IA (My school year … Data / import / reuse); **Edit Workspace** → live edit mode; **Pin it down** / **Reset desk** |
 | O | Onboarding / school lookup / logo | **GREEN** — no regressions in touched paths |
 | P | ArcTable entry | **GREEN** — AT-001 desk mark on wood; ArcTable session internals unchanged |
 | Q | Move/Shift/Recovery | **GREEN** — out of scope, unchanged |
@@ -56,10 +56,10 @@ Baseline: workspace layout migration + desk integration fixes (`698e130`)
 | Item | Status |
 |------|--------|
 | Settings → **Edit Workspace** (no tray/planner coordinate dropdowns) | **GREEN** |
-| Real desk arrangement mode + grid; size presets in edit toolbar | **GREEN** |
-| Planning drag de-emphasized during edit | **GREEN** |
-| Finish copy | **GREEN** — primary **Pin it down** (alternatives: Set my desk / Looks good / Keep it here) |
-| `workspaceLayout` persisted (`arc.workspace-layout.v1`) separate from planning placement | **GREEN** |
+| Real desk edit mode + normalized zones/grid; size presets in edit toolbar | **GREEN** |
+| Planning drag de-emphasized during edit (tray captures + MSC tasks) | **GREEN** |
+| Finish copy | **GREEN** — primary **Pin it down**; **Reset desk** with confirm when customized |
+| Layout persisted (`arc.desk-layout.v1` / `workspaceLayout` alias) separate from planning placement | **GREEN** |
 | Furniture locked after pin; tray post-its still draggable | **GREEN** |
 
 ## Stacks (Addendum §7–31) — MVP

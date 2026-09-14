@@ -2,8 +2,8 @@ import type { MonthProjection, ProjectedDay } from '../calendar/projections'
 import type { ISODate, PlanNavigationContext } from '../calendar'
 import type { LessonWorkspace } from '../planning'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
-import type { PlanningNote } from '../planning'
-import { CalendarDayNotes, CalendarDayNoteDropTarget, type CalendarDayNoteHandlers } from './CalendarDayNotes'
+import type { CaptureWorkspace, PlanningNote } from '../planning'
+import { CalendarDayCaptures, CalendarDayNotes, CalendarDayNoteDropTarget, type CalendarDayNoteHandlers } from './CalendarDayNotes'
 import { ArcImportantObject } from './ArcImportantObject'
 import { ArcObjectMenu, type ArcObjectMenuItem } from './ArcObjectMenu'
 import { formatLongDate, formatMonthKey, formatShortDate } from './dateLabels'
@@ -23,6 +23,8 @@ export function PlanningMonthView({
   onBeginPlanLessonMove,
   onSetLessonImportant,
   dayNotes,
+  captureWorkspace,
+  onMoveCaptureToDate,
 }: {
   month: MonthProjection
   planning: MonthPlanningProjection
@@ -36,6 +38,8 @@ export function PlanningMonthView({
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   dayNotes?: CalendarDayNoteHandlers
+  captureWorkspace?: CaptureWorkspace | null
+  onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
 }) {
   const noteHandlers: CalendarDayNoteHandlers = dayNotes ?? {}
 
@@ -71,6 +75,8 @@ export function PlanningMonthView({
                   onSelectDate={onSelectDate}
                   onBeginPlanLessonMove={onBeginPlanLessonMove}
                   onSetLessonImportant={onSetLessonImportant}
+                  captureWorkspace={captureWorkspace}
+                  onMoveCaptureToDate={onMoveCaptureToDate}
                 />
               ))}
             </div>
@@ -122,6 +128,8 @@ function MonthDayCell({
   onSelectDate,
   onBeginPlanLessonMove,
   onSetLessonImportant,
+  captureWorkspace,
+  onMoveCaptureToDate,
 }: {
   day: ProjectedDay
   notes: PlanningNote[]
@@ -135,6 +143,8 @@ function MonthDayCell({
   onSelectDate?: (date: ISODate) => void
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
+  captureWorkspace?: CaptureWorkspace | null
+  onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
 }) {
   const nonTeaching = day.kind === 'no-school' || day.kind === 'holiday' || day.kind === 'break' || day.kind === 'teacher-workday'
   const dayStatus = day.kind === 'early-release'
@@ -156,6 +166,7 @@ function MonthDayCell({
     <CalendarDayNoteDropTarget
       date={day.date}
       onDropNote={(noteId, targetDate) => noteHandlers.onMove?.(noteId, targetDate) ?? false}
+      onDropCapture={onMoveCaptureToDate ? (captureId, targetDate) => onMoveCaptureToDate(captureId, targetDate) : undefined}
     >
       <div className={classes} aria-label={`${formatLongDate(day.date)}${ariaStatus ? `. ${ariaStatus}` : ''}`}>
         <div className="planning-month-day-heading">
@@ -163,6 +174,11 @@ function MonthDayCell({
           {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
         </div>
         <CalendarDayNotes notes={notes} date={day.date} compact dateBounds={monthDateBounds} handlers={noteHandlers} />
+        <CalendarDayCaptures
+          captures={captureWorkspace?.captures ?? []}
+          date={day.date}
+          onMoveCaptureToDate={onMoveCaptureToDate}
+        />
         <div className="planning-month-signals">
           {signals.map((signal) => (
             <MonthLessonSignalView

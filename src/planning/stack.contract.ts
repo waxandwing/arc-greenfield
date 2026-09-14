@@ -9,6 +9,7 @@ import {
   unstack,
   EMPTY_STACK_WORKSPACE,
 } from './stacks'
+import { STACK_STORAGE_KEY, loadStackWorkspace, saveStackWorkspace } from './stackPersistence'
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
@@ -44,5 +45,16 @@ assert(normalized.stacks[0].memberOrder.join(',') === 'a,b', 'Normalize must pre
 workspace = createStackFromMembers(EMPTY_STACK_WORKSPACE(calendarId), 'lesson', ['lesson-1', 'lesson-2'], 'lesson-stack')
 assert(workspace.stacks[0].memberKind === 'lesson', 'Lesson stacks must not imply curricular Units.')
 assert(unstack(workspace, 'lesson-stack').stacks.length === 0, 'Unstack must dissolve membership without deleting lessons.')
+
+const memory = new Map<string, string>()
+const storage = {
+  getItem: (key: string) => memory.get(key) ?? null,
+  setItem: (key: string, value: string) => { memory.set(key, value) },
+}
+workspace = createStackFromMembers(EMPTY_STACK_WORKSPACE(calendarId), 'capture', ['persist-a', 'persist-b'], 'persist-stack')
+assert(saveStackWorkspace(workspace, storage), 'Stack workspace must persist to storage.')
+assert(memory.has(STACK_STORAGE_KEY), 'Stack persistence must write canonical storage key.')
+const reloaded = loadStackWorkspace(calendarId, storage)
+assert(reloaded.stacks[0]?.stackId === 'persist-stack' && reloaded.stacks[0].memberOrder.join(',') === 'persist-a,persist-b', 'Reload must restore stack member order.')
 
 console.log('stack contract passed')

@@ -35,7 +35,7 @@ function seed() {
         calendarId,
         courses: [{ id: 'course-1', title: 'Studio Art' }],
         sections: [{ id: 'section-1', courseId: 'course-1', calendarId, name: 'Period 1' }],
-        notes: [{ id: 'task-1', calendarId, text: 'Print handouts', priority: 'must', placement: 'taskbar', createdAt: '2026-09-01T12:00:00.000Z' }],
+        notes: [],
       },
     }),
     'arc.units.v1': JSON.stringify({ schemaVersion: 1, input: { calendarId, units: [] } }),
@@ -79,7 +79,7 @@ try {
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
   const returnTabLabel = (await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim()
-    || 'MONTH'
+    || 'DAY'
 
   assert(await page.locator('.arc-shell--desk').count() === 1, 'Desk shell must lock viewport.')
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
@@ -93,20 +93,20 @@ try {
   await shot(page, '01-desk-layout.png')
 
   await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
-  const customizeDesk = page.getByRole('button', { name: 'Customize desk', exact: true })
-  await customizeDesk.waitFor({ state: 'visible', timeout: 8000 })
+  const editWorkspace = page.getByRole('button', { name: 'Edit Workspace', exact: true })
+  await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   assert(await page.getByRole('heading', { name: 'Desk setup' }).isVisible(), 'Settings must expose Desk setup IA.')
   await shot(page, '15-settings-home-desk.png')
 
-  await customizeDesk.click()
-  assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Customize desk must enter edit mode on the real desk.')
+  await editWorkspace.click()
+  assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Edit Workspace must enter arrangement mode on the real desk.')
   assert(await page.locator('[data-desk-edit-mode="true"]').count() === 1, 'Desk edit mode flag must be set.')
   assert(await page.getByTestId('arc-desk-arctable').getAttribute('data-interactions-disabled') === 'true', 'ArcTable quadrant clicks must disable while editing desk layout.')
   await shot(page, 'desk-edit-mode.png')
 
-  await page.getByTestId('desk-edit-toolbar').getByRole('button', { name: 'Done', exact: true }).click()
+  await page.getByRole('button', { name: 'Pin it down', exact: true }).click()
   await page.waitForFunction(() => document.querySelector('[data-desk-edit-mode="true"]') === null, null, { timeout: 8000 })
-  assert((await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() === returnTabLabel, 'Done must return to the same planner view.')
+  assert((await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() === returnTabLabel, 'Pin it down must return to the same planner view.')
 
   await page.evaluate(() => {
     localStorage.setItem('arc.desk-layout.v1', JSON.stringify({
@@ -123,6 +123,11 @@ try {
   })
   await page.reload({ waitUntil: 'networkidle' })
   assert(await page.locator('[data-layout-grid="true"]').count() === 1, 'Saved desk layout must hydrate on load.')
+
+  await selectView(page, 'Year')
+  await page.getByTestId('school-year-desk').waitFor({ state: 'visible', timeout: 15000 })
+  assert(await page.getByTestId('school-year-desk').count() === 1, 'Year must render school year desk grid.')
+  await shot(page, '03-year-desk-grid.png')
 
   console.log('Arc desk pass smoke passed: desk setup IA, edit mode entry/exit, layout persistence.')
   await context.close()

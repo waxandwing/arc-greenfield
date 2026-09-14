@@ -257,6 +257,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         onSetLessonImportant={onSetLessonImportant}
         onBeginPlanLessonMove={onBeginPlanLessonMove}
         onOpenRecoveryForSection={onOpenRecoveryForSection}
+        onMoveCaptureToDate={_moveCaptureToDate}
       />
     </>
   )

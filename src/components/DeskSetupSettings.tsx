@@ -24,10 +24,10 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
     <section className="b01-settings-group desk-setup-settings" aria-labelledby="settings-desk-setup">
       <h2 id="settings-desk-setup">Desk setup</h2>
       <p className="desk-setup-overview">
-        Customize desk arranges planner, tray, Must/Should/Could, and ArcTable on your real desk — not a miniature preview.
+        Edit Workspace arranges planner, tray, Must/Should/Could, and ArcTable on your real desk — not a miniature preview.
       </p>
       <button type="button" className="b01-settings-action b01-settings-action--primary" onClick={onEditWorkspace}>
-        Customize desk
+        Edit Workspace
       </button>
       {layoutCustomized ? <p className="desk-setup-hint" role="status">Your desk layout is customized.</p> : null}
 
