@@ -53,6 +53,13 @@
     0 6px 18px -4px rgba(15, 35, 28, 0.35),
     inset 0 0 0 1px rgba(31, 75, 58, 0.22);
 
+  /* Desk wood — same grain family as Kelly light-wood reference; desk shell uses a lighter wash */
+  --arc-wood-surface-image: url('/assets/desk/light-wood-desk.png');
+  --arc-wood-surface-base: #e8dcc8;
+  --arc-desk-wood-field: color-mix(in srgb, var(--arc-wood-surface-base) 62%, var(--field-elevated));
+  --arc-desk-wood-highlight: color-mix(in srgb, var(--field-elevated) 52%, transparent);
+  --arc-desk-wood-shadow-tint: color-mix(in srgb, var(--arc-wood-surface-base) 10%, transparent);
+
   /* Course band colors */
   --course-apah-accent: var(--mustard);
   --course-2d-accent: var(--dusty-blue);

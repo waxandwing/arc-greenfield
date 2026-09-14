@@ -71,7 +71,7 @@ try {
   await page.getByTestId('arc-desk-arctable').click()
   await capture('arctable-single-entry-preview')
 
-  copyFileSync(new URL('../public/assets/desk/light-maple-desk.svg', import.meta.url).pathname, `${evidenceDir}25-material-light-maple.svg`)
+  copyFileSync(new URL('../public/assets/desk/light-wood-desk.png', import.meta.url).pathname, `${evidenceDir}25-material-light-wood.png`)
   copyFileSync(new URL('../public/assets/desk/blue-molded-tray.png', import.meta.url).pathname, `${evidenceDir}26-material-blue-tray.png`)
   copyFileSync(new URL('../public/assets/arctable/logo-icon-framed-arc-primary-512.png', import.meta.url).pathname, `${evidenceDir}27-arctable-mark-primary-512.png`)
   copyFileSync(new URL('../public/assets/desk/planner-tab-mustard.png', import.meta.url).pathname, `${evidenceDir}28-material-planner-tab.png`)

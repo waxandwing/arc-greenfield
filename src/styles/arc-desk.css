@@ -1,21 +1,18 @@
-/* ARC Desk Pass — full-viewport light maple desktop; desk objects float with shadow only. */
+/* ARC Desk Pass — full-viewport wood desktop (lighter wash on canonical light-wood grain). */
 
 .arc-shell--desk {
-  --arc-desk-maple-base: #ecdcc6;
-  --arc-desk-maple-highlight: #f8f0e4;
-  --arc-desk-maple-shadow: #c4a574;
   height: 100dvh;
   min-height: 100dvh;
   overflow: hidden;
-  background-color: var(--arc-desk-maple-base);
+  background-color: var(--arc-desk-wood-field);
   background-image:
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--arc-desk-maple-highlight) 88%, transparent) 0%,
-      transparent 38%,
-      color-mix(in srgb, var(--arc-desk-maple-shadow) 12%, transparent) 100%
+      var(--arc-desk-wood-highlight) 0%,
+      transparent 40%,
+      var(--arc-desk-wood-shadow-tint) 100%
     ),
-    url('/assets/desk/light-maple-desk.svg');
+    var(--arc-wood-surface-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
