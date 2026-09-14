@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { mondayFirstWeekdayIndex } from '../calendar/dateMath'
+import { sundayFirstWeekdayIndex } from '../calendar/dateMath'
 import type { ProjectedDay } from '../calendar/projections'
 import type { TermBoundary } from '../calendar/types'
 import { formatDateRange, formatLongDate, formatWeekday } from './dateLabels'
@@ -28,7 +28,7 @@ export function RangeProjection({ title, subtitle, days }: { title: string; subt
 }
 
 export function WeekdayAlignedRange({ days, compact = false }: { days: ProjectedDay[]; compact?: boolean }) {
-  const leadingBlankCount = days.length > 0 ? mondayFirstWeekdayIndex(days[0].date) : 0
+  const leadingBlankCount = days.length > 0 ? sundayFirstWeekdayIndex(days[0].date) : 0
 
   return (
     <div className={`projection-range${compact ? ' projection-range--compact' : ''}`}>

@@ -1,4 +1,4 @@
-import { addCalendarDays, assertISODate, mondayFirstWeekdayIndex } from '../src/calendar/dateMath'
+import { addCalendarDays, assertISODate, sundayFirstWeekdayIndex } from '../src/calendar/dateMath'
 import { assessCalendarReadiness } from '../src/calendar/readiness'
 import {
   getCalendarDay,
@@ -44,9 +44,9 @@ const calendar: SchoolCalendar = {
 equal(addCalendarDays('2026-02-28', 1), '2026-03-01', 'month rollover')
 equal(addCalendarDays('2028-02-28', 1), '2028-02-29', 'leap day')
 throws(() => assertISODate('2026-02-30'), 'invalid calendar date')
-equal(mondayFirstWeekdayIndex('2026-08-31'), 0, 'Monday stays in first calendar column')
-equal(mondayFirstWeekdayIndex('2026-09-02'), 2, 'Wednesday maps to third calendar column')
-equal(mondayFirstWeekdayIndex('2026-09-06'), 6, 'Sunday stays in seventh calendar column')
+equal(sundayFirstWeekdayIndex('2026-08-31'), 1, 'Monday maps to second calendar column in a Sunday-first week')
+equal(sundayFirstWeekdayIndex('2026-09-02'), 3, 'Wednesday maps to fourth calendar column in a Sunday-first week')
+equal(sundayFirstWeekdayIndex('2026-09-06'), 0, 'Sunday maps to first calendar column in a Sunday-first week')
 equal(getCalendarDay(calendar, '2026-09-07').kind, 'unknown', 'missing day stays unknown')
 equal(nextInstructionalDay(calendar, '2026-09-02'), '2026-09-04', 'next instructional skips workday')
 equal(previousInstructionalDay(calendar, '2026-09-04'), '2026-09-02', 'previous instructional skips workday')

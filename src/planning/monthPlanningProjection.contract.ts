@@ -52,7 +52,7 @@ const projection = projectMonthPlanning({ month, planning, units, lessons, overr
 assert(projection.weeks.length === month.weeks.length, 'Month planning must preserve canonical calendar week geometry.')
 
 const unitSegments = projection.weeks.flatMap((week) => week.unitSegments).filter((segment) => segment.unitId === egypt.id)
-assert(unitSegments.length === 2, 'A Unit crossing a Sunday boundary must split into two Month visual segments.')
+assert(unitSegments.length === 2, 'A Unit crossing a week boundary must split into two Month visual segments.')
 assert(unitSegments.every((segment) => segment.unitId === egypt.id), 'Split Month Unit segments must preserve one stable Unit identity.')
 assert(unitSegments[0].continuesAfter, 'First Unit segment must identify continuation into the next week.')
 assert(unitSegments[1].continuesBefore, 'Second Unit segment must identify continuation from the prior week.')

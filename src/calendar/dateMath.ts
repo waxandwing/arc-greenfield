@@ -30,10 +30,15 @@ export function eachCalendarDay(start: ISODate, end: ISODate): ISODate[] {
   return result
 }
 
-export function mondayFirstWeekdayIndex(date: ISODate): number {
+/** Column index in a Sunday-first week grid (0 = Sunday … 6 = Saturday). */
+export function sundayFirstWeekdayIndex(date: ISODate): number {
   assertISODate(date)
-  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay()
-  return weekday === 0 ? 6 : weekday - 1
+  return new Date(`${date}T00:00:00Z`).getUTCDay()
 }
 
-export const PLAN_WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
+/** @deprecated Use sundayFirstWeekdayIndex — Arc weeks run Sunday through Saturday. */
+export function mondayFirstWeekdayIndex(date: ISODate): number {
+  return sundayFirstWeekdayIndex(date)
+}
+
+export const PLAN_WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const

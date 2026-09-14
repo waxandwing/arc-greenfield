@@ -98,8 +98,8 @@ const gridColumns = await mini.locator('.source-calendar-grid').evaluate((grid) 
   }
   return { wednesday: columnFor('2026-09-02'), monday: columnFor('2026-09-07') }
 })
-assert(gridColumns.wednesday === 3, `Source review: Wednesday fixture start rendered in column ${gridColumns.wednesday}, expected 3.`)
-assert(gridColumns.monday === 1, `Source review: Monday rendered in column ${gridColumns.monday}, expected 1.`)
+assert(gridColumns.wednesday === 4, `Source review: Wednesday fixture start rendered in column ${gridColumns.wednesday}, expected 4.`)
+assert(gridColumns.monday === 2, `Source review: Monday rendered in column ${gridColumns.monday}, expected 2.`)
 
 mkdirSync('artifacts/phase3-source-review', { recursive: true })
 await page.screenshot({ path: 'artifacts/phase3-source-review/source-calendar-review-1280.png', fullPage: true })
