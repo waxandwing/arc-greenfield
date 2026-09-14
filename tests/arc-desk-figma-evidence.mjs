@@ -128,11 +128,15 @@ try {
   await page.getByRole('button', { name: 'Pin it down', exact: true }).click()
   await page.waitForFunction(() => document.querySelector('[data-desk-edit-mode="true"]') === null)
 
-  const trayCard = page.locator('.workspace-capture-card', { hasText: 'Field trip idea' }).first()
-  if (await trayCard.isVisible().catch(() => false)) {
-    await trayCard.hover()
-    await shot(page, '06-tray-drag.png')
-  }
+  const trayDock = page.getByTestId('arc-desk-tray-dock')
+  await trayDock.waitFor({ state: 'visible' })
+  const trayCard = trayDock.locator('.workspace-capture-card-select').first()
+  await trayCard.waitFor({ state: 'visible', timeout: 10000 })
+  await trayCard.hover()
+  await page.mouse.down()
+  await page.waitForTimeout(120)
+  await shot(page, '06-tray-drag.png')
+  await page.mouse.up()
 
   await selectView(page, 'Day')
   await shot(page, '07-day.png')
