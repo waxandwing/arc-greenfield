@@ -51,7 +51,7 @@ function seed() {
       showPriorityPad: true,
       showDeskNotes: false,
       showArcTable: true,
-      homeDeskPlannerView: 'Month',
+      homeDeskPlannerView: 'Week',
       plannerSize: 'standard',
       traySize: 'standard',
       mscSize: 'standard',
@@ -83,7 +83,7 @@ try {
 
   assert(await page.locator('.arc-shell--desk').count() === 1, 'Desk shell must lock viewport.')
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
-  assert(shellWood.includes('light-wood-desk'), 'Desk shell must use full-viewport light wood.')
+  assert(shellWood.includes('light-maple-desk'), 'Desk shell must use full-viewport light maple desktop.')
   const deskFramePattern = await page.locator('.b01-furniture-composition--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(!deskFramePattern.includes('pattern-grid'), 'Desk composition must not repeat exterior pattern tile.')
   assert(await page.getByTestId('arc-desk-arctable').isVisible(), 'ArcTable desk mark must render on wood.')
