@@ -1,0 +1,29 @@
+{
+  "week390": {
+    "document": {
+      "clientWidth": 390,
+      "scrollWidth": 375
+    },
+    "region": {
+      "clientWidth": 351,
+      "scrollWidth": 351,
+      "scrollLeft": 0
+    }
+  },
+  "year390": {
+    "document": {
+      "clientWidth": 390,
+      "scrollWidth": 375
+    },
+    "region": {
+      "clientWidth": 850,
+      "scrollWidth": 892,
+      "scrollLeft": 0
+    }
+  },
+  "legacyDom": {
+    "bodyHasFridgeWord": false,
+    "journalSpine": false,
+    "notebookPage": false
+  }
+}
