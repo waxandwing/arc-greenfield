@@ -1,5 +1,12 @@
 import { assertISODate, compareISODate, eachCalendarDay } from './dateMath'
+import {
+  recurringEarlyReleaseByWeekday,
+  validateRecurringEarlyReleaseRules,
+  type RecurringEarlyReleaseRule,
+} from './recurringEarlyRelease'
 import type { CalendarDay, CalendarProvenance, CalendarSource, Confidence, ISODate, SchoolCalendar, TermBoundary } from './types'
+
+export type { RecurringEarlyReleaseRule } from './recurringEarlyRelease'
 
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
@@ -12,6 +19,8 @@ export type CalendarHydrationInput = {
   patternSource: CalendarSource
   patternConfidence: Confidence
   exceptions?: CalendarDay[]
+  /** Weekly early-release pattern applied to normal instructional weekdays in range. */
+  recurringEarlyRelease?: RecurringEarlyReleaseRule[]
   quarters?: TermBoundary[]
   semesters?: TermBoundary[]
   provenance?: CalendarProvenance[]
@@ -59,6 +68,8 @@ export function validateHydrationInput(input: CalendarHydrationInput): string[] 
     errors.push(...validateTermBoundaries('Semester', input.semesters ?? [], input.firstDay, input.lastDay))
   }
 
+  errors.push(...validateRecurringEarlyReleaseRules(input.recurringEarlyRelease))
+
   return errors
 }
 
@@ -68,6 +79,7 @@ export function hydrateSchoolCalendar(input: CalendarHydrationInput): SchoolCale
 
   const instructionalWeekdays = new Set<number>(input.instructionalWeekdays)
   const exceptionMap = new Map<ISODate, CalendarDay>((input.exceptions ?? []).map((day) => [day.date, day]))
+  const recurringByWeekday = recurringEarlyReleaseByWeekday(input.recurringEarlyRelease)
   const days = {} as SchoolCalendar['days']
 
   for (const date of eachCalendarDay(input.firstDay, input.lastDay)) {
@@ -81,7 +93,20 @@ export function hydrateSchoolCalendar(input: CalendarHydrationInput): SchoolCale
       continue
     }
 
-    const weekday = new Date(`${date}T00:00:00Z`).getUTCDay()
+    const weekday = new Date(`${date}T00:00:00Z`).getUTCDay() as Weekday
+    const recurring = recurringByWeekday.get(weekday)
+    if (instructionalWeekdays.has(weekday) && recurring) {
+      days[date] = {
+        date,
+        kind: 'early-release',
+        label: recurring.label?.trim() || undefined,
+        schoolEndTime: recurring.schoolEndTime,
+        source: recurring.source ?? input.patternSource,
+        confidence: recurring.confidence ?? input.patternConfidence,
+      }
+      continue
+    }
+
     days[date] = {
       date,
       kind: instructionalWeekdays.has(weekday) ? 'instructional' : 'no-school',

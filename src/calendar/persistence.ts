@@ -1,4 +1,5 @@
-import { hydrateSchoolCalendar, validateHydrationInput, type CalendarHydrationInput } from './hydration'
+import { hydrateSchoolCalendar, validateHydrationInput, type CalendarHydrationInput, type Weekday } from './hydration'
+import { validateRecurringEarlyReleaseRules, type RecurringEarlyReleaseRule } from './recurringEarlyRelease'
 import { validateSchoolCalendar } from './schoolCalendar'
 import type { CalendarDay, CalendarProvenance, CalendarSource, Confidence, DayKind, ISODate, SchoolCalendar, TermBoundary } from './types'
 
@@ -125,6 +126,8 @@ function parseHydrationInput(value: Record<string, unknown>): CalendarHydrationI
   if (semesters === null) return null
   const provenance = parseProvenance(value.provenance)
   if (provenance === null) return null
+  const recurringEarlyRelease = parseRecurringEarlyRelease(value.recurringEarlyRelease)
+  if (recurringEarlyRelease === null) return null
 
   return {
     id: value.id,
@@ -135,10 +138,46 @@ function parseHydrationInput(value: Record<string, unknown>): CalendarHydrationI
     patternSource: value.patternSource,
     patternConfidence: value.patternConfidence,
     exceptions,
+    recurringEarlyRelease: recurringEarlyRelease.length > 0 ? recurringEarlyRelease : undefined,
     quarters,
     semesters,
     provenance,
   }
+}
+
+function parseRecurringEarlyRelease(value: unknown): RecurringEarlyReleaseRule[] | null {
+  if (value === undefined) return []
+  if (!Array.isArray(value)) return null
+
+  const rules: RecurringEarlyReleaseRule[] = []
+  for (const item of value) {
+    if (
+      !isRecord(item) ||
+      typeof item.id !== 'string' ||
+      !Array.isArray(item.weekdays) ||
+      typeof item.schoolEndTime !== 'string'
+    ) return null
+    if (item.label !== undefined && typeof item.label !== 'string') return null
+    if (item.source !== undefined && !isCalendarSource(item.source)) return null
+    if (item.confidence !== undefined && !isConfidence(item.confidence)) return null
+
+    const weekdays = item.weekdays.filter((day): day is Weekday =>
+      Number.isInteger(day) && typeof day === 'number' && day >= 0 && day <= 6,
+    )
+    if (weekdays.length !== item.weekdays.length) return null
+
+    rules.push({
+      id: item.id,
+      weekdays,
+      schoolEndTime: item.schoolEndTime,
+      label: item.label as string | undefined,
+      source: item.source as CalendarSource | undefined,
+      confidence: item.confidence as Confidence | undefined,
+    })
+  }
+
+  if (validateRecurringEarlyReleaseRules(rules).length > 0) return null
+  return rules
 }
 
 function parseCalendarDays(value: unknown): CalendarDay[] | null {

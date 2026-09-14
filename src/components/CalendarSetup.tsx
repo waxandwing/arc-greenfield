@@ -1,7 +1,9 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import {
   buildManualCalendarInput,
+  countRecurringEarlyReleaseDates,
   createManualCalendarId,
+  defaultRecurringEarlyReleaseLabel,
   hydrateSchoolCalendar,
   validateHydrationInput,
   type CalendarDay,
@@ -10,6 +12,7 @@ import {
   type Confidence,
   type DayKind,
   type ISODate,
+  type RecurringEarlyReleaseRule,
   type SchoolCalendar,
   type Weekday,
 } from '../calendar'
@@ -47,6 +50,17 @@ type DraftException = {
 
 type ExceptionPatch = Pick<Partial<DraftException>, 'date' | 'kind' | 'label' | 'schoolEndTime'>
 
+type DraftRecurringEarlyRelease = {
+  id: string
+  weekdays: Weekday[]
+  schoolEndTime: string
+  label: string
+  source?: CalendarSource
+  confidence?: Confidence
+}
+
+type RecurringPatch = Pick<Partial<DraftRecurringEarlyRelease>, 'weekdays' | 'schoolEndTime' | 'label'>
+
 type Props = {
   initialValue?: CalendarHydrationInput | null
   onSave: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
@@ -69,10 +83,33 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
     source: day.source,
     confidence: day.confidence,
   })))
+  const [recurringEarlyRelease, setRecurringEarlyRelease] = useState<DraftRecurringEarlyRelease[]>(() =>
+    (initialValue?.recurringEarlyRelease ?? []).map((rule) => ({
+      id: rule.id,
+      weekdays: [...rule.weekdays],
+      schoolEndTime: rule.schoolEndTime,
+      label: rule.label ?? '',
+      source: rule.source,
+      confidence: rule.confidence,
+    })),
+  )
   const [errors, setErrors] = useState<string[]>([])
   const errorSummaryRef = useRef<HTMLDivElement | null>(null)
   const lastDraftRef = useRef('')
   const isSourceBackedEdit = Boolean(initialValue && initialValue.patternSource !== 'manual')
+
+  const recurringRulesForInput = useMemo<RecurringEarlyReleaseRule[]>(() =>
+    recurringEarlyRelease
+      .filter((rule) => rule.weekdays.length > 0 && rule.schoolEndTime.trim())
+      .map((rule) => ({
+        id: rule.id,
+        weekdays: [...rule.weekdays],
+        schoolEndTime: rule.schoolEndTime.trim(),
+        label: rule.label.trim() || defaultRecurringEarlyReleaseLabel(rule.weekdays),
+        source: rule.source ?? 'manual',
+        confidence: rule.confidence ?? 'confirmed',
+      })),
+  [recurringEarlyRelease])
 
   const input = useMemo<CalendarHydrationInput>(() => buildManualCalendarInput({
     calendarId,
@@ -90,6 +127,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
         source: item.source ?? 'manual',
         confidence: item.confidence ?? 'confirmed',
       })),
+    recurringEarlyRelease: recurringRulesForInput,
     quarters: initialValue?.quarters,
     semesters: initialValue?.semesters,
     existingTruth: initialValue ? {
@@ -97,7 +135,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
       patternConfidence: initialValue.patternConfidence,
       provenance: initialValue.provenance,
     } : undefined,
-  }), [calendarId, schoolYearLabel, firstDay, lastDay, weekdays, exceptions, initialValue])
+  }), [calendarId, schoolYearLabel, firstDay, lastDay, weekdays, exceptions, recurringRulesForInput, initialValue])
 
   const validationVisible = errors.length > 0
   const schoolYearInvalid = validationVisible && !schoolYearLabel.trim()
@@ -142,10 +180,68 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
     setExceptions((current) => current.filter((item) => item.id !== id))
   }
 
+  function addRecurringEarlyRelease() {
+    setRecurringEarlyRelease((current) => [...current, {
+      id: crypto.randomUUID(),
+      weekdays: [],
+      schoolEndTime: '',
+      label: '',
+      source: 'manual',
+      confidence: 'confirmed',
+    }])
+  }
+
+  function updateRecurringEarlyRelease(id: string, patch: RecurringPatch) {
+    setRecurringEarlyRelease((current) => current.map((item) => item.id === id ? {
+      ...item,
+      ...patch,
+      source: 'manual',
+      confidence: 'confirmed',
+    } : item))
+  }
+
+  function toggleRecurringWeekday(id: string, day: Weekday) {
+    setRecurringEarlyRelease((current) => current.map((item) => {
+      if (item.id !== id) return item
+      const weekdays = item.weekdays.includes(day)
+        ? item.weekdays.filter((value) => value !== day)
+        : [...item.weekdays, day]
+      return { ...item, weekdays }
+    }))
+  }
+
+  function removeRecurringEarlyRelease(id: string) {
+    setRecurringEarlyRelease((current) => current.filter((item) => item.id !== id))
+  }
+
+  const recurringPreviewCount = useMemo(() => {
+    if (!firstDay || !lastDay || recurringRulesForInput.length === 0) return null
+    try {
+      return countRecurringEarlyReleaseDates({
+        firstDay: firstDay as ISODate,
+        lastDay: lastDay as ISODate,
+        instructionalWeekdays: weekdays,
+        rules: recurringRulesForInput,
+      })
+    } catch {
+      return null
+    }
+  }, [firstDay, lastDay, weekdays, recurringRulesForInput])
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const nextErrors = [
       ...(schoolYearLabel.trim() ? [] : ['Give this school year a label.']),
+      ...recurringEarlyRelease.flatMap((rule, index) => {
+        const position = index + 1
+        if (rule.weekdays.length > 0 && !rule.schoolEndTime.trim()) {
+          return [`Recurring early release pattern ${position} needs a school end time.`]
+        }
+        if (rule.schoolEndTime.trim() && rule.weekdays.length === 0) {
+          return [`Recurring early release pattern ${position} needs at least one weekday.`]
+        }
+        return []
+      }),
       ...validateHydrationInput(input),
     ]
 
@@ -241,11 +337,84 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
           </div>
         </fieldset>
 
+        <div className="recurring-early-release-section">
+          <div className="exceptions-heading">
+            <div>
+              <h3>Recurring early release</h3>
+              <p>
+                Most districts use the same early-dismissal day each week (for example every Wednesday).
+                Arc applies this across your first and last day on normal instructional weekdays.
+                Use Exceptions below for one-off changes such as holidays.
+              </p>
+              {recurringPreviewCount !== null && recurringPreviewCount > 0 ? (
+                <p className="recurring-early-release-preview" role="status">
+                  This pattern marks <strong>{recurringPreviewCount}</strong> school days as early release in your year.
+                </p>
+              ) : null}
+            </div>
+            <button type="button" className="quiet-button" onClick={addRecurringEarlyRelease}>Add weekly pattern</button>
+          </div>
+
+          {recurringEarlyRelease.length === 0 ? (
+            <p className="empty-exceptions">No weekly early release pattern yet.</p>
+          ) : (
+            <div className="recurring-early-release-list">
+              {recurringEarlyRelease.map((rule, index) => {
+                const position = index + 1
+                return (
+                  <div className="recurring-early-release-row" key={rule.id}>
+                    <fieldset className="recurring-weekday-fieldset">
+                      <legend>Pattern {position} · weekdays</legend>
+                      <div className="weekday-options">
+                        {WEEKDAYS.map((day) => (
+                          <label key={day.value} className="weekday-option">
+                            <input
+                              type="checkbox"
+                              checked={rule.weekdays.includes(day.value)}
+                              onChange={() => toggleRecurringWeekday(rule.id, day.value)}
+                            />
+                            <span>{day.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                    <label className="recurring-time-field">
+                      <span>School ends</span>
+                      <input
+                        type="time"
+                        value={rule.schoolEndTime}
+                        onChange={(event) => updateRecurringEarlyRelease(rule.id, { schoolEndTime: event.target.value })}
+                        aria-label={`School end time for recurring early release pattern ${position}`}
+                      />
+                    </label>
+                    <label className="recurring-label-field">
+                      <span>Optional note</span>
+                      <input
+                        value={rule.label}
+                        onChange={(event) => updateRecurringEarlyRelease(rule.id, { label: event.target.value })}
+                        placeholder={rule.weekdays.length ? defaultRecurringEarlyReleaseLabel(rule.weekdays) : 'Optional note'}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="text-button"
+                      aria-label={`Remove recurring early release pattern ${position}`}
+                      onClick={() => removeRecurringEarlyRelease(rule.id)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
         <div className="exceptions-section">
           <div className="exceptions-heading">
             <div>
               <h3>Exceptions</h3>
-              <p>Workdays, breaks, holidays, early release days, unusual Saturdays, or anything else that changes the normal week.</p>
+              <p>One-off workdays, breaks, holidays, or a single early release that does not repeat weekly.</p>
             </div>
             <button type="button" className="quiet-button" onClick={addException}>Add date</button>
           </div>

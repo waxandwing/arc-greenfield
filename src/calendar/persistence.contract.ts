@@ -22,6 +22,7 @@ const input: CalendarHydrationInput = {
     { date: '2026-10-17', kind: 'instructional', label: 'Saturday session', source: 'manual', confidence: 'confirmed' },
     { date: '2026-11-19', kind: 'early-release', label: 'Thanksgiving week', schoolEndTime: '12:30', source: 'manual', confidence: 'confirmed' },
   ],
+  recurringEarlyRelease: [{ id: 'wed', weekdays: [3], schoolEndTime: '13:45', label: 'Wednesday early release' }],
   quarters: [
     { id: 'q1', label: 'Quarter 1', startDate: '2026-08-10', endDate: '2026-10-09' },
     { id: 'q2', label: 'Quarter 2', startDate: '2026-10-12', endDate: '2026-12-18' },
@@ -46,6 +47,8 @@ equal(restored?.calendar.days['2026-10-17']?.kind, 'instructional', 'weekend ove
 equal(restored?.calendar.days['2026-11-19']?.kind, 'early-release', 'early release survives rehydration')
 equal(restored?.calendar.days['2026-11-19']?.schoolEndTime, '12:30', 'early release end time survives rehydration')
 equal(restoredInput?.exceptions?.[2]?.schoolEndTime, '12:30', 'early release end time survives declaration round trip')
+equal(restoredInput?.recurringEarlyRelease?.[0]?.weekdays.join(','), '3', 'recurring early release survives declaration round trip')
+equal(restored?.calendar.days['2026-09-09']?.kind, 'early-release', 'recurring early release rehydrates onto instructional Wednesdays')
 equal(restored?.calendar.quarters[1]?.id, 'q2', 'quarter boundaries survive rehydration')
 equal(restored?.calendar.semesters[0]?.id, 's1', 'semester boundaries survive rehydration')
 

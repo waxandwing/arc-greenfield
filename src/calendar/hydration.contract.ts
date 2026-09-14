@@ -94,6 +94,40 @@ const endTimeOnHoliday = validateHydrationInput({
 })
 assert(endTimeOnHoliday.some((error) => error.includes('only allowed on early-release')), 'School end time on non-early-release days must be rejected.')
 
+const recurringCalendar = hydrateSchoolCalendar({
+  ...input,
+  firstDay: '2026-09-01',
+  lastDay: '2026-09-30',
+  recurringEarlyRelease: [{
+    id: 'wed-early',
+    weekdays: [3],
+    schoolEndTime: '13:30',
+    label: 'Wednesday early release',
+  }],
+})
+assert(getCalendarDay(recurringCalendar, '2026-09-02').kind === 'early-release', 'Recurring rule must mark matching instructional weekdays.')
+assert(getCalendarDay(recurringCalendar, '2026-09-02').schoolEndTime === '13:30', 'Recurring rule end time must apply.')
+assert(getCalendarDay(recurringCalendar, '2026-09-06').kind === 'no-school', 'Recurring rule must not apply on non-instructional weekends.')
+assert(
+  hydrateSchoolCalendar({
+    ...input,
+    firstDay: '2026-09-01',
+    lastDay: '2026-09-07',
+    exceptions: [{ date: '2026-09-02', kind: 'holiday', label: 'Closed' }],
+    recurringEarlyRelease: [{ id: 'wed', weekdays: [3], schoolEndTime: '13:00' }],
+  }).days['2026-09-02'].kind === 'holiday',
+  'Explicit exceptions must override recurring early release.',
+)
+
+const overlappingRecurring = validateHydrationInput({
+  ...input,
+  recurringEarlyRelease: [
+    { id: 'a', weekdays: [3], schoolEndTime: '13:00' },
+    { id: 'b', weekdays: [3], schoolEndTime: '14:00' },
+  ],
+})
+assert(overlappingRecurring.some((error) => error.includes('only belong to one')), 'Overlapping recurring weekdays must be rejected.')
+
 const malformedBoundaryErrors = validateHydrationInput({
   ...input,
   quarters: [{ id: 'q-bad', label: 'Bad quarter', startDate: '2026-09-08', endDate: '2026-09-07' }],
