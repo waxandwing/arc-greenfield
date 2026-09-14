@@ -7,6 +7,7 @@ import { TaskBarPanel } from './TaskBarPanel'
 import { WorkspaceStage } from './WorkspaceStage'
 import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useTaskBar } from '../app/useTaskBar'
+import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import { useArcTableSession } from '../app/useArcTableSession'
 import { DEFAULT_HOME_VIEW, calendarViewLabel, type CalendarView } from '../navigation/calendarViews'
@@ -34,7 +35,7 @@ import { projectWeek, type ISODate } from '../calendar'
 import { formatMonth, formatPlanHeaderDate, formatPlanHeaderWeekRange } from './dateLabels'
 import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfaces'
 import { WorkspacePanel } from './WorkspacePanel'
-import { ArcOnboarding } from './ArcOnboarding'
+import { ArcOnboarding, resolveOnboardingStage } from './ArcOnboarding'
 import { FirstCapturePrompt } from './FirstCapturePrompt'
 import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
 import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
@@ -63,11 +64,16 @@ export function AppFrame() {
   }
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
-  const stageTitle = stageTitleFor(workspaceMode.mode, workspace.activeView)
   const unscheduledUnits = workspace.unitWorkspace?.units.filter((unit) => unit.placement === null) ?? []
   const setupCapabilities = assessSetupCapabilities({ calendar: workspace.calendar, planning: workspace.planningWorkspace, lessons: workspace.lessonWorkspace })
   const returningTeacher = Boolean(workspace.calendar && workspace.planningWorkspace?.courses.length && workspace.planningWorkspace.sections.length && onboardingDraft.stage === 'welcome')
   const showOnboarding = !returningTeacher && !onboardingDraft.dismissed && !minimumPlanningSetupEstablished(setupCapabilities)
+  const onboardingActive = showOnboarding && workspaceMode.mode === 'calendar'
+  const headerMode: WorkspaceMode = onboardingActive ? 'onboarding' : workspaceMode.mode
+  const headerStageTitle = onboardingActive
+    ? onboardingStageTitle(onboardingDraft, setupCapabilities)
+    : stageTitleFor(workspaceMode.mode, workspace.activeView)
+  const showPlanFurniture = Boolean(workspace.calendar && workspaceMode.mode === 'calendar' && !onboardingActive)
 
   function updateOnboarding(next: OnboardingDraft) {
     setOnboardingDraft(next)
@@ -100,9 +106,21 @@ export function AppFrame() {
   }
 
   function returnHome() {
+    if (onboardingActive) {
+      updateOnboarding({ ...onboardingDraft, dismissed: true })
+      if (minimumPlanningSetupEstablished(setupCapabilities)) {
+        setWorkspaceOverlayOpen(false)
+        workspace.setActiveView('Day')
+      }
+      return
+    }
     if (workspaceBusy) return
     setWorkspaceOverlayOpen(false)
     workspace.goHome()
+  }
+
+  function openImportFromOnboarding() {
+    workspaceMode.open('import')
   }
 
   function shiftWithOverrides(overrides: ShiftPersistenceInput['overrides']): ShiftPersistenceInput | null {
@@ -203,11 +221,8 @@ export function AppFrame() {
     return <ArcTableStudentSurface live={arcTable.live} onOpenPlan={arcTable.showPlan} onShowTeacher={arcTable.showTeacher} onShowStudent={arcTable.showStudent} onUpdate={arcTable.update} onEnd={endClass} />
   }
 
-  if (showOnboarding) {
-    return <div className="arc-shell onboarding-shell"><a className="skip-link" href="#onboarding-stage">Skip to setup</a><header className="arc-header" aria-label="Arc application header"><div className="arc-wordmark"><img src="/assets/arc/arc-mark.png" alt="Arc" /></div></header><main id="onboarding-stage" className="onboarding-main" tabIndex={-1}><ArcOnboarding draft={onboardingDraft} capabilities={setupCapabilities} calendar={workspace.calendar} calendarInput={workspace.calendarInput} planningInput={workspace.planningInput} onChangeDraft={updateOnboarding} onUseCalendar={workspace.useCalendar} onUseClasses={workspace.useClasses} onLandInDay={() => workspace.setActiveView('Day')} onOpenImport={() => workspaceMode.open('import')} /></main></div>
-  }
 
-  const fridgeContent = workspace.calendar && workspaceMode.mode === 'calendar' ? (
+  const fridgeContent = showPlanFurniture ? (
     <WorkspacePanel
       captures={workspace.captureWorkspace}
       lessons={workspace.lessonWorkspace?.lessons ?? []}
@@ -226,7 +241,7 @@ export function AppFrame() {
     />
   ) : <p className="b01-furniture-empty">Workspace is available in Plan View.</p>
 
-  const settingsContent = workspace.calendar && workspaceMode.mode === 'calendar' ? (
+  const settingsContent = showPlanFurniture ? (
     <SettingsFurnitureContent
       preferences={viewPreferences}
       hasTerms={workspace.hasTerms}
@@ -261,7 +276,7 @@ export function AppFrame() {
       <a className="skip-link" href="#calendar-stage">Skip to calendar</a>
 
       <header className="arc-header" aria-label="Arc application header">
-        <button className="arc-wordmark" type="button" aria-label="Return to Teaching Day" onClick={returnHome}><img src="/assets/arc/arc-mark.png" alt="Arc" /></button>
+        <button className="arc-wordmark" type="button" aria-label={onboardingActive ? 'Exit setup to Arc' : 'Return to Teaching Day'} onClick={returnHome}><img src="/assets/arc/arc-mark.png" alt="Arc" /></button>
         <div className="arc-header-space" aria-hidden="true" />
         {arcTable.live ? <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}><span>{arcTable.live.session.sectionName} live · {elapsedLiveMinutes(arcTable.live)} min</span><strong>Return to ArcTable</strong></button> : null}
       </header>
@@ -270,7 +285,7 @@ export function AppFrame() {
         <main id="calendar-stage" className="arc-calendar-stage" tabIndex={-1}>
           <CalendarStageHeader
             activeView={workspace.activeView}
-            mode={workspaceMode.mode}
+            mode={headerMode}
             calendar={workspace.calendar}
             anchorDate={workspace.anchorDate}
             previousTarget={workspace.previousTarget}
@@ -278,8 +293,8 @@ export function AppFrame() {
             todayTarget={workspace.todayTarget}
             recoveryCount={workspace.recoveryCount}
             undoAvailable={Boolean(workspace.shiftState?.undo)}
-            stageTitle={stageTitle}
-            viewSelectionDisabled={workspaceBusy}
+            stageTitle={headerStageTitle}
+            viewSelectionDisabled={workspaceBusy || onboardingActive}
             availabilityFor={workspace.viewAvailability}
             onSelectView={selectView}
             onMovePrevious={() => workspace.movePeriod('previous')}
@@ -295,13 +310,28 @@ export function AppFrame() {
             settings={settingsContent}
             workspace={fridgeContent}
             tasks={taskContent}
-            dismissSideDrawers={workspaceMode.mode !== 'calendar'}
+            dismissSideDrawers={onboardingActive || workspaceMode.mode !== 'calendar'}
             openRequest={workspaceOpenToken ? { name: 'workspace', token: workspaceOpenToken } : null}
             workspaceOpen={workspaceOverlayOpen}
             onWorkspaceOpenChange={setWorkspaceOverlayOpen}
           >
-            <section className="calendar-canvas" aria-label={`${stageTitle} workspace`}>
-              {workspaceMode.mode === 'calendar' ? <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} onOpenImport={() => workspaceMode.open('import')} /> : null}
+            <section className={`calendar-canvas${onboardingActive ? ' calendar-canvas--onboarding' : ''}`} aria-label={onboardingActive ? `${headerStageTitle} setup` : `${headerStageTitle} workspace`}>
+              {onboardingActive ? (
+                <ArcOnboarding
+                  draft={onboardingDraft}
+                  capabilities={setupCapabilities}
+                  calendar={workspace.calendar}
+                  calendarInput={workspace.calendarInput}
+                  planningInput={workspace.planningInput}
+                  onChangeDraft={updateOnboarding}
+                  onUseCalendar={workspace.useCalendar}
+                  onUseClasses={workspace.useClasses}
+                  onLandInDay={() => workspace.setActiveView('Day')}
+                  onOpenImport={openImportFromOnboarding}
+                />
+              ) : (
+                <>
+              {!onboardingActive && workspaceMode.mode === 'calendar' ? <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} onOpenImport={() => workspaceMode.open('import')} /> : null}
               {workspaceMode.mode === 'calendar' && minimumPlanningSetupEstablished(setupCapabilities) && showFirstCapturePrompt && !onboardingDraft.firstCapturePromptDismissed ? <FirstCapturePrompt onSave={workspace.addCapture} onPlace={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }); setWorkspaceOpenToken((token) => token + 1) }} onDismiss={() => { setShowFirstCapturePrompt(false); updateOnboarding({ ...onboardingDraft, stage: 'landed', dismissed: true, firstCapturePromptDismissed: true }) }} /> : null}
               {workspaceMode.mode === 'calendar' && workspace.calendar && workspace.anchorDate ? (
                 <PlanStateHeader
@@ -371,6 +401,8 @@ export function AppFrame() {
                 onOpenRecoveryForSection={(sectionId) => openRecovery(sectionId)}
                 recoveryFocusSectionId={recoveryFocusSectionId}
               />
+                </>
+              )}
             </section>
           </B01Furniture>
         </main>
@@ -388,6 +420,7 @@ function resolveAvailableHomeView(
 }
 
 function stageTitleFor(mode: ReturnType<typeof useWorkspaceMode>['mode'], activeView: string) {
+  if (mode === 'onboarding') return 'Welcome'
   if (mode === 'recovery') return 'Recovery review'
   if (mode === 'terms') return 'Terms'
   if (mode === 'classes') return 'Courses & sections'
@@ -455,4 +488,13 @@ function monthLabel(workspace: ReturnType<typeof useArcWorkspace>) {
 function yearLabel(workspace: ReturnType<typeof useArcWorkspace>) {
   if (workspace.activeView !== 'Year Map' || !workspace.calendar || !workspace.anchorDate) return null
   return `${workspace.calendar.schoolYearLabel} · ${formatPlanHeaderDate(workspace.anchorDate)}`
+}
+
+function onboardingStageTitle(draft: OnboardingDraft, capabilities: ReturnType<typeof assessSetupCapabilities>): string {
+  const stage = resolveOnboardingStage(draft, capabilities)
+  if (stage === 'welcome') return 'Welcome'
+  if (stage === 'calendar') return 'School year'
+  if (stage === 'classes') return 'Courses & sections'
+  if (stage === 'day') return 'Build my day'
+  return 'Setup'
 }

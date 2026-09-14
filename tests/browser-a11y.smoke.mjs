@@ -50,7 +50,7 @@ async function auditDesktop(browser) {
   const skip = page.getByRole('link', { name: /Skip to (calendar|setup)/ })
   assert(await skip.evaluate((node) => document.activeElement === node), 'Keyboard: first Tab must reach the skip link.')
   await page.keyboard.press('Enter')
-  assert(await page.locator('#onboarding-stage, #calendar-stage').evaluate((node) => document.activeElement === node), 'Keyboard: skip link must move focus to the active main stage.')
+  assert(await page.locator('#calendar-stage').evaluate((node) => document.activeElement === node), 'Keyboard: skip link must move focus to the active main stage.')
 
   const save = page.getByRole('button', { name: 'Use this calendar' })
   await save.click()

@@ -17,7 +17,9 @@
     "test:plan-month": "node tests/plan-month.smoke.mjs",
     "test:plan-year": "node tests/plan-year.smoke.mjs",
     "test:plan-p5": "node tests/plan-p5.smoke.mjs",
-    "test:plan-move-shift": "node tests/plan-move-shift.smoke.mjs"
+    "test:plan-move-shift": "node tests/plan-move-shift.smoke.mjs",
+    "test:plan-onboarding-import": "node tests/plan-onboarding-import.smoke.mjs",
+    "test:import-onboarding": "node tests/import-onboarding.smoke.mjs"
   },
   "dependencies": {
     "react": "19.2.8",

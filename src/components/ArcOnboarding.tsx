@@ -18,12 +18,12 @@ type Props = {
 }
 
 export function ArcOnboarding(props: Props) {
-  const stage = resolveStage(props.draft, props.capabilities)
+  const stage = resolveOnboardingStage(props.draft, props.capabilities)
   if (stage === 'welcome') {
     return (
       <div className="onboarding-welcome-wrap"><section className="onboarding-welcome" aria-labelledby="onboarding-title">
         <p className="section-label">Welcome to Arc</p>
-        <h1 id="onboarding-title">Arc is where your plan lives when the plan changes.</h1>
+        <h2 id="onboarding-title" className="onboarding-editorial-title">Arc is where your plan lives when the plan changes.</h2>
         <p>Start with the shape of your real teaching day. You can bring in curriculum, finish bell times, and add detail after the planner is useful.</p>
         <div className="onboarding-actions"><button type="button" className="primary-button" onClick={() => props.onChangeDraft({ ...props.draft, stage: 'calendar', intent: 'guided' })}>Set up my teaching day</button><button type="button" className="quiet-button" onClick={() => props.onChangeDraft({ ...props.draft, stage: 'calendar', intent: 'import' })}>Import what I already have</button><a className="text-button" href="#start-simple">Start simple</a></div>
         <p className="onboarding-footnote">Import uses the same review-and-confirm boundary everywhere in Arc. School year comes first so imported work has a safe home.</p>
@@ -42,7 +42,7 @@ export function ArcOnboarding(props: Props) {
   return null
 }
 
-function resolveStage(draft: OnboardingDraft, capabilities: SetupCapabilities): OnboardingDraft['stage'] {
+export function resolveOnboardingStage(draft: OnboardingDraft, capabilities: SetupCapabilities): OnboardingDraft['stage'] {
   if (draft.stage === 'welcome' && !capabilities.calendarEstablished) return 'welcome'
   if (!capabilities.calendarEstablished) return 'calendar'
   if (!capabilities.coursesEstablished || !capabilities.sectionsEstablished) return 'classes'
