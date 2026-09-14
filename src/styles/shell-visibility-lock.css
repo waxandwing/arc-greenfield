@@ -39,7 +39,7 @@
     inset 0 -2px 0 rgba(0, 0, 0, 0.18);
 }
 
-/* Central planner spread: cream paper + book gutter (Kelly reference) */
+/* Central planner spread: cream paper (Kelly journal reference — no center gutter) */
 .arc-calendar-spread {
   position: relative;
   display: flex;
@@ -53,41 +53,6 @@
   background-image: var(--plan-surface-paper);
   background-size: 512px 512px;
   background-repeat: repeat;
-}
-
-.arc-calendar-spread::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(
-      90deg,
-      transparent 0%,
-      transparent calc(50% - 18px),
-      rgba(44, 46, 46, 0.035) calc(50% - 2px),
-      rgba(255, 253, 248, 0.55) 50%,
-      rgba(44, 46, 46, 0.05) calc(50% + 2px),
-      transparent calc(50% + 18px),
-      transparent 100%
-    );
-}
-
-.arc-calendar-spread::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  z-index: 0;
-  width: 1px;
-  transform: translateX(-50%);
-  pointer-events: none;
-  background: color-mix(in srgb, var(--shell-frame-green) 12%, transparent);
-  box-shadow:
-    -3px 0 8px -2px rgba(8, 22, 16, 0.12),
-    2px 0 6px -2px rgba(255, 253, 248, 0.65);
 }
 
 .arc-calendar-spread > .calendar-stage-header,

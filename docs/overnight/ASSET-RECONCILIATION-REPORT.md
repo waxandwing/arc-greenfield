@@ -5,7 +5,7 @@
 **Audit HEAD (repo-only pass):** `4f6610d`  
 **Supplement:** Kelly reference samples **19 PNGs** (3 chat batches) + ingest scaffold `f3ed6e8` + reports `0ef13dc`, `8b4443b`  
 **Date:** 2026-09-14  
-**Mode:** Audit only — no copies into `public/assets/`, no CSS, no imports.
+**Mode:** Audit-first — no copies into `public/assets/` until shortlist approval. **Exception:** central planner spread CSS aligned to Kelly journal reference (center gutter removed, `c098ede+`).
 
 ---
 
@@ -23,6 +23,20 @@
 Palette reference (from `src/styles/tokens.css`): mustard `#E4B33D`, dusty blue `#7C9CAD`, sage `#9AAA89`, pine live `#1F4B3A`, cream field `#FBF8F0` / paper `#F3EBDD`.
 
 **Approved visual target (Kelly, 2026-09-14):** dark green **planner frame** only; **light cream exterior** with **large, faded, desaturated** direct Arc pattern (not dark-green-dominant shell). Interior quiet; exterior branded. Stage 7.2.2 exterior reads too dark/heavy — future import should favor light-field pattern sources below, not `green.png` or full-strength breezeblock wash alone.
+
+**Swappable assets:** Kelly is continuing to attach **alternate candidates** for the same slots (exterior pattern, course motifs, textures). Log each batch in this report as **KEEP / POSSIBLE / REJECT**; only the production shortlist imports after explicit approval.
+
+---
+
+## Central planner “journal” spread (Kelly approval)
+
+| Audit ID | Evidence | Notes |
+|----------|----------|--------|
+| **REF-PLANNER-JOURNAL** | `reference-samples/planner-journal-spread-reference.png` (chat `da113491…`) | **Approved target** for `arc-planner-object` / `arc-calendar-spread`: thick pine frame, continuous cream paper, header + canvas inside spread |
+
+Kelly (2026-09-14): reference is **excellent and correct** provided the UI **does not** show a **central gutter / spine line** (no book crease). Implementation: removed `.arc-calendar-spread::before` / `::after` gutter stack in `shell-visibility-lock.css`. Frame + `--plan-surface-paper` repeat remain.
+
+This is **not** legacy “journal spine” product chrome (still rejected per Plan law) — it is the **single cream planner field** inside the green frame.
 
 ---
 

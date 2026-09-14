@@ -1,6 +1,12 @@
 # Reference samples (audit only)
 
-Kelly-approved family excerpts for asset reconciliation. **Not** production paths.
+Kelly-approved family excerpts for asset reconciliation. **Not** production paths. Kelly may attach **swap candidates** for the same role — compare here before any `public/assets/` import.
+
+## Planner journal spread
+
+| File | Role |
+|------|------|
+| `planner-journal-spread-reference.png` | **Approved** central calendar chrome (frame + cream paper; **no center gutter**) |
 
 ## Batch 1 — pattern grid + mark + motifs
 
