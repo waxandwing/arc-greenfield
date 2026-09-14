@@ -4,6 +4,13 @@ import { loadViewPreferences, saveViewPreferences, type ViewPreferences } from '
 
 export type HomeDeskPlannerView = Extract<CalendarView, 'Day' | 'Week' | 'Month'>
 
+/** Teacher-facing labels for desk home planner (Week = teaching-week calendar grid). */
+export const HOME_DESK_PLANNER_VIEW_LABELS: Record<HomeDeskPlannerView, string> = {
+  Day: 'My Teaching Day',
+  Week: 'Teaching week (calendar)',
+  Month: 'Month',
+}
+
 export type DeskSurfacePreferences = {
   showTray: boolean
   showPriorityPad: boolean
@@ -24,7 +31,8 @@ export const DEFAULT_DESK_PREFERENCES: DeskSurfacePreferences = {
   showPriorityPad: true,
   showDeskNotes: false,
   showArcTable: true,
-  homeDeskPlannerView: DEFAULT_HOME_VIEW === 'Year Map' ? 'Month' : (DEFAULT_HOME_VIEW as HomeDeskPlannerView),
+  /** Teaching-week grid is the desk calendar surface (Kelly); not Day / My Teaching Day. */
+  homeDeskPlannerView: 'Week',
   plannerSize: 'standard',
   traySize: 'standard',
   mscSize: 'standard',
@@ -99,6 +107,12 @@ function browserStorage(): Storage | null {
 export function seedDeskFromViewPreferences(base: ViewPreferences): DeskAwareViewPreferences {
   const existing = readDeskFromStorage()
   if (existing) return { ...base, desk: existing }
-  const homeView = base.home.mode === 'fixed' && isHomeDeskPlannerView(base.home.view) ? base.home.view : DEFAULT_DESK_PREFERENCES.homeDeskPlannerView
+  const legacyHome = base.home.mode === 'fixed' && isHomeDeskPlannerView(base.home.view) ? base.home.view : null
+  const homeView =
+    legacyHome === 'Day'
+      ? 'Day'
+      : legacyHome === 'Month'
+        ? 'Week'
+        : legacyHome ?? DEFAULT_DESK_PREFERENCES.homeDeskPlannerView
   return { ...base, desk: { ...DEFAULT_DESK_PREFERENCES, homeDeskPlannerView: homeView } }
 }

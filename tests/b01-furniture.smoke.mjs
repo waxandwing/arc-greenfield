@@ -86,7 +86,7 @@ try {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await seedReferenceWeek(page)
 
-  assert(await page.getByRole('heading', { level: 1, name: 'This Week', exact: true }).count() === 1, 'B01: reference state did not reach Week.')
+  assert(await page.getByRole('heading', { level: 1, name: 'Teaching week', exact: true }).count() === 1, 'B01: reference state did not reach Week teaching calendar.')
   assert(await page.getByText('Color Unit', { exact: true }).count() > 0, 'B01: representative continuous Unit truth is missing.')
   assert(await page.getByText('Color intro', { exact: true }).count() > 0, 'B01: representative Lesson truth is missing.')
   assert(await page.getByText('Period 1', { exact: true }).count() > 0, 'B01: representative Section row is missing.')

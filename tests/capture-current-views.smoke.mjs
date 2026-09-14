@@ -102,7 +102,7 @@ try {
   await shot(page, '01-day.png')
 
   await selectPlanView(page, 'Week')
-  await page.getByRole('heading', { level: 1, name: 'This Week' }).waitFor({ timeout: 10000 })
+  await page.getByRole('heading', { level: 1, name: 'Teaching week' }).waitFor({ timeout: 10000 })
   await shot(page, '02-week.png')
 
   await selectPlanView(page, 'Day')

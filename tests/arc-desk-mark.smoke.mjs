@@ -42,7 +42,7 @@ function seed() {
     'arc.shift.v1': JSON.stringify({ schemaVersion: 1, input: { calendarId, overrides: [], undo: null } }),
     'arc.captures.v1': JSON.stringify({ schemaVersion: 1, workspace: { calendarId, captures: [] } }),
     'arc.planning-context.v1': JSON.stringify({ schemaVersion: 2, calendarId, view: 'Month', anchorDate: '2026-09-15', focus: 'day' }),
-    'arc.desk-preferences.v1': JSON.stringify({ showTray: true, showPriorityPad: true, showDeskNotes: false, showArcTable: true, homeDeskPlannerView: 'Month' }),
+    'arc.desk-preferences.v1': JSON.stringify({ showTray: true, showPriorityPad: true, showDeskNotes: false, showArcTable: true, homeDeskPlannerView: 'Week' }),
     'arc.onboarding.v1': JSON.stringify({
       schemaVersion: 1,
       draft: { stage: 'landed', dismissed: true, firstCapturePromptDismissed: true },

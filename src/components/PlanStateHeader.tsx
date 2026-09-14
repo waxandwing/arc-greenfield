@@ -73,7 +73,7 @@ function primaryLine(props: {
   blockType?: 'teaching' | 'planning' | 'non-teaching' | null
 }) {
   if (props.view === 'Week') {
-    return props.courseTitle ? `${props.courseTitle} · This Week` : 'This Week'
+    return 'Teaching week'
   }
   if (props.view === 'Month') {
     return props.courseTitle ? `${props.courseTitle} · This Month` : 'This Month'

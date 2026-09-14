@@ -309,8 +309,9 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
   return (
     <section
       className="projection-section planning-week"
-      aria-label={title}
+      aria-label="Teaching week calendar"
       data-plan-view="Week"
+      data-plan-calendar-surface="teaching-week"
       data-plan-date={focusDate}
       data-plan-course={planContext?.courseId ?? ''}
       data-plan-section={planContext?.sectionId ?? ''}

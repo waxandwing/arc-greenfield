@@ -1,4 +1,5 @@
 import type { DeskAwareViewPreferences, DeskSurfacePreferences, HomeDeskPlannerView } from '../navigation/deskPreferences'
+import { HOME_DESK_PLANNER_VIEW_LABELS } from '../navigation/deskPreferences'
 
 type Props = {
   preferences: DeskAwareViewPreferences
@@ -22,7 +23,7 @@ export function HomeDeskPreferences({ preferences, onChange }: Props) {
           value={preferences.desk.homeDeskPlannerView}
           onChange={(event) => patchDesk({ homeDeskPlannerView: event.target.value as HomeDeskPlannerView })}
         >
-          {DESK_VIEWS.map((view) => <option key={view} value={view}>{view}</option>)}
+          {DESK_VIEWS.map((view) => <option key={view} value={view}>{HOME_DESK_PLANNER_VIEW_LABELS[view]}</option>)}
         </select>
       </label>
       <label className="view-preferences-check">

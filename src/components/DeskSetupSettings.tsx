@@ -1,4 +1,5 @@
 import type { DeskAwareViewPreferences, DeskSurfacePreferences, HomeDeskPlannerView } from '../navigation/deskPreferences'
+import { HOME_DESK_PLANNER_VIEW_LABELS } from '../navigation/deskPreferences'
 import { loadWorkspaceLayout, workspaceLayoutUsesDefault } from '../navigation/workspaceLayout'
 
 type Props = {
@@ -37,7 +38,7 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
           value={preferences.desk.homeDeskPlannerView}
           onChange={(event) => patchDesk({ homeDeskPlannerView: event.target.value as HomeDeskPlannerView })}
         >
-          {DESK_VIEWS.map((view) => <option key={view} value={view}>{view}</option>)}
+          {DESK_VIEWS.map((view) => <option key={view} value={view}>{HOME_DESK_PLANNER_VIEW_LABELS[view]}</option>)}
         </select>
       </label>
 
