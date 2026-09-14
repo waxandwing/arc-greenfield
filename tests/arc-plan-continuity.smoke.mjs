@@ -126,9 +126,9 @@ try {
   assert(await page.getByRole('button', { name: 'Period 5, planning time' }).count() === 1, 'P5 Planning was not represented as teacher time.')
   assert(await page.getByText('Period 1', { exact: true }).count() > 0 && await page.getByText('Period 7', { exact: true }).count() > 0, 'Day did not preserve teaching-period order.')
   assert(await page.getByText('Photograph 2D work before cleanup.', { exact: true }).isVisible(), 'Day did not project the seeded teacher Note.')
-  await page.getByRole('button', { name: '+ Note', exact: true }).click()
-  await page.getByRole('textbox', { name: 'New Note', exact: true }).fill('Email kiln schedule before Friday.')
-  await page.getByRole('button', { name: 'Add Note', exact: true }).click()
+  await page.getByRole('button', { name: /Add note for/i }).click()
+  await page.getByRole('textbox', { name: 'New day note', exact: true }).fill('Email kiln schedule before Friday.')
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
   assert(await page.getByText('Email kiln schedule before Friday.', { exact: true }).isVisible(), 'Day Note authoring did not update canonical planning state.')
   await shot(page, '01-plan-day-multiprep.png')
 

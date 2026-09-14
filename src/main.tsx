@@ -28,6 +28,7 @@ import './styles/visual-reconciliation.css'
 import './styles/repair-pass-1-chrome.css'
 import './styles/repair-pass-2-chrome.css'
 import './styles/repair-pass-3-chrome.css'
+import './styles/interaction-laws.css'
 
 maybeApplyDemoSeed(window.location, window.localStorage, { envDemo: import.meta.env.VITE_ARC_DEMO === 'true' })
 

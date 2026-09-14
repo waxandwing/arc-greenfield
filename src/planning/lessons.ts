@@ -28,6 +28,7 @@ export type Lesson = {
   phases: string[]
   resources: LessonResource[]
   importProvenance?: ImportProvenance
+  important?: boolean
 }
 
 export function createLessonId(): LessonId {
@@ -58,6 +59,7 @@ export function createLesson(input: {
   phases?: string[]
   resources?: LessonResource[]
   importProvenance?: ImportProvenance
+  important?: boolean
 }): Lesson {
   const lesson: Lesson = {
     id: input.id ?? createLessonId(),
@@ -78,6 +80,7 @@ export function createLesson(input: {
       source: resource.source.trim(),
     })),
     importProvenance: normalizeImportProvenance(input.importProvenance),
+    important: input.important ?? false,
   }
 
   const errors = validateLesson(lesson)
@@ -111,6 +114,14 @@ export function validateLesson(lesson: Lesson): string[] {
 
 function normalizeTextList(items: string[] | undefined): string[] {
   return (items ?? []).map((item) => item.trim()).filter(Boolean)
+}
+
+export function setLessonImportant(lesson: Lesson, important: boolean): Lesson {
+  return { ...lesson, important }
+}
+
+export function isLessonImportant(lesson: Lesson): boolean {
+  return lesson.important === true
 }
 
 export function validateLessonAgainstUnit(

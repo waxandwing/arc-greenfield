@@ -19,6 +19,7 @@ export type Unit = {
   title: string
   placement: UnitPlacement | null
   importProvenance?: ImportProvenance
+  important?: boolean
 }
 
 export type UnitPlacementSummary = {
@@ -50,6 +51,7 @@ export function createUnit(input: {
     title: input.title.trim(),
     placement: null,
     importProvenance: normalizeImportProvenance(input.importProvenance),
+    important: false,
   }
   const errors = validateUnit(unit)
   if (errors.length > 0) throw new Error(`Cannot create unit. ${errors.join(' ')}`)
@@ -81,6 +83,14 @@ export function validateUnitCourse(unit: Unit, course: Course): string[] {
 
 export function sectionsUsingUnit(unit: Unit, sections: Section[]): Section[] {
   return sections.filter((section) => section.courseId === unit.courseId && section.calendarId === unit.calendarId)
+}
+
+export function setUnitImportant(unit: Unit, important: boolean): Unit {
+  return { ...unit, important }
+}
+
+export function isUnitImportant(unit: Unit): boolean {
+  return unit.important === true
 }
 
 export function placeUnit(

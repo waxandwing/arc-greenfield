@@ -1,6 +1,11 @@
 import type { MonthProjection, ProjectedDay } from '../calendar/projections'
 import type { ISODate, PlanNavigationContext } from '../calendar'
+import type { LessonWorkspace } from '../planning'
 import type { MonthLessonSignal, MonthPlanningProjection, MonthUnitSegment } from '../planning/monthPlanningProjection'
+import type { PlanningNote } from '../planning'
+import { CalendarDayNotes, CalendarDayNoteDropTarget, type CalendarDayNoteHandlers } from './CalendarDayNotes'
+import { ArcImportantObject } from './ArcImportantObject'
+import { ArcObjectMenu, type ArcObjectMenuItem } from './ArcObjectMenu'
 import { formatLongDate, formatMonthKey, formatShortDate } from './dateLabels'
 
 import { PLAN_WEEKDAY_LABELS } from '../calendar/dateMath'
@@ -8,20 +13,32 @@ import { PLAN_WEEKDAY_LABELS } from '../calendar/dateMath'
 export function PlanningMonthView({
   month,
   planning,
+  notes,
+  monthDateBounds,
   focusDate,
   planContext,
+  lessons,
   onSelectDate,
   onSelectUnit,
   onBeginPlanLessonMove,
+  onSetLessonImportant,
+  dayNotes,
 }: {
   month: MonthProjection
   planning: MonthPlanningProjection
+  notes: PlanningNote[]
+  monthDateBounds?: { min: ISODate; max: ISODate }
   focusDate?: ISODate
   planContext?: PlanNavigationContext | null
+  lessons: LessonWorkspace | null
   onSelectDate?: (date: ISODate) => void
   onSelectUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
+  dayNotes?: CalendarDayNoteHandlers
 }) {
+  const noteHandlers: CalendarDayNoteHandlers = dayNotes ?? {}
+
   return (
     <div className="planning-month" aria-label={`${formatMonthKey(month.monthKey)} planning calendar`} data-focus-date={focusDate ?? ''}>
       <div className="planning-month-weekdays" aria-hidden="true">
@@ -43,12 +60,17 @@ export function PlanningMonthView({
                 <MonthDayCell
                   key={day.date}
                   day={day}
+                  notes={notes}
+                  monthDateBounds={monthDateBounds}
+                  noteHandlers={noteHandlers}
                   inAnchorMonth={day.date.slice(0, 7) === month.monthKey}
                   selected={day.date === focusDate}
                   signals={planningWeek?.days[dayIndex]?.lessonSignals ?? []}
                   planContext={planContext}
+                  lessons={lessons}
                   onSelectDate={onSelectDate}
                   onBeginPlanLessonMove={onBeginPlanLessonMove}
+                  onSetLessonImportant={onSetLessonImportant}
                 />
               ))}
             </div>
@@ -89,20 +111,30 @@ function MonthUnitLane({
 
 function MonthDayCell({
   day,
+  notes,
+  monthDateBounds,
+  noteHandlers,
   inAnchorMonth,
   selected,
   signals,
   planContext,
+  lessons,
   onSelectDate,
   onBeginPlanLessonMove,
+  onSetLessonImportant,
 }: {
   day: ProjectedDay
+  notes: PlanningNote[]
+  monthDateBounds?: { min: ISODate; max: ISODate }
+  noteHandlers: CalendarDayNoteHandlers
   inAnchorMonth: boolean
   selected: boolean
   signals: MonthLessonSignal[]
   planContext?: PlanNavigationContext | null
+  lessons: LessonWorkspace | null
   onSelectDate?: (date: ISODate) => void
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
 }) {
   const nonTeaching = day.kind === 'no-school' || day.kind === 'holiday' || day.kind === 'break' || day.kind === 'teacher-workday'
   const dayStatus = day.kind === 'early-release'
@@ -121,27 +153,35 @@ function MonthDayCell({
   ].filter(Boolean).join(' ')
 
   return (
-    <div className={classes} aria-label={`${formatLongDate(day.date)}${ariaStatus ? `. ${ariaStatus}` : ''}`}>
-      <div className="planning-month-day-heading">
-        <button type="button" className="planning-month-date" aria-current={selected ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>{Number(day.date.slice(8))}</button>
-        {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
+    <CalendarDayNoteDropTarget
+      date={day.date}
+      onDropNote={(noteId, targetDate) => noteHandlers.onMove?.(noteId, targetDate) ?? false}
+    >
+      <div className={classes} aria-label={`${formatLongDate(day.date)}${ariaStatus ? `. ${ariaStatus}` : ''}`}>
+        <div className="planning-month-day-heading">
+          <button type="button" className="planning-month-date" aria-current={selected ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}`} onClick={() => onSelectDate?.(day.date)}>{Number(day.date.slice(8))}</button>
+          {dayStatus ? <span className="planning-month-day-status">{dayStatus}</span> : null}
+        </div>
+        <CalendarDayNotes notes={notes} date={day.date} compact dateBounds={monthDateBounds} handlers={noteHandlers} />
+        <div className="planning-month-signals">
+          {signals.map((signal) => (
+            <MonthLessonSignalView
+              key={`${signal.courseId}:${signal.lessonId}`}
+              signal={signal}
+              important={lessons?.lessons.find((lesson) => lesson.id === signal.lessonId)?.important === true}
+              dayDate={day.date}
+              planContext={planContext}
+              onBeginPlanLessonMove={onBeginPlanLessonMove}
+              onSetLessonImportant={onSetLessonImportant}
+            />
+          ))}
+        </div>
       </div>
-      <div className="planning-month-signals">
-        {signals.map((signal) => (
-          <MonthLessonSignalView
-            key={`${signal.courseId}:${signal.lessonId}`}
-            signal={signal}
-            dayDate={day.date}
-            planContext={planContext}
-            onBeginPlanLessonMove={onBeginPlanLessonMove}
-          />
-        ))}
-      </div>
-    </div>
+    </CalendarDayNoteDropTarget>
   )
 }
 
-function MonthLessonSignalView({ signal, dayDate, planContext, onBeginPlanLessonMove }: { signal: MonthLessonSignal; dayDate: ISODate; planContext?: PlanNavigationContext | null; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void }) {
+function MonthLessonSignalView({ signal, important = false, dayDate, planContext, onBeginPlanLessonMove, onSetLessonImportant }: { signal: MonthLessonSignal; important?: boolean; dayDate: ISODate; planContext?: PlanNavigationContext | null; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onSetLessonImportant?: (lessonId: string, important: boolean) => boolean }) {
   const focusedSection = planContext?.sectionId
     ? signal.sections.find((section) => section.sectionId === planContext.sectionId)
     : planContext?.courseId === signal.courseId
@@ -159,22 +199,44 @@ function MonthLessonSignalView({ signal, dayDate, planContext, onBeginPlanLesson
     statusSummary,
   ].filter(Boolean).join('. ')
 
+  const menuItems: ArcObjectMenuItem[] = []
+  if (onSetLessonImportant) {
+    menuItems.push({
+      id: 'important',
+      label: important ? 'Remove Important' : 'Mark Important',
+      onSelect: () => { onSetLessonImportant(signal.lessonId, !important) },
+    })
+  }
+  if (onBeginPlanLessonMove && focusedSection && planContext?.view === 'Month') {
+    menuItems.push({
+      id: 'move',
+      label: 'Move to date…',
+      onSelect: () => onBeginPlanLessonMove({ lessonId: signal.lessonId, sectionId: focusedSection.sectionId, defaultDestination: dayDate }),
+    })
+  }
+
   return (
-    <article className={`planning-month-signal${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}`} aria-label={accessible}>
-      <div className="planning-month-signal-heading">
-        <span className="planning-month-signal-title">{signal.title}</span>
-        {signal.datePolicy === 'fixed' ? <span className="planning-month-fixed">Fixed</span> : null}
-      </div>
-      <span className="planning-month-signal-course">{signal.courseTitle}</span>
-      <span className="planning-month-signal-sections">{sectionNames.join(' · ')}</span>
-      {shiftedNames.length ? <span className="planning-month-shifted">Shifted: {shiftedNames.join(', ')}</span> : null}
-      {statusSummary ? <span className="planning-month-status-summary">{statusSummary}</span> : null}
-      {onBeginPlanLessonMove && focusedSection && planContext?.view === 'Month' ? (
-        <div className="planning-lesson-actions">
-          <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: signal.lessonId, sectionId: focusedSection.sectionId, defaultDestination: dayDate })}>Move</button>
-        </div>
-      ) : null}
-    </article>
+    <ArcImportantObject important={important} className={`planning-month-signal${signal.datePolicy === 'fixed' ? ' planning-month-signal--fixed' : ''}`}>
+      <article aria-label={accessible}>
+        <ArcObjectMenu label={signal.title} items={menuItems}>
+          <div className="planning-month-signal-body">
+            <div className="planning-month-signal-heading">
+              <span className="planning-month-signal-title">{signal.title}</span>
+              {signal.datePolicy === 'fixed' ? <span className="planning-month-fixed">Fixed</span> : null}
+            </div>
+            <span className="planning-month-signal-course">{signal.courseTitle}</span>
+            <span className="planning-month-signal-sections">{sectionNames.join(' · ')}</span>
+            {shiftedNames.length ? <span className="planning-month-shifted">Shifted: {shiftedNames.join(', ')}</span> : null}
+            {statusSummary ? <span className="planning-month-status-summary">{statusSummary}</span> : null}
+          </div>
+        </ArcObjectMenu>
+        {onBeginPlanLessonMove && focusedSection && planContext?.view === 'Month' ? (
+          <div className="planning-lesson-actions">
+            <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: signal.lessonId, sectionId: focusedSection.sectionId, defaultDestination: dayDate })}>Move</button>
+          </div>
+        ) : null}
+      </article>
+    </ArcImportantObject>
   )
 }
 

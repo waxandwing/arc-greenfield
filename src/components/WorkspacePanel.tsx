@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import type { ISODate } from '../calendar'
 import type { CaptureWorkspace, Lesson, PlanningCapture, UnitWorkspace } from '../planning'
+import { ArcImportantObject } from './ArcImportantObject'
+import { ArcObjectMenu, promptMoveToDate, type ArcObjectMenuItem } from './ArcObjectMenu'
 
 type Props = {
   captures: CaptureWorkspace | null
@@ -11,6 +13,8 @@ type Props = {
   undoAvailable: boolean
   onAddCapture: (text: string) => string | null
   onDeleteCapture: (captureId: string) => void
+  onSetCaptureImportant?: (captureId: string, important: boolean) => boolean
+  onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
   onPromoteCapture: (captureId: string, unitId: string, plannedDate: ISODate | null) => boolean
   onScheduleLesson: (lessonId: string, date: ISODate) => void
   onUnplaceLesson: (lessonId: string) => void
@@ -46,6 +50,8 @@ export function WorkspacePanel(props: Props) {
               onSelect={() => setSelectedCaptureId((current) => (current === capture.id ? null : capture.id))}
               onPromote={props.onPromoteCapture}
               onDelete={props.onDeleteCapture}
+              onSetImportant={props.onSetCaptureImportant}
+              onMoveToDate={props.onMoveCaptureToDate}
             />
           ))
         )}
@@ -89,7 +95,7 @@ export function WorkspacePanel(props: Props) {
   )
 }
 
-function CaptureCard({ capture, units, defaultDate, selected, onSelect, onPromote, onDelete }: {
+function CaptureCard({ capture, units, defaultDate, selected, onSelect, onPromote, onDelete, onSetImportant, onMoveToDate }: {
   capture: PlanningCapture
   units: UnitWorkspace | null
   defaultDate: ISODate | ''
@@ -97,6 +103,8 @@ function CaptureCard({ capture, units, defaultDate, selected, onSelect, onPromot
   onSelect: () => void
   onPromote: Props['onPromoteCapture']
   onDelete: Props['onDeleteCapture']
+  onSetImportant?: Props['onSetCaptureImportant']
+  onMoveToDate?: Props['onMoveCaptureToDate']
 }) {
   const placedUnits = useMemo(() => units?.units.filter((unit) => unit.placement) ?? [], [units])
   const [unitId, setUnitId] = useState(placedUnits[0]?.id ?? units?.units[0]?.id ?? '')
@@ -104,12 +112,38 @@ function CaptureCard({ capture, units, defaultDate, selected, onSelect, onPromot
   const unit = units?.units.find((candidate) => candidate.id === unitId)
   const dateAllowed = Boolean(unit?.placement && defaultDate && defaultDate >= unit.placement.startDate && defaultDate <= unit.placement.endDate)
 
+  const menuItems: ArcObjectMenuItem[] = []
+  if (onSetImportant) {
+    menuItems.push({
+      id: 'important',
+      label: capture.important ? 'Remove Important' : 'Mark Important',
+      onSelect: () => { onSetImportant(capture.id, !capture.important) },
+    })
+  }
+  if (onMoveToDate) {
+    menuItems.push({
+      id: 'place',
+      label: 'Place on calendar…',
+      onSelect: () => {
+        const next = promptMoveToDate(capture.anchorDate ?? (typeof defaultDate === 'string' ? defaultDate : ''))
+        if (next) onMoveToDate(capture.id, next as ISODate)
+      },
+    })
+    menuItems.push({
+      id: 'tray',
+      label: 'Move to Tray…',
+      onSelect: () => { onMoveToDate(capture.id, null) },
+    })
+  }
+
   return (
-    <article className={`workspace-capture-card${selected ? ' workspace-capture-card--selected' : ''}`}>
+    <ArcImportantObject important={capture.important === true} className={`workspace-capture-card${selected ? ' workspace-capture-card--selected' : ''}`}>
+      <ArcObjectMenu label={capture.text} items={menuItems}>
       <button type="button" className="workspace-capture-card-select" onClick={onSelect}>
         <strong>{capture.text}</strong>
-        <span>Captured {new Date(capture.createdAt).toLocaleDateString()}</span>
+        <span>Captured {new Date(capture.createdAt).toLocaleDateString()}{capture.anchorDate ? ` · ${capture.anchorDate}` : ''}</span>
       </button>
+      </ArcObjectMenu>
       {selected ? (
         <div className="workspace-capture-actions">
           {units?.units.length ? <>
@@ -120,6 +154,6 @@ function CaptureCard({ capture, units, defaultDate, selected, onSelect, onPromot
           <button type="button" className="text-button" aria-label={`Delete Capture ${capture.text}`} onClick={() => onDelete(capture.id)}>Delete</button>
         </div>
       ) : null}
-    </article>
+    </ArcImportantObject>
   )
 }

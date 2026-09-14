@@ -31,6 +31,7 @@ export function deserializeCaptures(raw: string): CaptureWorkspace | null {
         if (typeof capture.unitId === 'string' && capture.unitId.trim()) row.unitId = capture.unitId
         if (typeof capture.lessonId === 'string' && capture.lessonId.trim()) row.lessonId = capture.lessonId
         if (typeof capture.sourceView === 'string' && capture.sourceView.trim()) row.sourceView = capture.sourceView
+        if (capture.important === true) row.important = true
         return row
       }),
     }

@@ -291,6 +291,8 @@ export function AppFrame() {
       undoAvailable={Boolean(fridgeUndo)}
       onAddCapture={workspace.addCapture}
       onDeleteCapture={workspace.removeCapture}
+      onSetCaptureImportant={workspace.setCaptureImportant}
+      onMoveCaptureToDate={workspace.moveCaptureToDate}
       onPromoteCapture={workspace.promoteCapture}
       onScheduleLesson={scheduleLessonFromFridge}
       onUnplaceLesson={sendLessonBackToFridge}
@@ -477,8 +479,16 @@ export function AppFrame() {
                 onReturnToPlanningPeriod={workspace.returnToPlanningPeriod}
                 planningPeriodReturnPending={Boolean(workspace.planningPeriodReturnBlockId)}
                 captureWorkspace={workspace.captureWorkspace}
-                onAddNote={workspace.addCalendarNote}
-                onDeleteNote={workspace.deleteCalendarNote}
+                dayNotes={{
+                  onAdd: workspace.addCalendarNote,
+                  onUpdateText: workspace.updateCalendarNote,
+                  onMove: workspace.moveCalendarNote,
+                  onRemove: workspace.deleteCalendarNote,
+                  onSetImportant: workspace.setCalendarNoteImportant,
+                }}
+                onSetLessonImportant={workspace.setLessonImportant}
+                onSetCaptureImportant={workspace.setCaptureImportant}
+                onMoveCaptureToDate={workspace.moveCaptureToDate}
                 onCloseMode={workspaceMode.mode === 'recovery' ? closeRecoveryMode : workspaceMode.close}
                 onOpenMode={workspaceMode.open}
                 planMoveIntent={workspace.planMoveIntent}

@@ -23,6 +23,7 @@ export type PlanningCapture = {
   unitId?: string
   lessonId?: string
   sourceView?: string
+  important?: boolean
 }
 
 export type CaptureWorkspace = {
@@ -50,6 +51,32 @@ export function createPlanningCapture(
   if (anchor.lessonId?.trim()) capture.lessonId = anchor.lessonId.trim()
   if (anchor.sourceView?.trim()) capture.sourceView = anchor.sourceView.trim()
   return capture
+}
+
+export function setCaptureImportant(workspace: CaptureWorkspace, captureId: string, important: boolean): CaptureWorkspace {
+  return {
+    ...workspace,
+    captures: workspace.captures.map((capture) => (capture.id === captureId ? { ...capture, important } : capture)),
+  }
+}
+
+export function moveCaptureAnchorDate(workspace: CaptureWorkspace, captureId: string, anchorDate: ISODate): CaptureWorkspace {
+  return {
+    ...workspace,
+    captures: workspace.captures.map((capture) => (capture.id === captureId ? { ...capture, anchorDate } : capture)),
+  }
+}
+
+export function clearCaptureAnchorDate(workspace: CaptureWorkspace, captureId: string): CaptureWorkspace {
+  return {
+    ...workspace,
+    captures: workspace.captures.map((capture) => {
+      if (capture.id !== captureId) return capture
+      const next = { ...capture }
+      delete next.anchorDate
+      return next
+    }),
+  }
 }
 
 export function validateCaptureWorkspace(workspace: CaptureWorkspace): string[] {

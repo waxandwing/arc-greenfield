@@ -19,7 +19,15 @@ import { DEFAULT_HOME_VIEW, type CalendarView } from '../navigation/calendarView
 import {
   applyShiftOperation,
   createPlanningCapture,
-  createPlanningNote,
+  addCalendarDayNote,
+  moveCalendarDayNote,
+  removeCalendarDayNote,
+  setCalendarDayNoteImportant,
+  updateCalendarDayNoteText,
+  setLessonImportant,
+  setCaptureImportant,
+  moveCaptureAnchorDate,
+  clearCaptureAnchorDate,
   promoteCaptureToLesson,
   courseIdsProtectedByUnits,
   saveLessonAndShiftStateToBrowser,
@@ -486,11 +494,32 @@ export function useArcWorkspace(onCloseMode: () => void) {
     if (!calendar) return false
     const current = planningWorkspace ?? { calendarId: calendar.id, courses: [], sections: [], notes: [] }
     try {
-      const token = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-      const note = createPlanningNote({ id: `note-${token}`, calendarId: calendar.id, date, text, placement: 'calendar', important: false, sourceLabel: null, sourceLocator: null })
-      const next = { ...current, notes: [...(current.notes ?? []), note] }
+      const nextNotes = addCalendarDayNote(current.notes ?? [], { calendarId: calendar.id, date, text })
+      const next = { ...current, notes: nextNotes }
+      useClasses(next, next)
+      return true
+    } catch (error) {
+      setStorageNotice(error instanceof Error ? error.message : String(error))
+      return false
+    }
+  }
+
+  function updateCalendarNote(noteId: string, text: string): boolean {
+    if (!planningWorkspace) return false
+    try {
+      const next = { ...planningWorkspace, notes: updateCalendarDayNoteText(planningWorkspace.notes ?? [], noteId, text) }
+      useClasses(next, next)
+      return true
+    } catch (error) {
+      setStorageNotice(error instanceof Error ? error.message : String(error))
+      return false
+    }
+  }
+
+  function moveCalendarNote(noteId: string, date: ISODate): boolean {
+    if (!planningWorkspace) return false
+    try {
+      const next = { ...planningWorkspace, notes: moveCalendarDayNote(planningWorkspace.notes ?? [], noteId, date) }
       useClasses(next, next)
       return true
     } catch (error) {
@@ -501,8 +530,33 @@ export function useArcWorkspace(onCloseMode: () => void) {
 
   function deleteCalendarNote(noteId: string) {
     if (!planningWorkspace) return
-    const next = { ...planningWorkspace, notes: (planningWorkspace.notes ?? []).filter((note) => note.id !== noteId) }
+    const next = { ...planningWorkspace, notes: removeCalendarDayNote(planningWorkspace.notes ?? [], noteId) }
     useClasses(next, next)
+  }
+
+  function setCalendarNoteImportantFlag(noteId: string, important: boolean) {
+    if (!planningWorkspace) return
+    const next = { ...planningWorkspace, notes: setCalendarDayNoteImportant(planningWorkspace.notes ?? [], noteId, important) }
+    useClasses(next, next)
+  }
+
+  function setLessonImportantFlag(lessonId: string, important: boolean): boolean {
+    if (!lessonWorkspace || !shiftState) return false
+    const lessons = lessonWorkspace.lessons.map((lesson) => (lesson.id === lessonId ? setLessonImportant(lesson, important) : lesson))
+    return useLessons(lessonWorkspace, { ...lessonWorkspace, lessons }, shiftState)
+  }
+
+  function setCaptureImportantFlag(captureId: string, important: boolean): boolean {
+    if (!captureWorkspace) return false
+    return saveCaptureWorkspace(setCaptureImportant(captureWorkspace, captureId, important))
+  }
+
+  function moveCaptureToDate(captureId: string, anchorDate: ISODate | null): boolean {
+    if (!captureWorkspace) return false
+    const next = anchorDate
+      ? moveCaptureAnchorDate(captureWorkspace, captureId, anchorDate)
+      : clearCaptureAnchorDate(captureWorkspace, captureId)
+    return saveCaptureWorkspace(next)
   }
 
   function applyRecoveryShift(operation: ShiftOperation): string | null {
@@ -764,7 +818,13 @@ export function useArcWorkspace(onCloseMode: () => void) {
     promoteCapture,
     useCurriculumImport,
     addCalendarNote,
+    updateCalendarNote,
+    moveCalendarNote,
     deleteCalendarNote,
+    setCalendarNoteImportant: setCalendarNoteImportantFlag,
+    setLessonImportant: setLessonImportantFlag,
+    setCaptureImportant: setCaptureImportantFlag,
+    moveCaptureToDate,
     applyRecoveryShift,
     undoLastShift,
     movePeriod,

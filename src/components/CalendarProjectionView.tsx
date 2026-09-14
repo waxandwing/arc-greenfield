@@ -12,7 +12,7 @@ import { PlanningDayContinuityView } from './PlanningDayContinuityView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
 import { PlanningYearView } from './PlanningYearView'
-import { PlanningNotes } from './PlanningNotes'
+import { CalendarDayNotes, type CalendarDayNoteHandlers } from './CalendarDayNotes'
 import { CalendarDayCell, MissingBoundary, ProjectionHeading, RangeProjection, TermContext, WeekdayAlignedRange } from './CalendarProjectionPrimitives'
 import { formatDateRange, formatLongDate, formatMonth } from './dateLabels'
 
@@ -41,13 +41,13 @@ type Props = {
   onReturnToPlanningPeriod?: () => void
   planningPeriodReturnPending?: boolean
   captureWorkspace?: CaptureWorkspace | null
-  onAddNote?: (date: ISODate, text: string) => boolean
-  onDeleteNote?: (noteId: string) => void
+  dayNotes?: CalendarDayNoteHandlers
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
 }
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending = false, captureWorkspace = null, onAddNote, onDeleteNote, onBeginPlanLessonMove, onOpenRecoveryForSection }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending = false, captureWorkspace = null, dayNotes, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -75,8 +75,8 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           onReturnToPlanningPeriod={onReturnToPlanningPeriod}
           planningPeriodReturnPending={planningPeriodReturnPending}
           captureWorkspace={captureWorkspace}
-          onAddNote={onAddNote}
-          onDeleteNote={onDeleteNote}
+          dayNotes={dayNotes}
+          onSetLessonImportant={onSetLessonImportant}
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
@@ -96,8 +96,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           onSelectDate={(date) => onSelectDate?.(date, 'Day')}
           onReturnToPlanningPeriod={onReturnToPlanningPeriod}
           planningPeriodReturnPending={planningPeriodReturnPending}
-          onAddNote={onAddNote}
-          onDeleteNote={onDeleteNote}
+          onSetLessonImportant={onSetLessonImportant}
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
@@ -130,7 +129,22 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
             <TermContext quarters={projection.quarters} semesters={projection.semesters} />
           </div>
           {monthPlanning ? (
-            <><PlanningNotes notes={planningContext?.planning.notes ?? []} dates={projection.weeks.flatMap((week) => week.days.map((day) => day.date))} focusDate={anchorDate} onAdd={onAddNote} onDelete={onDeleteNote} /><div className="planning-scroll-frame"><PlanningMonthView month={projection} planning={monthPlanning} focusDate={planContext?.anchorDate ?? anchorDate} planContext={planContext} onSelectDate={(date) => onSelectDate?.(date, 'Day')} onSelectUnit={onSelectYearUnit} onBeginPlanLessonMove={onBeginPlanLessonMove} /></div></>
+            <div className="planning-scroll-frame">
+              <PlanningMonthView
+                month={projection}
+                planning={monthPlanning}
+                notes={planningContext?.planning.notes ?? []}
+                monthDateBounds={{ min: calendar.firstDay, max: calendar.lastDay }}
+                focusDate={planContext?.anchorDate ?? anchorDate}
+                planContext={planContext}
+                lessons={planningContext?.lessons ?? null}
+                onSelectDate={(date) => onSelectDate?.(date, 'Day')}
+                onSelectUnit={onSelectYearUnit}
+                onBeginPlanLessonMove={onBeginPlanLessonMove}
+                onSetLessonImportant={onSetLessonImportant}
+                dayNotes={dayNotes}
+              />
+            </div>
           ) : (
             <CalendarOnlyMonth projection={projection} label={formatMonth(anchorDate)} />
           )}
@@ -192,7 +206,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, planContext, termContext, onStartClass, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending, captureWorkspace, onAddNote, onDeleteNote, onBeginPlanLessonMove, onOpenRecoveryForSection }: {
+function PlanningDayStrip({ title, day, planningContext, planContext, termContext, onStartClass, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending, captureWorkspace, dayNotes, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection }: {
   title: string
   day: ProjectedDay
   planningContext?: PlanningContext | null
@@ -207,16 +221,27 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   onReturnToPlanningPeriod?: () => void
   planningPeriodReturnPending?: boolean
   captureWorkspace?: import('../planning').CaptureWorkspace | null
-  onAddNote?: (date: ISODate, text: string) => boolean
-  onDeleteNote?: (noteId: string) => void
+  dayNotes?: CalendarDayNoteHandlers
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onBeginPlanLessonMove?: Props['onBeginPlanLessonMove']
   onOpenRecoveryForSection?: Props['onOpenRecoveryForSection']
 }) {
+  const noteHandlers: CalendarDayNoteHandlers = {
+    onAdd: dayNotes?.onAdd,
+    onUpdateText: dayNotes?.onUpdateText,
+    onMove: dayNotes?.onMove,
+    onRemove: dayNotes?.onRemove,
+    onSetImportant: dayNotes?.onSetImportant,
+  }
+
   return (
     <section className="projection-section" aria-label={title}>
       {planningContext ? null : <ProjectionHeading title={title} termContext={termContext} />}
       {planningContext ? (
         <>
+          <div className="day-continuity-day-notes">
+            <CalendarDayNotes notes={planningContext.planning.notes ?? []} date={day.date} handlers={noteHandlers} />
+          </div>
           <PlanningDayContinuityView
           day={day}
           continuity={projectDayContinuity({
@@ -242,9 +267,9 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
           overrides={planningContext.shiftState?.overrides ?? []}
           onStartClass={onStartClass}
           onBeginPlanLessonMove={onBeginPlanLessonMove}
+          onSetLessonImportant={onSetLessonImportant}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
         />
-          <PlanningNotes notes={planningContext.planning.notes ?? []} dates={[day.date]} focusDate={day.date} onAdd={onAddNote} onDelete={onDeleteNote} />
         </>
       ) : (
         <div className="projection-day-strip projection-day-strip--single">
@@ -255,7 +280,7 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   )
 }
 
-function PlanningWeekStrip({ title, days, focusDate, planningContext, planContext, termContext, onSelectDate, onReturnToPlanningPeriod, planningPeriodReturnPending, onAddNote, onDeleteNote, onBeginPlanLessonMove, onOpenRecoveryForSection }: {
+function PlanningWeekStrip({ title, days, focusDate, planningContext, planContext, termContext, onSelectDate, onReturnToPlanningPeriod, planningPeriodReturnPending, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection }: {
   title: string
   days: ProjectedDay[]
   focusDate: ISODate
@@ -265,8 +290,7 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
   onSelectDate?: (date: ISODate) => void
   onReturnToPlanningPeriod?: () => void
   planningPeriodReturnPending?: boolean
-  onAddNote?: (date: ISODate, text: string) => boolean
-  onDeleteNote?: (noteId: string) => void
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onBeginPlanLessonMove?: Props['onBeginPlanLessonMove']
   onOpenRecoveryForSection?: Props['onOpenRecoveryForSection']
 }) {
@@ -287,9 +311,18 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
       {planningContext ? (
         <>
           <div className="planning-scroll-frame">
-            <PlanningWeekDayView days={days} planning={planningForDays(days, planningContext)} focusDate={focusDate} planContext={planContext} onSelectDate={onSelectDate} onBeginPlanLessonMove={onBeginPlanLessonMove} onOpenRecoveryForSection={onOpenRecoveryForSection} />
+            <PlanningWeekDayView
+              days={days}
+              planning={planningForDays(days, planningContext)}
+              focusDate={focusDate}
+              planContext={planContext}
+              onSelectDate={onSelectDate}
+              onBeginPlanLessonMove={onBeginPlanLessonMove}
+              onOpenRecoveryForSection={onOpenRecoveryForSection}
+              onSetLessonImportant={onSetLessonImportant}
+              lessonImportantById={(lessonId) => planningContext.lessons.lessons.find((lesson) => lesson.id === lessonId)?.important === true}
+            />
           </div>
-          <PlanningNotes notes={planningContext.planning.notes ?? []} dates={days.map((day) => day.date)} focusDate={focusDate} onAdd={onAddNote} onDelete={onDeleteNote} />
         </>
       ) : (
         <div className="projection-day-strip">

@@ -64,8 +64,10 @@ type WorkspaceStageProps = {
   onReturnToPlanningPeriod?: () => void
   planningPeriodReturnPending?: boolean
   captureWorkspace?: import('../planning').CaptureWorkspace | null
-  onAddNote: (date: ISODate, text: string) => boolean
-  onDeleteNote: (noteId: string) => void
+  dayNotes?: import('./CalendarDayNotes').CalendarDayNoteHandlers
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
+  onSetCaptureImportant?: (captureId: string, important: boolean) => boolean
+  onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
   onCloseMode: () => void
   onOpenMode: (mode: WorkspaceMode) => void
   planMoveIntent?: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null } | null
@@ -113,8 +115,10 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onReturnToPlanningPeriod,
     planningPeriodReturnPending,
     captureWorkspace,
-    onAddNote,
-    onDeleteNote,
+    dayNotes,
+    onSetLessonImportant,
+    onMoveCaptureToDate: _moveCaptureToDate,
+    onSetCaptureImportant: _setCaptureImportant,
     onCloseMode,
     onOpenMode,
     planMoveIntent,
@@ -249,8 +253,8 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         onReturnToPlanningPeriod={onReturnToPlanningPeriod}
         planningPeriodReturnPending={planningPeriodReturnPending}
         captureWorkspace={captureWorkspace}
-        onAddNote={onAddNote}
-        onDeleteNote={onDeleteNote}
+        dayNotes={dayNotes}
+        onSetLessonImportant={onSetLessonImportant}
         onBeginPlanLessonMove={onBeginPlanLessonMove}
         onOpenRecoveryForSection={onOpenRecoveryForSection}
       />

@@ -14,6 +14,8 @@ export function PlanningWeekDayView({
   onSelectDate,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
+  onSetLessonImportant,
+  lessonImportantById,
 }: {
   days: ProjectedDay[]
   planning: PlanningRangeProjection
@@ -23,6 +25,8 @@ export function PlanningWeekDayView({
   onSelectDate?: (date: ISODate) => void
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
+  lessonImportantById?: (lessonId: string) => boolean
 }) {
   if (planning.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -32,7 +36,7 @@ export function PlanningWeekDayView({
     <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'} data-focus-date={focusDate ?? ''}>
       <PlanningDateHeader days={days} single={single} focusDate={focusDate} onSelectDate={onSelectDate} />
       {planning.courses.map((course) => (
-        <PlanningCourse key={course.course.id} course={course} days={days} single={single} focusDate={focusDate} planContext={planContext} onBeginPlanLessonMove={onBeginPlanLessonMove} onOpenRecoveryForSection={onOpenRecoveryForSection} />
+        <PlanningCourse key={course.course.id} course={course} days={days} single={single} focusDate={focusDate} planContext={planContext} onBeginPlanLessonMove={onBeginPlanLessonMove} onOpenRecoveryForSection={onOpenRecoveryForSection} onSetLessonImportant={onSetLessonImportant} lessonImportantById={lessonImportantById} />
       ))}
     </div>
   )
@@ -65,6 +69,8 @@ function PlanningCourse({
   planContext,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
+  onSetLessonImportant,
+  lessonImportantById,
 }: {
   course: PlanningCourseGroup
   days: ProjectedDay[]
@@ -73,6 +79,8 @@ function PlanningCourse({
   planContext?: PlanNavigationContext | null
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
+  lessonImportantById?: (lessonId: string) => boolean
 }) {
   return (
     <section className="planning-course" data-course-id={course.course.id} aria-label={`${course.course.title} planning`}>
@@ -117,9 +125,11 @@ function PlanningCourse({
                     key={lesson.lessonId}
                     lesson={lesson}
                     sectionId={row.section.id}
+                    important={lessonImportantById?.(lesson.lessonId) ?? false}
                     selected={planContext?.lessonId === lesson.lessonId}
                     onBeginPlanLessonMove={onBeginPlanLessonMove}
                     onOpenRecoveryForSection={onOpenRecoveryForSection}
+                    onSetLessonImportant={onSetLessonImportant}
                   />
                 ))}
                 {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
@@ -133,7 +143,10 @@ function PlanningCourse({
   )
 }
 
-function LessonTile({ lesson, sectionId, selected, onBeginPlanLessonMove, onOpenRecoveryForSection }: { lesson: PlanningLessonPlacement; sectionId: string; selected?: boolean; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onOpenRecoveryForSection?: (sectionId: string) => void }) {
+import { ArcImportantObject } from './ArcImportantObject'
+import { ArcObjectMenu, type ArcObjectMenuItem } from './ArcObjectMenu'
+
+function LessonTile({ lesson, sectionId, important = false, selected, onBeginPlanLessonMove, onOpenRecoveryForSection, onSetLessonImportant }: { lesson: PlanningLessonPlacement; sectionId: string; important?: boolean; selected?: boolean; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onOpenRecoveryForSection?: (sectionId: string) => void; onSetLessonImportant?: (lessonId: string, important: boolean) => boolean }) {
   const [touchRevealed, setTouchRevealed] = useState(false)
   const statusLabel = humanizeStatus(lesson.deliveryStatus)
   const showStatus = lesson.deliveryStatus !== 'not-started' || lesson.datePolicy === 'fixed' || lesson.isSectionOverride
@@ -148,9 +161,26 @@ function LessonTile({ lesson, sectionId, selected, onBeginPlanLessonMove, onOpen
     taughtLabel,
     lesson.resumeNote ? `Resume note: ${lesson.resumeNote}` : null,
   ].filter(Boolean).join('. ')
-  const hasActions = Boolean(onBeginPlanLessonMove || (onOpenRecoveryForSection && lesson.deliveryStatus === 'in-progress'))
+  const hasActions = Boolean(onBeginPlanLessonMove || onSetLessonImportant || (onOpenRecoveryForSection && lesson.deliveryStatus === 'in-progress'))
+
+  const menuItems: ArcObjectMenuItem[] = []
+  if (onSetLessonImportant) {
+    menuItems.push({
+      id: 'important',
+      label: important ? 'Remove Important' : 'Mark Important',
+      onSelect: () => { onSetLessonImportant(lesson.lessonId, !important) },
+    })
+  }
+  if (onBeginPlanLessonMove) {
+    menuItems.push({
+      id: 'move',
+      label: 'Move to date…',
+      onSelect: () => onBeginPlanLessonMove({ lessonId: lesson.lessonId, sectionId, defaultDestination: lesson.effectiveDate }),
+    })
+  }
 
   return (
+    <ArcImportantObject important={important}>
     <article
       className={`planning-lesson planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}${selected || touchRevealed ? ' is-actions-revealed' : ''}`}
       aria-label={accessible}
@@ -160,6 +190,7 @@ function LessonTile({ lesson, sectionId, selected, onBeginPlanLessonMove, onOpen
         setTouchRevealed((value) => !value)
       }}
     >
+      <ArcObjectMenu label={lesson.title} items={menuItems}>
       <div className="planning-lesson-title-row">
         <span className="planning-lesson-title" title={lesson.title}>{lesson.title}</span>
         {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title={lesson.title}>Fixed</span> : null}
@@ -174,6 +205,7 @@ function LessonTile({ lesson, sectionId, selected, onBeginPlanLessonMove, onOpen
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="planning-resume-note">Continue: {lesson.resumeNote}</p>
       ) : null}
+      </ArcObjectMenu>
       {hasActions ? (
         <LessonProgressiveActions
           lessonId={lesson.lessonId}
@@ -182,9 +214,12 @@ function LessonTile({ lesson, sectionId, selected, onBeginPlanLessonMove, onOpen
           inProgress={lesson.deliveryStatus === 'in-progress'}
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
+          onSetLessonImportant={onSetLessonImportant}
+          important={important}
         />
       ) : null}
     </article>
+    </ArcImportantObject>
   )
 }
 
@@ -195,6 +230,8 @@ function LessonProgressiveActions({
   inProgress,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
+  onSetLessonImportant,
+  important = false,
 }: {
   lessonId: string
   sectionId: string
@@ -202,9 +239,14 @@ function LessonProgressiveActions({
   inProgress: boolean
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
+  important?: boolean
 }) {
   const [moreOpen, setMoreOpen] = useState(false)
   const extras = [
+    onSetLessonImportant ? (
+      <button key="important" type="button" className="text-button" onClick={() => onSetLessonImportant(lessonId, !important)}>{important ? 'Remove Important' : 'Mark Important'}</button>
+    ) : null,
     onOpenRecoveryForSection && inProgress ? (
       <button key="shift" type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Review Shift</button>
     ) : null,
