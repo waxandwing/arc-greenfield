@@ -1,7 +1,7 @@
 # ARC Desk Visual Implementation Report
 
 **Branch:** `cursor/arc-production-integration`  
-**Implementation SHA:** `TBD` (desk visual: `c8f79ae`; follow-up tests/evidence on integration after `4701345`)  
+**Implementation SHA:** `5a8c1f0` (desk visual: `c8f79ae`; follow-up tests/evidence after `4701345`)  
 **Figma authority:** file `CfWcuQPY4ljYXondICj2ZX`, frame node `6:3194` (1696×1254 ref; wood field 1440×1024)  
 **Behavioral authority:** Arc on branch (planning, tray, MSC, edit workspace, stacks unchanged)
 
