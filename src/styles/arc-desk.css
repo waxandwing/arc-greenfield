@@ -294,15 +294,16 @@ html:has(.arc-shell--desk) body {
   cursor: pointer;
 }
 
-.arc-planner-physical-tabs--desk-edge .arc-index-tab[aria-current='page'] {
-  /* Active tab protrudes slightly further onto the desk. */
+.arc-planner-physical-tabs.arc-planner-physical-tabs--desk-edge .arc-index-tab[aria-current='page'] {
+  /* Active tab protrudes further onto the desk (beats generic physical-tabs translateY). */
   transform: translateX(5px);
   padding-right: 10px;
+  padding-bottom: 7px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--shell-frame-green) 18%, var(--field-elevated)), var(--field-elevated));
   border-color: color-mix(in srgb, var(--shell-frame-green) 45%, var(--line-subtle));
 }
 
-.arc-planner-physical-tabs--desk-edge .arc-index-tab:hover:not(:disabled) {
+.arc-planner-physical-tabs.arc-planner-physical-tabs--desk-edge .arc-index-tab:hover:not(:disabled) {
   transform: translateX(3px);
 }
 
@@ -320,7 +321,7 @@ html:has(.arc-shell--desk) body {
   padding: 8px 4px;
 }
 
-.arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab--desk-slice-active {
+.arc-planner-physical-tabs.arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab.arc-index-tab--desk-slice-active {
   transform: translateX(6px);
   color: color-mix(in srgb, var(--shell-frame-green) 55%, var(--ink));
   font-weight: 800;
