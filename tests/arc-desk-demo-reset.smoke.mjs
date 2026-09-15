@@ -17,6 +17,8 @@ try {
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible', timeout: 20000 })
 
   assert(await page.locator('.arc-shell--desk').count() === 1, 'Demo reset must mount the desk shell.')
+  const kicker = (await page.locator('.plan-state-secondary').first().textContent())?.trim()
+  assert(kicker === 'SEPTEMBER 7 - 11 • WEEK 4', `Kelly demo week kicker must match comp (got ${kicker ?? 'missing'}).`)
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(shellWood.includes('texture-wood'), 'Desk shell must use icarus texture-wood after demo reset.')
   const planShellPattern = await page.locator('.arc-shell').first().evaluate((el) => getComputedStyle(el).backgroundImage.includes('pattern'))
