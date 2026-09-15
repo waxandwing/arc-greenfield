@@ -12,6 +12,7 @@ import {
 import type { MscSizePreset, PlannerSizePreset, TraySizePreset } from '../navigation/deskLayout'
 import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
+import '../styles/b01-settings-content.css'
 import { DeskAccentPostIts } from './DeskAccentPostIts'
 import { DeskGreenFoldersDrawer } from './DeskGreenFoldersDrawer'
 import { DeskHelpButton } from './DeskHelpButton'

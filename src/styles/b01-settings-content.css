@@ -1,0 +1,267 @@
+/* Settings furniture content — paper list on the desk, not a SaaS admin drawer. */
+
+.b01-settings-content {
+  display: grid;
+  gap: 22px;
+  font: 500 13px/1.4 var(--font-ui);
+  color: var(--soft-charcoal);
+}
+
+.b01-settings-group {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 18px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-frame-green) 14%, var(--line-subtle));
+  background: transparent;
+  box-shadow: none;
+}
+
+.b01-settings-group:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.b01-settings-group > h2 {
+  margin: 0 0 2px;
+  font-family: 'Instrument Serif', var(--font-display), serif;
+  font-weight: 400;
+  font-size: 1.28rem;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-transform: none;
+}
+
+.b01-settings-action {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 22%, var(--line-subtle));
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--field-elevated) 92%, transparent), color-mix(in srgb, var(--field-elevated) 92%, transparent)),
+    var(--plan-surface-paper-texture);
+  background-size: auto, 280px;
+  background-blend-mode: normal, soft-light;
+  color: var(--ink);
+  font: 700 13px/1.25 var(--font-ui);
+  letter-spacing: 0.01em;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.85);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms var(--ease-out-soft, ease);
+}
+
+.b01-settings-action:hover {
+  border-color: color-mix(in srgb, var(--shell-frame-green) 42%, var(--mustard));
+  background-color: color-mix(in srgb, var(--field-elevated) 88%, var(--mustard-soft));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 253, 248, 0.9),
+    0 1px 0 color-mix(in srgb, var(--mustard) 35%, transparent);
+}
+
+.b01-settings-action:focus-visible {
+  outline: 3px solid var(--dusty-blue);
+  outline-offset: 2px;
+}
+
+.b01-settings-action--primary {
+  border-color: color-mix(in srgb, var(--shell-frame-green) 48%, var(--mustard));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--mustard-soft) 55%, var(--field-elevated)), color-mix(in srgb, var(--mustard-soft) 35%, var(--field-elevated))),
+    var(--plan-surface-paper-texture);
+  background-size: auto, 280px;
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.b01-settings-action--primary:hover {
+  border-color: color-mix(in srgb, var(--shell-frame-green) 55%, var(--mustard));
+  background-color: color-mix(in srgb, var(--mustard-soft) 70%, var(--field-elevated));
+}
+
+.b01-settings-muted,
+.desk-setup-overview,
+.desk-setup-hint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--soft-charcoal);
+}
+
+.desk-setup-hint {
+  font-weight: 650;
+  color: color-mix(in srgb, var(--shell-frame-green) 55%, var(--soft-charcoal));
+}
+
+.b01-settings-group label {
+  display: grid;
+  gap: 6px;
+  font: 650 12px/1.3 var(--font-ui);
+  color: var(--ink);
+}
+
+.b01-settings-group label > span {
+  font: 750 11px/1.2 var(--font-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--soft-charcoal);
+}
+
+.b01-settings-group select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 20%, var(--line-strong));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--field-elevated) 94%, var(--paper));
+  padding: 8px 10px;
+  color: var(--ink);
+  font: 600 13px/1.25 var(--font-ui);
+}
+
+.b01-settings-owner .view-preferences {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.b01-settings-owner .view-preferences > summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 22%, var(--line-subtle));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--field-elevated) 94%, var(--paper));
+  font: 700 13px/1.25 var(--font-ui);
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.b01-settings-owner .view-preferences > summary::-webkit-details-marker {
+  display: none;
+}
+
+.b01-settings-owner .view-preferences[open] > summary {
+  border-color: color-mix(in srgb, var(--shell-frame-green) 38%, var(--mustard));
+  box-shadow: inset 3px 0 0 var(--mustard);
+}
+
+.b01-settings-owner .view-preferences-panel {
+  display: grid;
+  gap: 12px;
+  padding: 12px 4px 4px;
+}
+
+.b01-settings-owner .view-preferences-panel label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.b01-settings-owner .view-preferences-check,
+.b01-settings-group .view-preferences-check {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  font: 650 13px/1.3 var(--font-ui);
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.b01-settings-owner .view-preferences-check span,
+.b01-settings-group .view-preferences-check span {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+  color: inherit;
+}
+
+.b01-settings-owner .view-preferences-check input,
+.b01-settings-group .view-preferences-check input {
+  width: 18px;
+  height: 18px;
+  min-height: auto;
+  accent-color: var(--shell-frame-green);
+}
+
+.desk-setup-presets,
+.desk-setup-visibility {
+  display: grid;
+  gap: 10px;
+  margin: 6px 0 0;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--shell-frame-green) 12%, var(--line-subtle));
+}
+
+.desk-setup-presets legend,
+.desk-setup-visibility legend {
+  margin: 0 0 2px;
+  padding: 0;
+  font: 800 11px/1 var(--font-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 78%, var(--soft-charcoal));
+}
+
+/* Settings sheet itself — opaque cream paper with pine frame (desk furniture). */
+.b01-settings-surface {
+  border: var(--shell-planner-border) solid var(--shell-frame-green);
+  border-top-color: var(--shell-frame-green);
+  border-radius: calc(var(--shell-frame-radius) - 2px);
+  background-color: var(--field-elevated);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--field-elevated) 94%, transparent), color-mix(in srgb, var(--field-elevated) 94%, transparent)),
+    var(--plan-surface-paper-texture),
+    var(--plan-surface-paper);
+  background-size: auto, 420px, cover;
+  background-blend-mode: normal, soft-light, normal;
+  box-shadow:
+    var(--shell-planner-shadow),
+    inset 0 1px 0 rgba(255, 253, 248, 0.9),
+    inset 0 3px 0 0 color-mix(in srgb, var(--mustard) 78%, transparent);
+}
+
+.b01-settings-owner .b01-surface-heading {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-frame-green) 16%, var(--line-subtle));
+}
+
+.b01-settings-owner .b01-furniture-kicker {
+  font: 800 12px/1 var(--font-label);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--shell-frame-green) 72%, var(--ink));
+}
+
+.b01-settings-owner .b01-surface-heading button {
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 18%, var(--line-subtle));
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--field-elevated) 88%, var(--paper));
+  color: var(--soft-charcoal);
+  font: 750 11px/1 var(--font-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.b01-settings-owner .b01-surface-heading button:hover {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--shell-frame-green) 36%, var(--line-subtle));
+}

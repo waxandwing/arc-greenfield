@@ -240,8 +240,14 @@
 
   .b01-furniture-composition[data-side-panel='settings'] .b01-settings-owner[data-state='open'] .b01-settings-surface {
     border-radius: 0 8px 8px 0;
-    border-color: color-mix(in srgb, var(--soft-charcoal) 14%, rgba(33, 29, 23, 0.16));
-    background: color-mix(in srgb, var(--field-elevated) 94%, rgba(44, 46, 46, 0.04));
+    border-color: var(--shell-frame-green);
+    background-color: var(--field-elevated);
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--field-elevated) 94%, transparent), color-mix(in srgb, var(--field-elevated) 94%, transparent)),
+      var(--plan-surface-paper-texture),
+      var(--plan-surface-paper);
+    background-size: auto, 420px, cover;
+    background-blend-mode: normal, soft-light, normal;
   }
 
   .b01-furniture-composition[data-side-panel='workspace'] .arc-index-tab--workspace[aria-current='page'] {
@@ -249,7 +255,7 @@
   }
 
   .b01-furniture-composition[data-side-panel='settings'] .arc-index-tab--settings[aria-current='page'] {
-    background: color-mix(in srgb, var(--field-elevated) 94%, rgba(44, 46, 46, 0.04));
+    background: color-mix(in srgb, var(--field-elevated) 92%, var(--mustard-soft));
   }
 }
 

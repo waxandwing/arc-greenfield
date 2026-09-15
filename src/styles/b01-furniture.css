@@ -133,7 +133,6 @@
   pointer-events:auto;
   transition:opacity 180ms ease, transform 220ms var(--ease-out-soft, ease);
 }
-.b01-settings-surface{border-top-color:var(--mustard)}
 .b01-fridge-surface{border-top-color:var(--dusty-blue)}
 .b01-task-surface{border-top-color:var(--sage);width:min(760px,calc(100vw - 32px))}
 .b01-surface-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid rgba(33,29,23,.14)}
@@ -143,12 +142,6 @@
 .b01-tool-owner{position:static}
 .b01-tool-owner[data-state='closed'] .b01-furniture-surface{visibility:hidden;opacity:0;pointer-events:none}
 .b01-tool-owner[data-state='open'] .b01-furniture-surface{visibility:visible;opacity:1;pointer-events:auto}
-.b01-settings-owner .view-preferences{border:0;background:transparent;padding:0}
-.b01-settings-owner .view-preferences>summary{font-weight:800;cursor:pointer;min-height:44px;display:flex;align-items:center}
-.b01-settings-owner .view-preferences-panel{display:grid;gap:14px;padding-top:8px}
-.b01-settings-owner .view-preferences-panel label{display:grid;gap:6px;font-size:13px;font-weight:700}
-.b01-settings-owner .view-preferences-check{grid-template-columns:auto 1fr;align-items:center}
-.b01-settings-owner .view-preferences-check input{min-height:auto}
 
 @media (min-width:901px){
   .b01-furniture-composition[data-side-panel='workspace'] .b01-side-rail,

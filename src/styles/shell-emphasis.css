@@ -93,7 +93,6 @@
 }
 
 .b01-fridge-surface,
-.b01-settings-surface,
 .b01-task-surface {
   border: var(--shell-planner-border) solid var(--shell-frame-green);
   border-radius: calc(var(--shell-frame-radius) - 2px);
@@ -105,10 +104,6 @@
 
 .b01-fridge-surface {
   border-top-color: var(--dusty-blue);
-}
-
-.b01-settings-surface {
-  border-top-color: var(--mustard);
 }
 
 .b01-task-surface {

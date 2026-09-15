@@ -317,9 +317,12 @@
 .b01-furniture-composition[data-workspace-open='true'] .b01-settings-surface,
 .b01-furniture-composition:has(.b01-settings-owner[data-state='open']) .b01-settings-surface {
   border-width: var(--shell-planner-border);
+  border-color: var(--shell-frame-green);
+  background-color: var(--field-elevated);
   box-shadow:
     var(--shell-planner-shadow),
-    10px 0 0 -5px color-mix(in srgb, var(--shell-frame-green) 50%, transparent);
+    10px 0 0 -5px color-mix(in srgb, var(--shell-frame-green) 50%, transparent),
+    inset 0 3px 0 0 color-mix(in srgb, var(--mustard) 78%, transparent);
 }
 
 @media (max-width: 800px) {
