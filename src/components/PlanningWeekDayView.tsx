@@ -68,7 +68,7 @@ export function PlanningWeekDayView({
 
 function PlanningDateHeader({ days, single, focusDate, onSelectDate }: { days: ProjectedDay[]; single: boolean; focusDate?: string; onSelectDate?: (date: ISODate) => void }) {
   return (
-    <div className="planning-date-header" style={gridTemplate(days, focusDate)}>
+    <div className="planning-date-header" style={gridTemplate(days)}>
       <span className="planning-row-label planning-row-label--header" aria-hidden="true">Class</span>
       {days.map((day) => (
         <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}${!isPlannableDayKind(day.kind) ? ' planning-date-heading--off' : ''}${day.kind === 'early-release' ? ' planning-date-heading--early-release' : ''}${day.date === focusDate ? ' planning-date-heading--focus' : ''}`} aria-current={day.date === focusDate ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}${!isPlannableDayKind(day.kind) ? `. ${day.label || humanizeKind(day.kind)}` : day.kind === 'early-release' ? `. Early release${day.schoolEndTime ? `, school ends ${day.schoolEndTime}` : ''}` : ''}`} onClick={() => onSelectDate?.(day.date)}>
@@ -116,7 +116,7 @@ function PlanningCourse({
       {course.unitSpans.length > 0 ? (
         <div className="planning-unit-stack" aria-label={`${course.course.title} Unit spans`}>
           {course.unitSpans.map((unit, index) => (
-            <div className="planning-unit-grid" style={gridTemplate(days, focusDate)} key={unit.unitId}>
+            <div className="planning-unit-grid" style={gridTemplate(days)} key={unit.unitId}>
               <span className="planning-row-label planning-row-label--unit">{index === 0 ? 'Unit' : ''}</span>
               <div
                 className="planning-unit-span"
@@ -133,7 +133,7 @@ function PlanningCourse({
         {course.sections.length === 0 ? (
           <p className="planning-course-empty">No Sections are attached to this Course yet.</p>
         ) : course.sections.map((row) => (
-          <div className="planning-section-row" style={gridTemplate(days, focusDate)} key={row.section.id}>
+          <div className="planning-section-row" style={gridTemplate(days)} key={row.section.id}>
             <div className="planning-row-label">
               <strong>{row.section.name}</strong>
             </div>
@@ -239,7 +239,9 @@ function LessonTile({
       aria-label={accessible}
       tabIndex={hasActions ? 0 : undefined}
       onClick={(event) => {
-        if (!hasActions || event.target !== event.currentTarget) return
+        if (!hasActions) return
+        const target = event.target as HTMLElement
+        if (target.closest('button, a, [role="menuitem"]')) return
         setTouchRevealed((value) => !value)
       }}
     >
@@ -332,9 +334,9 @@ function LessonProgressiveActions({
   )
 }
 
-function gridTemplate(days: ProjectedDay[], focusDate?: string): { gridTemplateColumns: string } {
-  // Flexible mins so desk week (Mon–Fri) can fit the planner frame without horizontal clip.
-  const columns = days.map((day) => (day.date === focusDate ? 'minmax(0,1.45fr)' : 'minmax(0,1fr)'))
+function gridTemplate(days: ProjectedDay[]): { gridTemplateColumns: string } {
+  // Equal day columns — focus is visual only (no width expand on hover/scroll-over or selection).
+  const columns = days.map(() => 'minmax(0,1fr)')
   return { gridTemplateColumns: `minmax(4.25rem,0.72fr) ${columns.join(' ')}` }
 }
 

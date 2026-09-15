@@ -59,12 +59,12 @@ try {
 
   await selectView(page, 'Week')
   const widths = await page.locator('.planning-date-heading').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width))
-  assert(Math.max(...widths) > Math.min(...widths) * 1.25, 'Week must expand the selected instructional day instead of using equal columns.')
+  assert(Math.max(...widths) - Math.min(...widths) < 2, 'Week day columns must stay equal width (no focus/hover expand).')
   const weekFocusLesson = page
     .locator('[data-plan-calendar-surface="teaching-week"] .planning-day-slot--focus .planning-lesson')
     .filter({ hasText: 'Gothic cathedrals' })
     .first()
-  await weekFocusLesson.hover()
+  await weekFocusLesson.click()
   await weekFocusLesson.getByRole('button', { name: 'Start class' }).click()
   assert(await page.getByRole('main').getAttribute('class').then((value) => value?.includes('arctable--teacher')), 'Teaching week must launch ArcTable from the focused day row without switching to Day.')
   await page.getByRole('button', { name: 'End Class' }).click()
