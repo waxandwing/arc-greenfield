@@ -55,10 +55,11 @@ tab_h = 0.108 * REF_H
 for i, label in enumerate(['day', 'week', 'month', 'year']):
     crop_norm(col_left, col_top + i * tab_h, col_w, tab_h, f'planner-edge-tab-{label}-inactive.png', pad=2)
 crop_norm(col_left, col_top + tab_h, col_w, tab_h, 'planner-edge-tab-active.png', pad=2)
-# Rainbow title mark beside "Teaching week"
+# Rainbow title mark beside "Teaching week" (REF 1366×768).
+# Prior 0.168–0.206 × 0.148–0.203 cropped wood desk (solid tan) — wrong.
 mark = OUT.parent / 'planner-rainbow-mark.png'
-x0, y0 = int(0.168 * sw), int(0.148 * sh)
-x1, y1 = int(0.206 * sw), int(0.203 * sh)
+x0, y0 = int(315 * sx), int(210 * sy)
+x1, y1 = int(368 * sx), int(255 * sy)
 im.crop((x0, y0, x1, y1)).save(mark, optimize=True)
 print('Teaching week desk slices exported to', OUT)
 `

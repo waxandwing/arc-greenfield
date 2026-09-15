@@ -41,6 +41,8 @@ export function DeskPlannerHeadRow({
             className="desk-planner-rainbow-mark"
             src={titleMarkUrl}
             alt=""
+            width={120}
+            height={96}
             aria-hidden="true"
             data-testid="desk-planner-rainbow-mark"
             data-desk-mark-source={deskCommittedRasterChromeEnabled() ? 'committed-png' : 'vector'}

@@ -27,12 +27,13 @@ export function deskCommittedRasterChromeEnabled(): boolean {
   return import.meta.env.VITE_ARC_DESK_RASTER !== 'false'
 }
 
-/** Week title cluster mark — committed PNG when available; full slice mode uses same asset. */
+/** Week title cluster mark — Kelly Teaching week rainbow PNG (default); vector arches when ?deskRaster=0. */
 export function deskPlannerTitleMarkUrl(): string {
   if (deskSliceUsesEnabled() || deskCommittedRasterChromeEnabled()) {
     return publicAssetUrl('assets/desk/planner-rainbow-mark.png')
   }
-  return publicAssetUrl('assets/arctable/AT-001_table-mark.svg')
+  // Prefer dedicated rainbow arches — not AT-001 (green square + quadrant fill).
+  return publicAssetUrl('assets/desk/planner-rainbow-mark.svg')
 }
 
 export function deskSliceAssetUrl(id: DeskSliceId): string | null {

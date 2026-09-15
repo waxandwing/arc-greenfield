@@ -140,8 +140,23 @@ try {
   assert((await edgeTabs.getAttribute('data-desk-slices')) === 'true', 'Planner edge tabs must use committed tab PNG assets by default.')
   const weekTabArt = await edgeTabs.locator('[data-desk-slice-tab="week"]').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(weekTabArt.includes('planner-edge-tab'), 'WEEK tab must use committed inactive/active slice rasters.')
-  const titleMarkSource = await page.getByTestId('desk-planner-rainbow-mark').getAttribute('data-desk-mark-source')
+  const titleMark = page.getByTestId('desk-planner-rainbow-mark')
+  const titleMarkSource = await titleMark.getAttribute('data-desk-mark-source')
   assert(titleMarkSource === 'committed-png', 'Week title mark must use committed planner-rainbow-mark.png.')
+  const titleMarkSrc = await titleMark.getAttribute('src')
+  assert(Boolean(titleMarkSrc && titleMarkSrc.includes('planner-rainbow-mark.png')), 'Week title mark src must be planner-rainbow-mark.png.')
+  await titleMark.evaluate((el) => (el.complete ? null : new Promise((resolve, reject) => {
+    el.addEventListener('load', () => resolve(null), { once: true })
+    el.addEventListener('error', () => reject(new Error('rainbow mark failed to load')), { once: true })
+  })))
+  const markMetrics = await titleMark.evaluate((el) => ({
+    naturalWidth: el.naturalWidth,
+    naturalHeight: el.naturalHeight,
+    clientWidth: el.clientWidth,
+    clientHeight: el.clientHeight,
+  }))
+  assert(markMetrics.naturalWidth >= 40 && markMetrics.naturalHeight >= 30, 'Rainbow mark PNG must load with real intrinsic size (not 0×0).')
+  assert(markMetrics.clientWidth >= 24 && markMetrics.clientHeight >= 20, 'Rainbow mark must render at visible size, not a collapsed square.')
   assert(await page.getByTestId('arc-desk-tray-dock').count() === 0, 'TRAY drawer must replace the molded tray dock, not stack beside it.')
   assert(await page.locator('.b01-fridge-owner[data-state="open"] .b01-fridge-content').count() === 1, 'TRAY drawer must expose one workspace panel.')
   await page.getByRole('button', { name: 'Close Tray', exact: true }).click()
