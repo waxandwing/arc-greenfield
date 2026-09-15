@@ -3,7 +3,7 @@
 **Kelly one command:** `npm run kelly:desk` then open `http://127.0.0.1:4173/?demo=1&demoReset=1` (preflight + frees port 4173 + fresh desk build).
 
 **Clone URL:** `https://github.com/waxandwing/arc-greenfield.git`  
-**Default branch:** `main` — wood desk + `kelly:desk` (merged 2026-09-15).  
+**Default branch:** `main` — wood desk + `kelly:desk` and Teaching week source assets (SVG/PNG defaults; synced 2026-09-15 — pull `main` before preview).  
 **Optional:** `cursor/arc-production-integration` stays in sync for agent coordination; you do **not** need to check it out for daily preview.  
 **Full handoff:** [docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md](overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md)
 
