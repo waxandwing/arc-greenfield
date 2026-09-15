@@ -2259,19 +2259,48 @@ html:has(.arc-shell--desk) body {
   align-items: center;
   justify-content: center;
   padding: clamp(12px, 3vmin, 28px);
-  background: color-mix(in srgb, var(--shell-frame-green) 42%, rgba(12, 22, 18, 0.72));
-  backdrop-filter: blur(6px);
+  /* Same exterior language as non-desk .b01-furniture-composition / Calendar Setup */
+  background-color: var(--shell-exterior-base);
+  background-image:
+    linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),
+    var(--shell-pattern);
+  background-size: auto, var(--shell-pattern-size);
+  background-repeat: no-repeat, repeat;
+  background-blend-mode: normal, soft-light;
+  backdrop-filter: none;
 }
 
 .desk-calendar-popout-stage {
   display: flex;
   flex-direction: column;
-  width: min(1120px, 100%);
-  max-height: min(92dvh, 920px);
-  border-radius: 18px;
-  border: 3px solid var(--shell-frame-green);
+  width: min(1180px, 100%);
+  max-height: min(94dvh, 960px);
+  padding: var(--shell-frame-inset);
+  border-radius: calc(var(--shell-frame-radius) + 2px);
+  border: var(--shell-frame-border) solid color-mix(in srgb, var(--shell-frame-green) 88%, black);
+  /* Pattern shows in the frame inset around the planner card — mirrors setup furniture */
+  background-color: transparent;
+  background-image:
+    linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),
+    var(--shell-pattern);
+  background-size: auto, var(--shell-pattern-size);
+  background-repeat: no-repeat, repeat;
+  background-blend-mode: normal, soft-light;
+  box-shadow: var(--shell-frame-outer-shadow);
+  overflow: hidden;
+}
+
+.desk-calendar-popout-planner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  border: var(--shell-planner-border) solid var(--shell-frame-green);
+  border-radius: calc(var(--shell-frame-radius) - 2px);
   background: var(--field-elevated);
-  box-shadow: 0 32px 64px -28px rgba(12, 22, 18, 0.65);
+  box-shadow:
+    var(--shell-planner-shadow),
+    inset 0 1px 0 rgba(255, 253, 248, 0.88);
   overflow: hidden;
 }
 

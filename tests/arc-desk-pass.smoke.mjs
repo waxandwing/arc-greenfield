@@ -83,6 +83,13 @@ try {
   await page.getByTestId('desk-calendar-popout').waitFor({ state: 'visible' })
   assert(await page.getByTestId('desk-calendar-popout-body').isVisible(), 'Enlarge must open calendar pop-out body.')
 
+  const popoutStagePattern = await page.locator('.desk-calendar-popout-stage').evaluate((el) => getComputedStyle(el).backgroundImage)
+  assert(
+    popoutStagePattern.includes('pattern-grid'),
+    'Enlarged calendar must frame with the same exterior pattern tile as Calendar Setup furniture.',
+  )
+  assert(await page.locator('.desk-calendar-popout-planner').count() === 1, 'Enlarged calendar must keep a cream planner card inside the patterned frame.')
+
   const popoutTabs = page.locator('.desk-calendar-popout-tabs')
   const tabMetrics = await popoutTabs.evaluate((nav) => {
     const style = getComputedStyle(nav)

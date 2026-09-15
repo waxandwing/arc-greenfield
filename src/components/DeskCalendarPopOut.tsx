@@ -88,44 +88,46 @@ export function DeskCalendarPopOut({ open, onClose, indexNav, children, returnFo
       }}
     >
       <div className="desk-calendar-popout-stage" onMouseDown={(event) => event.stopPropagation()}>
-        <header className="desk-calendar-popout-header">
-          <div>
-            <p className="b01-furniture-kicker">Planner</p>
-            <h2 id={titleId}>Calendar focus</h2>
-            <p className="desk-calendar-popout-subtitle">{calendarViewLabel(indexNav.activeView)} view</p>
+        <div className="desk-calendar-popout-planner">
+          <header className="desk-calendar-popout-header">
+            <div>
+              <p className="b01-furniture-kicker">Planner</p>
+              <h2 id={titleId}>Calendar focus</h2>
+              <p className="desk-calendar-popout-subtitle">{calendarViewLabel(indexNav.activeView)} view</p>
+            </div>
+            <button
+              ref={closeRef}
+              type="button"
+              className="quiet-button desk-calendar-popout-dismiss"
+              data-testid="desk-calendar-popout-dismiss"
+              onClick={close}
+            >
+              Back to desk
+            </button>
+          </header>
+          <nav className="desk-calendar-popout-tabs arc-index-tabs" aria-label="Calendar views">
+            {VIEW_TABS.map(({ view, label, tabClass }) => {
+              const availability = indexNav.availabilityFor(view)
+              const active = indexNav.activeView === view
+              return (
+                <button
+                  key={view}
+                  type="button"
+                  className={`arc-index-tab desk-calendar-popout-tab ${tabClass}`}
+                  aria-current={active ? 'page' : undefined}
+                  disabled={indexNav.viewSelectionDisabled || !availability.available}
+                  title={availability.reason}
+                  data-testid={`desk-calendar-popout-tab-${label.toLowerCase()}`}
+                  onClick={() => indexNav.onSelectView(view)}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </nav>
+          <div className="desk-calendar-popout-body" data-testid="desk-calendar-popout-body">
+            {children}
           </div>
-          <button
-            ref={closeRef}
-            type="button"
-            className="quiet-button desk-calendar-popout-dismiss"
-            data-testid="desk-calendar-popout-dismiss"
-            onClick={close}
-          >
-            Back to desk
-          </button>
-        </header>
-        <nav className="desk-calendar-popout-tabs arc-index-tabs" aria-label="Calendar views">
-          {VIEW_TABS.map(({ view, label, tabClass }) => {
-            const availability = indexNav.availabilityFor(view)
-            const active = indexNav.activeView === view
-            return (
-              <button
-                key={view}
-                type="button"
-                className={`arc-index-tab desk-calendar-popout-tab ${tabClass}`}
-                aria-current={active ? 'page' : undefined}
-                disabled={indexNav.viewSelectionDisabled || !availability.available}
-                title={availability.reason}
-                data-testid={`desk-calendar-popout-tab-${label.toLowerCase()}`}
-                onClick={() => indexNav.onSelectView(view)}
-              >
-                {label}
-              </button>
-            )
-          })}
-        </nav>
-        <div className="desk-calendar-popout-body" data-testid="desk-calendar-popout-body">
-          {children}
         </div>
       </div>
     </div>,
