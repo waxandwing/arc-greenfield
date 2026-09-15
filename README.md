@@ -2,9 +2,9 @@
 
 Calendar-first teacher planning for plans that change.
 
-This repository is the implementation source for Arc. Product and UX authority live in the canonical Google Drive Product Spec. Visual authority lives in the canonical Wax & Wing Brand System. GitHub issues translate those authorities into implementation work.
+This repository is the implementation source for Arc. Product and UX authority live in the canonical Google Drive Product Spec. Visual authority lives in the canonical Wax & Wing Brand System. Git history is implementation history, not product authority.
 
-**Arc wood desk (Kelly) — three steps on `main`:**
+**Arc wood desk (Kelly) — current build on `main`:**
 
 ```bash
 git clone https://github.com/waxandwing/arc-greenfield.git
@@ -13,18 +13,18 @@ npm run kelly:desk
 ```
 
 Demo URL (after the server starts): `http://127.0.0.1:4173/?demo=1&demoReset=1`  
-GitHub Pages (no local server): `https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1`  
+GitHub Pages: `https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1`  
 Confirm the bottom-right footer stamp shows **`desk-v2 · main · <sha>`**. Full handoff: [`docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md`](docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md).
 
 ## Branch authority
 
-- `main` — protected release branch. Do not develop directly here.
-- `develop` — integrated pre-release source of truth. Branch protection is currently being tightened under issue #30; until that lands, treat direct pushes as prohibited by team policy.
-- `feature/**` — isolated implementation work. Rebase/adapt to current `develop` before integration.
-- `audit/**` — temporary hostile-audit and verification lanes.
-- `archive/**` — preserved historical checkpoints only.
+- `main` is the single current implementation authority.
+- New work should use a short-lived branch only when isolation is useful, then land back on `main` and delete the branch.
+- Do not create permanent parallel `develop`, `preview`, `release`, `design`, `audit`, or agent-coordination lanes for ordinary work.
+- Historical branches are donors only. They do not outrank current `main` because they contain unique commits or still compile.
+- The 2026-09-15 prune manifest in `docs/BRANCH_PRUNE_MANIFEST_2026-09-15.md` governs branch retirement.
 
-Old Easel branches and repositories are historical reference. Easel is no longer a separate product. Its surviving classroom-teaching behavior belongs to Arc Live Classroom.
+The former product name **Easel** is retired. Its surviving teaching-continuity logic now lives directly under ArcTable naming in `src/planning/arcTableSession.ts` and `src/planning/arcTableTeachingOutcome.ts`.
 
 ## Authority order
 
@@ -32,10 +32,10 @@ When implementation sources disagree:
 
 1. canonical Product Spec
 2. canonical Brand System and approved Arc assets
-3. current verified `develop`
-4. implementation issues/PRs that explicitly cite the current authorities
+3. current verified `main`
+4. implementation issues or short-lived branches that explicitly cite the current authorities
 5. README operating rules
-6. historical branches, comments, and prototypes
+6. historical branches, comments, prototypes, and archived reports
 
 Historical code does not become authority because it still compiles.
 
@@ -58,12 +58,10 @@ A component is not a state store. A view is not a second domain model. React sho
 Primary ownership:
 
 - `src/calendar/**` — school-calendar truth, date geometry, calendar persistence, projections.
-- `src/planning/**` — Course/Section/Unit/Lesson identity, delivery state, Shift/Recovery, object actions, planning persistence.
+- `src/planning/**` — Course/Section/Unit/Lesson identity, delivery state, Shift/Recovery, ArcTable teaching continuity, object actions, planning persistence.
 - `src/app/**` — application orchestration, hydration order, reconciliation, React adapter state.
 - `src/components/**` — presentation and interaction only.
 - `src/styles/**` — perceptual system only.
-
-`src/app/useArcWorkspace.ts` is currently being decomposed under issue #30. Do not add new Fridge, Voice, Personal, School Notes, Catch Up, or Live Classroom transaction policy to that hook.
 
 ## Trust rules
 
@@ -77,7 +75,7 @@ Primary ownership:
 - Shift changes only its target Section;
 - Undo must refuse to overwrite newer truth;
 - destructive upstream edits fail closed when they would orphan protected downstream state;
-- Live Classroom is a temporary Arc teaching mode, never a second planner or state store.
+- ArcTable is a temporary Arc teaching mode, never a second planner or state store.
 
 ## Persistence
 
@@ -85,111 +83,20 @@ Browser persistence is currently local-first. Loaders distinguish `empty`, `rest
 
 Operations that span multiple stores must use an explicit transaction boundary with compensating rollback where required. UI code must not invent its own partial-save semantics.
 
-Current transaction/persistence hardening is tracked in issue #30.
-
 ## Accessibility contract
 
-Accessibility is structural, not a polish pass.
-
-- use semantic HTML and native controls where possible;
-- no ARIA role without its required interaction behavior;
-- no state communicated only by color, opacity, position, or motion;
-- core body/interface text stays at least 16px; smaller text is metadata only and must remain readable;
-- interactive targets must remain usable by keyboard and touch;
-- drag is optional enhancement; every drag action requires equivalent non-drag behavior;
-- focus must remain visible and predictable;
-- reduced-motion preferences are respected;
-- 320px/reflow/high-zoom behavior is a release concern;
-- browser interaction proof is separate from source compilation;
-- automated accessibility checks are evidence, not absolution.
-
-The permanent browser accessibility gate is being established under issue #30. Draft PR #29 contains the first hostile Day keyboard/touch/reflow proof and a repaired focus-order defect.
+Accessibility is part of the interaction model, not cleanup work. Essential controls must remain keyboard/click/touch operable, focus visible, readable at zoom/small-laptop sizes, and understandable without relying on color, texture, handwriting, hover, or dragging alone.
 
 ## Verification
 
-Repository Node version is declared in `.node-version`.
-
-Local full gate:
+Core gate:
 
 ```bash
-npm ci
 npm run build
 ```
 
-The build contract is intentionally decomposable:
+This runs canonical contracts, TypeScript checks, and the production bundle. Desk/interaction changes should also run the relevant focused smoke suites documented in `package.json` and the current handoff.
 
-```bash
-npm run test:contracts
-npm run typecheck
-npm run build:bundle
-```
+## Working rule
 
-CI reports separate gates for:
-
-- domain contracts
-- TypeScript
-- production bundle
-- browser accessibility/interaction
-- Arc Plan navigation spine (`npm run test:plan-navigation` against a running preview)
-
-`tests/run-contracts.mjs` verifies that every discovered `*.contract.ts` file is represented in the contract runner. Adding a contract that CI does not execute must fail the gate.
-
-### Skip setup (demo calendar)
-
-To open Arc straight on **My Teaching Day** with prefilled AP / 2D / 3D content (same data as plan smokes):
-
-- **URL:** add `?demo=1` or `?demo=gauntlet` (first visit, or when local storage is empty).
-- **Reset and re-seed:** `?demo=1&demoReset=1` overwrites saved data and reloads.
-- **Build flag:** set `VITE_ARC_DEMO=true` before `npm run build` so empty browsers auto-seed without a query string.
-
-Onboarding, first-capture prompt, and progressive setup are skipped once the demo bundle is written.
-
-Example preview URL: `http://127.0.0.1:4173/?demo=1`
-
-### Local desk preview (`main`)
-
-The Arc **desk** build is on **`main`** (merged from `cursor/arc-production-integration` on 2026-09-15).
-
-**Run all commands from the repo root** (the folder that contains `package.json`). Running `git` or `npm` from home (`~`) fails with “not a git repository” and missing `package.json`. If the repo is already on disk, `cd` to that clone first.
-
-```bash
-git clone https://github.com/waxandwing/arc-greenfield.git
-cd arc-greenfield
-npm install
-npm run kelly:desk
-```
-
-Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. Still seeing cream **CALENDAR** chrome? [docs/overnight/KELLY-STILL-SEEING-OLD-CALENDAR.md](docs/overnight/KELLY-STILL-SEEING-OLD-CALENDAR.md). See [docs/LOCAL-PREVIEW.md](docs/LOCAL-PREVIEW.md) for dev server, smokes, and aliases (`preview:desk`, `dev:desk`, `start:desk`).
-
-**Work on your Mac (not cloud VM):** bookmark [docs/WORK-FROM-GITHUB-LOCALLY.md](docs/WORK-FROM-GITHUB-LOCALLY.md) and the full handoff [docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md](docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md).
-
-## Integration rule
-
-No material feature is GREEN merely because it compiles.
-
-The default milestone cadence is:
-
-```text
-implementation
-→ hostile break pass
-→ repair
-→ independent clean audit
-→ second independent clean audit on the exact final head
-→ GREEN
-```
-
-Any material code change resets the clean-pass count.
-
-## Deployment
-
-GitHub Actions is the canonical source/build verification gate. Do not use a deployment result as a substitute for source or browser-interaction proof.
-
-Vercel is not an implementation authority and should not be allowed to mutate product architecture. Current deployment policy may change independently of repository truth.
-
-## Current hardening authority
-
-Issue #30 — Infrastructure + accessibility constitution — owns the current backend/a11y cleanup: branch policy, permanent browser gates, orchestration decomposition, persistence vocabulary, contract discovery, CI/runtime hygiene, and reusable accessibility interaction rules.
-
-## Release wall
-
-Nothing moves to `main` until the relevant product, functional, visual, accessibility, persistence, account-isolation, regression, exact-build, browser-interaction, and dependency-lock gates are explicitly cleared.
+Build the system, not the branch. Once a short-lived branch has landed on `main`, delete it. If historical code appears useful, mine the behavior or preserve a deliberate archive tag before branch deletion rather than keeping another permanent implementation lane.
