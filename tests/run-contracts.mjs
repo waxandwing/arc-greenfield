@@ -63,6 +63,7 @@ const contracts = [
   'tests/generated/src/planning/arcTableDeskActions.contract.js',
   'tests/generated/src/planning/dragTargets.contract.js',
   'tests/generated/src/planning/stack.contract.js',
+  'tests/generated/src/planning/deskPostItLinks.contract.js',
   'tests/generated/src/planning/arcTableDeskAccess.contract.js',
   'tests/generated/src/planning/yearDeskProjection.contract.js',
   'tests/generated/src/planning/deskDrag.contract.js',

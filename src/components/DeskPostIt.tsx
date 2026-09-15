@@ -7,17 +7,29 @@ export type DeskPostItPosition = {
   topPct: number
 }
 
+export type DeskPostItDragEndInfo = {
+  postItId: string
+  position: DeskPostItPosition
+  rect: DOMRect
+  didMove: boolean
+}
+
 type Props = {
   tone?: DeskPostItTone
   /** Stable id for session position persistence + test hooks. */
   postItId: string
   /** Initial placement as % of arc-desk-surface. */
   defaultPosition: DeskPostItPosition
+  /** Controlled position — when set, parent owns placement (linked stacks). */
+  position?: DeskPostItPosition
+  onPositionChange?: (position: DeskPostItPosition) => void
+  onDragEnd?: (info: DeskPostItDragEndInfo) => void
   /** Rotate slightly so stickies look hand-placed. */
   tiltDeg?: number
   className?: string
   testId?: string
   dragEnabled?: boolean
+  stackId?: string | null
   children?: ReactNode
   'aria-label'?: string
 }
@@ -79,21 +91,45 @@ export function DeskPostIt({
   tone = 'mustard',
   postItId,
   defaultPosition,
+  position: controlledPosition,
+  onPositionChange,
+  onDragEnd,
   tiltDeg = -2.5,
   className = '',
   testId,
   dragEnabled = true,
+  stackId = null,
   children,
   'aria-label': ariaLabel = 'Desk post-it',
 }: Props) {
   const nodeRef = useRef<HTMLDivElement>(null)
-  const [position, setPosition] = useState<DeskPostItPosition>(() => readStoredPosition(postItId) ?? defaultPosition)
+  const isControlled = controlledPosition !== undefined
+  const [uncontrolledPosition, setUncontrolledPosition] = useState<DeskPostItPosition>(
+    () => readStoredPosition(postItId) ?? defaultPosition,
+  )
+  const position = controlledPosition ?? uncontrolledPosition
+  const positionRef = useRef(position)
+  positionRef.current = position
   const [dragging, setDragging] = useState(false)
   const dragRef = useRef<DragState | null>(null)
 
   useEffect(() => {
-    writeStoredPosition(postItId, position)
-  }, [postItId, position])
+    if (isControlled) return
+    writeStoredPosition(postItId, uncontrolledPosition)
+  }, [isControlled, postItId, uncontrolledPosition])
+
+  useEffect(() => {
+    if (!isControlled) return
+    writeStoredPosition(postItId, controlledPosition)
+  }, [controlledPosition, isControlled, postItId])
+
+  const setPosition = useCallback((next: DeskPostItPosition) => {
+    if (isControlled) {
+      onPositionChange?.(next)
+      return
+    }
+    setUncontrolledPosition(next)
+  }, [isControlled, onPositionChange])
 
   const armDrag = useCallback((pointerId: number) => {
     const drag = dragRef.current
@@ -158,7 +194,7 @@ export function DeskPostIt({
       leftPct: clamp(drag.startLeft + dxPct, 0, 92),
       topPct: clamp(drag.startTop + dyPct, 0, 88),
     })
-  }, [armDrag])
+  }, [armDrag, setPosition])
 
   const endDrag = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current
@@ -172,8 +208,17 @@ export function DeskPostIt({
       } catch {
         /* already released */
       }
+      const node = nodeRef.current
+      if (node && onDragEnd) {
+        onDragEnd({
+          postItId,
+          position: positionRef.current,
+          rect: node.getBoundingClientRect(),
+          didMove: true,
+        })
+      }
     }
-  }, [])
+  }, [onDragEnd, postItId])
 
   // Deferred edit-target drags do not capture on pointerdown; track leave via window listeners.
   useEffect(() => {
@@ -205,10 +250,11 @@ export function DeskPostIt({
   return (
     <div
       ref={nodeRef}
-      className={`arc-desk-post-it arc-desk-post-it--${tone}${dragging ? ' arc-desk-post-it--dragging' : ''}${className ? ` ${className}` : ''}`}
+      className={`arc-desk-post-it arc-desk-post-it--${tone}${dragging ? ' arc-desk-post-it--dragging' : ''}${stackId ? ' arc-desk-post-it--linked' : ''}${className ? ` ${className}` : ''}`}
       data-testid={testId ?? `arc-desk-post-it-${postItId}`}
       data-desk-post-it={postItId}
       data-desk-post-it-tone={tone}
+      data-desk-post-it-stack={stackId ?? undefined}
       data-dragging={dragging ? 'true' : 'false'}
       aria-label={ariaLabel}
       style={{
