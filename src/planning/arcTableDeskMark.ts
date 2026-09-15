@@ -4,6 +4,8 @@
 export const ARC_TABLE_MARK_ASSET = '/assets/arctable/logo-icon-framed-arc-primary-512.png'
 export const ARC_TABLE_MARK_LOGO_ALIAS = '/assets/arctable/arctable-logo-primary.png'
 export const ARC_TABLE_MARK_ASSET_SVG = '/assets/arctable/AT-001_table-mark.svg'
+/** Horizontal mark + TABLE lockup for dark student / projected headers. */
+export const ARC_TABLE_HEADER_DARK_ASSET = '/assets/arctable/header-compact-dark.png'
 
 export const ARC_TABLE_MARK_VIEWBOX = 100
 export const ARC_TABLE_MARK_INSET = 7
