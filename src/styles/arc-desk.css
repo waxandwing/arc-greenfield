@@ -198,6 +198,7 @@ html:has(.arc-shell--desk) body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
   padding: 0;
   border: none;
   background: transparent;
@@ -213,6 +214,7 @@ html:has(.arc-shell--desk) body {
   height: 100%;
   border: 3px solid var(--shell-frame-green);
   border-radius: 22px;
+  padding-right: 44px;
   background-color: var(--field-elevated);
   background-image:
     linear-gradient(color-mix(in srgb, var(--field-elevated) 96%, transparent), color-mix(in srgb, var(--field-elevated) 96%, transparent)),
@@ -242,19 +244,55 @@ html:has(.arc-shell--desk) body {
   box-shadow: none;
 }
 
-/* Physical tabs on desk surface so TRAY stays above the green folders drawer (z-index 12). */
-.arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-physical-tabs--desk-elevated {
-  left: calc(17.2% + 18px);
-  top: 26%;
-  max-width: calc(65.6% - 24px);
-  z-index: 30;
+/* Kelly comp: DAY/WEEK/MONTH/YEAR on planner right edge (vertical denim tabs). */
+.arc-planner-physical-tabs--desk-edge {
+  position: absolute;
+  left: auto;
+  right: -2px;
+  top: 12%;
+  bottom: 10%;
+  transform: none;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 4px;
+  width: 46px;
+  max-width: none;
+  z-index: 45;
+  padding: 6px 0;
 }
 
-.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
-  .arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-physical-tabs--desk-elevated {
-  left: calc(14% + 18px);
-  top: 22%;
-  max-width: calc(72% - 24px);
+.arc-planner-physical-tabs--desk-edge .arc-index-tab {
+  min-width: 0;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 6px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: none;
+  border-radius: 10px 0 0 10px;
+  border-right: 0;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 65%, transparent);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--dusty-blue) 22%, var(--field-elevated)), var(--field-elevated));
+  box-shadow: -4px 0 14px -10px rgba(33, 29, 23, 0.35);
+}
+
+.arc-planner-physical-tabs--desk-edge .arc-index-tab[aria-current='page'] {
+  transform: translateX(-3px);
+  padding-right: 9px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--shell-frame-green) 18%, var(--field-elevated)), var(--field-elevated));
+  border-color: color-mix(in srgb, var(--shell-frame-green) 45%, var(--line-subtle));
+}
+
+.arc-planner-physical-tabs--desk-edge .arc-index-tab:hover:not(:disabled) {
+  transform: translateX(-2px);
+}
+
+/* Legacy elevated horizontal strip — removed from default desk surface. */
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-physical-tabs--desk-elevated {
+  display: none !important;
 }
 
 .arc-planner-physical-tabs .arc-index-tab {
@@ -353,6 +391,37 @@ html:has(.arc-shell--desk) body {
     var(--arc-desk-green-folders-drawer, var(--arc-desk-tray-texture, url('/assets/desk/green-folders-drawer.svg')))
     center top / 100% 100% no-repeat;
   pointer-events: none;
+  overflow: hidden;
+}
+
+.arc-desk-green-drawer-token {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  opacity: 0.88;
+  box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.45);
+  transform: rotate(-6deg);
+}
+
+.arc-desk-green-drawer-token--mustard {
+  top: 18%;
+  left: 14%;
+  background: linear-gradient(145deg, #f5e083, #d9b63a);
+}
+
+.arc-desk-green-drawer-token--terracotta {
+  top: 22%;
+  right: 16%;
+  background: linear-gradient(145deg, #d4846a, #b85a42);
+  transform: rotate(8deg);
+}
+
+.arc-desk-green-drawer-token--blue {
+  top: 34%;
+  left: 22%;
+  background: linear-gradient(145deg, #9eb8c7, #6a8fa3);
+  transform: rotate(-14deg);
 }
 
 .arc-desk-green-drawer-well {
@@ -946,6 +1015,172 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-arctable-context {
   display: none;
+}
+
+.arc-desk-arctable-script {
+  margin: 0;
+  max-width: 11rem;
+  font: 700 10px/1.25 var(--font-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: color-mix(in srgb, var(--ink) 82%, var(--soft-charcoal));
+}
+
+.arc-desk-arctable-script-detail {
+  margin: 0;
+  max-width: 11rem;
+  font: 600 9px/1.3 var(--font-ui);
+  text-align: center;
+  color: var(--soft-charcoal);
+}
+
+.b01-furniture-composition--desk .arc-desk-wood-wordmark-slot {
+  position: absolute;
+  left: 2.2%;
+  top: 3.2%;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+.arc-desk-wood-wordmark {
+  filter: drop-shadow(0 10px 18px -12px rgba(33, 29, 23, 0.55));
+}
+
+.arc-desk-utility-tabs {
+  position: absolute;
+  left: 2%;
+  bottom: 3%;
+  z-index: 18;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 42%;
+  pointer-events: auto;
+}
+
+.arc-desk-utility-tabs .arc-index-tab {
+  min-height: 28px;
+  padding: 6px 10px;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  border-radius: 8px;
+  opacity: 0.92;
+}
+
+.desk-planner-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 52px 8px 16px;
+  margin: 0;
+}
+
+.desk-planner-head-row .plan-state-header {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.desk-planner-head-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding-top: 6px;
+}
+
+.desk-planner-search-field {
+  display: block;
+}
+
+.desk-planner-search {
+  width: min(168px, 28vw);
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 70%, transparent);
+  background: color-mix(in srgb, var(--field-elevated) 92%, white);
+  font-size: 13px;
+}
+
+.desk-planner-today {
+  border-radius: 999px;
+  min-height: 34px;
+  padding-inline: 14px;
+  font-weight: 700;
+}
+
+.arc-desk-todos-folder {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  padding: 18px 8px 8px;
+  border-radius: 14px 16px 12px 12px;
+  background: linear-gradient(165deg, #f7f0e2 0%, #efe4cf 48%, #e8dcc4 100%);
+  box-shadow:
+    0 18px 36px -22px rgba(33, 29, 23, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.65);
+  transform: rotate(-1.5deg);
+}
+
+.arc-desk-todos-folder-sheet {
+  position: absolute;
+  inset: 6px 4px 4px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 55%, transparent);
+  background: color-mix(in srgb, var(--field-elevated) 88%, transparent);
+  pointer-events: none;
+}
+
+.arc-desk-todos-folder-tab {
+  position: absolute;
+  top: -10px;
+  left: 10%;
+  margin: 0;
+  padding: 6px 14px 8px;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, #5a6f8a, #3d5168);
+  color: #f7f3ea;
+  font: 800 9px/1 var(--font-label);
+  letter-spacing: 0.14em;
+  box-shadow: 0 8px 16px -10px rgba(15, 35, 48, 0.55);
+}
+
+.arc-desk-todos-folder-body {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+.arc-desk-todos-folder .desk-priority-pad {
+  background: transparent;
+  box-shadow: none;
+  padding: 4px 2px;
+}
+
+.b01-furniture-composition--desk .planning-week {
+  padding-inline: 4px 8px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) {
+  gap: 6px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course {
+  border-radius: 8px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-unit-span {
+  border-radius: 6px;
+  min-height: 28px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-lesson {
+  border-radius: 999px;
+  font-size: 11px;
 }
 
 .b01-furniture-composition--desk .planner-shell-bar {

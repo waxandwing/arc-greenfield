@@ -97,7 +97,7 @@ try {
   assert(await page.getByTestId('arc-desk-tray-dock').isVisible(), 'Tray dock must render on desk.')
   assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render on desk.')
   assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in tray dock.')
-  assert(await page.locator('.arc-index-tabs').count() === 1, 'Desk must expose a single planner index tab row.')
+  assert(await page.locator('.arc-index-tabs').count() === 1, 'Desk must expose a single planner view tab strip (utilities are separate).')
   assert(await page.locator('.b01-index-rail > .arc-index-tabs').count() === 0, 'Side index rail must stay empty on desk.')
   assert(await page.getByTestId('global-capture-trigger').count() === 1, 'Desk must expose one quick capture trigger.')
   assert(await page.locator('[data-testid="planner-shell-bar"] .arc-wordmark').count() === 0, 'Desk must not duplicate planner shell chrome under PlanStateHeader.')

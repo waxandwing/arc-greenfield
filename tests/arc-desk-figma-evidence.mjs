@@ -132,7 +132,7 @@ try {
   assert(await page.getByTestId('arc-planner-physical-tabs').isVisible(), 'Physical tabs must attach to planner, not side rail.')
   assert(await page.locator('.b01-side-rail > .arc-index-tabs').count() === 0, 'Vertical index rail must stay hidden on desk.')
   assert(await page.locator('.b01-index-rail > .arc-index-tabs').count() === 0, 'Index rail alias must stay hidden on desk.')
-  assert(await page.locator('.arc-index-tabs').count() === 1, 'Desk must render one physical tab row.')
+  assert(await page.locator('.arc-index-tabs').count() === 1, 'Desk must render one planner view tab strip.')
   assert(await page.getByTestId('global-capture-trigger').count() === 1, 'Desk must render one quick capture affordance.')
   assert(await page.locator('[data-testid="planner-shell-bar"] .arc-wordmark').count() === 0, 'Desk must not stack shell wordmark on plan-state header.')
 

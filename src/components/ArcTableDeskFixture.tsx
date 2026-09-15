@@ -116,6 +116,9 @@ export function ArcTableDeskFixture({
   const previewCopy = previewAction ? ARC_TABLE_DESK_PREVIEW_COPY[previewAction] : null
   const hoverAction = hovered ? deskTargetToAction(hovered) : null
   const hoverLabel = hoverAction ? resolveDeskActionLabel(hoverAction, liveActive) : null
+  const scriptLine = resolveDeskActionLabel('startOrResume', liveActive)
+  const displayScript = hoverLabel ?? scriptLine
+  const displayDetail = !hoverLabel ? contextLine : null
 
   return (
     <>
@@ -157,11 +160,12 @@ export function ArcTableDeskFixture({
             </button>
           )}
         </div>
-        {contextLine || hoverLabel ? (
-          <p className="arc-desk-arctable-context" aria-live="polite">
-            {hoverLabel ?? contextLine}
+        {displayScript ? (
+          <p className="arc-desk-arctable-script" aria-live="polite">
+            {displayScript}
           </p>
         ) : null}
+        {displayDetail ? <p className="arc-desk-arctable-script-detail">{displayDetail}</p> : null}
       </div>
 
       {previewCopy

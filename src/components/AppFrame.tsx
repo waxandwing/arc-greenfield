@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { B01Furniture } from './B01Furniture'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { PlanStateHeader } from './PlanStateHeader'
+import { DeskPlannerHeadRow } from './DeskPlannerHeadRow'
 import { SettingsFurnitureContent } from './SettingsFurnitureContent'
 import { TaskBarPanel } from './TaskBarPanel'
 import { WorkspaceStage } from './WorkspaceStage'
@@ -70,6 +71,7 @@ import { ArcTableDeskFixture } from './ArcTableDeskFixture'
 import { DeskPriorityPad } from './DeskPriorityPad'
 import { DeskEditToolbar } from './DeskEditToolbar'
 import { DeskQuickCaptureSticky } from './DeskQuickCaptureSticky'
+import { publicAssetUrl } from '../publicAssetUrl'
 import { DeskNotesObject } from './DeskNotesObject'
 import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
 import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
@@ -100,6 +102,7 @@ export function AppFrame() {
   } | null>(null)
   const [deskSelectedObject, setDeskSelectedObject] = useState<DeskObjectKind>('tray')
   const [deskResetArmed, setDeskResetArmed] = useState(false)
+  const [deskPlannerSearch, setDeskPlannerSearch] = useState('')
 
   const deskEditActive = deskEditSession !== null
   const activeDeskLayout = deskEditSession?.draftLayout ?? workspaceLayout
@@ -652,6 +655,11 @@ export function AppFrame() {
             deskTrayDock={deskTrayCompact}
             deskPriorityDock={deskPriorityPad}
             deskNotesDock={activeDeskPreferences.desk.showDeskNotes ? <DeskNotesObject /> : null}
+            deskWoodWordmark={
+              <button type="button" className="arc-wordmark arc-desk-wood-wordmark" aria-label="Teaching Day home" onClick={returnHome}>
+                <img src={publicAssetUrl('assets/arc/arc-mark.png')} alt="Arc" data-testid="arc-desk-wood-wordmark" />
+              </button>
+            }
             deskQuickCapture={
               deskEnabled && globalCaptureEnabled ? (
                 <DeskQuickCaptureSticky>
@@ -816,25 +824,52 @@ export function AppFrame() {
                 <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} />
               ) : null}
               {workspaceMode.mode === 'calendar' && workspace.calendar && workspace.anchorDate ? (
-                <PlanStateHeader
-                  view={workspace.activeView}
-                  viewLabel={workspace.activeView === 'Day' ? 'Teaching Day' : calendarViewLabel(workspace.activeView)}
-                  focus={workspace.planContext?.focus ?? 'day'}
-                  date={workspace.anchorDate}
-                  weekRange={weekRangeLabel(workspace, viewPreferences.showWeekends)}
-                  monthLabel={monthLabel(workspace)}
-                  yearLabel={yearLabel(workspace)}
-                  courseId={workspace.planContext?.courseId}
-                  sectionId={workspace.planContext?.sectionId}
-                  lessonId={workspace.planContext?.lessonId}
-                  courseTitle={headerCourseTitle(workspace)}
-                  sectionName={headerSectionName(workspace)}
-                  unitTitle={headerUnitTitle(workspace)}
-                  lessonTitle={headerLessonTitle(workspace)}
-                  blockLabel={headerBlock(workspace)?.label}
-                  blockType={headerBlock(workspace)?.type ?? null}
-                  overlay={workspaceOverlayOpen ? 'workspace' : null}
-                />
+                deskEnabled ? (
+                  <DeskPlannerHeadRow
+                    deskEnabled
+                    view={workspace.activeView}
+                    viewLabel={workspace.activeView === 'Day' ? 'Teaching Day' : calendarViewLabel(workspace.activeView)}
+                    focus={workspace.planContext?.focus ?? 'day'}
+                    date={workspace.anchorDate}
+                    weekRange={weekRangeLabel(workspace, viewPreferences.showWeekends)}
+                    monthLabel={monthLabel(workspace)}
+                    yearLabel={yearLabel(workspace)}
+                    courseId={workspace.planContext?.courseId}
+                    sectionId={workspace.planContext?.sectionId}
+                    lessonId={workspace.planContext?.lessonId}
+                    courseTitle={headerCourseTitle(workspace)}
+                    sectionName={headerSectionName(workspace)}
+                    unitTitle={headerUnitTitle(workspace)}
+                    lessonTitle={headerLessonTitle(workspace)}
+                    blockLabel={headerBlock(workspace)?.label}
+                    blockType={headerBlock(workspace)?.type ?? null}
+                    overlay={workspaceOverlayOpen ? 'workspace' : null}
+                    todayDisabled={!workspace.todayTarget}
+                    onToday={workspace.goToday}
+                    searchQuery={deskPlannerSearch}
+                    onSearchQueryChange={setDeskPlannerSearch}
+                  />
+                ) : (
+                  <PlanStateHeader
+                    view={workspace.activeView}
+                    viewLabel={workspace.activeView === 'Day' ? 'Teaching Day' : calendarViewLabel(workspace.activeView)}
+                    focus={workspace.planContext?.focus ?? 'day'}
+                    date={workspace.anchorDate}
+                    weekRange={weekRangeLabel(workspace, viewPreferences.showWeekends)}
+                    monthLabel={monthLabel(workspace)}
+                    yearLabel={yearLabel(workspace)}
+                    courseId={workspace.planContext?.courseId}
+                    sectionId={workspace.planContext?.sectionId}
+                    lessonId={workspace.planContext?.lessonId}
+                    courseTitle={headerCourseTitle(workspace)}
+                    sectionName={headerSectionName(workspace)}
+                    unitTitle={headerUnitTitle(workspace)}
+                    lessonTitle={headerLessonTitle(workspace)}
+                    blockLabel={headerBlock(workspace)?.label}
+                    blockType={headerBlock(workspace)?.type ?? null}
+                    overlay={workspaceOverlayOpen ? 'workspace' : null}
+                  />
+                )
               ) : null}
               <WorkspaceStage
                 mode={workspaceMode.mode}

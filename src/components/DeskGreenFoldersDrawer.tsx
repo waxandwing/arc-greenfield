@@ -23,7 +23,11 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = true }: Pro
       data-extended={extended ? 'true' : 'false'}
     >
       <div className="arc-desk-green-drawer-shell">
-        <div className="arc-desk-green-drawer-art" aria-hidden="true" />
+        <div className="arc-desk-green-drawer-art" aria-hidden="true">
+          <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--mustard" />
+          <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--terracotta" />
+          <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--blue" />
+        </div>
         <div
           id={panelId}
           className="arc-desk-green-drawer-well"
@@ -36,13 +40,14 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = true }: Pro
         <button
           id={tabId}
           type="button"
-          className="arc-desk-folders-tab"
+          className="arc-desk-folders-tab arc-desk-ideas-tab"
           data-testid="arc-desk-folders-tab"
+          data-ideas-tab="true"
           aria-expanded={extended}
           aria-controls={panelId}
           onClick={toggle}
         >
-          FOLDERS
+          IDEAS
         </button>
       </div>
     </aside>

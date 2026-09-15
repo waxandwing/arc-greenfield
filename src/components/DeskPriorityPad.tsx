@@ -21,8 +21,8 @@ export function DeskPriorityPad({ workspace, onAdd, onMove, onPromoteCaptureText
   return (
     <section className="desk-priority-pad" aria-label="Must Should Could priority pad" data-testid="desk-priority-pad">
       <header className="desk-priority-pad-heading">
-        <p className="section-label">Priority pad</p>
-        <h2>Must · Should · Could</h2>
+        <p className="section-label">To-dos</p>
+        <h2>MUST · SHOULD · COULD</h2>
       </header>
       <div className="desk-priority-lanes">
         {LANES.map((lane) => (

@@ -13,6 +13,7 @@ import type { MscSizePreset, PlannerSizePreset, TraySizePreset } from '../naviga
 import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
 import { DeskGreenFoldersDrawer } from './DeskGreenFoldersDrawer'
+import { DeskTodosFolder } from './DeskTodosFolder'
 
 type DrawerName = 'settings' | 'workspace' | 'tasks'
 
@@ -47,6 +48,7 @@ type Props = {
   deskNotesDock?: ReactNode
   deskArcTableFixture?: ReactNode
   deskQuickCapture?: ReactNode
+  deskWoodWordmark?: ReactNode
   deskEditMode?: boolean
   deskLayout?: DeskLayoutState | null
   deskViewportProfile?: DeskViewportProfile
@@ -84,6 +86,7 @@ export function B01Furniture({
   deskNotesDock = null,
   deskArcTableFixture = null,
   deskQuickCapture = null,
+  deskWoodWordmark = null,
   deskEditMode = false,
   deskLayout = null,
   deskViewportProfile = 'desktop',
@@ -266,13 +269,79 @@ export function B01Furniture({
   const workspaceTabLabel = deskEnabled ? 'TRAY' : 'WORKSPACE'
   const workspacePanelLabel = deskEnabled ? 'Tray' : 'Workspace'
   const layoutGridActive =
-    deskEnabled && Boolean(deskLayout) && (deskEditMode || !deskLayoutUsesDefault(deskLayout))
+    deskEnabled && Boolean(deskLayout) && (deskEditMode || !deskLayoutUsesDefault(deskLayout!))
   /** Physical folders drawer on wood; full TRAY drawer reuses the same panel — never both. */
   const showDeskTrayDock = Boolean(deskTrayDock) && !workspaceIsOpen
 
   function renderDeskTrayDock() {
     if (!showDeskTrayDock) return null
     return <DeskGreenFoldersDrawer>{deskTrayDock}</DeskGreenFoldersDrawer>
+  }
+
+  function renderPlannerViewTabs(className: string) {
+    if (!indexNav) return null
+    return (
+      <nav className={className} aria-label="Planner index" data-testid="arc-planner-physical-tabs">
+        {VIEW_TABS.map(({ view, label, tabClass }) => {
+          const availability = indexNav.availabilityFor(view)
+          const unavailable = !availability.available
+          const isCurrent = !indexNav.planningIndexActive && view === indexNav.activeView && !workspaceIsOpen && !open.settings && !tasksIsOpen
+          return (
+            <button
+              key={view}
+              type="button"
+              className={`arc-index-tab ${tabClass}`}
+              aria-current={isCurrent ? 'page' : undefined}
+              aria-disabled={unavailable || indexNav.viewSelectionDisabled ? 'true' : undefined}
+              title={unavailable ? availability.reason : calendarViewLabel(view)}
+              disabled={indexNav.viewSelectionDisabled || unavailable}
+              onClick={() => selectViewTab(view)}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </nav>
+    )
+  }
+
+  function renderDeskUtilityTabs() {
+    if (!indexNav || !deskEnabled) return null
+    return (
+      <nav className="arc-desk-utility-tabs" aria-label="Desk utilities" data-testid="arc-desk-utility-tabs">
+        <button
+          type="button"
+          className="arc-index-tab arc-index-tab--planning"
+          aria-current={indexNav.planningIndexActive && !workspaceIsOpen && !open.settings && !tasksIsOpen ? 'page' : undefined}
+          disabled={indexNav.viewSelectionDisabled}
+          onClick={openPlanningTab}
+        >
+          PLANNING
+        </button>
+        <button
+          ref={workspaceButton}
+          type="button"
+          className="arc-index-tab arc-index-tab--workspace"
+          aria-expanded={workspaceIsOpen}
+          aria-controls="b01-fridge-surface"
+          aria-current={workspaceIsOpen ? 'page' : undefined}
+          onClick={() => toggle('workspace')}
+        >
+          {workspaceTabLabel}
+        </button>
+        <button
+          ref={settingsButton}
+          type="button"
+          className="arc-index-tab arc-index-tab--settings"
+          aria-expanded={open.settings}
+          aria-controls="b01-settings-surface"
+          aria-current={open.settings ? 'page' : undefined}
+          onClick={() => toggle('settings')}
+        >
+          SETTINGS
+        </button>
+      </nav>
+    )
   }
 
   function renderIndexTabs(className: string) {
@@ -333,9 +402,14 @@ export function B01Furniture({
     )
   }
 
+  const plannerEdgeTabsClass =
+    'arc-index-tabs arc-planner-physical-tabs arc-planner-physical-tabs--desk-edge'
+
   const plannerBlock = (
     <div className="arc-planner-object">
-      {deskEnabled && layoutGridActive ? renderIndexTabs('arc-index-tabs arc-planner-physical-tabs') : null}
+      {deskEnabled
+        ? renderPlannerViewTabs(plannerEdgeTabsClass)
+        : null}
       {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
       <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
         {spreadChrome}
@@ -359,6 +433,8 @@ export function B01Furniture({
       {deskEnabled ? (
         <div className="arc-desk-viewport" data-testid="arc-desk-viewport">
           <div className="arc-desk-tabletop" data-testid="arc-desk-tabletop">
+            {deskWoodWordmark ? <div className="arc-desk-wood-wordmark-slot">{deskWoodWordmark}</div> : null}
+            {renderDeskUtilityTabs()}
             <div
               className={`arc-desk-surface${deskEditMode ? ' arc-desk-surface--edit' : ''}`}
               data-layout-grid={layoutGridActive ? 'true' : 'false'}
@@ -371,7 +447,7 @@ export function B01Furniture({
                   {wrapDeskObject('tray', 'Tray', renderDeskTrayDock())}
                   {wrapDeskObject('msc', 'Must Should Could', deskPriorityDock ? (
                     <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
-                      {deskPriorityDock}
+                      <DeskTodosFolder>{deskPriorityDock}</DeskTodosFolder>
                     </aside>
                   ) : null)}
                   {wrapDeskObject('arctable', 'ArcTable', deskArcTableFixture ? (
@@ -387,7 +463,7 @@ export function B01Furniture({
                   {renderDeskTrayDock()}
                   {deskPriorityDock ? (
                     <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
-                      {deskPriorityDock}
+                      <DeskTodosFolder>{deskPriorityDock}</DeskTodosFolder>
                     </aside>
                   ) : null}
                   {deskNotesDock ? (
@@ -399,9 +475,6 @@ export function B01Furniture({
                 </>
               )}
               {deskQuickCapture ? deskQuickCapture : null}
-              {!layoutGridActive && indexNav
-                ? renderIndexTabs('arc-index-tabs arc-planner-physical-tabs arc-planner-physical-tabs--desk-elevated')
-                : null}
             </div>
           </div>
         </div>
