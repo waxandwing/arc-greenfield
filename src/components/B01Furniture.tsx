@@ -17,7 +17,6 @@ import { DeskTodosFolder } from './DeskTodosFolder'
 import {
   deskCommittedRasterChromeEnabled,
   deskPlannerEdgeTabAssetUrl,
-  deskSliceUsesEnabled,
 } from '../desk/deskSliceRuntime'
 import { DeskPlannerFrameSlices } from './DeskPlannerFrameSlices'
 
@@ -286,24 +285,24 @@ export function B01Furniture({
 
   function renderPlannerViewTabs(className: string) {
     if (!indexNav) return null
-    const edgeTabSlices = deskEnabled && deskCommittedRasterChromeEnabled()
+    const rasterChrome = deskEnabled && deskCommittedRasterChromeEnabled()
     return (
       <nav
         className={className}
         aria-label="Planner index"
         data-testid="arc-planner-physical-tabs"
-        data-desk-slices={edgeTabSlices ? 'true' : 'false'}
+        data-desk-slices={rasterChrome ? 'true' : 'false'}
       >
         {VIEW_TABS.map(({ view, label, tabClass }) => {
           const availability = indexNav.availabilityFor(view)
           const unavailable = !availability.available
           const isCurrent = !indexNav.planningIndexActive && view === indexNav.activeView && !workspaceIsOpen && !open.settings && !tasksIsOpen
-          const tabArt = edgeTabSlices ? deskPlannerEdgeTabAssetUrl(label, isCurrent) : null
+          const tabArt = rasterChrome ? deskPlannerEdgeTabAssetUrl(label, isCurrent) : null
           return (
             <button
               key={view}
               type="button"
-              className={`arc-index-tab ${tabClass}${edgeTabSlices ? ' arc-index-tab--desk-slice' : ''}${isCurrent && edgeTabSlices ? ' arc-index-tab--desk-slice-active' : ''}`}
+              className={`arc-index-tab ${tabClass}${rasterChrome ? ' arc-index-tab--desk-slice' : ''}${isCurrent && rasterChrome ? ' arc-index-tab--desk-slice-active' : ''}`}
               aria-current={isCurrent ? 'page' : undefined}
               aria-disabled={unavailable || indexNav.viewSelectionDisabled ? 'true' : undefined}
               title={unavailable ? availability.reason : calendarViewLabel(view)}
@@ -417,113 +416,70 @@ export function B01Furniture({
     )
   }
 
-  const plannerEdgeTabsClass =
-    'arc-index-tabs arc-planner-physical-tabs arc-planner-physical-tabs--desk-edge'
-
-  const plannerBlock = (
-    <div className="arc-planner-object">
-      {deskEnabled
-        ? renderPlannerViewTabs(plannerEdgeTabsClass)
-        : null}
-      {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
-      <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
-        {deskEnabled ? <DeskPlannerFrameSlices /> : null}
-        {spreadChrome}
-        {deskEditToolbar}
-        <div className={`b01-calendar-owner${deskEditMode ? ' b01-calendar-owner--workspace-edit' : ''}`}>{children}</div>
-      </div>
-    </div>
-  )
-
   return (
     <div
-      className={`b01-furniture-composition${deskEnabled ? ' b01-furniture-composition--desk' : ''}${yearExpanded ? ' b01-furniture-composition--year-expanded' : ''}${deskEditMode ? ' b01-furniture-composition--desk-edit' : ''}`}
-      data-testid="b01-furniture-composition"
+      className={`b01-furniture-composition${deskEnabled ? ' b01-furniture-composition--desk' : ''}${yearExpanded ? ' b01-furniture-composition--year-expanded' : ''}`}
       data-workspace-open={workspaceIsOpen ? 'true' : 'false'}
-      data-settings-open={open.settings ? 'true' : 'false'}
-      data-side-panel={sidePanel}
-      data-desk-enabled={deskEnabled ? 'true' : 'false'}
-      data-desk-edit-mode={deskEditMode ? 'true' : 'false'}
-      data-year-expanded={yearExpanded ? 'true' : 'false'}
+      data-desk-edit={deskEditMode ? 'true' : 'false'}
     >
       {deskEnabled ? (
-        <div className="arc-desk-viewport" data-testid="arc-desk-viewport">
-          <div className="arc-desk-tabletop" data-testid="arc-desk-tabletop">
-            {deskWoodWordmark ? <div className="arc-desk-wood-wordmark-slot">{deskWoodWordmark}</div> : null}
-            {renderDeskUtilityTabs()}
-            <div
-              className={`arc-desk-surface${deskEditMode ? ' arc-desk-surface--edit' : ''}`}
-              data-layout-grid={layoutGridActive ? 'true' : 'false'}
-              data-furniture-locked={deskEditMode ? 'false' : 'true'}
-            >
-              {deskEditMode ? <div className="arc-desk-zone-grid" aria-hidden="true" /> : null}
-              {layoutGridActive ? (
-                <>
-                  {wrapDeskObject('planner', 'Planner', plannerBlock)}
-                  {wrapDeskObject('tray', 'Tray', renderDeskTrayDock())}
-                  {wrapDeskObject('msc', 'Must Should Could', deskPriorityDock ? (
-                    <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
-                      <DeskTodosFolder>{deskPriorityDock}</DeskTodosFolder>
-                    </aside>
-                  ) : null)}
-                  {wrapDeskObject('arctable', 'ArcTable', deskArcTableFixture ? (
-                    <div className="arc-desk-arctable-anchor" data-testid="arc-desk-arctable-anchor">{deskArcTableFixture}</div>
-                  ) : null)}
-                  {wrapDeskObject('notes', 'Desk notes', deskNotesDock ? (
-                    <aside className="arc-desk-notes-dock" aria-label="Desk notes">{deskNotesDock}</aside>
-                  ) : null)}
-                </>
-              ) : (
-                <>
-                  {plannerBlock}
-                  {renderDeskTrayDock()}
-                  {deskPriorityDock ? (
-                    <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
-                      <DeskTodosFolder>{deskPriorityDock}</DeskTodosFolder>
-                    </aside>
-                  ) : null}
-                  {deskNotesDock ? (
-                    <aside className="arc-desk-notes-dock" aria-label="Desk notes">{deskNotesDock}</aside>
-                  ) : null}
-                  {deskArcTableFixture ? (
-                    <div className="arc-desk-arctable-anchor" data-testid="arc-desk-arctable-anchor">{deskArcTableFixture}</div>
-                  ) : null}
-                </>
-              )}
-              {deskQuickCapture ? deskQuickCapture : null}
+        <div className="arc-desk-viewport">
+          <div className="arc-desk-tabletop">
+            <div className="arc-desk-surface" data-layout-grid={layoutGridActive ? 'true' : 'false'}>
+              {wrapDeskObject('tray', 'Tray', renderDeskTrayDock())}
+              {wrapDeskObject('priorities', 'Priorities', deskPriorityDock)}
+              {wrapDeskObject('notes', 'Notes', deskNotesDock)}
+              {wrapDeskObject('arctable', 'ArcTable', deskArcTableFixture)}
+              {wrapDeskObject('capture', 'Quick capture', deskQuickCapture)}
+              {deskWoodWordmark}
+              <div className={deskObjectClass('planner', 'arc-planner-object')} onClick={() => deskEditMode && onSelectDeskObject?.('planner')}>
+                {rasterChromeEnabled(renderPlannerViewTabs) ? <DeskPlannerFrameSlices /> : null}
+                {spreadChrome}
+                {renderPlannerViewTabs('arc-planner-physical-tabs arc-planner-physical-tabs--desk-edge')}
+                {children}
+              </div>
+              {renderDeskUtilityTabs()}
+              {deskEditToolbar}
             </div>
           </div>
         </div>
       ) : (
-        plannerBlock
+        <>
+          <div className="b01-side-rail">{renderIndexTabs('arc-index-tabs')}</div>
+          <div className="b01-calendar-owner">{children}</div>
+        </>
       )}
-
-      <div className={`b01-side-rail b01-index-rail${deskEnabled ? ' b01-side-rail--desk-overlays' : ''}`}>
-        {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
-
-        <div className="b01-side-panels">
-          <aside className="b01-tool-owner b01-settings-owner" data-state={open.settings ? 'open' : 'closed'} aria-label="Settings furniture">
-            <div id="b01-settings-surface" className="b01-furniture-surface b01-settings-surface" inert={!open.settings ? true : undefined}>
-              <div className="b01-surface-heading"><p className="b01-furniture-kicker">Settings</p><button type="button" onClick={() => close('settings')} aria-label="Close Settings">Close</button></div>
-              {settings}
-            </div>
-          </aside>
-
-          <aside className="b01-tool-owner b01-fridge-owner" data-state={workspaceIsOpen ? 'open' : 'closed'} aria-label={`${workspacePanelLabel} furniture`}>
-            <div id="b01-fridge-surface" className={`b01-furniture-surface b01-fridge-surface${deskEnabled ? ' b01-tray-surface' : ''}`} inert={!workspaceIsOpen ? true : undefined}>
-              <div className="b01-surface-heading"><p className="b01-furniture-kicker">{workspacePanelLabel}</p><button type="button" onClick={() => close('workspace')} aria-label={`Close ${workspacePanelLabel}`}>Close</button></div>
-              {workspace ?? <p className="b01-furniture-empty">No loose planning material yet.</p>}
-            </div>
-          </aside>
-
-          <aside className="b01-tool-owner b01-task-owner" data-state={tasksIsOpen ? 'open' : 'closed'} aria-label="Task Bar furniture">
-            <div id="b01-task-surface" className="b01-furniture-surface b01-task-surface" inert={!tasksIsOpen ? true : undefined}>
-              <div className="b01-surface-heading"><p className="b01-furniture-kicker">Tasks</p><button type="button" onClick={() => close('tasks')} aria-label="Close Tasks">Close</button></div>
-              {tasks ?? <><div><strong>Must</strong></div><div><strong>Should</strong></div><div><strong>Could</strong></div></>}
-            </div>
-          </aside>
+      <aside
+        id="b01-settings-surface"
+        className={`b01-settings-surface${sidePanel === 'settings' ? ' b01-settings-surface--open' : ''}`}
+        aria-hidden={sidePanel !== 'settings'}
+      >
+        {settings}
+        <button type="button" className="b01-close-control" onClick={() => close('settings')}>Close</button>
+      </aside>
+      <aside
+        id="b01-fridge-surface"
+        className={`b01-fridge-surface${sidePanel === 'workspace' ? ' b01-fridge-surface--open' : ''}`}
+        aria-hidden={sidePanel !== 'workspace'}
+      >
+        <div className="b01-fridge-surface__header">
+          <strong>{workspacePanelLabel}</strong>
+          <button type="button" className="b01-close-control" onClick={() => close('workspace')}>Close</button>
         </div>
-      </div>
+        {workspace}
+      </aside>
+      <aside
+        id="b01-tasks-surface"
+        className={`b01-tasks-surface${sidePanel === 'tasks' ? ' b01-tasks-surface--open' : ''}`}
+        aria-hidden={sidePanel !== 'tasks'}
+      >
+        {tasks}
+        <button type="button" className="b01-close-control" onClick={() => close('tasks')}>Close</button>
+      </aside>
     </div>
   )
+}
+
+function rasterChromeEnabled(_renderTabs: (className: string) => ReactNode): boolean {
+  return deskCommittedRasterChromeEnabled()
 }
