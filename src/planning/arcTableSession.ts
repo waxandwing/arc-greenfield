@@ -1,14 +1,43 @@
+import { isConfirmedInstructionalDay } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
-import {
-  easelLaunchOptions,
-  projectEaselSession,
-  type EaselLaunchOption,
-  type EaselSessionProjection,
-} from './easelSessionProjection'
-import type { DayContinuityProjection } from './dayContinuityProjection'
+import type { DayContinuityLesson, DayContinuityProjection } from './dayContinuityProjection'
+import type { LessonResource } from './lessons'
 
-export type ArcTableLaunchOption = EaselLaunchOption
-export type ArcTableSession = EaselSessionProjection
+export type ArcTableLaunchSource = 'scheduled' | 'carryover'
+
+export type ArcTableLaunchOption = {
+  sectionId: string
+  lessonId: string
+  title: string
+  unitTitle: string
+  source: ArcTableLaunchSource
+  deliveryStatus: DayContinuityLesson['deliveryStatus']
+  resumeNote: string | null
+}
+
+export type ArcTableSession = {
+  date: ISODate
+  courseId: string
+  courseTitle: string
+  sectionId: string
+  sectionName: string
+  lessonId: string
+  lessonTitle: string
+  unitId: string
+  unitTitle: string
+  source: ArcTableLaunchSource
+  datePolicy: DayContinuityLesson['datePolicy']
+  sharedPlannedDate: ISODate | null
+  effectiveDate: ISODate | null
+  isSectionOverride: boolean
+  deliveryStatus: DayContinuityLesson['deliveryStatus']
+  taughtDate: ISODate | null
+  resumeNote: string | null
+  directions: string[]
+  materials: string[]
+  phases: string[]
+  resources: LessonResource[]
+}
 
 export function arcTableLaunchOptions(input: {
   day: DayContinuityProjection
@@ -16,7 +45,35 @@ export function arcTableLaunchOptions(input: {
   calendar: SchoolCalendar
   liveDate: ISODate
 }): ArcTableLaunchOption[] {
-  return translateErrors(() => easelLaunchOptions(input))
+  const { day, sectionId, calendar, liveDate } = input
+  validateLiveTeachingDay(day, calendar, liveDate)
+  const located = locateSection(day, sectionId)
+  if (!located) throw new Error(`ArcTable cannot find Section ${sectionId} in the selected Day.`)
+
+  const seen = new Set<string>()
+  const options: ArcTableLaunchOption[] = []
+  for (const [source, lessons] of [
+    ['carryover', located.section.carryovers],
+    ['scheduled', located.section.scheduledLessons],
+  ] as const) {
+    for (const lesson of lessons) {
+      if (!isLiveTeachingStatus(lesson.deliveryStatus)) continue
+      if (seen.has(lesson.lessonId)) {
+        throw new Error(`ArcTable launch context contains duplicate Lesson ${lesson.lessonId} for Section ${sectionId}.`)
+      }
+      seen.add(lesson.lessonId)
+      options.push({
+        sectionId,
+        lessonId: lesson.lessonId,
+        title: lesson.title,
+        unitTitle: lesson.unitTitle,
+        source,
+        deliveryStatus: lesson.deliveryStatus,
+        resumeNote: lesson.resumeNote,
+      })
+    }
+  }
+  return options
 }
 
 export function projectArcTableSession(input: {
@@ -26,14 +83,69 @@ export function projectArcTableSession(input: {
   calendar: SchoolCalendar
   liveDate: ISODate
 }): ArcTableSession {
-  return translateErrors(() => projectEaselSession(input))
+  const { day, sectionId, lessonId, calendar, liveDate } = input
+  validateLiveTeachingDay(day, calendar, liveDate)
+  const located = locateSection(day, sectionId)
+  if (!located) throw new Error(`ArcTable cannot find Section ${sectionId} in the selected Day.`)
+
+  const candidates = [
+    ...located.section.carryovers.map((lesson) => ({ source: 'carryover' as const, lesson })),
+    ...located.section.scheduledLessons.map((lesson) => ({ source: 'scheduled' as const, lesson })),
+  ].filter((candidate) => candidate.lesson.lessonId === lessonId)
+
+  if (candidates.length === 0) {
+    throw new Error(`ArcTable cannot open Lesson ${lessonId} because it is not part of Section ${sectionId} continuity for ${day.date}.`)
+  }
+  if (candidates.length > 1) {
+    throw new Error(`ArcTable cannot open duplicate Lesson ${lessonId} context for Section ${sectionId}.`)
+  }
+
+  const { source, lesson } = candidates[0]
+  if (!isLiveTeachingStatus(lesson.deliveryStatus)) {
+    throw new Error(`ArcTable cannot reopen ${lesson.deliveryStatus} teaching history for Lesson ${lessonId}.`)
+  }
+  return {
+    date: day.date,
+    courseId: located.course.courseId,
+    courseTitle: located.course.courseTitle,
+    sectionId,
+    sectionName: located.section.sectionName,
+    lessonId: lesson.lessonId,
+    lessonTitle: lesson.title,
+    unitId: lesson.unitId,
+    unitTitle: lesson.unitTitle,
+    source,
+    datePolicy: lesson.datePolicy,
+    sharedPlannedDate: lesson.sharedPlannedDate,
+    effectiveDate: lesson.effectiveDate,
+    isSectionOverride: lesson.isSectionOverride,
+    deliveryStatus: lesson.deliveryStatus,
+    taughtDate: lesson.taughtDate,
+    resumeNote: lesson.resumeNote,
+    directions: [...lesson.directions],
+    materials: [...lesson.materials],
+    phases: [...lesson.phases],
+    resources: lesson.resources.map((resource) => ({ ...resource })),
+  }
 }
 
-function translateErrors<T>(operation: () => T): T {
-  try {
-    return operation()
-  } catch (error) {
-    if (!(error instanceof Error)) throw error
-    throw new Error(error.message.replaceAll('Easel', 'ArcTable'))
+function validateLiveTeachingDay(day: DayContinuityProjection, calendar: SchoolCalendar, liveDate: ISODate): void {
+  if (day.date !== liveDate) {
+    throw new Error('ArcTable live teaching can open only from the current Day. Use Arc to review past or future planning dates.')
   }
+  if (!isConfirmedInstructionalDay(calendar, liveDate)) {
+    throw new Error('ArcTable live teaching requires a confirmed instructional day.')
+  }
+}
+
+function isLiveTeachingStatus(status: DayContinuityLesson['deliveryStatus']): boolean {
+  return status === 'not-started' || status === 'in-progress'
+}
+
+function locateSection(day: DayContinuityProjection, sectionId: string) {
+  for (const course of day.courses) {
+    const section = course.sections.find((candidate) => candidate.sectionId === sectionId)
+    if (section) return { course, section }
+  }
+  return null
 }
