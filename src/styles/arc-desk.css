@@ -1979,7 +1979,7 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .desk-planner-head-title-cluster { display:flex; align-items:center; gap:10px; min-width:0; flex:1 1 auto; }
 .b01-furniture-composition--desk .desk-planner-head-title-copy { display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-width:0; }
 .b01-furniture-composition--desk .desk-planner-head-title-copy .plan-state-header { margin:0; padding:0; }
-.b01-furniture-composition--desk .desk-planner-head-title-copy .plan-state-secondary { display:none; }
+.b01-furniture-composition--desk .desk-planner-head-title-copy .plan-state-header .plan-state-secondary { display:none; }
 .b01-furniture-composition--desk .desk-planner-week-kicker { font-family:'League Spartan', var(--font-label), sans-serif; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:color-mix(in srgb, var(--ink) 78%, var(--soft-charcoal)); margin:0; }
 .b01-furniture-composition--desk .desk-planner-rainbow-mark { width:clamp(40px,4.2vw,56px); height:auto; flex:0 0 auto; object-fit:contain; pointer-events:none; }
 .b01-furniture-composition--desk .desk-planner-head-tools { gap:6px; padding-top:4px; opacity:0.82; }
