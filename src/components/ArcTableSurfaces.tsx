@@ -161,11 +161,13 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
             ) : (
               <p className="arctable-content-empty">No directions authored — project media or open Plan View to author the board.</p>
             )}
-            <MediaSurface media={live.media} onOpenMedia={() => setTool('media')} onPreviewStudent={onShowStudent} />
           </div>
-          <div className="arctable-student-facts">
-            <span>Voice {live.voiceLevel}</span><span>{live.materials || 'No materials listed'}</span>
-            {cleanupActive ? <strong>{live.cleanupTimer.status === 'completed' ? 'Cleanup complete' : `Cleanup · ${formatDuration(cleanupRemaining)}`}</strong> : <span>Cleanup later</span>}
+          <div className="arctable-board-footer">
+            <MediaSurface media={live.media} onOpenMedia={() => setTool('media')} onPreviewStudent={onShowStudent} />
+            <div className="arctable-student-facts">
+              <span>Voice {live.voiceLevel}</span><span>{live.materials || 'No materials listed'}</span>
+              {cleanupActive ? <strong>{live.cleanupTimer.status === 'completed' ? 'Cleanup complete' : `Cleanup · ${formatDuration(cleanupRemaining)}`}</strong> : <span>Cleanup later</span>}
+            </div>
           </div>
         </section>
 
