@@ -93,6 +93,8 @@ html:has(.arc-shell--desk) body {
   padding: 0;
   background: none;
   box-shadow: none;
+  /* Index tabs hang past planner bounds onto the wood. */
+  overflow: visible;
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-object {
@@ -221,7 +223,8 @@ html:has(.arc-shell--desk) body {
   height: 100%;
   border: 2px solid color-mix(in srgb, var(--shell-frame-green) 78%, var(--ink));
   border-radius: 10px;
-  padding-right: 44px;
+  /* Tabs hang mostly outside the green border; slim gutter so roots clear cream content. */
+  padding-right: 14px;
   background-color: var(--field-elevated);
   background-image:
     linear-gradient(color-mix(in srgb, var(--field-elevated) 97%, transparent), color-mix(in srgb, var(--field-elevated) 97%, transparent)),
@@ -252,11 +255,12 @@ html:has(.arc-shell--desk) body {
   box-shadow: none;
 }
 
-/* Kelly comp: DAY/WEEK/MONTH/YEAR on planner right edge (vertical denim tabs). */
+/* Kelly comp: DAY/WEEK/MONTH/YEAR as real index tabs hanging off planner RIGHT edge. */
 .arc-planner-physical-tabs--desk-edge {
   position: absolute;
   left: auto;
-  right: 0;
+  /* Hang past the green border onto the wood; ~10–12px root still overlaps the frame. */
+  right: -42px;
   top: 12%;
   bottom: 10%;
   transform: none;
@@ -264,38 +268,42 @@ html:has(.arc-shell--desk) body {
   align-items: stretch;
   justify-content: flex-start;
   gap: 3px;
-  width: 52px;
+  width: 54px;
   max-width: none;
   z-index: 45;
   padding: 4px 0;
+  pointer-events: auto;
 }
 
 .arc-planner-physical-tabs--desk-edge .arc-index-tab {
-  min-width: 0;
+  min-width: 44px;
   width: 100%;
   min-height: 52px;
   padding: 10px 6px;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: none;
-  border-radius: 10px 0 0 10px;
-  border-right: 0;
+  /* Outer (desk) edge is rounded — tabs read as tickets sticking out of the book. */
+  border-radius: 0 10px 10px 0;
   border: 1px solid color-mix(in srgb, var(--line-subtle) 65%, transparent);
+  border-left: 0;
   font-size: 9px;
   letter-spacing: 0.12em;
   background: linear-gradient(90deg, color-mix(in srgb, var(--dusty-blue) 22%, var(--field-elevated)), var(--field-elevated));
-  box-shadow: -4px 0 14px -10px rgba(33, 29, 23, 0.35);
+  box-shadow: 4px 0 14px -10px rgba(33, 29, 23, 0.35);
+  cursor: pointer;
 }
 
 .arc-planner-physical-tabs--desk-edge .arc-index-tab[aria-current='page'] {
-  transform: translateX(-3px);
-  padding-right: 9px;
+  /* Active tab protrudes slightly further onto the desk. */
+  transform: translateX(5px);
+  padding-right: 10px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--shell-frame-green) 18%, var(--field-elevated)), var(--field-elevated));
   border-color: color-mix(in srgb, var(--shell-frame-green) 45%, var(--line-subtle));
 }
 
 .arc-planner-physical-tabs--desk-edge .arc-index-tab:hover:not(:disabled) {
-  transform: translateX(-2px);
+  transform: translateX(3px);
 }
 
 .arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab--desk-slice {
@@ -308,11 +316,12 @@ html:has(.arc-shell--desk) body {
   color: color-mix(in srgb, var(--ink) 88%, white);
   text-shadow: 0 1px 0 rgba(255, 253, 248, 0.65);
   min-height: 58px;
+  min-width: 48px;
   padding: 8px 4px;
 }
 
 .arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab--desk-slice-active {
-  transform: translateX(-3px);
+  transform: translateX(6px);
   color: color-mix(in srgb, var(--shell-frame-green) 55%, var(--ink));
   font-weight: 800;
 }
