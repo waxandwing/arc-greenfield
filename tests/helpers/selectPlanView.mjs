@@ -15,9 +15,9 @@ export async function retreatToTeachingDayViaDayTab(page) {
   await selectPlanView(page, 'Day')
 }
 
-/** Wordmark home matches DAY retreat when not in Workspace overlay workflows. */
+/** Wordmark home returns to the main desk / home planner view (default Teaching week). */
 export async function retreatToTeachingDayViaWordmark(page) {
-  await page.getByRole('button', { name: 'Teaching Day home' }).click()
+  await page.getByRole('button', { name: 'Main desk home' }).click()
 }
 
 /** @deprecated alias for smokes migrating from dropdown navigation */

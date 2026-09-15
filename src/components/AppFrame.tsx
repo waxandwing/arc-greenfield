@@ -414,21 +414,18 @@ export function AppFrame() {
       updateOnboarding({ ...onboardingDraft, dismissed: true })
       if (minimumPlanningSetupEstablished(setupCapabilities)) {
         setWorkspaceOverlayOpen(false)
-        if (showPlanFurniture && workspaceMode.mode === 'calendar') {
+        workspaceMode.close()
+        if (workspace.calendar && workspace.anchorDate) {
           workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
-        } else {
-          workspace.setActiveView('Day')
         }
       }
       return
     }
-    if (workspaceBusy) return
+    if (!workspace.calendar || !workspace.anchorDate) return
     setWorkspaceOverlayOpen(false)
-    if (showPlanFurniture && workspaceMode.mode === 'calendar') {
-      workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
-      return
-    }
-    workspace.goHome()
+    workspaceMode.close()
+    // Wordmark / mark → main desk table (home desk planner view; default Teaching week).
+    workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
   }
 
   function openImportFromOnboarding() {
@@ -833,7 +830,7 @@ export function AppFrame() {
             deskPriorityDock={deskPriorityPad}
             deskNotesDock={null}
             deskWoodWordmark={
-              <button type="button" className="arc-wordmark arc-desk-wood-wordmark" aria-label="Teaching Day home" onClick={returnHome}>
+              <button type="button" className="arc-wordmark arc-desk-wood-wordmark" aria-label="Main desk home" onClick={returnHome}>
                 <img src={publicAssetUrl('assets/arc/arc-mark-stacked.png')} alt="Arc" data-testid="arc-desk-wood-wordmark" />
               </button>
             }
@@ -913,7 +910,7 @@ export function AppFrame() {
               ) : (
                 <>
                   <PlannerShellBar
-                    homeLabel={onboardingActive ? 'Exit setup to Arc' : 'Teaching Day home'}
+                    homeLabel={onboardingActive ? 'Exit setup to Arc' : 'Main desk home'}
                     onHome={returnHome}
                     trailing={arcTable.live && arcTable.surface === 'plan' ? (
                       <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}>

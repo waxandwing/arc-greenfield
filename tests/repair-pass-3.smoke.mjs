@@ -79,12 +79,33 @@ try {
   await page.reload({ waitUntil: 'networkidle' })
 
   assert(await page.locator('.arc-header').count() === 0, 'Full-width app header must be removed.')
+
+  // Planner shell wordmark appears in setup modes (desk hides the in-planner chrome).
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
+  await page.getByRole('button', { name: 'Calendar dates', exact: true }).click()
+  await page.getByTestId('planner-shell-bar').waitFor({ timeout: 5000 })
+
   const logo = page.locator('[data-testid="arc-mark-logo"]')
   assert(await logo.count() === 1, 'Canonical Arc mark must render inside planner shell.')
   assert((await logo.getAttribute('src'))?.includes('/assets/arc/arc-mark-stacked.png'), 'Logo must use high-res arc-mark-stacked.png asset.')
+  // Pages base path: src may be `/arc-greenfield/assets/...` or `/assets/...`
+  assert((await logo.getAttribute('src'))?.endsWith('/assets/arc/arc-mark-stacked.png'), 'Logo src must stay base-aware for GitHub Pages.')
   const filter = await logo.evaluate((img) => getComputedStyle(img).filter)
   assert(!filter.includes('invert'), 'Canonical mark must not use inverted white substitute.')
+  const logoBox = await logo.boundingBox()
+  assert(logoBox && logoBox.width >= 44 && logoBox.height >= 44, 'Planner mark must render larger than the prior 32×32 chrome.')
+  const slogan = page.getByTestId('arc-mark-slogan')
+  assert(await slogan.isVisible(), 'Planner wordmark must include the slogan.')
+  assert((await slogan.textContent())?.trim() === 'for plans that change', 'Slogan must be “for plans that change”.')
+  await page.getByRole('button', { name: 'Main desk home' }).click()
+  await page.getByRole('navigation', { name: 'Planner index' }).waitFor({ timeout: 5000 })
+  assert(await page.getByTestId('planner-shell-bar').locator('.arc-wordmark').count() === 0, 'Main desk home must leave setup chrome for the desk table.')
+  const afterHome = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.planning-context.v1')))
+  assert(afterHome.view === 'Week' || afterHome.view === 'Day' || afterHome.view === 'Month', 'Wordmark must land on the home desk planner view.')
+  assert(afterHome.view === 'Week', 'Default main desk home must be Teaching week (main table).')
 
+  await selectPlanView(page, 'Day')
   await shot(page, '01-day-no-dark-header.png')
 
   assert(await page.getByTestId('global-capture-trigger').isVisible(), '+ Capture must be visible on Day.')
