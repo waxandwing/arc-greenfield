@@ -8,6 +8,8 @@ This repository is the implementation source for Arc. Product and UX authority l
 
 Production desk work (wood tabletop, desk slices, ArcTable, `npm run preview:desk`) lives on branch **`cursor/arc-production-integration`** — **do not preview the desk from `main`**. On `main` you get the legacy plan shell only (cream/green calendar chrome, no `desk-v2` footer).
 
+**Kelly + Cursor agents — primary handoff:** [`docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md`](https://github.com/waxandwing/arc-greenfield/blob/cursor/arc-production-integration/docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md) on branch `cursor/arc-production-integration` (plain English: project folder, three preview paths, done vs next).
+
 ```bash
 cd /path/to/arc-greenfield   # folder that contains package.json
 git fetch origin
@@ -17,7 +19,7 @@ npm install
 npm run preview:desk
 ```
 
-Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. Expected integration tip (short SHA): **`64c6f43`** (footer shows `desk-v2 · cursor/arc-production-integration · <sha>` after pull). Full steps: see `docs/LOCAL-PREVIEW.md` on that branch.
+Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. Footer must show `desk-v2 · cursor/arc-production-integration · <sha>` matching `git rev-parse --short HEAD` after pull.
 
 ## Branch authority
 
