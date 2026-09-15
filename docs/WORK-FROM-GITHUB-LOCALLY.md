@@ -2,6 +2,8 @@
 
 **Kelly one command:** `npm run kelly:desk` then open `http://127.0.0.1:4173/?demo=1&demoReset=1` (preflight + frees port 4173 + fresh desk build).
 
+**No terminal:** GitHub Pages (after each `main` deploy) — https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1 — footer should show current `main` SHA (e.g. `1149408`).
+
 **Clone URL:** `https://github.com/waxandwing/arc-greenfield.git`  
 **Default branch:** `main` — wood desk + `kelly:desk` and Teaching week source assets (SVG/PNG defaults; synced 2026-09-15 — pull `main` before preview).  
 **Optional:** `cursor/arc-production-integration` stays in sync for agent coordination; you do **not** need to check it out for daily preview.  
