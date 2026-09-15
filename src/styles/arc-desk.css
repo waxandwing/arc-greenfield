@@ -2127,12 +2127,159 @@ html:has(.arc-shell--desk) body {
   color: var(--soft-charcoal);
 }
 
+/*
+  Popout reuses .arc-index-tabs / .arc-index-tab class names, but those defaults are for the
+  vertical planner side rail (column flex + rotate(180deg) on the active tab). Isolate here.
+*/
+.desk-calendar-popout-tabs.arc-index-tabs,
 .desk-calendar-popout-tabs {
+  position: relative;
+  z-index: 1;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 8px 16px 12px;
-  border-bottom: 1px solid var(--line-subtle);
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  align-self: auto;
+  justify-content: stretch;
+  gap: 0;
+  width: auto;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 10px 20px 14px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-frame-green) 14%, var(--line-subtle));
+  border-radius: 0;
+  background: color-mix(in srgb, var(--field-elevated) 94%, var(--paper));
+  box-shadow: none;
+}
+
+.desk-calendar-popout-tabs .arc-index-tab,
+.desk-calendar-popout-tabs .desk-calendar-popout-tab {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 0;
+  min-height: 40px;
+  max-width: none;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 72%, transparent);
+  border-radius: 0;
+  border-left-width: 0;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  transform: none !important;
+  font: 800 11px/1.1 var(--font-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: none;
+  box-shadow: none;
+  cursor: pointer;
+  opacity: 1;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.desk-calendar-popout-tabs .arc-index-tab:first-child,
+.desk-calendar-popout-tabs .desk-calendar-popout-tab:first-child {
+  border-left-width: 1px;
+  border-radius: 8px 0 0 8px;
+}
+
+.desk-calendar-popout-tabs .arc-index-tab:last-child,
+.desk-calendar-popout-tabs .desk-calendar-popout-tab:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.desk-calendar-popout-tabs .arc-index-tab:hover:not(:disabled),
+.desk-calendar-popout-tabs .desk-calendar-popout-tab:hover:not(:disabled) {
+  transform: none !important;
+  filter: none;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--field-elevated) 88%, white);
+}
+
+.desk-calendar-popout-tabs .arc-index-tab[aria-current='page'],
+.desk-calendar-popout-tabs .desk-calendar-popout-tab[aria-current='page'] {
+  z-index: 1;
+  transform: none !important;
+  color: var(--ink);
+  background: var(--field-elevated);
+  border-color: color-mix(in srgb, var(--shell-frame-green) 42%, var(--line-subtle));
+  box-shadow:
+    inset 0 -3px 0 var(--mustard),
+    0 2px 8px -6px rgba(33, 29, 23, 0.35);
+}
+
+.desk-calendar-popout-tabs .arc-index-tab--day {
+  background: color-mix(in srgb, var(--accent-blue-soft, #d7e4f0) 55%, var(--field-elevated));
+  color: var(--accent-blue-deep, #2a4a66);
+}
+
+.desk-calendar-popout-tabs .arc-index-tab--week {
+  background: color-mix(in srgb, var(--mustard-soft, #f3e4b8) 70%, var(--field-elevated));
+  color: color-mix(in srgb, var(--ink) 82%, var(--mustard));
+}
+
+.desk-calendar-popout-tabs .arc-index-tab--month {
+  background: color-mix(in srgb, var(--sage-soft, #d9e4d4) 72%, var(--field-elevated));
+  color: color-mix(in srgb, var(--shell-frame-green) 70%, var(--soft-charcoal));
+}
+
+.desk-calendar-popout-tabs .arc-index-tab--year {
+  background: color-mix(in srgb, var(--terracotta-soft, #edd6cb) 70%, var(--field-elevated));
+  color: var(--terracotta-text, #7a3f2a);
+}
+
+.desk-calendar-popout-tabs .arc-index-tab--day[aria-current='page'],
+.desk-calendar-popout-tabs .arc-index-tab--week[aria-current='page'],
+.desk-calendar-popout-tabs .arc-index-tab--month[aria-current='page'],
+.desk-calendar-popout-tabs .arc-index-tab--year[aria-current='page'] {
+  background: var(--field-elevated);
+  color: var(--ink);
+}
+
+.desk-calendar-popout-tabs .arc-index-tab:disabled,
+.desk-calendar-popout-tabs .desk-calendar-popout-tab:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.desk-calendar-popout-tabs .arc-index-tab:focus-visible,
+.desk-calendar-popout-tabs .desk-calendar-popout-tab:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--shell-frame-green) 55%, transparent);
+  outline-offset: 2px;
+  z-index: 2;
+}
+
+@media (max-width: 520px) {
+  .desk-calendar-popout-tabs.arc-index-tabs,
+  .desk-calendar-popout-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-inline: 14px;
+  }
+
+  .desk-calendar-popout-tabs .arc-index-tab,
+  .desk-calendar-popout-tabs .desk-calendar-popout-tab {
+    flex: 1 1 calc(50% - 6px);
+    border-left-width: 1px;
+    border-radius: 8px;
+  }
+
+  .desk-calendar-popout-tabs .arc-index-tab:first-child,
+  .desk-calendar-popout-tabs .desk-calendar-popout-tab:first-child,
+  .desk-calendar-popout-tabs .arc-index-tab:last-child,
+  .desk-calendar-popout-tabs .desk-calendar-popout-tab:last-child {
+    border-radius: 8px;
+  }
 }
 
 .desk-calendar-popout-body {
