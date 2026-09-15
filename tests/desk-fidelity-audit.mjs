@@ -4,6 +4,7 @@ import { chromium } from 'playwright'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const evidenceDir = new URL('../docs/overnight/evidence/desk-fidelity-audit/', import.meta.url).pathname
+const pixelEvidenceDir = new URL('../docs/overnight/evidence/desk-pixel-pass/', import.meta.url).pathname
 const refPath = new URL('../docs/overnight/evidence/figma-desk-6-3194/01-codex-image-37-11052.png', import.meta.url).pathname
 mkdirSync(evidenceDir, { recursive: true })
 
@@ -177,6 +178,24 @@ for (const check of checks) {
 }
 const pct = Math.round((earned / total) * 100)
 
+let pixelKellyDiff = null
+let pixelKellySsim = null
+try {
+  const metricsPath = join(pixelEvidenceDir, 'round-2-metrics.json')
+  const fallbackPath = join(pixelEvidenceDir, 'round-1-metrics.json')
+  const raw = existsSync(metricsPath) ? readFileSync(metricsPath, 'utf8') : existsSync(fallbackPath) ? readFileSync(fallbackPath, 'utf8') : null
+  if (raw) {
+    const parsed = JSON.parse(raw)
+    const kelly = parsed.comparisons?.find((c) => c.label === 'kelly-comp')
+    if (kelly) {
+      pixelKellyDiff = kelly.diffPct
+      pixelKellySsim = kelly.ssim
+    }
+  }
+} catch {
+  /* optional pixel pass */
+}
+
 const gaps = checks
   .map((c) => {
     const row = results.find((r) => r.id === c.id)
@@ -194,6 +213,8 @@ Reference: \`docs/overnight/evidence/figma-desk-6-3194/01-codex-image-37-11052.p
 ## Score
 
 **Estimated fidelity: ${pct}%** (${earned}/${total} weighted checks)
+
+${pixelKellyDiff != null ? `**Pixel diff vs Kelly comp (scale-normalized): ${pixelKellyDiff}%** (SSIM ${pixelKellySsim})\n\nStructural checks passing does not imply pixel parity.\n` : ''}
 
 ## Evidence
 
@@ -219,7 +240,7 @@ ${gaps.length ? gaps.join('\n') : '- None — all weighted checks passed.'}
 
 ## Notes
 
-Side-by-side uses the Kelly PNG as directional reference; pixel parity is not expected for authored SVG drawer vs comp photography.
+Side-by-side uses the Kelly PNG as directional reference; pixel parity is not expected for authored SVG drawer vs comp photography. Run \`npm run test:desk-pixel-pass\` for honest overlay metrics.
 `
 
 writeFileSync(join(evidenceDir, 'DESK-FIDELITY-AUDIT-REPORT.md'), report)

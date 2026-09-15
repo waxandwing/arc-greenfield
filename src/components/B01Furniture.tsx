@@ -275,7 +275,7 @@ export function B01Furniture({
 
   function renderDeskTrayDock() {
     if (!showDeskTrayDock) return null
-    return <DeskGreenFoldersDrawer>{deskTrayDock}</DeskGreenFoldersDrawer>
+    return <DeskGreenFoldersDrawer defaultExtended={false}>{deskTrayDock}</DeskGreenFoldersDrawer>
   }
 
   function renderPlannerViewTabs(className: string) {

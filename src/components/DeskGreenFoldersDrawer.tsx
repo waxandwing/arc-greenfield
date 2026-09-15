@@ -2,11 +2,11 @@ import { useCallback, useId, useState, type ReactNode } from 'react'
 
 type Props = {
   children: ReactNode
-  /** Start extended so tray captures remain visible on the wood dock (desk law). */
+  /** Kelly comp: IDEAS drawer rests collapsed; tray opens on tab click. */
   defaultExtended?: boolean
 }
 
-export function DeskGreenFoldersDrawer({ children, defaultExtended = true }: Props) {
+export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Props) {
   const [extended, setExtended] = useState(defaultExtended)
   const tabId = useId()
   const panelId = useId()
@@ -27,6 +27,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = true }: Pro
           <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--mustard" />
           <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--terracotta" />
           <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--blue" />
+          <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--forest" />
         </div>
         <div
           id={panelId}

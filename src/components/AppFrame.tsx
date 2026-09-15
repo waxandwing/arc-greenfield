@@ -60,7 +60,7 @@ import {
   type ShiftPersistenceInput,
 } from '../planning'
 import { projectWeek, type ISODate } from '../calendar'
-import { formatMonth, formatPlanHeaderDate, formatPlanHeaderWeekRange } from './dateLabels'
+import { formatKellyDeskWeekSecondary, formatMonth, formatPlanHeaderDate, formatPlanHeaderWeekRange } from './dateLabels'
 import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfaces'
 import { WorkspacePanel } from './WorkspacePanel'
 import { ArcOnboarding, resolveOnboardingStage } from './ArcOnboarding'
@@ -576,6 +576,7 @@ export function AppFrame() {
     <DeskPriorityPad
       workspace={taskBar.workspace}
       planningDragDisabled={deskEditActive}
+      folderChrome={showPlanFurniture && workspaceMode.mode === 'calendar'}
       onAdd={taskBar.add}
       onMove={taskBar.move}
       onPromoteCaptureText={promoteCaptureToPriorityLane}
@@ -831,7 +832,7 @@ export function AppFrame() {
                     viewLabel={workspace.activeView === 'Day' ? 'Teaching Day' : calendarViewLabel(workspace.activeView)}
                     focus={workspace.planContext?.focus ?? 'day'}
                     date={workspace.anchorDate}
-                    weekRange={weekRangeLabel(workspace, viewPreferences.showWeekends)}
+                    weekRange={deskWeekRangeLabel(workspace, viewPreferences.showWeekends)}
                     monthLabel={monthLabel(workspace)}
                     yearLabel={yearLabel(workspace)}
                     courseId={workspace.planContext?.courseId}
@@ -1003,6 +1004,24 @@ function weekRangeLabel(workspace: ReturnType<typeof useArcWorkspace>, showWeeke
   const start = days[0]?.date ?? projection.startDate
   const end = days[days.length - 1]?.date ?? projection.endDate
   return formatPlanHeaderWeekRange(start, end)
+}
+
+function deskWeekRangeLabel(workspace: ReturnType<typeof useArcWorkspace>, showWeekends: boolean) {
+  if (workspace.activeView !== 'Week' || !workspace.calendar || !workspace.anchorDate) return null
+  const projection = projectWeek(workspace.calendar, workspace.anchorDate)
+  const days = showWeekends ? projection.days : projection.days.filter((day) => !day.isWeekend)
+  const start = days[0]?.date ?? projection.startDate
+  const end = days[days.length - 1]?.date ?? projection.endDate
+  const weekIndex = instructionalWeekIndex(workspace.calendar.firstDay, start)
+  return formatKellyDeskWeekSecondary(start, end, weekIndex)
+}
+
+function instructionalWeekIndex(firstDay: ISODate, weekStart: ISODate): number {
+  const origin = Date.parse(`${firstDay}T00:00:00Z`)
+  const start = Date.parse(`${weekStart}T00:00:00Z`)
+  if (!Number.isFinite(origin) || !Number.isFinite(start) || start < origin) return 1
+  const days = Math.floor((start - origin) / 86_400_000)
+  return Math.floor(days / 7) + 1
 }
 
 function monthLabel(workspace: ReturnType<typeof useArcWorkspace>) {

@@ -1,12 +1,17 @@
 # Desk fidelity audit
 
-Generated: 2026-09-15T03:06:38.453Z
+Generated: 2026-09-15T03:54:59.760Z
 
 Reference: `docs/overnight/evidence/figma-desk-6-3194/01-codex-image-37-11052.png`
 
 ## Score
 
 **Estimated fidelity: 100%** (110/110 weighted checks)
+
+**Pixel diff vs Kelly comp (scale-normalized): 60.04%** (SSIM 0.2353)
+
+Structural checks passing does not imply pixel parity.
+
 
 ## Evidence
 
@@ -36,4 +41,4 @@ Reference: `docs/overnight/evidence/figma-desk-6-3194/01-codex-image-37-11052.pn
 
 ## Notes
 
-Side-by-side uses the Kelly PNG as directional reference; pixel parity is not expected for authored SVG drawer vs comp photography.
+Side-by-side uses the Kelly PNG as directional reference; pixel parity is not expected for authored SVG drawer vs comp photography. Run `npm run test:desk-pixel-pass` for honest overlay metrics.

@@ -2,6 +2,16 @@
 
 Use the **integration branch** for the Arc desk (wood tabletop, tray, MSC pad, ArcTable). `main` does not carry this build by default.
 
+## Kelly checklist (must match this order)
+
+1. **Branch:** `git fetch origin && git checkout cursor/arc-production-integration && git pull origin cursor/arc-production-integration` — do **not** preview from `main`.
+2. **Install:** `npm install` (after pull when lockfile changed).
+3. **Build + serve:** `npm run preview:desk` only (sets `desk-v2` stamp + Kelly demo seed on `demoReset`).
+4. **Open:** `http://127.0.0.1:4173/?demo=1&demoReset=1`
+5. **Verify stamp:** bottom-right **`desk-v2 · <git sha>`** must match `git rev-parse --short HEAD` on the same checkout.
+
+If the stamp SHA ≠ your local `git rev-parse --short HEAD`, you are viewing a stale server or wrong clone/port.
+
 ## Three steps (Kelly-simple)
 
 1. **Open the project folder** in Terminal — the folder that has `package.json` (after clone: `cd arc-greenfield`).

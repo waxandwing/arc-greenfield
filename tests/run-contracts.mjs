@@ -71,6 +71,7 @@ const contracts = [
   'tests/generated/src/planning/planMoveShift.contract.js',
   'tests/generated/src/demo/demoSeed.contract.js',
   'tests/generated/src/demo/deskPreviewGate.contract.js',
+  'tests/generated/src/demo/kellyDeskDemo.contract.js',
 ]
 
 assertManifestComplete()

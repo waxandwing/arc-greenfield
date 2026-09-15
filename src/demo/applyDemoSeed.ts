@@ -8,6 +8,7 @@ import { serializeUnits, UNIT_STORAGE_KEY } from '../planning/unitPersistence'
 import { serializePlanningWorkspace, PLANNING_WORKSPACE_STORAGE_KEY } from '../planning/workspacePersistence'
 import { DEFAULT_DESK_PREFERENCES } from '../navigation/deskPreferences'
 import { buildGauntletDemoBundle } from './gauntletDemo'
+import { buildKellyDeskDemoBundle } from './kellyDeskDemo'
 import {
   clearDeskPreviewSeededSession,
   markDeskPreviewSeededSession,
@@ -19,8 +20,8 @@ const DESK_PREFERENCES_KEY = 'arc.desk-preferences.v1'
 
 export type DemoSeedMode = 'gauntlet'
 
-function writeGauntletDemo(storage: Storage): void {
-  const bundle = buildGauntletDemoBundle()
+function writeDemoBundle(storage: Storage, deskPreview: boolean): void {
+  const bundle = deskPreview ? buildKellyDeskDemoBundle() : buildGauntletDemoBundle()
   storage.setItem(CALENDAR_STORAGE_KEY, serializeCalendarInput(bundle.calendarInput))
   storage.setItem(PLANNING_WORKSPACE_STORAGE_KEY, serializePlanningWorkspace(bundle.planningInput))
   storage.setItem(UNIT_STORAGE_KEY, serializeUnits(bundle.unitsInput))
@@ -90,7 +91,7 @@ export function maybeApplyDemoSeed(
         clearDeskPreviewSeededSession(sessionStorage)
       }
     }
-    writeGauntletDemo(storage)
+    writeDemoBundle(storage, options?.deskPreview === true)
     if (options?.deskPreview === true && typeof sessionStorage !== 'undefined') {
       markDeskPreviewSeededSession(true, sessionStorage)
     }

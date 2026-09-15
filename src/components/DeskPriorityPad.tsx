@@ -3,10 +3,10 @@ import { tasksForPriority, type TaskBarItem, type TaskBarWorkspace, type TaskPri
 import { DESK_PRIORITY_DRAG_MIME, encodeDeskPriorityDrag, hasDeskPriorityDrag, readDeskPriorityDrag } from '../planning/deskDrag'
 import { TRAY_CAPTURE_DRAG_MIME, readTrayCaptureDrag } from '../planning/deskDrag'
 
-const LANES: Array<{ priority: TaskPriority; label: string; short: string }> = [
-  { priority: 'must', label: 'Must', short: 'Must' },
-  { priority: 'should', label: 'Should', short: 'Should' },
-  { priority: 'could', label: 'Could', short: 'Could' },
+const LANES: Array<{ priority: TaskPriority; label: string; short: string; folderLabel?: string }> = [
+  { priority: 'must', label: 'Must', short: 'Must', folderLabel: 'MUST DO' },
+  { priority: 'should', label: 'Should', short: 'Should', folderLabel: 'SHOULD DO' },
+  { priority: 'could', label: 'Could', short: 'Could', folderLabel: 'COULD DO' },
 ]
 
 type Props = {
@@ -15,20 +15,29 @@ type Props = {
   onMove: (taskId: string, priority: TaskPriority) => void
   onPromoteCaptureText?: (captureId: string, priority: TaskPriority) => boolean
   planningDragDisabled?: boolean
+  /** Kelly TO-DOS folder: vertical MUST DO / SHOULD DO / COULD DO labels only. */
+  folderChrome?: boolean
 }
 
-export function DeskPriorityPad({ workspace, onAdd, onMove, onPromoteCaptureText, planningDragDisabled = false }: Props) {
+export function DeskPriorityPad({ workspace, onAdd, onMove, onPromoteCaptureText, planningDragDisabled = false, folderChrome = false }: Props) {
   return (
-    <section className="desk-priority-pad" aria-label="Must Should Could priority pad" data-testid="desk-priority-pad">
-      <header className="desk-priority-pad-heading">
-        <p className="section-label">To-dos</p>
-        <h2>MUST · SHOULD · COULD</h2>
-      </header>
+    <section
+      className={`desk-priority-pad${folderChrome ? ' desk-priority-pad--folder' : ''}`}
+      aria-label="Must Should Could priority pad"
+      data-testid="desk-priority-pad"
+    >
+      {folderChrome ? null : (
+        <header className="desk-priority-pad-heading">
+          <p className="section-label">To-dos</p>
+          <h2>MUST · SHOULD · COULD</h2>
+        </header>
+      )}
       <div className="desk-priority-lanes">
         {LANES.map((lane) => (
           <DeskPriorityLane
             key={lane.priority}
             {...lane}
+            folderChrome={folderChrome}
             tasks={tasksForPriority(workspace, lane.priority)}
             planningDragDisabled={planningDragDisabled}
             onAdd={onAdd}
@@ -41,9 +50,11 @@ export function DeskPriorityPad({ workspace, onAdd, onMove, onPromoteCaptureText
   )
 }
 
-function DeskPriorityLane({ priority, label, tasks, planningDragDisabled = false, onAdd, onMove, onPromoteCaptureText }: {
+function DeskPriorityLane({ priority, label, folderLabel, folderChrome = false, tasks, planningDragDisabled = false, onAdd, onMove, onPromoteCaptureText }: {
   priority: TaskPriority
   label: string
+  folderLabel?: string
+  folderChrome?: boolean
   tasks: TaskBarItem[]
   planningDragDisabled?: boolean
   onAdd: Props['onAdd']
@@ -87,7 +98,7 @@ function DeskPriorityLane({ priority, label, tasks, planningDragDisabled = false
         }
       }}
     >
-      <h3 id={`desk-lane-${priority}`}>{label}</h3>
+      <h3 id={`desk-lane-${priority}`}>{folderChrome && folderLabel ? folderLabel : label}</h3>
       <ul className="desk-priority-list" aria-labelledby={`desk-lane-${priority}`}>
         {tasks.map((task) => (
           <DeskPriorityTask key={task.id} task={task} planningDragDisabled={planningDragDisabled} onMove={onMove} />

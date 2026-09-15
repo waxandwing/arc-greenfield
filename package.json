@@ -32,6 +32,7 @@
     "test:arc-desk-mark": "node tests/arc-desk-mark.smoke.mjs",
     "test:arc-desk-figma-pass": "node tests/arc-desk-figma-evidence.mjs",
     "test:desk-fidelity-audit": "node tests/desk-fidelity-audit.mjs",
+    "test:desk-pixel-pass": "node scripts/desk-pixel-pass.mjs",
     "test:import-onboarding": "node tests/import-onboarding.smoke.mjs"
   },
   "dependencies": {
@@ -42,6 +43,7 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
     "@vitejs/plugin-react": "6.1.0",
+    "playwright": "^1.49.1",
     "typescript": "5.8.3",
     "vite": "8.2.2"
   }

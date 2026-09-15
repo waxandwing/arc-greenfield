@@ -16,6 +16,18 @@ export function formatPlanHeaderDate(date: ISODate): string {
   return dateFormatter({ weekday: 'long', month: 'short', day: 'numeric' }).format(toUTCDate(date))
 }
 
+/** Kelly desk comp: SEPTEMBER 7 - 11 • WEEK 4 */
+export function formatKellyDeskWeekSecondary(start: ISODate, end: ISODate, instructionalWeekLabel?: number | null): string {
+  const startDate = toUTCDate(start)
+  const endDate = toUTCDate(end)
+  const month = dateFormatter({ month: 'long' }).format(startDate).toUpperCase()
+  const startDay = startDate.getUTCDate()
+  const endDay = endDate.getUTCDate()
+  const weekSuffix =
+    instructionalWeekLabel != null && instructionalWeekLabel > 0 ? ` • WEEK ${instructionalWeekLabel}` : ''
+  return `${month} ${startDay} - ${endDay}${weekSuffix}`
+}
+
 export function formatPlanHeaderWeekRange(start: ISODate, end: ISODate): string {
   const startDate = toUTCDate(start)
   const endDate = toUTCDate(end)

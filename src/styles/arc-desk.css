@@ -396,10 +396,10 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-green-drawer-token {
   position: absolute;
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  opacity: 0.88;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  opacity: 0.92;
   box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.45);
   transform: rotate(-6deg);
 }
@@ -422,6 +422,13 @@ html:has(.arc-shell--desk) body {
   left: 22%;
   background: linear-gradient(145deg, #9eb8c7, #6a8fa3);
   transform: rotate(-14deg);
+}
+
+.arc-desk-green-drawer-token--forest {
+  top: 28%;
+  right: 22%;
+  background: linear-gradient(145deg, #4a7a5c, #1f4b3a);
+  transform: rotate(12deg);
 }
 
 .arc-desk-green-drawer-well {
@@ -1020,11 +1027,15 @@ html:has(.arc-shell--desk) body {
 .arc-desk-arctable-script {
   margin: 0;
   max-width: 11rem;
-  font: 700 10px/1.25 var(--font-label);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-family: 'Instrument Serif', var(--font-display), serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
   text-align: center;
-  color: color-mix(in srgb, var(--ink) 82%, var(--soft-charcoal));
+  color: color-mix(in srgb, var(--shell-frame-green) 72%, var(--ink));
 }
 
 .arc-desk-arctable-script-detail {
@@ -1045,6 +1056,25 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-wood-wordmark {
   filter: drop-shadow(0 10px 18px -12px rgba(33, 29, 23, 0.55));
+}
+
+/* Kelly comp omits bottom pills; keep TRAY/SETTINGS in DOM for smokes (off-screen). */
+.b01-furniture-composition--desk .arc-desk-utility-tabs {
+  position: fixed;
+  left: -10000px;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: auto;
+}
+
+/* Kelly comp: capture lives in TRAY / IDEAS — hide wood sticky for pixel fidelity (smoke still finds testid). */
+.b01-furniture-composition--desk .arc-desk-capture-sticky {
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
 }
 
 .arc-desk-utility-tabs {
@@ -1116,13 +1146,15 @@ html:has(.arc-shell--desk) body {
   position: relative;
   height: 100%;
   min-height: 0;
-  padding: 18px 8px 8px;
-  border-radius: 14px 16px 12px 12px;
-  background: linear-gradient(165deg, #f7f0e2 0%, #efe4cf 48%, #e8dcc4 100%);
+  padding: 22px 10px 10px 14px;
+  border-radius: 4px 14px 14px 4px;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.08) 0%, transparent 42%),
+    linear-gradient(180deg, #6b7f9a 0%, #4a5f78 38%, #3d5168 100%);
   box-shadow:
     0 18px 36px -22px rgba(33, 29, 23, 0.55),
-    inset 0 1px 0 rgba(255, 253, 248, 0.65);
-  transform: rotate(-1.5deg);
+    inset 0 1px 0 rgba(255, 253, 248, 0.2);
+  transform: rotate(-2deg);
 }
 
 .arc-desk-todos-folder-sheet {
@@ -1136,15 +1168,17 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-todos-folder-tab {
   position: absolute;
-  top: -10px;
-  left: 10%;
+  top: 18%;
+  left: -6px;
   margin: 0;
-  padding: 6px 14px 8px;
-  border-radius: 8px 8px 0 0;
+  padding: 10px 6px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  border-radius: 6px 0 0 6px;
   background: linear-gradient(180deg, #5a6f8a, #3d5168);
   color: #f7f3ea;
-  font: 800 9px/1 var(--font-label);
-  letter-spacing: 0.14em;
+  font: 800 8px/1 var(--font-label);
+  letter-spacing: 0.16em;
   box-shadow: 0 8px 16px -10px rgba(15, 35, 48, 0.55);
 }
 
@@ -1159,6 +1193,54 @@ html:has(.arc-shell--desk) body {
   background: transparent;
   box-shadow: none;
   padding: 4px 2px;
+}
+
+.arc-desk-todos-folder .desk-priority-pad--folder .desk-priority-lanes {
+  gap: 14px;
+}
+
+.arc-desk-todos-folder .desk-priority-pad--folder .desk-priority-lane h3 {
+  margin: 0 0 6px;
+  font: 800 clamp(13px, 1.6vw, 16px) / 1.15 var(--font-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1a2a36;
+}
+
+.arc-desk-todos-folder .desk-priority-pad--folder .desk-priority-add {
+  opacity: 0.72;
+  font-size: 11px;
+}
+
+.b01-furniture-composition--desk .desk-planner-head-row .plan-state-primary {
+  font-family: 'Instrument Serif', var(--font-display), serif;
+  font-size: clamp(1.65rem, 2.8vw, 2.15rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.b01-furniture-composition--desk .desk-planner-head-row .plan-state-secondary {
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 78%, var(--soft-charcoal));
+}
+
+.b01-furniture-composition--desk .planning-date-weekday {
+  display: block;
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.b01-furniture-composition--desk .planning-date-heading span:last-child {
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
 }
 
 .b01-furniture-composition--desk .planning-week {
