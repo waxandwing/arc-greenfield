@@ -32,6 +32,29 @@ export function buildKellyDeskDemoBundle(): GauntletDemoBundle {
     'course-2d': ['Finish boxes', 'Collage critique', 'Contour line', 'Blind contour', 'Studio day'],
     'course-3d': ['Armature build', 'Recycled fashion', 'Surface design', 'Build day', 'Build day'],
   }
+  const lessonPhases: Record<string, string[][]> = {
+    'course-apah': [
+      ['Look', 'Discuss', 'Sketch'],
+      ['Look', 'Compare', 'Record'],
+      ['Look', 'Map', 'Share'],
+      ['Review', 'Compare', 'Synthesize'],
+      ['Warm-up', 'Quiz', 'Debrief'],
+    ],
+    'course-2d': [
+      ['Setup', 'Work time', 'Cleanup'],
+      ['Hang', 'Critique', 'Revise'],
+      ['Demo', 'Practice', 'Share'],
+      ['Warm-up', 'Blind contour', 'Reflect'],
+      ['Plan', 'Studio', 'Cleanup'],
+    ],
+    'course-3d': [
+      ['Demo', 'Build', 'Check-in'],
+      ['Research', 'Prototype', 'Share'],
+      ['Demo', 'Surface work', 'Cleanup'],
+      ['Plan', 'Build', 'Cleanup'],
+      ['Build', 'Document', 'Cleanup'],
+    ],
+  }
 
   const lessons = courses.flatMap((course) => {
     const unitId = units.find((unit) => unit.courseId === course.id)?.id ?? units[0].id
@@ -45,8 +68,8 @@ export function buildKellyDeskDemoBundle(): GauntletDemoBundle {
       plannedDate,
       datePolicy: 'flexible' as const,
       directions: [],
-      materials: [],
-      phases: [],
+      materials: course.id === 'course-apah' && index === 3 ? ['art things'] : [],
+      phases: lessonPhases[course.id][index],
       resources: [],
     }))
   })
