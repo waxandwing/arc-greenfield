@@ -172,7 +172,7 @@ function DeskAccentPostIt({
       aria-label={label}
       stackId={stackId}
     >
-      {/* Grip strip: drag starts here; textarea clicks stay editable (DeskPostIt skips form controls). */}
+      {/* Top paper grip + side/bottom padding margins: drag there; click the bordered note to type. */}
       <div className="arc-desk-post-it-grip" aria-hidden="true" data-testid={`${testId}-grip`} />
       <textarea
         className="arc-desk-post-it-note"
@@ -192,7 +192,7 @@ function DeskAccentPostIt({
 /**
  * Loose accent post-its on the wood — replacements for former tray-chrome baked stickies.
  * Siblings of the IDEAS tray under arc-desk-surface so landscape tray chrome can change independently.
- * Writable + localStorage note text; drag from the grip strip so click-to-edit does not start a drag.
+ * Writable + localStorage note text; drag from the paper margin / grip so click-to-edit does not start a drag.
  * Significant overlap after drag offers Link / Keep separate so layered accents can move as a stack.
  */
 export function DeskAccentPostIts() {

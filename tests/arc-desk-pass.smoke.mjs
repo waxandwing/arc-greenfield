@@ -231,13 +231,44 @@ try {
     assert(await note.count() === 1, `${tone} accent must expose a writable note textarea.`)
     assert(await note.isVisible(), `${tone} accent note must be visible.`)
     assert(await accent.locator('.arc-desk-post-it-grip').count() === 1, `${tone} accent must expose a drag grip separate from the note.`)
+    const noteBox = await note.boundingBox()
+    assert(noteBox && box, `${tone} accent note must expose a box for margin checks.`)
+    const leftMargin = noteBox.x - box.x
+    const rightMargin = (box.x + box.width) - (noteBox.x + noteBox.width)
+    const topMargin = noteBox.y - box.y
+    const bottomMargin = (box.y + box.height) - (noteBox.y + noteBox.height)
+    assert(leftMargin >= 12 && rightMargin >= 12 && topMargin >= 12 && bottomMargin >= 12,
+      `${tone} accent note must be inset with paper grip margins (≥12px); got L${Math.round(leftMargin)} R${Math.round(rightMargin)} T${Math.round(topMargin)} B${Math.round(bottomMargin)}`)
+    assert(Math.abs(leftMargin - rightMargin) <= 3 && Math.abs(topMargin - bottomMargin) <= 3,
+      `${tone} accent note must be centered on the sticky paper (margin delta L/R=${Math.abs(leftMargin - rightMargin).toFixed(1)} T/B=${Math.abs(topMargin - bottomMargin).toFixed(1)})`)
+    const noteBorder = await note.evaluate((el) => getComputedStyle(el).borderTopWidth)
+    assert(Number.parseFloat(noteBorder) >= 1, `${tone} accent note must show a visible border separating writable area from paper.`)
   }
+  const mustardForMarginDrag = page.getByTestId('arc-desk-post-it-accent-mustard')
+  const mustardNoteForMargin = page.getByTestId('arc-desk-post-it-accent-mustard-note')
+  const mustardBeforeMarginDrag = await mustardForMarginDrag.boundingBox()
+  const mustardNoteBox = await mustardNoteForMargin.boundingBox()
+  assert(mustardBeforeMarginDrag && mustardNoteBox, 'Mustard accent needs boxes for paper-margin drag.')
+  // Click bottom paper margin (between sticky edge and bordered note) — must drag, not focus the note.
+  const marginX = mustardBeforeMarginDrag.x + mustardBeforeMarginDrag.width / 2
+  const marginY = mustardNoteBox.y + mustardNoteBox.height + Math.max(4, (mustardBeforeMarginDrag.y + mustardBeforeMarginDrag.height - (mustardNoteBox.y + mustardNoteBox.height)) / 2)
+  await page.mouse.move(marginX, marginY)
+  await page.mouse.down()
+  await page.mouse.move(marginX - 40, marginY + 28, { steps: 8 })
+  await page.mouse.up()
+  const mustardAfterMarginDrag = await mustardForMarginDrag.boundingBox()
+  assert(mustardAfterMarginDrag, 'Mustard accent must keep a box after margin drag.')
+  assert(Math.abs(mustardAfterMarginDrag.x - mustardBeforeMarginDrag.x) > 12 || Math.abs(mustardAfterMarginDrag.y - mustardBeforeMarginDrag.y) > 12,
+    'Dragging from accent paper margin must move the sticky.')
+  assert(await mustardNoteForMargin.evaluate((el) => document.activeElement !== el),
+    'Paper-margin drag must not leave the note focused.')
   const blueAccent = page.getByTestId('arc-desk-post-it-accent-blue')
   const blueNote = page.getByTestId('arc-desk-post-it-accent-blue-note')
   await blueNote.click()
   assert(await blueAccent.getAttribute('data-dragging') === 'false', 'Click-to-edit on accent note must not start a drag.')
   await blueNote.fill('Kelly blue jot')
   assert(await blueAccent.getAttribute('data-dragging') === 'false', 'Typing on accent note must not start a drag.')
+  assert(await blueNote.evaluate((el) => document.activeElement === el), 'Click inside bordered note must focus textarea for typing.')
   const storedNotes = await page.evaluate(() => localStorage.getItem('arc.desk-postit-notes.v1'))
   assert(storedNotes && storedNotes.includes('Kelly blue jot'), 'Accent note text must persist to localStorage per post-it id.')
   await page.reload({ waitUntil: 'networkidle' })
