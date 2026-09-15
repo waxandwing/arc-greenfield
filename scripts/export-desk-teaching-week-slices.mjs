@@ -53,9 +53,25 @@ col_left = 0.752 * REF_W
 col_top = 0.168 * REF_H
 col_w = 0.04 * REF_W
 tab_h = 0.108 * REF_H
-for i, label in enumerate(['day', 'week', 'month', 'year']):
-    crop_norm(col_left, col_top + i * tab_h, col_w, tab_h, f'planner-edge-tab-{label}-inactive.png', pad=2)
-crop_norm(col_left, col_top + tab_h, col_w, tab_h, 'planner-edge-tab-active.png', pad=2)
+# Edge tabs: do NOT crop from the authority screenshot — those crops bake MONTH wrap
+# ("MONT"/"H"), wood grain, and active/inactive inversion into the PNG. Generate clean
+# ticket faces; live React supplies upright icon + label.
+from PIL import ImageDraw as _ImageDraw
+def _ticket(active: bool):
+    W, H = 72, 96
+    im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    draw = _ImageDraw.Draw(im)
+    fill = (45, 78, 52, 255) if active else (246, 241, 230, 255)
+    edge = (32, 58, 38, 255) if active else (210, 198, 176, 255)
+    draw.rounded_rectangle([0, 0, W - 1, H - 1], radius=14, fill=fill, outline=edge, width=1)
+    draw.rectangle([0, 0, 8, H - 1], fill=fill)
+    draw.line([(0, 0), (0, H - 1)], fill=edge, width=1)
+    return im
+_inactive = _ticket(False)
+_active = _ticket(True)
+for label in ['day', 'week', 'month', 'year']:
+    _inactive.save(OUT / f'planner-edge-tab-{label}-inactive.png', optimize=True)
+_active.save(OUT / 'planner-edge-tab-active.png', optimize=True)
 # Rainbow title mark beside "Teaching week" (REF 1366×768).
 # Prior 0.168–0.206 × 0.148–0.203 cropped wood desk (solid tan) — wrong.
 mark = OUT.parent / 'planner-rainbow-mark.png'

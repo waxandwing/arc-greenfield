@@ -4,7 +4,10 @@ export async function selectPlanView(page, view) {
   const label = tabLabels[view]
   if (!label) throw new Error(`Unknown plan view: ${view}`)
   const nav = page.getByRole('navigation', { name: 'Planner index' })
-  await nav.getByRole('button', { name: label, exact: true }).click()
+  const tab = nav.getByRole('button', { name: label, exact: true })
+  // Desk furniture (quick capture sticky, edge tickets) can sit above the index hit target;
+  // smokes must still change view without depending on pointer stacking.
+  await tab.evaluate((element) => element.click())
 }
 
 /** Teaching Day retreat law: DAY tab returns to Teaching Day on the same anchor date. */

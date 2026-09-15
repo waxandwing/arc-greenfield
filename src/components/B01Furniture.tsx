@@ -74,6 +74,42 @@ const VIEW_TABS: { view: CalendarView; label: string; tabClass: string }[] = [
   { view: 'Year Map', label: 'YEAR', tabClass: 'arc-index-tab--year' },
 ]
 
+/** Kelly Teaching-week edge tabs: upright icon + label (not rotated side-rail text). */
+const EDGE_TAB_ICONS: Record<string, ReactNode> = {
+  DAY: (
+    <svg className="arc-index-tab-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M8 3.5v3M16 3.5v3M4 9.5h16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      <text x="12" y="17.5" textAnchor="middle" fontSize="8" fontWeight="700" fill="currentColor">
+        1
+      </text>
+    </svg>
+  ),
+  WEEK: (
+    <svg className="arc-index-tab-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        d="M5 6.5c0-.8.7-1.5 1.5-1.5H11v14H6.5A1.5 1.5 0 0 1 5 17.5v-11Zm14 0v11a1.5 1.5 0 0 1-1.5 1.5H13V5h4.5c.8 0 1.5.7 1.5 1.5Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+  MONTH: (
+    <svg className="arc-index-tab-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <rect x="4" y="5" width="16" height="15" rx="2" fill="none" stroke="currentColor" strokeWidth="1.75" />
+      <path d="M8 3.5v3M16 3.5v3M4 9.5h16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+      <path d="M8 13h2M12 13h2M16 13h0M8 16.5h2M12 16.5h2M16 16.5h0" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  ),
+  YEAR: (
+    <svg className="arc-index-tab-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M6 17V11M12 17V8M18 17V5" fill="none" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" />
+    </svg>
+  ),
+}
+
 export function B01Furniture({
   settings,
   workspace,
@@ -314,7 +350,10 @@ export function B01Furniture({
               style={tabArt ? { backgroundImage: `url(${tabArt})` } : undefined}
               onClick={() => selectViewTab(view)}
             >
-              {label}
+              <span className="arc-index-tab-face" aria-hidden="true">
+                {EDGE_TAB_ICONS[label]}
+              </span>
+              <span className="arc-index-tab-label">{label}</span>
             </button>
           )
         })}
