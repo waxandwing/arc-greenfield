@@ -13,10 +13,10 @@
 | ID | Work item | Priority | Status | Owner / notes |
 |----|-----------|----------|--------|----------------|
 | **A** | Figma/Arc slice placement: vertical tabs + IDEAS drawer + TO-DOS folder + start-class frame | P0 | **DONE** | 11 PNGs + manifest; edge tabs via `deskPlannerEdgeTabAssetUrl`; `test:desk-slices` |
-| **B** | Planner header chrome parity (rainbow mark, Today chevron pill, title/kicker typography) | P0 | **IN PROGRESS** | Today ←/→ cluster landed; rainbow mark still FAIL (#18) |
+| **B** | Planner header chrome parity (rainbow mark, Today chevron pill, title/kicker typography) | P0 | **NEXT** | Today ←/→ cluster landed; rainbow mark still FAIL (#18); kicker PASS at `3067c83` |
 | **C** | Course row rails + period/time blocks (`P1 • 8:05–9:00`) | P1 | **IN PROGRESS** | Kelly demo section labels + desk typography; left rails still FAIL |
 | **D** | Calendar enlarge pop-out (inline week + modal YEAR/DAY navigation) | P1 | **DONE** | `DeskCalendarPopOut`; `desk-calendar-enlarge-trigger` + pop-out smokes |
-| **E** | Drive Ruthless Design Audit after **each** pass | P0 | **RECURRING** | Human/Drive step; document rules + PASS/FAIL in audit doc |
+| **E** | Drive Ruthless Design Audit after **each** pass | P0 | **YELLOW @ `3067c83` (2026-09-15)** | Repo: `DESK-RUTHLESS-AUDIT-PASS-2026-09-15.md` addendum; Kelly: mirror to Drive sheet |
 | **F** | Pixel diff loop until **&lt;15%** or blocked on assets | P1 | **BLOCKED (assets)** | ~60% diff round-2; slices should shrink drawer/folder gap |
 
 ## Ordered execution (do not skip A while slices missing for P0 chrome)
@@ -49,7 +49,7 @@
 
 ## QUESTIONS FOR KELLY
 
-- **Google Drive Ruthless Design Audit:** This agent session does **not** have the Drive audit rules doc or folder access loaded. Please share the Drive path or filename for “Ruthless Design Audit” (Arc folder) so passes can record FAIL→fix per rule **E**. Until then, repo-side audit remains `docs/overnight/ARC-RUTHLESS-UI-UX-AUDIT.md` (preview-driven, not Drive-synced).
+- **Google Drive Ruthless Design Audit sheet:** Agents can **read** gate docs via MCP (`docs/overnight/AUDIT-RULES-FROM-DRIVE.md` ids). **Kelly still owns** writing PASS/FAIL rows into the live Drive audit tracker each pass (MCP does not replace the approval workbook).
 - **Rainbow title mark:** Export or node id for the Teaching week header icon beside “Teaching week” (req #18 FAIL).
 - **Period times on comp:** Confirm P4/P5 times for 2D/3D rows if they differ from demo `P4 • 9:05–10:00` / `P5 • 10:05–11:00`.
 
@@ -71,3 +71,10 @@
 - **Visual:** Today ←/→ cluster (`DeskPlannerHeadRow`); Kelly demo `P1 • 8:05–9:00` row labels + desk typography; edge tab `right: 0` (Drive audit fine-tune).
 - **Pixel:** `round-4` evidence — Kelly **60.08%** diff (not &lt;15%; continue B/C slices).
 - **Leader merge:** `bc-e88a74c1` tip not accessible from this environment; worked from integration tip `72a7ee7` → `e9947cc` lineage.
+
+### 2026-09-15 — Ruthless audit addendum @ `3067c83` (leader pass `bc-e88a74c1`)
+
+- **Tip SHA:** `3067c83` — Kelly demo kicker locked in `arc-desk-demo-reset.smoke.mjs`; pop-out trigger testid (`8043b99`).
+- **Item E:** **YELLOW** — P0 structural/visual rules PASS except pixel (**RED ~60%**), rainbow header (**FAIL #18**), partial row/weekends chrome; full Gate 1 brand battery not run.
+- **Smokes:** `npm run test:arc-desk-pass` **PASS** on `desk-v2 · 3067c83` preview build.
+- **Next agent:** **B** planner header (rainbow + Today pill), then **C** course row rails.

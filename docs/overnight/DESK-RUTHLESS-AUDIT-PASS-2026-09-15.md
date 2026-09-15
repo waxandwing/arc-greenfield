@@ -1,9 +1,49 @@
 # Desk Ruthless Audit Pass — integration tip
 
-**Branch:** `cursor/vertical-slices-desk-audit-b637` (from `cursor/arc-production-integration`)  
+**Branch:** `cursor/arc-production-integration`  
 **Date:** 2026-09-15  
 **Authority:** `docs/overnight/AUDIT-RULES-FROM-DRIVE.md` (Google Drive Arc folder)  
-**Evidence:** `docs/overnight/evidence/desk-ruthless-audit/`
+**Evidence:** `docs/overnight/evidence/arc-desk-pass/` (+ prior slice captures under `desk-ruthless-audit/` when present)
+
+---
+
+## Addendum — integration tip `3067c83` (leader pass `bc-e88a74c1`)
+
+**Audited SHA:** `3067c83650d2e05126a213ec7a9e22b85f1f5391`  
+**Drive re-read:** Ruthless Audit Gates `1gjsSsfeKRI5Y52_…`, Desktop Interaction Blueprint `1r2zvNXj07Qm4sD9aCk19hIpa2SIdksPTkBuaO_Mnv6o` (via Google Drive MCP)  
+**Build under test:** `npm run preview:desk` → `desk-v2 · 3067c83` on `?demo=1&demoReset=1`
+
+### P0 visual rules (north star + `DESK-PIXEL-REQUIREMENTS.md`)
+
+| P0 rule | Verdict | Evidence / notes |
+|---------|---------|------------------|
+| Wood viewport + Arc wordmark on wood | **PASS** | Demo-reset smoke; req #1–3 |
+| IDEAS forest drawer, collapsed default | **PASS** | Structural smokes; slice #9 **PARTIAL** vs comp photo |
+| TO-DOS denim folder + priority pad | **YELLOW** | Slices shipped (#10–13 **PARTIAL**); global pixel still ~60% |
+| Planner cream spread + green frame | **PASS** | req #14 |
+| Title **Teaching week** + kicker **SEPTEMBER 7 - 11 • WEEK 4** | **PASS** | `tests/arc-desk-demo-reset.smoke.mjs` (new at `3067c83`) |
+| Week grid (AP/2D/3D, unit, lessons, Thu focus) | **YELLOW** | Content **PASS** (#22–24); row chrome / weekends **PARTIAL/FAIL** (#20–21, 25–26) |
+| Vertical DAY/WEEK/MONTH/YEAR on planner right edge | **PASS** | `test:arc-desk-pass` + `test:desk-slices`; crop alignment **YELLOW** |
+| Header search + Today cluster | **YELLOW** | Today chevron cluster **PARTIAL** (#19); rainbow mark **FAIL** (#18) — queue **B** |
+| Start class quadrant on wood | **PASS** | req #30–31 |
+| Default **Week / Teaching week** (not Year hero) | **PASS** | Kelly demo seed + desk shell smokes |
+| Calendar enlarge pop-out (no calendar squeeze) | **PASS** | Gate 1 test 8–9 + blueprint furniture rules |
+| Honest pixel gate **&lt;15%** vs Kelly comp | **FAIL (RED)** | ~**60.08%** RGB diff — **do not claim pixel GREEN** |
+
+**Item E verdict at `3067c83`:** **YELLOW** — Drive structural/product rules hold on smokes; Kelly pixel + header (#18) + full Gate 1 brand battery keep overall below Drive-GREEN.
+
+### Smokes (this addendum)
+
+| Command | Result |
+|---------|--------|
+| `npm run test:arc-desk-pass` | **PASS** (demo kicker + layout, enlarge, year, edit mode) |
+
+### Kelly manual (Drive)
+
+- Copy this addendum table into the live **Arc folder — Ruthless Design Audit** tracker (MCP read OK; **no authoritative write** to approval gate docs in this pass).
+- Gate source docs remain **YELLOW — FOR APPROVAL** on Drive; repo applies them as working rules.
+
+---
 
 ## Score summary
 
