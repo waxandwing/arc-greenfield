@@ -18,6 +18,7 @@ import {
 } from '../calendar'
 import { SchoolIdentitySearch } from './SchoolIdentitySearch'
 import { SourceCalendarReview } from './SourceCalendarReview'
+import { CalendarSetupConfirmPreview } from './CalendarSetupConfirmPreview'
 
 const WEEKDAYS: Array<{ value: Weekday; label: string }> = [
   { value: 1, label: 'Mon' },
@@ -465,9 +466,7 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
         </div>
 
         <div className="setup-actions">
-          <p>{isSourceBackedEdit
-            ? 'This edit keeps the reviewed source and confidence history. Dates you change here are recorded as your confirmed manual corrections.'
-            : 'Manual setup is treated as confirmed only because you are explicitly declaring the pattern and exceptions here.'}</p>
+          <CalendarSetupConfirmPreview input={input} sourceBackedEdit={isSourceBackedEdit} />
           <div className="setup-action-buttons">
             {onCancel && <button type="button" className="quiet-button" onClick={onCancel}>Cancel</button>}
             <button type="submit" className="primary-button">Use this calendar</button>

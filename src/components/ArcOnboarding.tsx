@@ -24,9 +24,15 @@ export function ArcOnboarding(props: Props) {
       <div className="onboarding-welcome-wrap"><section className="onboarding-welcome" aria-labelledby="onboarding-title">
         <p className="section-label">Welcome to Arc</p>
         <h2 id="onboarding-title" className="onboarding-editorial-title">Arc is where your plan lives when the plan changes.</h2>
-        <p>Start with the shape of your real teaching day. You can bring in curriculum, finish bell times, and add detail after the planner is useful.</p>
+        <p>
+          Start by anchoring your school year and teaching week so Arc stays aligned with your real schedule when plans change. Add classes,
+          bell times, and curriculum when you are ready—you do not need everything on day one.
+        </p>
         <div className="onboarding-actions"><button type="button" className="primary-button" onClick={() => props.onChangeDraft({ ...props.draft, stage: 'calendar', intent: 'guided' })}>Set up my teaching day</button><button type="button" className="quiet-button" onClick={() => props.onChangeDraft({ ...props.draft, stage: 'calendar', intent: 'import' })}>Import what I already have</button><a className="text-button" href="#start-simple">Start simple</a></div>
-        <p className="onboarding-footnote">Import uses the same review-and-confirm boundary everywhere in Arc. School year comes first so imported work has a safe home.</p>
+        <p className="onboarding-footnote">
+          Choosing Import? Arc shows what it found and waits for your OK before saving. Set your school year first so imported dates land on
+          the right days.
+        </p>
       </section><section id="start-simple" className="onboarding-simple" aria-label="Start simple"><CalendarSetup initialValue={props.draft.calendarDraft ?? props.calendarInput} onDraftChange={(calendarDraft) => props.onChangeDraft({ ...props.draft, calendarDraft })} onSchoolIdentitySelected={(candidate) => props.onChangeDraft({ ...props.draft, schoolNcesId: candidate.id })} onSave={(calendar, input) => { if (props.onUseCalendar(calendar, input)) props.onChangeDraft({ ...props.draft, stage: 'landed', dismissed: true, calendarDraft: undefined }) }} /></section></div>
     )
   }

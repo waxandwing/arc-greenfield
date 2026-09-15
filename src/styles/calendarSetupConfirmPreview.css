@@ -1,0 +1,66 @@
+.calendar-setup-confirm-preview {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.calendar-setup-confirm-preview--empty {
+  max-width: 620px;
+}
+
+.calendar-setup-confirm-kicker {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--soft-charcoal);
+}
+
+.calendar-setup-confirm-copy strong,
+.calendar-setup-confirm-preview--empty strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.calendar-setup-confirm-summary,
+.calendar-setup-confirm-hint {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--soft-charcoal);
+}
+
+.calendar-setup-confirm-months {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-5);
+}
+
+.calendar-setup-confirm-month {
+  padding: var(--space-4);
+  border: 1px solid var(--line-subtle);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-paper) 92%, white);
+}
+
+.calendar-setup-confirm-month h4 {
+  margin: 0 0 var(--space-3);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.calendar-setup-confirm-grid {
+  max-width: none;
+}
+
+.setup-actions .calendar-setup-confirm-preview {
+  align-self: stretch;
+}
+
+@media (max-width: 720px) {
+  .calendar-setup-confirm-months {
+    grid-template-columns: 1fr;
+  }
+}
