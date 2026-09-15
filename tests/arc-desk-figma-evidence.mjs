@@ -133,7 +133,9 @@ try {
   assert(await page.locator('.b01-side-rail > .arc-index-tabs').count() === 0, 'Vertical index rail must stay hidden on desk.')
   assert(await page.locator('.b01-index-rail > .arc-index-tabs').count() === 0, 'Index rail alias must stay hidden on desk.')
   assert(await page.locator('.arc-index-tabs').count() === 1, 'Desk must render one planner view tab strip.')
+  assert(await page.getByTestId('arc-desk-quick-capture').isVisible(), 'Quick jot sticky must be visible on desk wood.')
   assert(await page.getByTestId('global-capture-trigger').count() === 1, 'Desk must render one quick capture affordance.')
+  assert(await page.getByTestId('global-capture-trigger').isVisible(), 'global-capture-trigger must be visible on sticky.')
   assert(await page.locator('[data-testid="planner-shell-bar"] .arc-wordmark').count() === 0, 'Desk must not stack shell wordmark on plan-state header.')
 
   await shot(page, '02-implementation-pass-1.png')

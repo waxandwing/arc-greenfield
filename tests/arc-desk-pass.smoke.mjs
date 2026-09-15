@@ -118,7 +118,12 @@ try {
   assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in IDEAS/tray dock when extended.')
   assert(await page.locator('.arc-index-tabs').count() === 1, 'Desk must expose a single planner view tab strip (utilities are separate).')
   assert(await page.locator('.b01-index-rail > .arc-index-tabs').count() === 0, 'Side index rail must stay empty on desk.')
-  assert(await page.getByTestId('global-capture-trigger').count() === 1, 'Desk must expose one quick capture trigger.')
+  const quickCaptureSticky = page.getByTestId('arc-desk-quick-capture')
+  assert(await quickCaptureSticky.count() === 1, 'Desk must render DeskQuickCaptureSticky on the wood.')
+  assert(await quickCaptureSticky.isVisible(), 'Quick jot sticky must be visible (not CSS-hidden for pixel fidelity).')
+  const captureTrigger = page.getByTestId('global-capture-trigger')
+  assert(await captureTrigger.count() === 1, 'Desk must expose one quick capture trigger.')
+  assert(await captureTrigger.isVisible(), 'global-capture-trigger must be visible on the upper-right sticky.')
   assert(await page.locator('[data-testid="planner-shell-bar"] .arc-wordmark').count() === 0, 'Desk must not duplicate planner shell chrome under PlanStateHeader.')
   assert(await page.locator('.plan-state-header').count() === 1, 'Desk keeps a single plan-state editorial header.')
   await page.evaluate(() => {
