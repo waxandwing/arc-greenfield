@@ -40,7 +40,7 @@
 
 ## Remaining gaps
 
-1. **Pixel diff** still high vs 1366×768 authority scaled to 1696×1254 preview — run `npm run test:desk-pixel-pass` for metrics.
+1. **Pixel diff** vs authority @ 1696×1254: **~57.14% RGB** (SSIM ~0.25) — `round-teaching-week-zip-REPORT.md` (improved vs prior ~60% baseline; still above 15% gate).
 2. **`2.png`** — empty; Kelly may re-export if a 1080p comp was intended.
 3. **Live chrome** — course row colored rails, “Weekends?” footer, LINE token on IDEAS stones (hidden when slices on).
 4. **Viewport** — runtime 1440×1024 tabletop vs Kelly 16:9 comp; global scale mismatch.
