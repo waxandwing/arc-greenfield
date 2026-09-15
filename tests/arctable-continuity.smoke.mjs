@@ -107,6 +107,26 @@ try {
   assert(await page.locator('.arctable-tool-panel').count() === 0, 'Closed classroom tools must not consume permanent workspace.')
   const roundedUtilityCards = await page.locator('.arctable-controls > section, .arctable-control-row, .arctable-control-field').evaluateAll((nodes) => nodes.filter((node) => { const style = getComputedStyle(node); return parseFloat(style.borderRadius) >= 10 && ['solid', 'double'].includes(style.borderTopStyle) && parseFloat(style.borderTopWidth) > 0 }).length)
   assert(roundedUtilityCards <= 1, 'Teacher Monitor must not read as an equal-weight stack of rounded SaaS cards.')
+  const headerMark = page.getByTestId('arctable-header-mark')
+  assert(await headerMark.count() === 1, 'Teacher Monitor must render the ArcTable AT-001 header mark.')
+  assert(await headerMark.evaluate((img) => img.complete && img.naturalWidth > 0), 'Teacher Monitor header mark asset must load via publicAssetUrl.')
+  const headerMarkSrc = await headerMark.getAttribute('src')
+  assert(headerMarkSrc?.includes('assets/arctable/logo-icon-framed-arc-primary-512.png'), 'Header mark must use the AT-001 framed ArcTable asset.')
+  const timerFit = await page.locator('.arctable-timer-display').evaluate((el) => {
+    const digits = el.querySelector('.arctable-timer-digits')
+    if (!digits) return { ok: false, reason: 'missing-digits' }
+    const ring = el.getBoundingClientRect()
+    const textBox = digits.getBoundingClientRect()
+    const maxWidth = ring.width * 0.62
+    return {
+      ok: textBox.width <= maxWidth + 1 && Boolean(digits.textContent?.includes(':')),
+      label: digits.textContent,
+      textWidth: textBox.width,
+      maxWidth,
+      ringSize: ring.width,
+    }
+  })
+  assert(timerFit.ok, `Classroom timer digits must fit inside the green ring without clipping (${JSON.stringify(timerFit)}).`)
   await capture(page, '05-teacher-monitor.png')
   await page.keyboard.press('Tab')
   assert(await page.evaluate(() => document.activeElement?.matches(':focus-visible') && parseFloat(getComputedStyle(document.activeElement).outlineWidth) >= 3), 'ArcTable keyboard focus must remain visibly apparent.')

@@ -20,6 +20,8 @@ import {
   type ArcTableTeachingOutcome,
 } from '../planning'
 import { consumeArcTableDeskLaunch } from '../planning/arcTableDeskLaunch'
+import { ARC_TABLE_MARK_ASSET } from '../planning/arcTableDeskMark'
+import { publicAssetUrl } from '../publicAssetUrl'
 import '../styles/arctable.css'
 
 type SharedProps = {
@@ -119,7 +121,17 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
   return (
     <main className="arctable arctable--teacher">
       <header className="arctable-header">
-        <img src="/assets/arctable/header-compact.png" alt="ArcTable" />
+        <div className="arctable-header-brand">
+          <img
+            className="arctable-header-mark"
+            src={publicAssetUrl(ARC_TABLE_MARK_ASSET)}
+            alt=""
+            width={44}
+            height={44}
+            data-testid="arctable-header-mark"
+          />
+          <span>ArcTable</span>
+        </div>
         <div><p className="arctable-kicker">Teacher Monitor</p><strong>{live.session.courseTitle} · {live.session.sectionName}</strong></div>
         <div className="arctable-header-actions">
           <button type="button" className="quiet-button" onClick={onOpenPlan}>Plan View</button>
@@ -145,7 +157,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
           <p className="arctable-kicker">Teacher controls</p>
           <section className="arctable-timer-control" aria-labelledby="classroom-timer-heading">
             <div className="arctable-timer-control-heading"><strong id="classroom-timer-heading">Classroom timer</strong><span>{live.timer.status}</span></div>
-            <div className="arctable-timer-display" aria-live="polite">{formatDuration(timerRemaining)}</div>
+            <div className="arctable-timer-display" aria-live="polite"><TimerDigits seconds={timerRemaining} /></div>
             <label><span>Duration in minutes</span><input aria-label="Timer duration in minutes" type="number" min="1" max={ARC_TABLE_MAX_COUNTDOWN_SECONDS / 60} value={Math.ceil(live.timer.durationSeconds / 60)} onChange={(event) => onUpdate({ timer: setArcTableCountdownDuration(live.timer, Number(event.target.value) * 60) })} /></label>
             <div className="arctable-presets" aria-label="Timer presets">{[5, 10, 15].map((minutes) => <button type="button" key={minutes} onClick={() => onUpdate({ timer: setArcTableCountdownDuration(live.timer, minutes * 60) })}>{minutes} min</button>)}</div>
             <div className="arctable-timer-actions">
@@ -223,7 +235,17 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onUpdate }: Shared
   return (
     <main className={`arctable arctable--student${cleanupActive ? ' is-cleanup' : ''}`}>
       <header className="arctable-student-header">
-        <img src="/assets/arctable/header-compact-dark.png" alt="ArcTable" />
+        <div className="arctable-header-brand arctable-header-brand--on-dark">
+          <img
+            className="arctable-header-mark"
+            src={publicAssetUrl(ARC_TABLE_MARK_ASSET)}
+            alt=""
+            width={44}
+            height={44}
+            data-testid="arctable-student-header-mark"
+          />
+          <span>ArcTable</span>
+        </div>
         <div><strong>Projected view</strong><span>{live.session.sectionName} · {live.session.courseTitle}</span></div>
         <time>{formatClock(now)}</time>
       </header>
@@ -235,7 +257,7 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onUpdate }: Shared
           {live.people.projected && selectedPerson ? <p className="arctable-projected-person">{selectedPerson.name}, you’re up.</p> : null}
         </div>
         <aside className="arctable-student-now">
-          <div className="arctable-timer-ring" aria-label={cleanupActive ? `Cleanup ${formatDuration(cleanupRemaining)} remaining` : `Classroom timer ${formatDuration(timerRemaining)} remaining`}><strong>{formatDuration(cleanupActive ? cleanupRemaining : timerRemaining)}</strong></div>
+          <div className="arctable-timer-ring" aria-label={cleanupActive ? `Cleanup ${formatDuration(cleanupRemaining)} remaining` : `Classroom timer ${formatDuration(timerRemaining)} remaining`}><TimerDigits as="strong" seconds={cleanupActive ? cleanupRemaining : timerRemaining} /></div>
           <span className="arctable-voice">Voice {live.voiceLevel}</span>
           {live.materials ? <p><span>Materials</span><strong>{live.materials}</strong></p> : null}<p><span>Current phase</span><strong>{live.phase} of {live.phaseCount}</strong></p>
         </aside>
@@ -270,3 +292,7 @@ function useSettleCountdowns(live: ArcTableLiveState, now: Date, onUpdate: Share
 function useClock() { const [now, setNow] = useState(() => new Date()); useEffect(() => { const timer = window.setInterval(() => setNow(new Date()), 1_000); return () => window.clearInterval(timer) }, []); return now }
 function formatClock(now: Date): string { return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(now) }
 function formatDuration(totalSeconds: number): string { const minutes = Math.floor(totalSeconds / 60); const seconds = totalSeconds % 60; return `${minutes}:${seconds.toString().padStart(2, '0')}` }
+function TimerDigits({ seconds, as: Tag = 'span' }: { seconds: number; as?: 'span' | 'strong' }) {
+  const label = formatDuration(seconds)
+  return <Tag className={`arctable-timer-digits${label.length > 5 ? ' is-compact' : ''}`}>{label}</Tag>
+}
