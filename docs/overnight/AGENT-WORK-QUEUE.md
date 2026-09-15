@@ -15,7 +15,7 @@
 | **A** | Figma/Arc slice placement: vertical tabs + IDEAS drawer + TO-DOS folder + start-class frame | P0 | **DONE** | 11 PNGs + manifest; edge tabs via `deskPlannerEdgeTabAssetUrl`; `test:desk-slices` |
 | **B** | Planner header chrome parity (rainbow mark, Today chevron pill, title/kicker typography) | P0 | **IN PROGRESS** | Today ←/→ cluster landed; rainbow mark still FAIL (#18) |
 | **C** | Course row rails + period/time blocks (`P1 • 8:05–9:00`) | P1 | **IN PROGRESS** | Kelly demo section labels + desk typography; left rails still FAIL |
-| **D** | Calendar enlarge pop-out (inline week + modal YEAR/DAY navigation) | P1 | **DONE** | `DeskCalendarPopOut`; `calendar-enlarge` + pop-out smokes |
+| **D** | Calendar enlarge pop-out (inline week + modal YEAR/DAY navigation) | P1 | **DONE** | `DeskCalendarPopOut`; `desk-calendar-enlarge-trigger` + pop-out smokes |
 | **E** | Drive Ruthless Design Audit after **each** pass | P0 | **RECURRING** | Human/Drive step; document rules + PASS/FAIL in audit doc |
 | **F** | Pixel diff loop until **&lt;15%** or blocked on assets | P1 | **BLOCKED (assets)** | ~60% diff round-2; slices should shrink drawer/folder gap |
 
