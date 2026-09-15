@@ -13,6 +13,7 @@ import type { MscSizePreset, PlannerSizePreset, TraySizePreset } from '../naviga
 import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
 import { DeskGreenFoldersDrawer } from './DeskGreenFoldersDrawer'
+import { DeskHelpButton } from './DeskHelpButton'
 import { DeskTodosFolder } from './DeskTodosFolder'
 import {
   deskCommittedRasterChromeEnabled,
@@ -455,6 +456,7 @@ export function B01Furniture({
               data-layout-grid={layoutGridActive ? 'true' : 'false'}
               data-furniture-locked={deskEditMode ? 'false' : 'true'}
             >
+              <DeskHelpButton />
               {deskEditMode ? <div className="arc-desk-zone-grid" aria-hidden="true" /> : null}
               {layoutGridActive ? (
                 <>

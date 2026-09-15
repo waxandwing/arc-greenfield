@@ -17,9 +17,10 @@ const DESK_ASSET_PATHS = {
   woodSurface: 'assets/arc/icarus/texture-wood.png',
   /** Schedule setup / onboarding calendar-on-wood only — not main desk authority. */
   scheduleSetupWood: 'assets/desk/light-wood-desk.png',
-  /** Legacy molded tray — superseded on live desk by green folders drawer SVG. */
+  /** Legacy molded tray — superseded on live desk by green folders drawer PNG. */
   blueTray: 'assets/desk/blue-molded-tray.png',
-  greenFoldersDrawer: 'assets/desk/green-folders-drawer.svg',
+  /** Landscape textured IDEAS drawer (preferred over tall SVG fallback). */
+  greenFoldersDrawer: 'assets/desk/green-folders-drawer.png',
   plannerTabMustard: 'assets/desk/planner-tab-mustard.png',
 } as const
 

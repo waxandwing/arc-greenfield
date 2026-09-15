@@ -105,6 +105,9 @@ try {
   assert(!deskFramePattern.includes('pattern-grid'), 'Desk composition must not repeat exterior pattern tile.')
   assert(await page.getByTestId('arc-desk-arctable').isVisible(), 'ArcTable desk mark must render on wood.')
   assert(await page.getByTestId('arc-desk-tray-dock').isVisible(), 'Tray dock must render on desk.')
+  assert(await page.getByTestId('desk-help-button').isVisible(), 'Desk must expose a quiet ? help button on the wood.')
+  const ideasDockBox = await page.getByTestId('arc-desk-tray-dock').boundingBox()
+  assert(ideasDockBox && ideasDockBox.width > ideasDockBox.height, 'IDEAS drawer dock must be landscape (wider than tall).')
   assert(await page.getByTestId('desk-slice-ideas-drawer').count() === 1, 'IDEAS drawer must use ideas-drawer-chrome.png by default.')
   assert(await page.getByTestId('desk-source-ideas-drawer').count() === 0, 'SVG IDEAS fallback must be off when committed rasters are default.')
   assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-desk-slices')) === 'true', 'IDEAS dock must opt into committed raster chrome.')
@@ -121,6 +124,24 @@ try {
   assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-extended')) === 'false', 'Second TO-DOS tab click must close drawer.')
   await page.getByTestId('arc-desk-folders-tab').click()
   assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in IDEAS/tray dock when extended.')
+  const ideasOpen = await page.getByTestId('arc-desk-tray-dock').evaluate((el) => {
+    const surface = el.closest('.arc-desk-surface')
+    const rect = el.getBoundingClientRect()
+    const surfaceTop = surface ? surface.getBoundingClientRect().top : 0
+    const transform = getComputedStyle(el).transform
+    return {
+      transform,
+      offsetFromSurfaceTop: rect.top - surfaceTop,
+      extended: el.getAttribute('data-extended'),
+      width: rect.width,
+      height: rect.height,
+    }
+  })
+  assert(ideasOpen.extended === 'true', 'IDEAS dock must be extended after tab click.')
+  assert(ideasOpen.offsetFromSurfaceTop <= 4, `IDEAS drawer must stay locked to top of desk when open (offset=${ideasOpen.offsetFromSurfaceTop}).`)
+  assert(ideasOpen.width > ideasOpen.height, 'Open IDEAS drawer must remain landscape (wider than tall).')
+  assert(await page.getByTestId('arc-desk-todos-tab').isVisible(), 'TO-DOS tab must remain visible while IDEAS is open.')
+  assert(await page.getByTestId('arc-desk-quick-capture').isVisible(), 'Quick capture post-it must remain visible while IDEAS is open.')
   assert(await page.locator('.arc-index-tabs').count() === 1, 'Desk must expose a single planner view tab strip (utilities are separate).')
   assert(await page.locator('.b01-index-rail > .arc-index-tabs').count() === 0, 'Side index rail must stay empty on desk.')
   const quickCaptureSticky = page.getByTestId('arc-desk-quick-capture')
