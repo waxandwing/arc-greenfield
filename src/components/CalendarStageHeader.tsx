@@ -1,7 +1,15 @@
 import type { ISODate, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
+import {
+  ONBOARDING_SECTIONS,
+  SETUP_SECTIONS,
+  isSetupWorkspaceMode,
+  type OnboardingSectionId,
+  type SetupSectionId,
+} from '../app/setupSections'
 import { calendarViewLabel } from '../navigation/calendarViews'
+import { SetupSectionNav } from './SetupSectionNav'
 
 type ViewAvailability = { available: boolean; reason?: string }
 
@@ -26,6 +34,16 @@ type CalendarStageHeaderProps = {
   onToday: () => void
   onOpenRecovery: () => void
   onUndoShift: () => void
+  setupNav?: {
+    activeId: SetupSectionId
+    disabledIds?: ReadonlySet<SetupSectionId>
+    onSelect: (id: SetupSectionId) => void
+  } | null
+  onboardingNav?: {
+    activeId: OnboardingSectionId
+    disabledIds?: ReadonlySet<OnboardingSectionId>
+    onSelect: (id: OnboardingSectionId) => void
+  } | null
 }
 
 export function CalendarStageHeader(props: CalendarStageHeaderProps) {
@@ -46,23 +64,51 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     onToday,
     onOpenRecovery,
     onUndoShift,
+    setupNav = null,
+    onboardingNav = null,
   } = props
 
   const isCalendarMode = mode === 'calendar'
-
+  const showSetupNav = Boolean(setupNav && isSetupWorkspaceMode(mode))
+  const showOnboardingNav = Boolean(onboardingNav && mode === 'onboarding')
+  const showSectionNav = showSetupNav || showOnboardingNav
   const showSpreadTitle = !editorialTitleManaged
 
   return (
-    <header className={`calendar-stage-header${editorialTitleManaged ? ' calendar-stage-header--tools-only' : ''}`}>
+    <header
+      className={[
+        'calendar-stage-header',
+        editorialTitleManaged ? 'calendar-stage-header--tools-only' : '',
+        showSectionNav ? 'calendar-stage-header--setup' : '',
+      ].filter(Boolean).join(' ')}
+    >
       <div>
         {showSpreadTitle ? (
           <>
-            <p className="section-label">Calendar</p>
+            <p className="section-label">{showSectionNav ? 'Setup' : 'Calendar'}</p>
             {calendar && isCalendarMode ? (
               <h1 className="view-title" aria-live="polite">{calendarViewLabel(activeView)}</h1>
             ) : (
               <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
             )}
+            {showSetupNav && setupNav ? (
+              <SetupSectionNav
+                kind="setup"
+                sections={SETUP_SECTIONS}
+                activeId={setupNav.activeId}
+                disabledIds={setupNav.disabledIds}
+                onSelect={setupNav.onSelect}
+              />
+            ) : null}
+            {showOnboardingNav && onboardingNav ? (
+              <SetupSectionNav
+                kind="onboarding"
+                sections={ONBOARDING_SECTIONS}
+                activeId={onboardingNav.activeId}
+                disabledIds={onboardingNav.disabledIds}
+                onSelect={onboardingNav.onSelect}
+              />
+            ) : null}
           </>
         ) : (
           <span className="section-label">{calendar && isCalendarMode ? `${calendarViewLabel(activeView)} navigation` : stageTitle}</span>

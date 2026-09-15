@@ -70,6 +70,8 @@ type WorkspaceStageProps = {
   onSetCaptureImportant?: (captureId: string, important: boolean) => boolean
   onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
   onCloseMode: () => void
+  /** Leave setup and reopen Settings (Cancel from setup surfaces). */
+  onReturnToSettings: () => void
   onOpenMode: (mode: WorkspaceMode) => void
   planMoveIntent?: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null } | null
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
@@ -122,6 +124,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onMoveCaptureToDate: _moveCaptureToDate,
     onSetCaptureImportant: _setCaptureImportant,
     onCloseMode,
+    onReturnToSettings,
     onOpenMode,
     planMoveIntent,
     onBeginPlanLessonMove,
@@ -138,13 +141,13 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       <CalendarSetup
         initialValue={calendarInput}
         onSave={onUseCalendar}
-        onCancel={calendar ? onCloseMode : undefined}
+        onCancel={calendar ? onReturnToSettings : undefined}
       />
     )
   }
 
   if (mode === 'terms' && calendarInput) {
-    return <TermBoundarySetup input={calendarInput} onSave={onUseTerms} onCancel={onCloseMode} />
+    return <TermBoundarySetup input={calendarInput} onSave={onUseTerms} onCancel={onReturnToSettings} />
   }
 
   if (mode === 'classes') {
@@ -155,17 +158,17 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         protectedCourseIds={protectedCourseIds}
         protectedSectionIds={protectedSectionIds}
         onSave={onUseClasses}
-        onCancel={onCloseMode}
+        onCancel={onReturnToSettings}
       />
     )
   }
 
   if (mode === 'teaching-day' && planningInput) {
-    return <TeachingDaySetup initialValue={planningInput} onSave={onUseClasses} onCancel={onCloseMode} />
+    return <TeachingDaySetup initialValue={planningInput} onSave={onUseClasses} onCancel={onReturnToSettings} />
   }
 
   if (mode === 'import') {
-    return <CurriculumImport calendarId={calendar.id} existingCourses={planningWorkspace?.courses ?? []} existingUnits={unitWorkspace?.units ?? []} existingLessons={lessonWorkspace?.lessons ?? []} onCommit={onUseCurriculumImport} onCancel={onCloseMode} onOpenCalendar={() => onOpenMode('calendar-setup')} onOpenClasses={() => onOpenMode('classes')} onOpenTeachingDay={() => onOpenMode('teaching-day')} />
+    return <CurriculumImport calendarId={calendar.id} existingCourses={planningWorkspace?.courses ?? []} existingUnits={unitWorkspace?.units ?? []} existingLessons={lessonWorkspace?.lessons ?? []} onCommit={onUseCurriculumImport} onCancel={onReturnToSettings} onReturnToDay={onCloseMode} onOpenCalendar={() => onOpenMode('calendar-setup')} onOpenClasses={() => onOpenMode('classes')} onOpenTeachingDay={() => onOpenMode('teaching-day')} />
   }
 
   if (mode === 'units' && planningWorkspace) {
@@ -178,7 +181,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         initialValue={unitInput}
         protectedUnitIds={protectedUnitIds}
         onSave={onUseUnits}
-        onCancel={onCloseMode}
+        onCancel={onReturnToSettings}
       />
     )
   }
@@ -192,7 +195,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         shiftState={shiftState}
         initialValue={lessonInput}
         onSave={onUseLessons}
-        onCancel={onCloseMode}
+        onCancel={onReturnToSettings}
       />
     )
   }

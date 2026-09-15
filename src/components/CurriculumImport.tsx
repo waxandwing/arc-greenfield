@@ -19,6 +19,8 @@ type Props = {
   existingLessons: Lesson[]
   onCommit: (proposal: CurriculumImportProposal, courseMatches: Record<string, string>, decisions: Record<string, ReimportDecision>) => CurriculumImportReceipt | string
   onCancel: () => void
+  /** Confirmed import receipt returns to Day without reopening Settings. */
+  onReturnToDay?: () => void
   onOpenCalendar: () => void
   onOpenClasses: () => void
   onOpenTeachingDay: () => void
@@ -26,7 +28,7 @@ type Props = {
 
 const SAMPLE_HEADER = 'Course,Order,Unit,Unit Length,Item Type,Title,Item Length,Content/Resources,Homework/Next Up,Important Notes'
 
-export function CurriculumImport({ calendarId, existingCourses, existingUnits, existingLessons, onCommit, onCancel, onOpenCalendar, onOpenClasses, onOpenTeachingDay }: Props) {
+export function CurriculumImport({ calendarId, existingCourses, existingUnits, existingLessons, onCommit, onCancel, onReturnToDay, onOpenCalendar, onOpenClasses, onOpenTeachingDay }: Props) {
   const [sourceIdentity, setSourceIdentity] = useState('')
   const [source, setSource] = useState('')
   const [stage, setStage] = useState<'choose' | 'review' | 'receipt'>('choose')
@@ -56,7 +58,7 @@ export function CurriculumImport({ calendarId, existingCourses, existingUnits, e
   }
 
   if (stage === 'receipt' && receipt) {
-    return <section className="import-surface import-receipt" aria-labelledby="import-receipt-title"><p className="section-label">Import verified</p><h2 id="import-receipt-title">The confirmed curriculum is now in Arc.</h2><dl><div><dt>Courses created</dt><dd>{receipt.created.courses}</dd></div><div><dt>Units created</dt><dd>{receipt.created.units}</dd></div><div><dt>Lessons created</dt><dd>{receipt.created.lessons}</dd></div><div><dt>Rows held back</dt><dd>{receipt.skippedRows.length}</dd></div></dl><p>Imported Lessons are unscheduled. Their source identity and row references stay attached for future re-import review.</p><button type="button" className="primary-button" onClick={onCancel}>Return to Day</button></section>
+    return <section className="import-surface import-receipt" aria-labelledby="import-receipt-title"><p className="section-label">Import verified</p><h2 id="import-receipt-title">The confirmed curriculum is now in Arc.</h2><dl><div><dt>Courses created</dt><dd>{receipt.created.courses}</dd></div><div><dt>Units created</dt><dd>{receipt.created.units}</dd></div><div><dt>Lessons created</dt><dd>{receipt.created.lessons}</dd></div><div><dt>Rows held back</dt><dd>{receipt.skippedRows.length}</dd></div></dl><p>Imported Lessons are unscheduled. Their source identity and row references stay attached for future re-import review.</p><button type="button" className="primary-button" onClick={onReturnToDay ?? onCancel}>Return to Day</button></section>
   }
 
   return (
