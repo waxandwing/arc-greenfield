@@ -681,17 +681,16 @@ export function AppFrame() {
             spreadChrome={
               deskEnabled ? (
                 <>
-                  <PlannerShellBar
-                    homeLabel="Teaching Day home"
-                    onHome={returnHome}
-                    capture={null}
-                    trailing={arcTable.live && arcTable.surface === 'plan' ? (
-                      <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}>
-                        <strong>{arcTable.live.session.sectionName}</strong>
-                        <span>Return to ArcTable</span>
-                      </button>
-                    ) : null}
-                  />
+                  {arcTable.live && arcTable.surface === 'plan' ? (
+                    <div className="planner-shell-bar planner-shell-bar--desk-live" data-testid="planner-shell-bar">
+                      <div className="planner-shell-bar-controls">
+                        <button type="button" className="arc-live-return" onClick={arcTable.showTeacher}>
+                          <strong>{arcTable.live.session.sectionName}</strong>
+                          <span>Return to ArcTable</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                   {workspace.storageNotice ? (
                     <p className="storage-notice" role="status">{workspace.storageNotice}</p>
                   ) : null}

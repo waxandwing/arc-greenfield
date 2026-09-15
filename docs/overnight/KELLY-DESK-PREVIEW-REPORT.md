@@ -57,6 +57,8 @@ The **Figma-ish desk composition is correct** on Pages: physical planner tabs, *
 
 **Fixed:** bottom-right **ArcTable mark** showed a broken image icon because the inline SVG `<image>` used a root `/assets/arctable/...` path without the Pages base (`/arc-greenfield/`). The mark now uses the same `publicAssetUrl` / `import.meta.env.BASE_URL` helper as desk wood/tray CSS.
 
+**Fixed (doubled UI):** desk was stacking **legacy planner shell** (Arc wordmark bar) on top of **PlanStateHeader**, showing **molded tray + TRAY drawer** at once when the tab was open, and keeping redundant index-rail tab CSS hooks. Desk now uses **one** physical tab row, **one** quick capture, **PlanStateHeader-only** titles inside the spread, and **either** the wood tray **or** the TRAY drawer — not both.
+
 **YELLOW (doc only — not blocking):** remaining visual polish vs Figma frame `6:3194`:
 
 - Planner index tabs on the **planner edge** (not a separate top bar strip)

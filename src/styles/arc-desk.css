@@ -281,8 +281,17 @@ html:has(.arc-shell--desk) body {
   line-height: 1.25;
 }
 
-.b01-furniture-composition--desk .b01-side-rail > .arc-index-tabs {
-  display: none;
+.b01-furniture-composition--desk .b01-side-rail > .arc-index-tabs,
+.b01-furniture-composition--desk .b01-index-rail > .arc-index-tabs {
+  display: none !important;
+}
+
+.b01-furniture-composition--desk .planner-shell-bar:not(.planner-shell-bar--desk-live) {
+  display: none !important;
+}
+
+.b01-furniture-composition--desk[data-workspace-open='true'] .arc-desk-tray-dock {
+  display: none !important;
 }
 
 .arc-desk-tray-dock,

@@ -266,6 +266,8 @@ export function B01Furniture({
   const workspacePanelLabel = deskEnabled ? 'Tray' : 'Workspace'
   const layoutGridActive =
     deskEnabled && Boolean(deskLayout) && (deskEditMode || !deskLayoutUsesDefault(deskLayout))
+  /** Physical tray on wood; full TRAY drawer reuses the same panel — never both. */
+  const showDeskTrayDock = Boolean(deskTrayDock) && !workspaceIsOpen
 
   function renderIndexTabs(className: string) {
     if (!indexNav) return null
@@ -359,7 +361,7 @@ export function B01Furniture({
               {layoutGridActive ? (
                 <>
                   {wrapDeskObject('planner', 'Planner', plannerBlock)}
-                  {wrapDeskObject('tray', 'Tray', deskTrayDock ? (
+                  {wrapDeskObject('tray', 'Tray', showDeskTrayDock ? (
                     <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
                       <div className="arc-desk-tray-rim">
                         <p className="b01-furniture-kicker">Tray</p>
@@ -382,7 +384,7 @@ export function B01Furniture({
               ) : (
                 <>
                   {plannerBlock}
-                  {deskTrayDock ? (
+                  {showDeskTrayDock ? (
                     <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
                       <div className="arc-desk-tray-rim">
                         <p className="b01-furniture-kicker">Tray</p>
@@ -411,7 +413,7 @@ export function B01Furniture({
         plannerBlock
       )}
 
-      <div className={`b01-side-rail${deskEnabled ? ' b01-side-rail--desk-overlays' : ''}`}>
+      <div className={`b01-side-rail b01-index-rail${deskEnabled ? ' b01-side-rail--desk-overlays' : ''}`}>
         {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
 
         <div className="b01-side-panels">
