@@ -240,8 +240,9 @@ html:has(.arc-shell--desk) body {
   min-height: 0;
   flex: 1 1 auto;
   height: 100%;
+  /* Object rim until Kelly calendar-background.svg lands — keep thin green frame, low card lift. */
   border: 2px solid color-mix(in srgb, var(--shell-frame-green) 78%, var(--ink));
-  border-radius: 10px;
+  border-radius: 6px;
   /* Tabs hang mostly outside the green border; slim gutter so roots clear cream content. */
   padding-right: 18px;
   background-color: var(--field-elevated);
@@ -251,7 +252,7 @@ html:has(.arc-shell--desk) body {
     var(--plan-surface-paper);
   /* Paper/book on wood — not a floating dialog card */
   box-shadow:
-    0 10px 28px -22px rgba(33, 29, 23, 0.38),
+    0 8px 22px -20px rgba(33, 29, 23, 0.32),
     inset 0 1px 0 rgba(255, 253, 248, 0.45);
 }
 
@@ -2208,13 +2209,66 @@ html:has(.arc-shell--desk) body {
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-lesson {
-  border-radius: 999px;
+  /* Paper lesson objects — not SaaS pill chips. */
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 70%, transparent);
+  border-left-width: 3px;
+  background: color-mix(in srgb, var(--paper-raised) 88%, #fffaf2);
+  box-shadow: 0 1px 0 rgba(255, 253, 248, 0.9), 0 6px 12px -10px rgba(33, 29, 23, 0.35);
   font-size: 11px;
-  padding: 3px 8px;
+  line-height: 1.2;
+  padding: 5px 7px 5px 8px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-lesson-title {
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-unit-span {
+  /* Full-width unit band, editorial density. */
+  border-radius: 2px;
+  margin: 1px 2px 3px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading h2 {
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: clamp(13px, 1.15vw, 16px);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-section-row > .planning-row-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--ink) 72%, var(--soft-charcoal));
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-day-slot {
+  gap: 4px;
+  padding: 4px 5px;
+  background: transparent;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-weekday {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-day {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-header {
@@ -2223,14 +2277,6 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-heading {
   padding: 2px 2px 4px;
-}
-
-.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-weekday {
-  font-size: 11px;
-}
-
-.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-day {
-  font-size: 13px;
 }
 
 .b01-furniture-composition--desk .planner-shell-bar {
@@ -2476,7 +2522,9 @@ html:has(.arc-shell--desk) body {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  /* Tactile crop art — never stretch with fill. */
+  object-fit: contain;
+  object-position: center top;
   z-index: 0;
   pointer-events: none;
 }

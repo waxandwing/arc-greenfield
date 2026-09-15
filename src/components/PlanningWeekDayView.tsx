@@ -8,7 +8,7 @@ import { ArcImportantObject } from './ArcImportantObject'
 import { ArcObjectMenu, type ArcObjectMenuItem } from './ArcObjectMenu'
 import { CalendarDayNotes, type CalendarDayNoteHandlers } from './CalendarDayNotes'
 import { DeskNotesObject } from './DeskNotesObject'
-import { formatLongDate, formatShortDate, formatWeekday } from './dateLabels'
+import { formatKellyDeskDayNumber, formatKellyDeskWeekday, formatLongDate, formatShortDate } from './dateLabels'
 
 export function PlanningWeekDayView({
   days,
@@ -132,8 +132,8 @@ function PlanningDateHeader({ days, single, focusDate, onSelectDate }: { days: P
       <span className="planning-row-label planning-row-label--header" aria-hidden="true">Class</span>
       {days.map((day) => (
         <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}${!isPlannableDayKind(day.kind) ? ' planning-date-heading--off' : ''}${day.kind === 'early-release' ? ' planning-date-heading--early-release' : ''}${day.date === focusDate ? ' planning-date-heading--focus' : ''}`} aria-current={day.date === focusDate ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}${!isPlannableDayKind(day.kind) ? `. ${day.label || humanizeKind(day.kind)}` : day.kind === 'early-release' ? `. Early release${day.schoolEndTime ? `, school ends ${day.schoolEndTime}` : ''}` : ''}`} data-desk-postit-drop="date" data-desk-postit-date={day.date} data-date={day.date} onClick={() => onSelectDate?.(day.date)}>
-          {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
-          <span className="planning-date-day">{formatShortDate(day.date)}</span>
+          {!single ? <span className="planning-date-weekday">{formatKellyDeskWeekday(day.date)}</span> : null}
+          <span className="planning-date-day">{single ? formatShortDate(day.date) : formatKellyDeskDayNumber(day.date)}</span>
           {day.kind === 'early-release' ? (
             <span className="planning-date-kind">{day.schoolEndTime ? `Ends ${day.schoolEndTime}` : (day.label || 'Early release')}</span>
           ) : day.kind !== 'instructional' && day.kind !== 'unknown' && day.kind !== 'no-school' ? (

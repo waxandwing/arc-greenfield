@@ -27,3 +27,21 @@ Files in this folder (update this list when you add assets):
 Teaching week zip (Teaching_week__1__01fd.zip) — extracted to teaching-week-1/:
   Only 1.png (full comp) + 2.png (blank). The app uses REAL files from public/assets/desk/ — not crops from 1.png — unless a developer turns on comp-crop mode.
   Please add a separate export pack here: one PNG or SVG per layer (IDEAS drawer, TO-DOS folder, planner tabs, frame accents, title mark). See docs/overnight/TEACHING-WEEK-ASSETS-HONESTY.md.
+
+## Kelly labeled SVG handoff (P0 reconciliation)
+
+If you have the 22 manually labeled desk SVGs (names with USE are strongest), put them HERE preserving exact filenames, e.g.:
+
+- Wood Background Light.svg
+- Settings tab (USE).svg
+- TODO tab (use).svg
+- tray image (use).svg
+- calendar background.svg
+- calendar selected tab view.svg
+- unselected calendar states.svg
+- blue/green/yellow/red magnet SVGs
+- today button.svg / today highlighter icon.svg
+- start class arctable logo.svg
+- etc. (see public/assets/desk/canonical/README.md)
+
+A single zip is fine. Agents will rename into public/assets/desk/canonical/ and wire roles.
