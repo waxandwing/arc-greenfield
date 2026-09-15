@@ -4,6 +4,21 @@ Calendar-first teacher planning for plans that change.
 
 This repository is the implementation source for Arc. Product and UX authority live in the canonical Google Drive Product Spec. Visual authority lives in the canonical Wax & Wing Brand System. GitHub issues translate those authorities into implementation work.
 
+## Arc desk preview (not on `main`)
+
+Production desk work (wood tabletop, desk slices, ArcTable, `npm run preview:desk`) lives on branch **`cursor/arc-production-integration`** — **do not preview the desk from `main`**. On `main` you get the legacy plan shell only (cream/green calendar chrome, no `desk-v2` footer).
+
+```bash
+cd /path/to/arc-greenfield   # folder that contains package.json
+git fetch origin
+git checkout cursor/arc-production-integration
+git pull origin cursor/arc-production-integration
+npm install
+npm run preview:desk
+```
+
+Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. Expected integration tip (short SHA): **`64c6f43`** (footer shows `desk-v2 · cursor/arc-production-integration · <sha>` after pull). Full steps: see `docs/LOCAL-PREVIEW.md` on that branch.
+
 ## Branch authority
 
 - `main` — protected release branch. Do not develop directly here.
