@@ -1500,38 +1500,10 @@ html:has(.arc-shell--desk) body {
   text-transform: uppercase;
 }
 
-.b01-furniture-composition--desk .planning-date-heading {
-  position: relative;
-  justify-items: center;
-  text-align: center;
-  padding: 6px 2px 10px;
-  border-right: 0;
-  gap: 0;
-}
-
 .b01-furniture-composition--desk .planning-date-heading span:last-child {
   font-family: 'League Spartan', var(--font-label), sans-serif;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 800;
-}
-
-.b01-furniture-composition--desk .planning-date-heading--focus {
-  border-top: 0;
-  background: transparent;
-  font-weight: 800;
-}
-
-.b01-furniture-composition--desk .planning-date-heading--focus::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 1.55rem;
-  height: 0.72rem;
-  transform: translateX(-50%);
-  border-radius: 0 0 999px 999px;
-  background: color-mix(in srgb, var(--mustard) 88%, #b8860b);
-  pointer-events: none;
 }
 
 .b01-furniture-composition--desk .planning-week {
@@ -1546,79 +1518,29 @@ html:has(.arc-shell--desk) body {
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) {
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
   width: 100%;
   max-width: 100%;
 }
 
-.b01-furniture-composition--desk .planning-grid--kelly-desk {
-  min-width: 620px;
-}
-
-.b01-furniture-composition--desk .planning-grid--kelly-desk .planning-course-heading {
-  display: none;
-}
-
-.b01-furniture-composition--desk .planning-grid--kelly-desk .planning-row-course {
-  display: block;
-  font-size: 10px;
-  letter-spacing: 0.07em;
-  margin-bottom: 2px;
-}
-
-.b01-furniture-composition--desk .planning-grid--kelly-desk .planning-row-period {
-  display: block;
-  font-size: 9px;
-  font-weight: 650;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  color: color-mix(in srgb, var(--ink) 68%, var(--soft-charcoal));
-}
-
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course {
-  border-radius: 0;
+  border-radius: 8px;
   min-width: 0;
-  border-top: 0;
-  padding-top: 6px;
-  gap: 4px;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading {
   min-width: 0;
 }
 
-.b01-furniture-composition--desk .planning-section-row > .planning-row-label {
-  border-right: 4px solid color-mix(in srgb, var(--mustard) 70%, #a67c00);
-  padding-right: 8px;
-}
-
-.b01-furniture-composition--desk .planning-course:nth-of-type(2) .planning-section-row > .planning-row-label {
-  border-right-color: color-mix(in srgb, var(--dusty-blue) 75%, #2f4f6a);
-}
-
-.b01-furniture-composition--desk .planning-course:nth-of-type(3) .planning-section-row > .planning-row-label {
-  border-right-color: color-mix(in srgb, var(--sage) 70%, #1f4b3a);
-}
-
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-unit-span {
   border-radius: 6px;
-  min-height: 26px;
-  font-size: 11px;
-  font-weight: 700;
+  min-height: 28px;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-lesson {
   border-radius: 999px;
   font-size: 11px;
-}
-
-.b01-furniture-composition--desk .arc-desk-arctable-script-detail {
-  display: none !important;
-}
-
-.b01-furniture-composition--desk .arc-desk-arctable-script {
-  order: -1;
 }
 
 .b01-furniture-composition--desk .planner-shell-bar {
