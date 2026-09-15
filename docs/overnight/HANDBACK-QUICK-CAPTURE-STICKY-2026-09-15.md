@@ -41,8 +41,9 @@ Smokes still found `global-capture-trigger` in the DOM (`count === 1`) while the
 ## ArcBuild handback
 
 - **Branch:** main
-- **SHA:** _(filled after this commit lands on main)_
-- **Pushed:** yes
+- **SHA:** `715d33717eaeeb5201cb012fb7dabd4ad7947cf2` (`715d337`) — sticky visibility asserts + handback
+- **Current origin/main tip:** `7a968b5c4992f645a40fb8aac5f0dba88b3a60e3` (`7a968b5`)
+- **Pushed:** yes — `origin/main` at `715d337`
 
 ### Requirements addressed
 | Req | Status | Notes |
@@ -54,5 +55,5 @@ Smokes still found `global-capture-trigger` in the DOM (`count === 1`) while the
 ### Tests
 | Command | Result |
 |---------|--------|
-| test:arc-desk-pass | _(filled after run)_ |
-| test:contracts | _(filled after run)_ |
+| test:arc-desk-pass | PASS |
+| test:contracts | PASS |
