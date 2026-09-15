@@ -76,6 +76,9 @@ function DeskPriorityLane({ priority, label, folderLabel, folderChrome = false, 
     <div
       ref={laneRef}
       className={`desk-priority-lane desk-priority-lane--${priority}${dropHint ? ' desk-priority-lane--drop-target' : ''}`}
+      data-desk-postit-drop="priority"
+      data-priority={priority}
+      data-testid={`desk-priority-lane-${priority}`}
       onDragOver={(event) => {
         if (planningDragDisabled) return
         if (!hasDeskPriorityDrag(event.dataTransfer) && !event.dataTransfer.types.includes(TRAY_CAPTURE_DRAG_MIME)) return

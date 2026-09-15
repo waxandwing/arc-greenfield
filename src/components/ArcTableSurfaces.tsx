@@ -244,7 +244,6 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onUpdate }: Shared
   const cleanupRemaining = countdownRemaining(live.cleanupTimer, now)
   const cleanupActive = cleanupIsActive(live)
   const selectedPerson = selectedArcTablePerson(live.people)
-  const lessonParts = studentLessonParts(live)
   useSettleCountdowns(live, now, onUpdate)
   useEffect(() => {
     const leaveProjection = (event: KeyboardEvent) => { if (event.key === 'Escape') onShowTeacher() }
@@ -266,28 +265,6 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onUpdate }: Shared
         <time>{formatClock(now)}</time>
       </header>
       <section className="arctable-student-stage">
-        <nav className="arctable-student-parts" aria-label="Lesson parts" data-testid="arctable-student-parts">
-          <ol>
-            {lessonParts.map((label, index) => {
-              const partNumber = index + 1
-              const current = partNumber === live.phase
-              return (
-                <li key={`${partNumber}-${label}`}>
-                  <button
-                    type="button"
-                    className={current ? 'is-current' : undefined}
-                    aria-current={current ? 'step' : undefined}
-                    aria-label={current ? `Current part: ${label}` : `Go to part: ${label}`}
-                    onClick={() => { if (!current) onUpdate({ phase: partNumber }) }}
-                  >
-                    <span className="arctable-student-parts-index">{partNumber}</span>
-                    <span className="arctable-student-parts-label">{label}</span>
-                  </button>
-                </li>
-              )
-            })}
-          </ol>
-        </nav>
         <div className="arctable-student-work">
           <p className="arctable-kicker">{live.session.unitTitle}</p><h1>{live.session.lessonTitle}</h1>
           {live.directions.length > 0 ? <ol>{live.directions.map((direction, index) => <li key={`${direction}-${index}`}><strong>{index + 1}</strong><span>{direction}</span></li>)}</ol> : null}
@@ -297,19 +274,12 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onUpdate }: Shared
         <aside className="arctable-student-now">
           <div className="arctable-timer-ring" aria-label={cleanupActive ? `Cleanup ${formatDuration(cleanupRemaining)} remaining` : `Classroom timer ${formatDuration(timerRemaining)} remaining`}><TimerDigits as="strong" seconds={cleanupActive ? cleanupRemaining : timerRemaining} /></div>
           <span className="arctable-voice">Voice {live.voiceLevel}</span>
-          {live.materials ? <p><span>Materials</span><strong>{live.materials}</strong></p> : null}<p><span>Current phase</span><strong>{live.phase} of {live.phaseCount}{lessonParts[live.phase - 1] ? ` · ${lessonParts[live.phase - 1]}` : ''}</strong></p>
+          {live.materials ? <p><span>Materials</span><strong>{live.materials}</strong></p> : null}<p><span>Current phase</span><strong>{live.phase} of {live.phaseCount}</strong></p>
         </aside>
       </section>
       {cleanupActive ? <div className="arctable-student-cleanup" role="status"><strong>{live.cleanupTimer.status === 'completed' ? 'Cleanup complete' : 'Cleanup now'}</strong><span>Save your work · return materials · stay at your table.</span></div> : null}
     </main>
   )
-}
-
-/** Plain-English lesson parts from the plan; pad to phaseCount when phases are sparse. */
-function studentLessonParts(live: ArcTableLiveState): string[] {
-  const planned = live.session.phases.map((label) => label.trim()).filter(Boolean)
-  const count = Math.max(1, live.phaseCount, planned.length)
-  return Array.from({ length: count }, (_, index) => planned[index] || `Part ${index + 1}`)
 }
 
 function MediaSurface({

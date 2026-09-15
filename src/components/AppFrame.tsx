@@ -77,6 +77,12 @@ import { DeskPriorityPad } from './DeskPriorityPad'
 import { DeskEditToolbar } from './DeskEditToolbar'
 import { DeskCalendarPopOut } from './DeskCalendarPopOut'
 import { DeskQuickCaptureSticky } from './DeskQuickCaptureSticky'
+import {
+  DESK_POSTIT_ASSIGN_DATE_EVENT,
+  DESK_POSTIT_ASSIGN_PRIORITY_EVENT,
+  type DeskPostItAssignDateDetail,
+  type DeskPostItAssignPriorityDetail,
+} from '../desk/deskPostItEvents'
 import { publicAssetUrl } from '../publicAssetUrl'
 import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
 import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
@@ -324,6 +330,26 @@ export function AppFrame() {
   function saveGlobalCapture(text: string, extra: Parameters<typeof workspace.addCapture>[1] = {}) {
     return workspace.addCapture(text, { ...captureAnchor, ...extra })
   }
+
+  useEffect(() => {
+    function onAssignDate(event: Event) {
+      const detail = (event as CustomEvent<DeskPostItAssignDateDetail>).detail
+      if (!detail?.date || !detail.text?.trim()) return
+      workspace.addCalendarNote(detail.date, detail.text.trim())
+    }
+    function onAssignPriority(event: Event) {
+      const detail = (event as CustomEvent<DeskPostItAssignPriorityDetail>).detail
+      if (!detail?.priority || !detail.text?.trim()) return
+      taskBar.add(detail.priority, detail.text.trim())
+    }
+    window.addEventListener(DESK_POSTIT_ASSIGN_DATE_EVENT, onAssignDate)
+    window.addEventListener(DESK_POSTIT_ASSIGN_PRIORITY_EVENT, onAssignPriority)
+    return () => {
+      window.removeEventListener(DESK_POSTIT_ASSIGN_DATE_EVENT, onAssignDate)
+      window.removeEventListener(DESK_POSTIT_ASSIGN_PRIORITY_EVENT, onAssignPriority)
+    }
+  }, [taskBar, workspace])
+
   function dismissCaptureCoachMark() {
     setShowCaptureCoachMark(false)
     updateOnboarding({ ...onboardingDraft, firstCapturePromptDismissed: true })

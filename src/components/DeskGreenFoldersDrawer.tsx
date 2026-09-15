@@ -1,5 +1,6 @@
-import { useCallback, useId, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useId, useState, type ReactNode } from 'react'
 import { deskCommittedRasterChromeEnabled } from '../desk/deskSliceRuntime'
+import { DESK_IDEAS_OPEN_EVENT, requestDeskIdeasCleanUp } from '../desk/deskIdeasEvents'
 import { DeskChromeSlice } from './DeskChromeSlice'
 
 type Props = {
@@ -17,13 +18,25 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     setExtended((current) => !current)
   }, [])
 
+  const openDrawer = useCallback(() => {
+    setExtended(true)
+  }, [])
+
+  useEffect(() => {
+    function onOpen() {
+      openDrawer()
+    }
+    window.addEventListener(DESK_IDEAS_OPEN_EVENT, onOpen)
+    return () => window.removeEventListener(DESK_IDEAS_OPEN_EVENT, onOpen)
+  }, [openDrawer])
+
   // Textured PNG chrome by default (same gate as TO-DOS / edge tabs); SVG only when raster off.
   const slicesEnabled = deskCommittedRasterChromeEnabled()
 
   return (
     <aside
       className="arc-desk-tray-dock arc-desk-green-folders-drawer"
-      aria-label="Folders tray"
+      aria-label="IDEAS tray"
       data-testid="arc-desk-tray-dock"
       data-extended={extended ? 'true' : 'false'}
       data-desk-slices={slicesEnabled ? 'true' : 'false'}
@@ -53,6 +66,22 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
           aria-labelledby={tabId}
           aria-hidden={extended ? undefined : true}
         >
+          <div className="arc-desk-ideas-well-toolbar">
+            <button
+              type="button"
+              className="arc-desk-clean-up"
+              data-testid="arc-desk-clean-up"
+              title="Move desk post-its back into IDEAS"
+              onClick={() => requestDeskIdeasCleanUp()}
+            >
+              Clean up
+            </button>
+          </div>
+          <div
+            className="arc-desk-ideas-accent-slot"
+            data-testid="arc-desk-ideas-accent-slot"
+            aria-label="Post-its in IDEAS"
+          />
           {children}
         </div>
         <button
@@ -66,6 +95,16 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
           onClick={toggle}
         >
           IDEAS
+        </button>
+        {/* Always available on the wood next to the IDEAS tab peek */}
+        <button
+          type="button"
+          className="arc-desk-clean-up arc-desk-clean-up--tab-side"
+          data-testid="arc-desk-clean-up-tab"
+          title="Move desk post-its back into IDEAS"
+          onClick={() => requestDeskIdeasCleanUp()}
+        >
+          Clean up
         </button>
       </div>
     </aside>

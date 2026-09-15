@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react'
+import { createPortal } from 'react-dom'
 import {
   DeskPostIt,
   type DeskPostItDragEndInfo,
@@ -22,9 +23,28 @@ import {
   setDeskPostItLesson,
   type DeskPostItLessonMarks,
 } from '../planning/deskPostItLessons'
+import {
+  clearDeskPostItDropHighlights,
+  hitTestDeskPostItDrop,
+  highlightDeskPostItDropTarget,
+  pointFromRectCenter,
+} from '../planning/deskPostItDrop'
+import { DESK_IDEAS_CLEAN_UP_EVENT } from '../desk/deskIdeasEvents'
+import {
+  DESK_POSTIT_SPAWN_EVENT,
+  requestDeskPostItAssignDate,
+  requestDeskPostItAssignPriority,
+  type DeskPostItSpawnDetail,
+} from '../desk/deskPostItEvents'
+import {
+  parseQuickCaptureCommand,
+  type QuickCaptureKind,
+} from '../planning/quickCaptureCommand'
 
 const NOTE_STORAGE_KEY = 'arc.desk-postit-notes.v1'
 const POSITION_STORAGE_KEY = 'arc.desk-postit-positions.v1'
+const DRAWER_STORAGE_KEY = 'arc.desk-postit-in-drawer.v1'
+const ASSIGNED_STORAGE_KEY = 'arc.desk-postit-assigned.v1'
 
 type AccentSpec = {
   postItId: string
@@ -33,6 +53,10 @@ type AccentSpec = {
   tiltDeg: number
   testId: string
   label: string
+  /** unit magnets are circular; stickies are paper. */
+  form?: 'sticky' | 'magnet'
+  kind?: QuickCaptureKind
+  spawnBlank?: boolean
 }
 
 const ACCENTS: AccentSpec[] = [
@@ -96,16 +120,34 @@ function writeStoredNote(postItId: string, text: string) {
   }
 }
 
-function readAllStoredPositions(): Record<string, DeskPostItPosition> {
+function readAssigned(): Record<string, boolean> {
+  try {
+    const raw = sessionStorage.getItem(ASSIGNED_STORAGE_KEY)
+    if (!raw) return {}
+    return JSON.parse(raw) as Record<string, boolean>
+  } catch {
+    return {}
+  }
+}
+
+function writeAssigned(membership: Record<string, boolean>) {
+  try {
+    sessionStorage.setItem(ASSIGNED_STORAGE_KEY, JSON.stringify(membership))
+  } catch {
+    /* ignore */
+  }
+}
+
+function readAllStoredPositions(ids: string[]): Record<string, DeskPostItPosition> {
   try {
     const raw = sessionStorage.getItem(POSITION_STORAGE_KEY)
     if (!raw) return {}
     const parsed = JSON.parse(raw) as Record<string, DeskPostItPosition>
     const next: Record<string, DeskPostItPosition> = {}
-    for (const accent of ACCENTS) {
-      const stored = parsed[accent.postItId]
+    for (const id of ids) {
+      const stored = parsed[id]
       if (stored && typeof stored.leftPct === 'number' && typeof stored.topPct === 'number') {
-        next[accent.postItId] = {
+        next[id] = {
           leftPct: clamp(stored.leftPct, 0, 92),
           topPct: clamp(stored.topPct, 0, 88),
         }
@@ -130,19 +172,83 @@ function writeAllStoredPositions(positions: Record<string, DeskPostItPosition>) 
   }
 }
 
+function readDrawerMembership(ids: string[]): Record<string, boolean> {
+  try {
+    const raw = sessionStorage.getItem(DRAWER_STORAGE_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    const next: Record<string, boolean> = {}
+    for (const id of ids) next[id] = parsed[id] === true
+    return next
+  } catch {
+    return {}
+  }
+}
+
+function writeDrawerMembership(membership: Record<string, boolean>) {
+  try {
+    sessionStorage.setItem(DRAWER_STORAGE_KEY, JSON.stringify(membership))
+  } catch {
+    /* ignore */
+  }
+}
+
+function positionFromSurfacePoint(clientX: number, clientY: number): DeskPostItPosition | null {
+  const surface = document.querySelector('.arc-desk-surface')
+  if (!surface) return null
+  const box = surface.getBoundingClientRect()
+  if (box.width <= 0 || box.height <= 0) return null
+  return {
+    leftPct: clamp(((clientX - box.left) / box.width) * 100 - 4, 0, 92),
+    topPct: clamp(((clientY - box.top) / box.height) * 100 - 4, 0, 88),
+  }
+}
+
 function rectFromNode(node: Element | null): DeskPostItRect | null {
   if (!node) return null
   const box = node.getBoundingClientRect()
   return { left: box.left, top: box.top, width: box.width, height: box.height }
 }
 
+function toneForKind(kind: QuickCaptureKind, preferred?: DeskPostItTone): DeskPostItTone {
+  if (preferred) return preferred
+  if (kind === 'unit') return 'cream'
+  if (kind === 'lesson') return 'blue'
+  if (kind === 'note') return 'pink'
+  return 'mustard'
+}
+
+function spawnSpecFromDetail(detail: DeskPostItSpawnDetail, index: number): AccentSpec {
+  const id = `spawn-${detail.kind}-${Date.now()}-${index}`
+  const isMagnet = detail.kind === 'unit'
+  return {
+    postItId: id,
+    tone: toneForKind(detail.kind, detail.tone),
+    defaultPosition: {
+      leftPct: clamp(72 + (index % 3) * 3.5, 60, 88),
+      topPct: clamp(18 + (index % 4) * 6, 8, 70),
+    },
+    tiltDeg: isMagnet ? 0 : (index % 2 === 0 ? -4 : 5),
+    testId: `arc-desk-post-it-${id}`,
+    label: isMagnet ? `${detail.text || 'Unit'} magnet` : `${detail.kind} sticky`,
+    form: isMagnet ? 'magnet' : 'sticky',
+    kind: detail.kind,
+    spawnBlank: !detail.text.trim(),
+  }
+}
+
 type AccentPostItProps = AccentSpec & {
   position: DeskPostItPosition
   stackId: string | null
+  inDrawer: boolean
+  assigned: boolean
   lesson: boolean
-  onPositionChange: (position: DeskPostItPosition) => void
-  onDragEnd: (info: DeskPostItDragEndInfo) => void
   onLessonChange: (lesson: boolean) => void
+  onPositionChange: (position: DeskPostItPosition) => void
+  onDragMove: (info: { postItId: string; clientX: number; clientY: number; rect: DOMRect }) => void
+  onDragEnd: (info: DeskPostItDragEndInfo) => void
+  onTextChange: (postItId: string, text: string) => void
+  onEnterSave?: (postItId: string, text: string) => void
 }
 
 function DeskAccentPostIt({
@@ -152,22 +258,46 @@ function DeskAccentPostIt({
   tiltDeg,
   testId,
   label,
+  form = 'sticky',
+  kind,
+  spawnBlank = false,
   position,
   stackId,
+  inDrawer,
+  assigned,
   lesson,
-  onPositionChange,
-  onDragEnd,
   onLessonChange,
+  onPositionChange,
+  onDragMove,
+  onDragEnd,
+  onTextChange,
+  onEnterSave,
 }: AccentPostItProps) {
-  const [text, setText] = useState(() => readStoredNote(postItId))
+  const [text, setText] = useState(() => (spawnBlank ? '' : readStoredNote(postItId)))
+  const noteRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     writeStoredNote(postItId, text)
-  }, [postItId, text])
+    onTextChange(postItId, text)
+  }, [onTextChange, postItId, text])
+
+  useEffect(() => {
+    if (!spawnBlank) return
+    const timer = window.setTimeout(() => noteRef.current?.focus(), 40)
+    return () => window.clearTimeout(timer)
+  }, [spawnBlank])
 
   const onChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setText(event.target.value)
   }
+
+  const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== 'Enter' || event.shiftKey || !onEnterSave) return
+    event.preventDefault()
+    onEnterSave(postItId, text)
+  }
+
+  const isMagnet = form === 'magnet'
 
   return (
     <DeskPostIt
@@ -176,76 +306,196 @@ function DeskAccentPostIt({
       defaultPosition={defaultPosition}
       position={position}
       onPositionChange={onPositionChange}
+      onDragMove={onDragMove}
       onDragEnd={onDragEnd}
-      tiltDeg={tiltDeg}
-      className="arc-desk-post-it--accent"
+      tiltDeg={inDrawer ? 0 : tiltDeg}
+      className={[
+        isMagnet ? 'arc-desk-post-it--magnet' : 'arc-desk-post-it--accent',
+        inDrawer ? 'arc-desk-post-it--in-drawer' : '',
+        assigned ? 'arc-desk-post-it--assigned' : '',
+      ].filter(Boolean).join(' ')}
       testId={testId}
       aria-label={label}
       stackId={stackId}
       lesson={lesson}
     >
-      {/* Top paper grip + side/bottom padding margins: drag there; click the bordered note to type. */}
-      <div className="arc-desk-post-it-grip" aria-hidden="true" data-testid={`${testId}-grip`} />
-      <textarea
-        className="arc-desk-post-it-note"
-        data-testid={`${testId}-note`}
-        data-desk-post-it-note={postItId}
-        value={text}
-        onChange={onChange}
-        rows={5}
-        spellCheck
-        placeholder="Write…"
-        aria-label={`${label} note`}
-      />
-      <button
-        type="button"
-        className={`arc-desk-post-it-lesson-mark${lesson ? ' is-lesson' : ''}`}
-        data-testid={`${testId}-lesson-mark`}
-        aria-pressed={lesson}
-        aria-label={lesson ? `Clear lesson mark on ${label}` : `Mark ${label} as lesson`}
-        title={lesson ? 'Lesson — click to clear' : 'Mark as lesson'}
-        onClick={() => onLessonChange(!lesson)}
-      />
+      {isMagnet ? (
+        <div className="arc-desk-magnet-face" data-testid={`${testId}-magnet`}>
+          <span className="arc-desk-magnet-kind">{kind === 'unit' ? 'Unit' : 'Magnet'}</span>
+          <textarea
+            ref={noteRef}
+            className="arc-desk-magnet-note"
+            data-testid={`${testId}-note`}
+            data-desk-post-it-note={postItId}
+            value={text}
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            rows={2}
+            spellCheck
+            placeholder="Write…"
+            aria-label={`${label} text`}
+          />
+          <button
+            type="button"
+            className={`arc-desk-post-it-lesson-mark${lesson ? ' is-lesson' : ''}`}
+            data-testid={`${testId}-lesson-mark`}
+            aria-pressed={lesson}
+            aria-label={lesson ? `Clear lesson mark on ${label}` : `Mark ${label} as lesson`}
+            title={lesson ? 'Lesson — click to clear' : 'Mark as lesson'}
+            onClick={() => onLessonChange(!lesson)}
+          />
+        </div>
+      ) : (
+        <>
+          <div className="arc-desk-post-it-grip" aria-hidden="true" data-testid={`${testId}-grip`} />
+          <textarea
+            ref={noteRef}
+            className="arc-desk-post-it-note"
+            data-testid={`${testId}-note`}
+            data-desk-post-it-note={postItId}
+            value={text}
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            rows={5}
+            spellCheck
+            placeholder="Write…"
+            aria-label={`${label} note`}
+          />
+          <button
+            type="button"
+            className={`arc-desk-post-it-lesson-mark${lesson ? ' is-lesson' : ''}`}
+            data-testid={`${testId}-lesson-mark`}
+            aria-pressed={lesson}
+            aria-label={lesson ? `Clear lesson mark on ${label}` : `Mark ${label} as lesson`}
+            title={lesson ? 'Lesson — click to clear' : 'Mark as lesson'}
+            onClick={() => onLessonChange(!lesson)}
+          />
+        </>
+      )}
     </DeskPostIt>
   )
 }
 
 /**
- * Loose accent post-its on the wood — replacements for former tray-chrome baked stickies.
- * Siblings of the IDEAS tray under arc-desk-surface so landscape tray chrome can change independently.
- * Writable + localStorage note text; drag from the paper margin / grip so click-to-edit does not start a drag.
- * Significant overlap after drag offers Link / Keep separate so layered accents can move as a stack.
- * Lesson marks (corner dot + light marking) let teachers flag a sticky as the lesson when grouping unit + class.
+ * Loose accent post-its on the wood — free placement anywhere on the desk surface.
+ * Drop onto a date (week/day/month/year cell) or Planning Tray MUST/SHOULD/COULD to assign.
+ * Unassigned stickies may still live on the wood. Link-when-stacked + Clean up → IDEAS preserved.
+ * Quick Capture Enter can spawn a fresh sticky or unit magnet for continuous capture.
+ * Lesson marks (corner dot) let teachers flag a sticky as the lesson when grouping unit + class.
  */
 export function DeskAccentPostIts() {
+  const [spawned, setSpawned] = useState<AccentSpec[]>([])
+  const catalog = useMemo(() => [...ACCENTS, ...spawned], [spawned])
+  const catalogIds = useMemo(() => catalog.map((item) => item.postItId), [catalog])
+
   const [positions, setPositions] = useState<Record<string, DeskPostItPosition>>(() => {
-    const stored = readAllStoredPositions()
+    const stored = readAllStoredPositions(ACCENTS.map((a) => a.postItId))
     const next: Record<string, DeskPostItPosition> = {}
     for (const accent of ACCENTS) {
       next[accent.postItId] = stored[accent.postItId] ?? accent.defaultPosition
     }
     return next
   })
-  const [links, setLinks] = useState<DeskPostItLinkWorkspace>(() => loadDeskPostItLinks())
+  const [inDrawer, setInDrawer] = useState<Record<string, boolean>>(() =>
+    readDrawerMembership(ACCENTS.map((a) => a.postItId)),
+  )
+  const [assigned, setAssigned] = useState<Record<string, boolean>>(() => readAssigned())
   const [lessons, setLessons] = useState<DeskPostItLessonMarks>(() => loadDeskPostItLessons())
+  const [drawerSlot, setDrawerSlot] = useState<Element | null>(null)
+  const [links, setLinks] = useState<DeskPostItLinkWorkspace>(() => loadDeskPostItLinks())
   const [prompt, setPrompt] = useState<LinkPrompt | null>(null)
   const dismissedPairsRef = useRef(new Set<string>())
   const positionsRef = useRef(positions)
   positionsRef.current = positions
   const linksRef = useRef(links)
   linksRef.current = links
+  const inDrawerRef = useRef(inDrawer)
+  inDrawerRef.current = inDrawer
+  const textsRef = useRef<Record<string, string>>({})
+  const catalogRef = useRef(catalog)
+  catalogRef.current = catalog
 
   useEffect(() => {
     writeAllStoredPositions(positions)
   }, [positions])
 
   useEffect(() => {
-    saveDeskPostItLinks(links)
-  }, [links])
+    writeDrawerMembership(inDrawer)
+  }, [inDrawer])
+
+  useEffect(() => {
+    writeAssigned(assigned)
+  }, [assigned])
 
   useEffect(() => {
     saveDeskPostItLessons(lessons)
   }, [lessons])
+
+  useEffect(() => {
+    saveDeskPostItLinks(links)
+  }, [links])
+
+  useEffect(() => {
+    function syncSlot() {
+      setDrawerSlot(document.querySelector('[data-testid="arc-desk-ideas-accent-slot"]'))
+    }
+    syncSlot()
+    const timer = window.setInterval(syncSlot, 500)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    function onCleanUp() {
+      const nextPositions: Record<string, DeskPostItPosition> = {}
+      const nextDrawer: Record<string, boolean> = {}
+      for (const accent of catalogRef.current) {
+        nextPositions[accent.postItId] = { ...accent.defaultPosition }
+        nextDrawer[accent.postItId] = true
+      }
+      setPositions(nextPositions)
+      setInDrawer(nextDrawer)
+      setPrompt(null)
+      clearDeskPostItDropHighlights()
+    }
+    window.addEventListener(DESK_IDEAS_CLEAN_UP_EVENT, onCleanUp)
+    return () => window.removeEventListener(DESK_IDEAS_CLEAN_UP_EVENT, onCleanUp)
+  }, [])
+
+  const spawnSeqRef = useRef(0)
+
+  useEffect(() => {
+    function onSpawn(event: Event) {
+      const detail = (event as CustomEvent<DeskPostItSpawnDetail>).detail
+      if (!detail?.kind) return
+      const additions: AccentSpec[] = []
+      const nextPositions: Record<string, DeskPostItPosition> = {}
+      const nextDrawer: Record<string, boolean> = {}
+
+      // Place a wood object for unit / lesson / note (ideas already live in IDEAS).
+      if (detail.kind !== 'idea' && detail.text.trim()) {
+        const saved = spawnSpecFromDetail({ ...detail, text: detail.text }, spawnSeqRef.current++)
+        saved.spawnBlank = false
+        additions.push(saved)
+        nextPositions[saved.postItId] = { ...saved.defaultPosition }
+        nextDrawer[saved.postItId] = false
+        writeStoredNote(saved.postItId, detail.text.trim())
+      }
+
+      // Always ready a fresh blank sticky/magnet for the next Enter.
+      const blankKind = detail.kind === 'unit' ? 'unit' : 'idea'
+      const blank = spawnSpecFromDetail({ kind: blankKind, text: '' }, spawnSeqRef.current++)
+      blank.spawnBlank = detail.focusBlank === true
+      additions.push(blank)
+      nextPositions[blank.postItId] = { ...blank.defaultPosition }
+      nextDrawer[blank.postItId] = false
+
+      setSpawned((prev) => [...prev, ...additions])
+      setPositions((prev) => ({ ...prev, ...nextPositions }))
+      setInDrawer((prev) => ({ ...prev, ...nextDrawer }))
+    }
+    window.addEventListener(DESK_POSTIT_SPAWN_EVENT, onSpawn)
+    return () => window.removeEventListener(DESK_POSTIT_SPAWN_EVENT, onSpawn)
+  }, [])
 
   const moveLinkedGroup = useCallback((draggedId: string, nextPosition: DeskPostItPosition) => {
     setPositions((prev) => {
@@ -271,10 +521,90 @@ export function DeskAccentPostIts() {
     })
   }, [])
 
+  const pullFromDrawer = useCallback((postItId: string, drop: DeskPostItPosition) => {
+    setInDrawer((prev) => {
+      const stack = deskPostItStackForMember(linksRef.current, postItId)
+      const next = { ...prev }
+      if (stack) {
+        for (const memberId of stack.memberIds) next[memberId] = false
+      } else {
+        next[postItId] = false
+      }
+      return next
+    })
+    setPositions((prev) => {
+      const stack = deskPostItStackForMember(linksRef.current, postItId)
+      if (!stack) return { ...prev, [postItId]: drop }
+      const updated = { ...prev }
+      let index = 0
+      for (const memberId of stack.memberIds) {
+        updated[memberId] = {
+          leftPct: clamp(drop.leftPct + index * 2.2, 0, 92),
+          topPct: clamp(drop.topPct + index * 1.6, 0, 88),
+        }
+        index += 1
+      }
+      return updated
+    })
+  }, [])
+
+  const onDragMove = useCallback((info: { postItId: string; clientX: number; clientY: number; rect: DOMRect }) => {
+    if (inDrawerRef.current[info.postItId]) {
+      clearDeskPostItDropHighlights()
+      return
+    }
+    const point = pointFromRectCenter(info.rect)
+    const target = hitTestDeskPostItDrop(point.clientX, point.clientY)
+    highlightDeskPostItDropTarget(target)
+  }, [])
+
+  const tryAssignDrop = useCallback((info: DeskPostItDragEndInfo): boolean => {
+    const point = pointFromRectCenter(info.rect)
+    const target = hitTestDeskPostItDrop(point.clientX, point.clientY)
+    clearDeskPostItDropHighlights()
+    if (target.type === 'empty') return false
+
+    const text = (textsRef.current[info.postItId] ?? readStoredNote(info.postItId)).trim()
+    if (!text) return false
+
+    if (target.type === 'date') {
+      requestDeskPostItAssignDate({ postItId: info.postItId, date: target.date, text })
+      setAssigned((prev) => ({ ...prev, [info.postItId]: true }))
+      return true
+    }
+    if (target.type === 'priority') {
+      requestDeskPostItAssignPriority({ postItId: info.postItId, priority: target.priority, text })
+      setAssigned((prev) => ({ ...prev, [info.postItId]: true }))
+      return true
+    }
+    return false
+  }, [])
+
   const onDragEnd = useCallback((info: DeskPostItDragEndInfo) => {
-    if (!info.didMove) return
+    if (!info.didMove) {
+      clearDeskPostItDropHighlights()
+      return
+    }
+
+    if (inDrawerRef.current[info.postItId]) {
+      const drop =
+        positionFromSurfacePoint(info.rect.left + info.rect.width / 2, info.rect.top + info.rect.height / 2)
+        ?? info.position
+      pullFromDrawer(info.postItId, drop)
+      setPrompt(null)
+      clearDeskPostItDropHighlights()
+      return
+    }
+
+    // Prefer assign targets (date / Planning Tray) over stacking prompts.
+    if (tryAssignDrop(info)) {
+      setPrompt(null)
+      return
+    }
+
     const rects: Record<string, DeskPostItRect> = {}
-    for (const accent of ACCENTS) {
+    for (const accent of catalogRef.current) {
+      if (inDrawerRef.current[accent.postItId]) continue
       const node = document.querySelector(`[data-desk-post-it="${accent.postItId}"]`)
       const rect = accent.postItId === info.postItId
         ? { left: info.rect.left, top: info.rect.top, width: info.rect.width, height: info.rect.height }
@@ -290,6 +620,18 @@ export function DeskAccentPostIts() {
     if (dismissedPairsRef.current.has(key)) return
     const anchor = positionsRef.current[info.postItId] ?? info.position
     setPrompt({ a: info.postItId, b: overlapId, anchor })
+  }, [pullFromDrawer, tryAssignDrop])
+
+  const onEnterSave = useCallback((postItId: string, raw: string) => {
+    const parsed = parseQuickCaptureCommand(raw)
+    if (!parsed.text) return
+    writeStoredNote(postItId, parsed.text)
+    textsRef.current[postItId] = parsed.text
+    // Re-use QC spawn path so subsequent Enter yields a fresh sticky/magnet.
+    const event = new CustomEvent(DESK_POSTIT_SPAWN_EVENT, {
+      detail: { kind: parsed.kind, text: parsed.text, focusBlank: true } satisfies DeskPostItSpawnDetail,
+    })
+    window.dispatchEvent(event)
   }, [])
 
   const confirmLink = useCallback(() => {
@@ -306,36 +648,53 @@ export function DeskAccentPostIts() {
     setPrompt(null)
   }, [prompt])
 
+  const promptMeta = useMemo(() => {
+    if (!prompt) return ''
+    return catalog
+      .filter((accent) => accent.postItId === prompt.a || accent.postItId === prompt.b)
+      .map((accent) => accent.tone)
+      .join(' + ')
+  }, [catalog, prompt])
+
+  const deskAccents = catalog.filter((accent) => !inDrawer[accent.postItId])
+  const drawerAccents = catalog.filter((accent) => inDrawer[accent.postItId])
+
   const toggleLesson = useCallback((postItId: string, lesson: boolean) => {
     setLessons((prev) => setDeskPostItLesson(prev, postItId, lesson))
   }, [])
 
-  const promptMeta = useMemo(() => {
-    if (!prompt) return ''
-    return ACCENTS
-      .filter((accent) => accent.postItId === prompt.a || accent.postItId === prompt.b)
-      .map((accent) => accent.tone)
-      .join(' + ')
-  }, [prompt])
+  function renderAccent(accent: AccentSpec, drawerMode: boolean) {
+    const stack = deskPostItStackForMember(links, accent.postItId)
+    const position = positions[accent.postItId] ?? accent.defaultPosition
+    const lesson = isDeskPostItLesson(lessons, accent.postItId)
+    return (
+      <DeskAccentPostIt
+        key={accent.postItId}
+        {...accent}
+        position={position}
+        stackId={stack?.stackId ?? null}
+        inDrawer={drawerMode}
+        assigned={assigned[accent.postItId] === true}
+        lesson={lesson}
+        onLessonChange={(next) => toggleLesson(accent.postItId, next)}
+        onPositionChange={(next) => moveLinkedGroup(accent.postItId, next)}
+        onDragMove={onDragMove}
+        onDragEnd={onDragEnd}
+        onTextChange={(id, text) => { textsRef.current[id] = text }}
+        onEnterSave={onEnterSave}
+      />
+    )
+  }
+
+  // Keep catalogIds referenced so eslint/ts stay quiet when spawned ids change.
+  void catalogIds
 
   return (
     <>
-      {ACCENTS.map((accent) => {
-        const stack = deskPostItStackForMember(links, accent.postItId)
-        const lesson = isDeskPostItLesson(lessons, accent.postItId)
-        return (
-          <DeskAccentPostIt
-            key={accent.postItId}
-            {...accent}
-            position={positions[accent.postItId]}
-            stackId={stack?.stackId ?? null}
-            lesson={lesson}
-            onPositionChange={(next) => moveLinkedGroup(accent.postItId, next)}
-            onDragEnd={onDragEnd}
-            onLessonChange={(next) => toggleLesson(accent.postItId, next)}
-          />
-        )
-      })}
+      {deskAccents.map((accent) => renderAccent(accent, false))}
+      {drawerSlot && drawerAccents.length > 0
+        ? createPortal(drawerAccents.map((accent) => renderAccent(accent, true)), drawerSlot)
+        : null}
       {prompt ? (
         <div
           className="arc-desk-post-it-link-prompt"

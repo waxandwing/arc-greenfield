@@ -314,12 +314,16 @@ export function B01Furniture({
   const workspacePanelLabel = deskEnabled ? 'Tray' : 'Workspace'
   const layoutGridActive =
     deskEnabled && Boolean(deskLayout) && (deskEditMode || !deskLayoutUsesDefault(deskLayout!))
-  /** Physical folders drawer on wood; full TRAY drawer reuses the same panel — never both. */
-  const showDeskTrayDock = Boolean(deskTrayDock) && !workspaceIsOpen
+  /** IDEAS green drawer stays on every desk calendar view; TRAY utility panel reuses content when open — never both. */
+  const showDeskTrayDock = deskEnabled && !workspaceIsOpen
 
   function renderDeskTrayDock() {
     if (!showDeskTrayDock) return null
-    return <DeskGreenFoldersDrawer defaultExtended={false}>{deskTrayDock}</DeskGreenFoldersDrawer>
+    return (
+      <DeskGreenFoldersDrawer defaultExtended={false}>
+        {deskTrayDock ?? <p className="b01-furniture-empty arc-desk-ideas-empty">Captures land here in IDEAS.</p>}
+      </DeskGreenFoldersDrawer>
+    )
   }
 
   function renderPlannerViewTabs(className: string) {

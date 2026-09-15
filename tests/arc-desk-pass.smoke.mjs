@@ -160,6 +160,7 @@ try {
   })
   assert(closedIdeasPeek.peekPx <= 56, `Closed IDEAS must be a slim tab peek (peek=${closedIdeasPeek.peekPx}px), not a large dim panel.`)
   assert(closedIdeasPeek.artVisibility === 'hidden', 'Closed IDEAS must hide drawer chrome art so only the tab peeks.')
+  assert(await page.getByTestId('arc-desk-clean-up-tab').isVisible(), 'Clean up must sit beside the IDEAS tab on every desk view.')
   const woodMarkSrc = await page.getByTestId('arc-desk-wood-wordmark').getAttribute('src')
   assert(woodMarkSrc?.includes('arc-mark-stacked.png'), 'Wood wordmark must use arc-mark-stacked.png (not sliced arc-mark.png).')
   assert(await page.getByTestId('desk-slice-ideas-drawer').count() === 1, 'IDEAS drawer must use ideas-drawer-chrome.png by default.')
@@ -332,8 +333,12 @@ try {
     'Post-its must be direct arc-desk-surface children (not nested in IDEAS tray raster).',
   )
   assert(
-    await page.locator('.arc-desk-green-drawer-art [data-desk-post-it], .arc-desk-tray-dock [data-desk-post-it]').count() === 0,
-    'Post-its must not live inside IDEAS tray chrome.',
+    await page.locator('.arc-desk-green-drawer-art [data-desk-post-it]').count() === 0,
+    'Post-its must not live inside IDEAS tray chrome art.',
+  )
+  assert(
+    await page.locator('.arc-desk-tray-dock [data-desk-post-it]').count() === 0,
+    'Loose accent post-its must stay on the wood until Clean up gathers them into IDEAS.',
   )
   assert(await page.getByTestId('global-capture-trigger').count() === 0, 'Desk Quick Capture must not show a + Capture button.')
   assert(
@@ -354,6 +359,23 @@ try {
   await quickCaptureNote.press('Enter')
   assert(await page.getByTestId('arc-desk-quick-capture-notice').innerText() === 'Saved to IDEAS', 'Enter must confirm save destination as IDEAS.')
   assert(await quickCaptureNote.inputValue() === '', 'Quick Capture note must clear after Enter saves.')
+
+  // Prefix commands: u=unit, l=lesson, i=idea, n=note — Enter spawns a fresh sticky/magnet.
+  await quickCaptureNote.fill('u mesopotamia')
+  await quickCaptureNote.press('Enter')
+  assert(await page.getByTestId('arc-desk-quick-capture-notice').innerText() === 'Saved as unit', 'u prefix must save as unit.')
+  assert(await quickCaptureNote.inputValue() === '', 'QC must clear after u-prefix Enter.')
+  assert(await page.locator('.arc-desk-post-it--magnet').count() >= 1, 'u prefix must spawn a unit magnet on the wood.')
+  await quickCaptureNote.fill('n bring clay')
+  await quickCaptureNote.press('Enter')
+  assert(await page.getByTestId('arc-desk-quick-capture-notice').innerText() === 'Saved as note', 'n prefix must save as note.')
+  assert(await page.locator('[data-desk-post-it^="spawn-"]').count() >= 1, 'Subsequent Enter must leave spawned sticky/magnet on wood.')
+
+  // Drop targets: Planning Tray lanes + calendar date cells advertise post-it drops.
+  assert(await page.locator('[data-desk-postit-drop="priority"][data-priority="must"]').count() >= 1, 'MUST lane must be a post-it drop target.')
+  assert(await page.locator('[data-desk-postit-drop="priority"][data-priority="should"]').count() >= 1, 'SHOULD lane must be a post-it drop target.')
+  assert(await page.locator('[data-desk-postit-drop="priority"][data-priority="could"]').count() >= 1, 'COULD lane must be a post-it drop target.')
+
   // Ensure IDEAS is open so the new capture card is visible (reload leaves the drawer collapsed).
   const ideasExtended = await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')
   if (ideasExtended !== 'true') {
@@ -365,6 +387,41 @@ try {
   )
   assert(await page.locator('[data-testid="planner-shell-bar"] .arc-wordmark').count() === 0, 'Desk must not duplicate planner shell chrome under PlanStateHeader.')
   assert(await page.locator('.plan-state-header').count() === 1, 'Desk keeps a single plan-state editorial header.')
+
+  // IDEAS + Clean up must remain on Year (year-expanded must not swallow the closed tab peek).
+  await selectView(page, 'Year')
+  assert(await page.locator('[data-year-expanded="true"]').count() === 1, 'Year view must mark furniture year-expanded.')
+  assert(await page.getByTestId('arc-desk-tray-dock').isVisible(), 'IDEAS tray must remain on Year view.')
+  assert(await page.getByTestId('arc-desk-clean-up-tab').isVisible(), 'Clean up must remain available on Year view.')
+  const yearIdeasPeek = await page.getByTestId('arc-desk-tray-dock').evaluate((el) => {
+    const surface = el.closest('.arc-desk-surface')
+    const rect = el.getBoundingClientRect()
+    const surfaceTop = surface ? surface.getBoundingClientRect().top : 0
+    return {
+      peekPx: rect.bottom - surfaceTop,
+      extended: el.getAttribute('data-extended'),
+    }
+  })
+  assert(yearIdeasPeek.extended === 'false', 'IDEAS must start collapsed on Year.')
+  assert(yearIdeasPeek.peekPx <= 64, `Year IDEAS closed peek must stay a slim tab (peek=${yearIdeasPeek.peekPx}px).`)
+  await selectView(page, 'Week')
+
+  // Clean up gathers loose accent post-its back into the IDEAS drawer well.
+  await page.getByTestId('arc-desk-clean-up-tab').click()
+  assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true', 'Clean up must open the IDEAS drawer.')
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-mustard"]').count() === 1, 'Clean up must move mustard accent into IDEAS.')
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'Clean up must move pink accent into IDEAS.')
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-blue"]').count() === 1, 'Clean up must move blue accent into IDEAS.')
+  assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Open IDEAS well must expose Clean up.')
+  // Collapse again so later tray-utility assertions match a closed IDEAS dock.
+  await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  // Pull accents back onto the wood for later accent assertions that expect loose stickies.
+  await page.evaluate(() => {
+    sessionStorage.removeItem('arc.desk-postit-in-drawer.v1')
+  })
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
+
   await page.evaluate(() => {
     const tray = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--workspace')
     tray?.click()

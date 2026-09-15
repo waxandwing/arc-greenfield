@@ -23,6 +23,8 @@ type Props = {
   /** Controlled position — when set, parent owns placement (linked stacks). */
   position?: DeskPostItPosition
   onPositionChange?: (position: DeskPostItPosition) => void
+  /** Fired while an armed desk drag is moving (for drop-target highlights). */
+  onDragMove?: (info: { postItId: string; clientX: number; clientY: number; rect: DOMRect }) => void
   onDragEnd?: (info: DeskPostItDragEndInfo) => void
   /** Rotate slightly so stickies look hand-placed. */
   tiltDeg?: number
@@ -95,6 +97,7 @@ export function DeskPostIt({
   defaultPosition,
   position: controlledPosition,
   onPositionChange,
+  onDragMove,
   onDragEnd,
   tiltDeg = -2.5,
   className = '',
@@ -197,7 +200,15 @@ export function DeskPostIt({
       leftPct: clamp(drag.startLeft + dxPct, 0, 92),
       topPct: clamp(drag.startTop + dyPct, 0, 88),
     })
-  }, [armDrag, setPosition])
+    if (onDragMove && nodeRef.current) {
+      onDragMove({
+        postItId,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        rect: nodeRef.current.getBoundingClientRect(),
+      })
+    }
+  }, [armDrag, onDragMove, postItId, setPosition])
 
   const endDrag = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current
