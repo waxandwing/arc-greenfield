@@ -50,3 +50,16 @@ If you still see the old shell, you are almost always on a **stale build or wron
 - Check the footer/console for `desk-v2` — if missing, the bundle was not built with `npm run preview:desk`
 
 No merge or deploy is required for this check — local preview only.
+
+## GitHub Pages screenshot (`desk-v2 · 3d3d89a`)
+
+The **Figma-ish desk composition is correct** on Pages: physical planner tabs, **Teaching week**, MSC on the left, quick capture, light wood tabletop.
+
+**Fixed:** bottom-right **ArcTable mark** showed a broken image icon because the inline SVG `<image>` used a root `/assets/arctable/...` path without the Pages base (`/arc-greenfield/`). The mark now uses the same `publicAssetUrl` / `import.meta.env.BASE_URL` helper as desk wood/tray CSS.
+
+**YELLOW (doc only — not blocking):** remaining visual polish vs Figma frame `6:3194`:
+
+- Planner index tabs on the **planner edge** (not a separate top bar strip)
+- **Molded tray** visibility/contrast vs reference
+
+Unless a quick CSS tweak is obvious, treat these as follow-up reconciliation — not regressions from the Pages mark fix.
