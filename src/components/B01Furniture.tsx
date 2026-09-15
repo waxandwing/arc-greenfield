@@ -2,7 +2,13 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import type { CalendarView } from '../navigation/calendarViews'
 import { calendarViewLabel } from '../navigation/calendarViews'
 import type { DeskLayoutState, DeskMoveDirection, DeskObjectKind, DeskViewportProfile } from '../navigation/deskLayout'
-import { gridAreaStyle, placementForObject, sizeClassForObject, zoneCell } from '../navigation/deskLayout'
+import {
+  deskLayoutUsesDefault,
+  gridAreaStyle,
+  placementForObject,
+  sizeClassForObject,
+  zoneCell,
+} from '../navigation/deskLayout'
 import type { MscSizePreset, PlannerSizePreset, TraySizePreset } from '../navigation/deskLayout'
 import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
@@ -258,12 +264,13 @@ export function B01Furniture({
   const sidePanel = open.settings ? 'settings' : workspaceIsOpen ? 'workspace' : tasksIsOpen ? 'tasks' : 'none'
   const workspaceTabLabel = deskEnabled ? 'TRAY' : 'WORKSPACE'
   const workspacePanelLabel = deskEnabled ? 'Tray' : 'Workspace'
-  const layoutGridActive = deskEnabled && Boolean(deskLayout)
+  const layoutGridActive =
+    deskEnabled && Boolean(deskLayout) && (deskEditMode || !deskLayoutUsesDefault(deskLayout))
 
   function renderIndexTabs(className: string) {
     if (!indexNav) return null
     return (
-      <nav className={className} aria-label="Planner index">
+      <nav className={className} aria-label="Planner index" data-testid={className.includes('arc-planner-physical-tabs') ? 'arc-planner-physical-tabs' : undefined}>
         {VIEW_TABS.map(({ view, label, tabClass }) => {
           const availability = indexNav.availabilityFor(view)
           const unavailable = !availability.available

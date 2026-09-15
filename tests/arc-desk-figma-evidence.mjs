@@ -124,6 +124,10 @@ try {
   await page.reload({ waitUntil: 'networkidle' })
   await page.getByTestId('arc-desk-tabletop').waitFor({ state: 'visible', timeout: 20000 })
 
+  assert(await page.locator('[data-layout-grid="false"]').count() === 1, 'Default desk must use Figma physical composition.')
+  assert(await page.getByTestId('arc-planner-physical-tabs').isVisible(), 'Physical tabs must attach to planner, not side rail.')
+  assert(await page.locator('.b01-side-rail > .arc-index-tabs').count() === 0, 'Vertical index rail must stay hidden on desk.')
+
   await shot(page, '02-implementation-pass-1.png')
   await sideBySide(refOut, join(evidenceDir, '02-implementation-pass-1.png'), join(evidenceDir, '03-side-by-side.png'))
 

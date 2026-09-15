@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { applyArcBuildStamp } from './buildInfo'
+import { applyPublicAssetCssUrls } from './publicAssetUrl'
 import { maybeApplyDemoSeed } from './demo/applyDemoSeed'
 import App from './App'
 import './styles/tokens.css'
@@ -36,6 +37,7 @@ maybeApplyDemoSeed(window.location, window.localStorage, {
   envDemo: import.meta.env.VITE_ARC_DEMO === 'true',
   deskPreview: import.meta.env.VITE_ARC_DESK_PREVIEW === 'true',
 })
+applyPublicAssetCssUrls()
 applyArcBuildStamp()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

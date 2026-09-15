@@ -82,6 +82,9 @@ try {
     || 'DAY'
 
   assert(await page.locator('.arc-shell--desk').count() === 1, 'Desk shell must lock viewport.')
+  assert(await page.locator('[data-layout-grid="false"]').count() === 1, 'Default desk must use Figma physical composition (not zone sidebar grid).')
+  assert(await page.locator('.arc-planner-physical-tabs').isVisible(), 'Planner-attached physical tabs must be visible on default desk.')
+  assert(await page.locator('.b01-side-rail > .arc-index-tabs').count() === 0, 'Vertical index rail must not show beside desk composition.')
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(shellWood.includes('light-wood-desk'), 'Desk shell must be edge-to-edge light wood (no cream mat).')
   const tabletopWood = await page.locator('.arc-desk-tabletop').evaluate((el) => getComputedStyle(el).backgroundImage)

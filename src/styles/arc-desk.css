@@ -271,6 +271,20 @@ html:has(.arc-shell--desk) body {
   overflow: auto;
 }
 
+.b01-furniture-composition--desk .planning-row-label {
+  overflow-wrap: normal;
+  word-break: normal;
+  min-width: 4.5rem;
+}
+
+.b01-furniture-composition--desk .planning-row-label strong {
+  line-height: 1.25;
+}
+
+.b01-furniture-composition--desk .b01-side-rail > .arc-index-tabs {
+  display: none;
+}
+
 .arc-desk-tray-dock,
 .arc-desk-priority-dock,
 .arc-desk-notes-dock {
@@ -286,7 +300,7 @@ html:has(.arc-shell--desk) body {
   border-radius: 14px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.06)),
-    url('/assets/desk/blue-molded-tray.png') center / cover no-repeat;
+    var(--arc-desk-tray-texture, url('/assets/desk/blue-molded-tray.png')) center / cover no-repeat;
   box-shadow: 0 20px 44px -24px rgba(33, 29, 23, 0.58);
   filter: drop-shadow(0 8px 16px -10px rgba(15, 35, 48, 0.35));
 }
@@ -798,7 +812,7 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-index-tab--workspace {
-  background-image: linear-gradient(90deg, rgba(228, 179, 61, 0.18), transparent 48%), url('/assets/desk/planner-tab-mustard.png');
+  background-image: linear-gradient(90deg, rgba(228, 179, 61, 0.18), transparent 48%), var(--arc-desk-planner-tab-mustard, url('/assets/desk/planner-tab-mustard.png'));
   background-size: auto, cover;
   background-position: left center, center;
 }
