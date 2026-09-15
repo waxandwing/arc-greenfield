@@ -20,11 +20,11 @@ type Props = {
   returnFocusRef?: React.RefObject<HTMLElement | null>
 }
 
-const VIEW_TABS: { view: CalendarView; label: string }[] = [
-  { view: 'Day', label: 'DAY' },
-  { view: 'Week', label: 'WEEK' },
-  { view: 'Month', label: 'MONTH' },
-  { view: 'Year Map', label: 'YEAR' },
+const VIEW_TABS: { view: CalendarView; label: string; tabClass: string }[] = [
+  { view: 'Day', label: 'DAY', tabClass: 'arc-index-tab--day' },
+  { view: 'Week', label: 'WEEK', tabClass: 'arc-index-tab--week' },
+  { view: 'Month', label: 'MONTH', tabClass: 'arc-index-tab--month' },
+  { view: 'Year Map', label: 'YEAR', tabClass: 'arc-index-tab--year' },
 ]
 
 export function DeskCalendarPopOut({ open, onClose, indexNav, children, returnFocusRef }: Props) {
@@ -105,14 +105,14 @@ export function DeskCalendarPopOut({ open, onClose, indexNav, children, returnFo
           </button>
         </header>
         <nav className="desk-calendar-popout-tabs arc-index-tabs" aria-label="Calendar views">
-          {VIEW_TABS.map(({ view, label }) => {
+          {VIEW_TABS.map(({ view, label, tabClass }) => {
             const availability = indexNav.availabilityFor(view)
             const active = indexNav.activeView === view
             return (
               <button
                 key={view}
                 type="button"
-                className="arc-index-tab"
+                className={`arc-index-tab desk-calendar-popout-tab ${tabClass}`}
                 aria-current={active ? 'page' : undefined}
                 disabled={indexNav.viewSelectionDisabled || !availability.available}
                 title={availability.reason}

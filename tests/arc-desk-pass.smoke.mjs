@@ -81,6 +81,37 @@ try {
   await page.getByTestId('calendar-enlarge').click()
   await page.getByTestId('desk-calendar-popout').waitFor({ state: 'visible' })
   assert(await page.getByTestId('desk-calendar-popout-body').isVisible(), 'Enlarge must open calendar pop-out body.')
+
+  const popoutTabs = page.locator('.desk-calendar-popout-tabs')
+  const tabMetrics = await popoutTabs.evaluate((nav) => {
+    const style = getComputedStyle(nav)
+    const buttons = [...nav.querySelectorAll('button.arc-index-tab')]
+    const active = buttons.find((btn) => btn.getAttribute('aria-current') === 'page')
+    const activeStyle = active ? getComputedStyle(active) : null
+    const widths = buttons.map((btn) => Math.round(btn.getBoundingClientRect().width))
+    const tops = buttons.map((btn) => Math.round(btn.getBoundingClientRect().top))
+    return {
+      flexDirection: style.flexDirection,
+      navHeight: Math.round(nav.getBoundingClientRect().height),
+      count: buttons.length,
+      widths,
+      sameRow: tops.every((top) => Math.abs(top - tops[0]) <= 2),
+      activeTransform: activeStyle?.transform ?? 'none',
+      activeWritingMode: activeStyle?.writingMode ?? '',
+    }
+  })
+  assert(tabMetrics.count === 4, 'Popout must expose DAY/WEEK/MONTH/YEAR tabs.')
+  assert(tabMetrics.flexDirection === 'row', 'Popout tabs must lay out in a horizontal row.')
+  assert(tabMetrics.sameRow, 'Popout tabs must share one horizontal row (not stacked).')
+  assert(tabMetrics.navHeight < 90, `Popout tab strip must stay compact (got ${tabMetrics.navHeight}px).`)
+  assert(
+    tabMetrics.activeTransform === 'none' || tabMetrics.activeTransform === 'matrix(1, 0, 0, 1, 0, 0)',
+    `Active popout tab must not rotate/flip (got ${tabMetrics.activeTransform}).`,
+  )
+  assert(tabMetrics.activeWritingMode === 'horizontal-tb', 'Active popout tab text must stay upright horizontal.')
+  const widthSpread = Math.max(...tabMetrics.widths) - Math.min(...tabMetrics.widths)
+  assert(widthSpread <= 8, `Popout tabs must be equal width (spread ${widthSpread}px: ${tabMetrics.widths.join(',')}).`)
+
   await page.getByTestId('desk-calendar-popout-dismiss').click()
   await page.getByTestId('desk-calendar-popout').waitFor({ state: 'hidden' })
   assert(await page.getByTestId('desk-calendar-popout-placeholder').count() === 0, 'Dismiss must restore inline calendar.')
