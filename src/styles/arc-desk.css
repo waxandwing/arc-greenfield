@@ -37,22 +37,10 @@
   width: min(100%, calc(100dvh * 1440 / 1024), 1440px);
   aspect-ratio: 1440 / 1024;
   max-height: min(100dvh - 16px, 1024px);
-  border-radius: 6px;
-  background-color: var(--arc-desk-wood-field);
-  background-image:
-    linear-gradient(
-      180deg,
-      var(--arc-desk-wood-highlight) 0%,
-      transparent 42%,
-      var(--arc-desk-wood-shadow-tint) 100%
-    ),
-    var(--arc-wood-surface-image);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  box-shadow:
-    0 32px 64px -28px rgba(33, 29, 23, 0.55),
-    inset 0 1px 0 rgba(255, 253, 248, 0.35);
+  border-radius: 0;
+  background: transparent;
+  background-image: none;
+  box-shadow: none;
   overflow: visible;
 }
 
@@ -212,17 +200,17 @@ html:has(.arc-shell--desk) body {
   min-height: 0;
   flex: 1 1 auto;
   height: 100%;
-  border: 3px solid var(--shell-frame-green);
-  border-radius: 22px;
-  padding-right: 44px;
+  border: 2px solid color-mix(in srgb, var(--shell-frame-green) 88%, var(--ink));
+  border-radius: 12px;
+  padding-right: 48px;
   background-color: var(--field-elevated);
   background-image:
-    linear-gradient(color-mix(in srgb, var(--field-elevated) 96%, transparent), color-mix(in srgb, var(--field-elevated) 96%, transparent)),
+    linear-gradient(color-mix(in srgb, var(--field-elevated) 97%, transparent), color-mix(in srgb, var(--field-elevated) 97%, transparent)),
     var(--plan-surface-paper-texture),
     var(--plan-surface-paper);
   box-shadow:
-    0 22px 48px -28px rgba(33, 29, 23, 0.55),
-    inset 0 1px 0 rgba(255, 253, 248, 0.65);
+    0 18px 40px -26px rgba(33, 29, 23, 0.48),
+    inset 0 1px 0 rgba(255, 253, 248, 0.55);
 }
 
 .arc-planner-physical-tabs {
@@ -255,11 +243,11 @@ html:has(.arc-shell--desk) body {
   flex-flow: column nowrap;
   align-items: stretch;
   justify-content: flex-start;
-  gap: 4px;
-  width: 46px;
+  gap: 3px;
+  width: 52px;
   max-width: none;
   z-index: 45;
-  padding: 6px 0;
+  padding: 4px 0;
 }
 
 .arc-planner-physical-tabs--desk-edge .arc-index-tab {
@@ -1108,13 +1096,39 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
+.arc-desk-todos-folder[data-desk-slices='true'] {
+  background: transparent;
+  box-shadow: none;
+  padding: 18px 8px 8px 12px;
+}
+
+.arc-desk-todos-folder[data-desk-slices='true'] .desk-priority-pad--folder .desk-priority-lane h3 {
+  text-shadow: 0 1px 0 rgba(255, 253, 248, 0.45);
+}
+
 .arc-desk-utility-tabs .arc-index-tab {
-  min-height: 28px;
-  padding: 6px 10px;
-  font-size: 8px;
-  letter-spacing: 0.1em;
-  border-radius: 8px;
-  opacity: 0.92;
+  min-height: 26px;
+  padding: 5px 9px;
+  font-size: 7px;
+  letter-spacing: 0.11em;
+  border-radius: 6px;
+  opacity: 0.78;
+  background: color-mix(in srgb, var(--field-elevated) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 45%, transparent);
+  box-shadow: 0 6px 14px -12px rgba(33, 29, 23, 0.35);
+}
+
+.arc-desk-utility-tabs .arc-index-tab[aria-current='page'] {
+  opacity: 0.95;
+}
+
+.b01-furniture-composition--desk .planning-week .planning-grid {
+  margin-top: 2px;
+}
+
+.b01-furniture-composition--desk .desk-planner-head-row + .desk-calendar-popout-placeholder,
+.b01-furniture-composition--desk .desk-planner-head-row ~ * .planning-week {
+  min-height: 0;
 }
 
 .desk-planner-head-row {
@@ -1122,8 +1136,20 @@ html:has(.arc-shell--desk) body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 52px 8px 16px;
+  padding: 10px 52px 4px 14px;
   margin: 0;
+}
+
+.b01-furniture-composition--desk .desk-planner-head-row .plan-state-header {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
+.b01-furniture-composition--desk .desk-planner-head-row .plan-state-context {
+  display: none;
 }
 
 .desk-planner-head-row .plan-state-header {

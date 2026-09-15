@@ -2,9 +2,8 @@ import { publicAssetUrl } from '../publicAssetUrl'
 import { deskSliceById, type DeskSliceId } from '../navigation/deskSliceManifestData'
 
 /**
- * Comp-crop rasters under `assets/desk/slices/` — opt-in only.
- * Default desk preview uses committed SVG/PNG source files (green drawer, CSS tabs, ArcTable mark).
- * Enable crops: `VITE_ARC_DESK_SLICES=true` at build time or `?deskSlices=1` in the URL.
+ * Full comp-crop overlay stack (frame accents + IDEAS chrome rasters + all slices).
+ * Opt-in: `VITE_ARC_DESK_SLICES=true` or `?deskSlices=1`.
  */
 export function deskSliceUsesEnabled(): boolean {
   if (typeof window !== 'undefined') {
@@ -15,9 +14,22 @@ export function deskSliceUsesEnabled(): boolean {
   return import.meta.env.VITE_ARC_DESK_SLICES === 'true'
 }
 
-/** Week title cluster mark — vector source unless comp-crop slice mode is on. */
+/**
+ * Committed PNG/SVG files in `public/assets/desk/` (tabs, folder, title mark) — default ON.
+ * Disable: `?deskRaster=0` or `VITE_ARC_DESK_RASTER=false`.
+ */
+export function deskCommittedRasterChromeEnabled(): boolean {
+  if (typeof window !== 'undefined') {
+    const flag = new URLSearchParams(window.location.search).get('deskRaster')
+    if (flag === '0') return false
+    if (flag === '1') return true
+  }
+  return import.meta.env.VITE_ARC_DESK_RASTER !== 'false'
+}
+
+/** Week title cluster mark — committed PNG when available; full slice mode uses same asset. */
 export function deskPlannerTitleMarkUrl(): string {
-  if (deskSliceUsesEnabled()) {
+  if (deskSliceUsesEnabled() || deskCommittedRasterChromeEnabled()) {
     return publicAssetUrl('assets/desk/planner-rainbow-mark.png')
   }
   return publicAssetUrl('assets/arctable/AT-001_table-mark.svg')

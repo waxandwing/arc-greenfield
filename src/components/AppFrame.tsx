@@ -938,7 +938,7 @@ export function AppFrame() {
                 />
               ) : (
                 <>
-              {!onboardingActive && workspaceMode.mode === 'calendar' && workspace.activeView === 'Day' && !minimumPlanningSetupEstablished(setupCapabilities) ? (
+              {!onboardingActive && workspaceMode.mode === 'calendar' && workspace.activeView === 'Day' && !minimumPlanningSetupEstablished(setupCapabilities) && !deskEnabled ? (
                 <ProgressiveSetupPrompt capabilities={setupCapabilities} onOpenTeachingDay={() => workspaceMode.open('teaching-day')} />
               ) : null}
               {workspaceMode.mode === 'calendar' && workspace.calendar && workspace.anchorDate ? (

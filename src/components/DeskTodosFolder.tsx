@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { deskSliceUsesEnabled } from '../desk/deskSliceRuntime'
+import { deskCommittedRasterChromeEnabled } from '../desk/deskSliceRuntime'
 import { DeskChromeSlice } from './DeskChromeSlice'
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 
 /** Physical TO-DOS folder chrome (denim tab) wrapping the MSC priority pad on the wood desk. */
 export function DeskTodosFolder({ children }: Props) {
-  const slicesEnabled = deskSliceUsesEnabled()
+  const slicesEnabled = deskCommittedRasterChromeEnabled()
 
   return (
     <div

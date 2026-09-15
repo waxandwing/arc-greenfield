@@ -25,15 +25,17 @@ Committed copies:
 |-----------|---------------------------|-----------------------------|-----------|
 | Wood tabletop | `public/assets/arc/icarus/texture-wood.png` | — | CSS `--arc-wood-surface-image` |
 | IDEAS drawer | `public/assets/desk/green-folders-drawer.svg` | `slices/ideas-drawer-chrome.png` from `1.png` | SVG on shell; crop via `DeskChromeSlice` when `deskSlices=1` |
-| TO-DOS folder | CSS `.arc-desk-todos-folder-*` | `slices/todos-folder-body.png`, `todos-folder-tab.png` | Same opt-in |
-| Planner green frame accents | Live React / CSS spread | `slices/planner-frame-*-accent.png` | `DeskPlannerFrameSlices` only when slices on |
-| Week title rainbow mark | `public/assets/arctable/AT-001_table-mark.svg` | `planner-rainbow-mark.png` from `1.png` | `deskPlannerTitleMarkUrl()` |
-| Edge tabs DAY/WEEK/… | CSS `.arc-index-tab` denim/cream | `slices/planner-edge-tab-*.png` | Background image only when slices on |
+| TO-DOS folder | `slices/todos-folder-body.png`, `todos-folder-tab.png` | CSS `.arc-desk-todos-folder-*` when `?deskRaster=0` | `deskCommittedRasterChromeEnabled()` |
+| Planner green frame accents | Live React / CSS spread | `slices/planner-frame-*-accent.png` | `DeskPlannerFrameSlices` only when `deskSlices=1` |
+| Week title rainbow mark | `public/assets/desk/planner-rainbow-mark.png` | `AT-001_table-mark.svg` when `?deskRaster=0` | `deskPlannerTitleMarkUrl()` |
+| Edge tabs DAY/WEEK/… | `slices/planner-edge-tab-*.png` | CSS denim/cream when `?deskRaster=0` | Background on tab buttons |
 | Start class frame | `ArcTableDeskMarkSvg` + CSS | `slices/start-class-frame.png` | Slice behind mark when slices on |
 | Arc wordmark on wood | `assets/arc/arc-mark.png` (existing) | — | Component |
 | Live week grid / copy | React + demo seed | — | Not raster |
 
-**Opt-in comp crops:** build with `VITE_ARC_DESK_SLICES=true` or open preview with `?deskSlices=1`.
+**Opt-in full comp overlay:** `?deskSlices=1` or `VITE_ARC_DESK_SLICES=true` (frame accents + IDEAS chrome PNG).
+
+**Disable committed tab/folder PNGs:** `?deskRaster=0` or `VITE_ARC_DESK_RASTER=false`.
 
 **Do not** run `scripts/export-desk-teaching-week-slices.mjs` unless there is still no discrete export for that layer — it overwrites `public/assets/desk/slices/*.png` from the authority comp.
 

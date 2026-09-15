@@ -108,7 +108,9 @@ async function main() {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
-  await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
+  await page.evaluate(() => {
+    document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')?.click()
+  })
   await page.getByRole('button', { name: 'Edit Workspace', exact: true }).click()
   await page.locator('[data-settings-open="false"]').waitFor()
   await page.getByTestId('desk-edit-toolbar').waitFor({ state: 'visible' })

@@ -14,7 +14,11 @@ import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
 import { DeskGreenFoldersDrawer } from './DeskGreenFoldersDrawer'
 import { DeskTodosFolder } from './DeskTodosFolder'
-import { deskPlannerEdgeTabAssetUrl, deskSliceUsesEnabled } from '../desk/deskSliceRuntime'
+import {
+  deskCommittedRasterChromeEnabled,
+  deskPlannerEdgeTabAssetUrl,
+  deskSliceUsesEnabled,
+} from '../desk/deskSliceRuntime'
 import { DeskPlannerFrameSlices } from './DeskPlannerFrameSlices'
 
 type DrawerName = 'settings' | 'workspace' | 'tasks'
@@ -282,7 +286,7 @@ export function B01Furniture({
 
   function renderPlannerViewTabs(className: string) {
     if (!indexNav) return null
-    const edgeTabSlices = deskEnabled && deskSliceUsesEnabled()
+    const edgeTabSlices = deskEnabled && deskCommittedRasterChromeEnabled()
     return (
       <nav
         className={className}

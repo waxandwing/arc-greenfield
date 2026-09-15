@@ -1,5 +1,5 @@
 import type { ComponentProps, RefObject } from 'react'
-import { deskPlannerTitleMarkUrl, deskSliceUsesEnabled } from '../desk/deskSliceRuntime'
+import { deskPlannerTitleMarkUrl, deskCommittedRasterChromeEnabled } from '../desk/deskSliceRuntime'
 import { PlanStateHeader } from './PlanStateHeader'
 
 type PlanStateProps = ComponentProps<typeof PlanStateHeader>
@@ -43,7 +43,7 @@ export function DeskPlannerHeadRow({
             alt=""
             aria-hidden="true"
             data-testid="desk-planner-rainbow-mark"
-            data-desk-mark-source={deskSliceUsesEnabled() ? 'comp-crop' : 'vector'}
+            data-desk-mark-source={deskCommittedRasterChromeEnabled() ? 'committed-png' : 'vector'}
             decoding="async"
           />
         ) : null}

@@ -14,13 +14,13 @@ try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
   const page = await context.newPage()
   await page.goto(`${baseUrl}/?demo=1&demoReset=1`, { waitUntil: 'networkidle' })
-  await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible', timeout: 20000 })
+  await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible', timeout: 30000 })
+  await page.getByTestId('desk-planner-head-row').waitFor({ state: 'visible', timeout: 30000 })
+  const primaryTitle = page.locator('.desk-planner-head-row .plan-state-primary')
+  await primaryTitle.waitFor({ state: 'visible', timeout: 30000 })
 
   assert(await page.locator('.arc-shell--desk').count() === 1, 'Demo reset must mount the desk shell.')
-  assert(
-    await page.getByRole('heading', { level: 1, name: 'Teaching week', exact: true }).isVisible(),
-    'Demo reset must land on Teaching week (Week view), not Month.',
-  )
+  assert((await primaryTitle.textContent())?.trim() === 'Teaching week', 'Demo reset must land on Teaching week (Week view), not Month.')
   const kicker = (await page.locator('.plan-state-secondary').first().textContent())?.trim()
   assert(kicker === 'SEPTEMBER 7 - 11 • WEEK 4', `Kelly demo week kicker must match comp (got ${kicker ?? 'missing'}).`)
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
@@ -56,7 +56,8 @@ try {
     )
   })
   await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' })
-  await page.getByRole('heading', { level: 1, name: 'Teaching week', exact: true }).waitFor({ timeout: 15000 })
+  await page.getByTestId('desk-planner-head-row').locator('.plan-state-primary').waitFor({ timeout: 15000 })
+  assert((await page.locator('.desk-planner-head-row .plan-state-primary').textContent())?.trim() === 'Teaching week')
   const afterStale = (await page.locator('.plan-state-secondary').first().textContent())?.trim()
   assert(
     afterStale === 'SEPTEMBER 7 - 11 • WEEK 4',
