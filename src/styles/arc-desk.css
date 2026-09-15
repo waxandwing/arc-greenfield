@@ -1017,11 +1017,12 @@ html:has(.arc-shell--desk) body {
 .arc-desk-arctable-preview-layer {
   position: fixed;
   inset: 0;
-  z-index: 120;
+  z-index: 200;
   display: grid;
   place-items: center;
   padding: 24px;
   background: rgba(33, 29, 23, 0.42);
+  pointer-events: auto;
 }
 
 .arc-desk-arctable-preview-card {
@@ -1030,6 +1031,7 @@ html:has(.arc-shell--desk) body {
   border-radius: 12px;
   background: var(--field-elevated);
   box-shadow: 0 24px 48px -28px rgba(33, 29, 23, 0.55);
+  pointer-events: auto;
 }
 
 .arc-desk-arctable-preview-card h2 {

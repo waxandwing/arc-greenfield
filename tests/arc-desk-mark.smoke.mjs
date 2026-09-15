@@ -54,19 +54,17 @@ async function shot(page, name) {
   await page.screenshot({ path: `${evidenceDir}${name}`, fullPage: true })
 }
 
-/** Desk planner objects can sit above the modal in hit-test order; DOM click still closes. */
-async function dismissArcTablePreview(page) {
-  await page.evaluate(() => {
-    const layer = document.querySelector('.arc-desk-arctable-preview-layer')
-    if (!layer) return
-    for (const button of layer.querySelectorAll('button')) {
-      if (button.textContent?.trim() === 'Close') {
-        button.click()
-        return
-      }
-    }
-  })
-  await page.locator('.arc-desk-arctable-preview-layer').waitFor({ state: 'hidden' })
+async function dismissArcTablePreview(page, { via = 'close-button' } = {}) {
+  const layer = page.locator('.arc-desk-arctable-preview-layer')
+  await layer.waitFor({ state: 'visible' })
+  if (via === 'backdrop') {
+    await layer.click({ position: { x: 12, y: 12 } })
+  } else if (via === 'escape') {
+    await page.keyboard.press('Escape')
+  } else {
+    await layer.getByRole('button', { name: 'Close', exact: true }).click()
+  }
+  await layer.waitFor({ state: 'hidden' })
 }
 
 const browser = await chromium.launch({ headless: true })
@@ -114,13 +112,15 @@ try {
   assert(await page.getByRole('heading', { name: 'Preview classroom timer' }).isVisible(), 'Free timer quadrant must show contextual preview.')
   await shot(page, '04-timer-preview.png')
 
-  await dismissArcTablePreview(page)
+  await dismissArcTablePreview(page, { via: 'escape' })
   await page.getByRole('button', { name: 'Open ArcTable', exact: true }).focus()
   await page.keyboard.press('Enter')
   assert(await page.getByRole('heading', { name: 'Open ArcTable from your desk' }).isVisible(), 'Center cream must open ArcTable home preview when not entitled.')
   await shot(page, '05-center-open-preview.png')
 
-  console.log('Arc desk mark smoke passed: AT-001 asset, five targets, entitlement previews.')
+  await dismissArcTablePreview(page, { via: 'backdrop' })
+
+  console.log('Arc desk mark smoke passed: AT-001 asset, five targets, entitlement previews, preview dismiss.')
   await context.close()
 } finally {
   await browser.close()

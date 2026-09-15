@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ARC_TABLE_DESK_PREVIEW_COPY,
   deskTargetToAction,
@@ -40,10 +41,45 @@ export function ArcTableDeskFixture({
   const [quadrantMode, setQuadrantMode] = useState(false)
   const [previewAction, setPreviewAction] = useState<ArcTableDeskAction | null>(null)
   const [hovered, setHovered] = useState<ArcTableDeskTarget | null>(null)
+  const previewReturnFocusRef = useRef<HTMLElement | null>(null)
+  const previewLayerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     setQuadrantMode(quadrantLauncherMeetsA11y(markSize))
   }, [markSize])
+
+  const closePreview = useCallback(() => {
+    setPreviewAction(null)
+    const restore = previewReturnFocusRef.current
+    previewReturnFocusRef.current = null
+    if (restore && typeof restore.focus === 'function') {
+      requestAnimationFrame(() => restore.focus())
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!previewAction) return
+    previewReturnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const frame = requestAnimationFrame(() => {
+      const layer = previewLayerRef.current
+      if (!layer) return
+      const focusable = layer.querySelector<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )
+      focusable?.focus()
+    })
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closePreview()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      cancelAnimationFrame(frame)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [previewAction, closePreview])
 
   function openPreview(action: ArcTableDeskAction) {
     setPreviewAction(action)
@@ -128,40 +164,57 @@ export function ArcTableDeskFixture({
         ) : null}
       </div>
 
-      {previewCopy ? (
-        <div
-          className="arc-desk-arctable-preview-layer"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="arc-desk-preview-title"
-        >
-          <div className="arc-desk-arctable-preview-card">
-            <p className="b01-furniture-kicker">{previewCopy.kicker}</p>
-            <h2 id="arc-desk-preview-title">{previewCopy.title}</h2>
-            <p>{previewCopy.body}</p>
-            <div className="arc-desk-arctable-preview-actions">
-              <button
-                type="button"
-                className="primary-button"
-                onClick={() => {
-                  setPreviewAction(null)
-                  onExplorePreview()
-                }}
+      {previewCopy
+        ? createPortal(
+            <div
+              ref={previewLayerRef}
+              className="arc-desk-arctable-preview-layer"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="arc-desk-preview-title"
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) closePreview()
+              }}
+            >
+              <div
+                className="arc-desk-arctable-preview-card"
+                onMouseDown={(event) => event.stopPropagation()}
               >
-                Explore ArcTable
-              </button>
-              {onAddArcTable ? (
-                <button type="button" className="quiet-button" onClick={() => { setPreviewAction(null); onAddArcTable() }}>
-                  Add ArcTable
-                </button>
-              ) : null}
-              <button type="button" className="quiet-button" onClick={() => setPreviewAction(null)}>
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+                <p className="b01-furniture-kicker">{previewCopy.kicker}</p>
+                <h2 id="arc-desk-preview-title">{previewCopy.title}</h2>
+                <p>{previewCopy.body}</p>
+                <div className="arc-desk-arctable-preview-actions">
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={() => {
+                      closePreview()
+                      onExplorePreview()
+                    }}
+                  >
+                    Explore ArcTable
+                  </button>
+                  {onAddArcTable ? (
+                    <button
+                      type="button"
+                      className="quiet-button"
+                      onClick={() => {
+                        closePreview()
+                        onAddArcTable()
+                      }}
+                    >
+                      Add ArcTable
+                    </button>
+                  ) : null}
+                  <button type="button" className="quiet-button" onClick={closePreview}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   )
 }
