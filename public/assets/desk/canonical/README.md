@@ -4,6 +4,14 @@ Source: Kelly-labeled SVG handoff, 2026-09-15.
 
 These assets are staged for visual reconciliation. They do **not** automatically supersede currently wired production assets until the component mapping is verified. Filenames containing `(USE)` in the source handoff are the strongest source-of-truth signal.
 
+## Recon pass landing (2026-09-15)
+
+- **SHA:** `4dea09d` (feature) → lands on `main` after this pass.
+- **P0 asset wires:** all **BLOCKED** — Kelly labeled SVG binaries still absent (Drive/Gmail/`uploads/desk-incoming`/`asset-reconciliation-labeled-svgs` empty of the 22 files).
+- **Shipped without binaries:** Week-grid repair (MON/day headers, paper lesson objects, denser unit/course hierarchy, softer planner rim, `object-fit:contain` on todos slice).
+- **Smokes:** `test:arc-desk-pass` + `test:desk-slices` passed on preview stamped `desk-v2` / `4dea09d`.
+- **Evidence:** `docs/overnight/evidence/kelly-labeled-recon/` + arc-desk-pass smoke shots.
+
 ## Binary handoff status (2026-09-15 recon pass)
 
 **BLOCKED — binaries not in repo.** Branch `asset-reconciliation-labeled-svgs` ships only this README (filename → canonical map). Exhaustive search found **no** Kelly labeled SVG binaries in:
