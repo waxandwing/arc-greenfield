@@ -6,12 +6,11 @@
 
 | Asset | Path |
 |-------|------|
-| **Kelly authority comp (desk v3, Aug 2026 mock)** | `public/assets/desk/figma/kelly-desk-v3-comp-2026-08-03.png` (incoming: `uploads/desk-incoming/kelly-desk-v3-preview-repair-2026-08-03.png`) |
-| Kelly first comp (Teaching week week-view) | `/home/ubuntu/.cursor/projects/workspace/assets/f5602c3b-2ac0-4b74-a4ad-2f359a219b9a.png` (legacy; week spread reference) |
+| Kelly first comp (Teaching week) | `/home/ubuntu/.cursor/projects/workspace/assets/f5602c3b-2ac0-4b74-a4ad-2f359a219b9a.png` |
 | Figma Codex hero export | `docs/overnight/evidence/figma-desk-6-3194/01-codex-image-37-11052.png` |
 | Runtime reference frame | Figma `37:11052` @ 1440×1024 tabletop (`public/assets/desk/figma/desk-hero-37-11052.png`) |
 
-**Product default vs comp:** The v3 authority comp shows **calendar MONTH view** with **AUGUST** in the planner (preview-repair mock). The **live app default** remains **Week / Teaching week** (Sept 7–11 kicker) per north star below — compare week home to the Teaching week comp; use the v3 PNG for month-tab layout, wood + IDEAS + TO-DOS furniture, and corner marks.
+**Current app screenshot (not visual target):** Kelly’s desk v3 preview-repair capture documents **today’s broken display** (month view / layout drift). Kept at `docs/overnight/evidence/kelly-current-display-2026-08-03.png` and `uploads/desk-incoming/kelly-desk-v3-preview-repair-2026-08-03.png` for baseline comparison only — see `docs/overnight/KELLY-CURRENT-VS-TARGET.md`.
 
 ## North star (non-negotiable)
 
@@ -52,7 +51,7 @@ Kelly directive for every Arc desk agent pass:
 ### Must do
 
 1. Work only on **`cursor/arc-production-integration`** (linear tip; reconcile WIP before new features).
-2. Compare against **Kelly comp + 37:11052** before and after; capture evidence under `docs/overnight/evidence/`.
+2. Compare against **Kelly Teaching week comp + 37:11052** before and after; capture evidence under `docs/overnight/evidence/`.
 3. Prefer **Figma/Arc slice rasters** from `public/assets/desk/slices/` over new CSS gradients when a slice exists in manifest.
 4. Keep **Kelly demo seed** (`src/demo/kellyDeskDemo.ts`, `applyDemoSeed`) aligned with Sept 7–11 week.
 5. Run **`npm run test:arc-desk-pass`** after desk UI changes; run **`npm run test:contracts`** when touching `.contract.ts` or navigation/planning invariants.
