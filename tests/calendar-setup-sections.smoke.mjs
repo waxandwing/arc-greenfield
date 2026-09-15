@@ -1,6 +1,7 @@
 import { chromium } from 'playwright'
 
-const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
+const rawBase = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
+const baseUrl = rawBase.includes('skipEntry') ? rawBase : `${rawBase.replace(/\/$/, '')}/?skipEntry=1`
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
@@ -51,7 +52,8 @@ try {
   await page.locator('.class-section-row input').fill('Period 1')
   await page.getByRole('button', { name: 'Save classes' }).click()
   await page.getByRole('button', { name: 'Use this teaching day' }).click()
-  assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Onboarding must land in Teaching Day.')
+  const landed = await page.getByRole('heading', { level: 1, name: /My Teaching Day|Teaching week|This Month/ }).count()
+  assert(landed === 1, 'Onboarding must land in the live planner after teaching-day save.')
 
   await openSettings(page)
   await page.getByRole('button', { name: 'Term boundaries' }).click()

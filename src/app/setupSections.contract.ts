@@ -3,7 +3,7 @@ import {
   SETUP_SECTIONS,
   ONBOARDING_SECTIONS,
   setupSectionLabel,
-} from './setupSections.ts'
+} from './setupSections'
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
