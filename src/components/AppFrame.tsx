@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { B01Furniture } from './B01Furniture'
 import { CalendarStageHeader } from './CalendarStageHeader'
 import { PlanStateHeader } from './PlanStateHeader'
@@ -87,6 +87,7 @@ export function AppFrame() {
   const [showCaptureCoachMark, setShowCaptureCoachMark] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
   const [workspaceOpenToken] = useState(0)
   const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
+  const deskYearLandingNormalized = useRef(false)
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
   const [workspaceLayout, setWorkspaceLayout] = useState<WorkspaceLayoutState>(loadWorkspaceLayout)
@@ -348,6 +349,10 @@ export function AppFrame() {
     }
     if (workspaceBusy) return
     setWorkspaceOverlayOpen(false)
+    if (showPlanFurniture && workspaceMode.mode === 'calendar') {
+      workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
+      return
+    }
     workspace.goHome()
   }
 
@@ -577,6 +582,32 @@ export function AppFrame() {
   const deskEnabled = showPlanFurniture && workspaceMode.mode === 'calendar'
   const yearExpanded = deskEnabled && workspace.activeView === 'Year Map'
 
+  function openWorkspaceOverlay(open: boolean) {
+    if (open && deskEnabled && workspace.activeView === 'Year Map') {
+      workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
+    }
+    setWorkspaceOverlayOpen(open)
+  }
+
+  useEffect(() => {
+    if (deskYearLandingNormalized.current) return
+    if (!deskEnabled || !workspace.calendar || !workspace.anchorDate) return
+    const demoDeskLanding = forceDeskShell && readDeskPreviewSeededSession(deskPreviewBuild)
+    if (!demoDeskLanding && workspace.viewWasPersisted) return
+    if (workspace.activeView !== 'Year Map') return
+    deskYearLandingNormalized.current = true
+    workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
+  }, [
+    deskEnabled,
+    deskPreviewBuild,
+    forceDeskShell,
+    viewPreferences,
+    workspace.activeView,
+    workspace.anchorDate,
+    workspace.calendar,
+    workspace.viewWasPersisted,
+  ])
+
   const settingsContent = showPlanFurniture ? (
     <SettingsFurnitureContent
       preferences={viewPreferences}
@@ -753,7 +784,7 @@ export function AppFrame() {
             dismissSideDrawers={onboardingActive || workspaceMode.mode !== 'calendar'}
             openRequest={workspaceOpenToken ? { name: 'workspace', token: workspaceOpenToken } : null}
             workspaceOpen={workspaceOverlayOpen}
-            onWorkspaceOpenChange={setWorkspaceOverlayOpen}
+            onWorkspaceOpenChange={openWorkspaceOverlay}
             tasksOpen={tasksOverlayOpen}
             onTasksOpenChange={setTasksOverlayOpen}
             indexNav={showPlanFurniture ? {
@@ -776,7 +807,7 @@ export function AppFrame() {
                   onChangeDraft={updateOnboarding}
                   onUseCalendar={workspace.useCalendar}
                   onUseClasses={workspace.useClasses}
-                  onLandInDay={() => workspace.setActiveView('Day')}
+                  onLandInDay={() => workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))}
                   onOpenImport={openImportFromOnboarding}
                 />
               ) : (
@@ -836,7 +867,7 @@ export function AppFrame() {
                 onSelectTeachingBlock={workspace.selectTeachingBlock}
                 onSelectLesson={workspace.selectLesson}
                 onRetreatPlanFocus={workspace.retreatFocus}
-                onOpenWorkspace={() => setWorkspaceOverlayOpen(true)}
+                onOpenWorkspace={() => openWorkspaceOverlay(true)}
                 onFollowPlanningAttention={workspace.followPlanningAttention}
                 onReturnToPlanningPeriod={workspace.returnToPlanningPeriod}
                 planningPeriodReturnPending={Boolean(workspace.planningPeriodReturnBlockId)}

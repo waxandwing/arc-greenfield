@@ -45,7 +45,7 @@ function seed() {
       schemaVersion: 1,
       workspace: { calendarId, captures: [{ id: 'cap-1', calendarId, text: 'Field trip idea', createdAt: '2026-09-01T12:00:00.000Z' }] },
     }),
-    'arc.planning-context.v1': JSON.stringify({ schemaVersion: 2, calendarId, view: 'Day', anchorDate: '2026-09-15', focus: 'day' }),
+    'arc.planning-context.v1': JSON.stringify({ schemaVersion: 2, calendarId, view: 'Week', anchorDate: '2026-09-15', focus: 'day' }),
     'arc.desk-preferences.v1': JSON.stringify({
       showTray: true,
       showPriorityPad: true,
