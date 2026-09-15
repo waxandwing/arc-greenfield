@@ -48,7 +48,7 @@
 | 31 | Script “start class” (lowercase serif) | `.arc-desk-arctable-script` | PASS |
 | 32 | No extra context line under script in comp | `.arc-desk-arctable-script-detail` hidden on desk | PARTIAL |
 | **Capture / TRAY laws** |
-| 33 | Mustard Quick Capture sticky upper-right on wood | `DeskQuickCaptureSticky` + `.arc-desk-capture-sticky` visible; type-first note (no + Capture); saves to IDEAS | PASS |
+| 33 | Mustard Quick Capture sticky upper-right on wood | `DeskQuickCaptureSticky` inline type-first only (no `arc-capture-dialog`); Enter → IDEAS | PASS |
 | 34 | TRAY content via IDEAS extend | `DeskGreenFoldersDrawer` + smokes | PASS |
 | 35 | Full TRAY workspace via utility (off-screen) | `arc-desk-utility-tabs` | PASS |
 | 36 | TRAY does not stack with molded dock | `arc-desk-pass.smoke.mjs` | PASS |

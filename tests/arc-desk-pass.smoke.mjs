@@ -315,6 +315,10 @@ try {
     'Post-its must not live inside IDEAS tray chrome.',
   )
   assert(await page.getByTestId('global-capture-trigger').count() === 0, 'Desk Quick Capture must not show a + Capture button.')
+  assert(
+    await page.locator('.arc-capture-dialog, form.arc-capture-dialog-inner').count() === 0,
+    'Desk path must not mount the capture modal (inline sticky only).',
+  )
   const quickCaptureNote = page.getByTestId('arc-desk-quick-capture-note')
   const quickCaptureGrip = page.getByTestId('arc-desk-quick-capture-grip')
   assert(await quickCaptureNote.count() === 1, 'Quick Capture must expose a writable note textarea.')

@@ -839,18 +839,16 @@ export function AppFrame() {
             }
             deskQuickCapture={
               deskEnabled && globalCaptureEnabled ? (
-                <DeskQuickCaptureSticky>
-                  <GlobalCaptureAffordance
-                    variant="sticky"
-                    disabled={workspaceBusy}
-                    units={workspace.unitWorkspace}
-                    defaultUnitId={workspace.planContext?.unitId ?? null}
-                    onSave={saveGlobalCapture}
-                  />
-                  {minimumPlanningSetupEstablished(setupCapabilities) && showCaptureCoachMark && !onboardingDraft.firstCapturePromptDismissed ? (
-                    <CaptureCoachMark onDismiss={dismissCaptureCoachMark} />
-                  ) : null}
-                </DeskQuickCaptureSticky>
+                <DeskQuickCaptureSticky
+                  disabled={workspaceBusy}
+                  defaultUnitId={workspace.planContext?.unitId ?? null}
+                  onSave={saveGlobalCapture}
+                  coachMark={
+                    minimumPlanningSetupEstablished(setupCapabilities) && showCaptureCoachMark && !onboardingDraft.firstCapturePromptDismissed ? (
+                      <CaptureCoachMark onDismiss={dismissCaptureCoachMark} />
+                    ) : null
+                  }
+                />
               ) : null
             }
             deskArcTableFixture={

@@ -135,6 +135,10 @@ try {
   assert(await page.locator('.arc-index-tabs').count() === 1, 'Desk must render one planner view tab strip.')
   assert(await page.getByTestId('arc-desk-quick-capture').isVisible(), 'Quick jot sticky must be visible on desk wood.')
   assert(await page.getByTestId('global-capture-trigger').count() === 0, 'Desk Quick Capture must not show a + Capture button.')
+  assert(
+    await page.locator('.arc-capture-dialog, form.arc-capture-dialog-inner').count() === 0,
+    'Desk path must not mount the capture modal (inline sticky only).',
+  )
   assert(await page.getByTestId('arc-desk-quick-capture-note').isVisible(), 'Quick Capture must be a type-first note surface.')
   assert((await page.getByTestId('arc-desk-quick-capture-hint').innerText()).toLowerCase().includes('ideas'), 'Quick Capture must label IDEAS as destination.')
   assert(await page.locator('[data-testid="planner-shell-bar"] .arc-wordmark').count() === 0, 'Desk must not stack shell wordmark on plan-state header.')
