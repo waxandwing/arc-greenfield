@@ -106,24 +106,26 @@
   grid-column:1 / -1;
   min-width:0;
   margin:0;
-  padding:6px 0 10px;
+  padding:0;
   border-bottom:1px solid var(--line-subtle);
+  /* In-flow band between CLASS/date header and first course — never absolute/float. */
+  position:relative;
+  z-index:1;
 }
 
 .planning-desk-notes-strip .arc-desk-notes-object--strip{
   height:auto;
-  padding:8px 10px;
-  border-radius:6px;
-  background:linear-gradient(180deg, #fff9ef, var(--field-elevated));
+  padding:0;
+  border-radius:0;
+  background:transparent;
   box-shadow:none;
   transform:none;
   overflow:visible;
 }
 
-.planning-desk-notes-strip .arc-desk-notes-object-label{
-  margin:0 0 4px;
-  font:800 10px/1 var(--font-label);
-  letter-spacing:.1em;
+/* Week column band already has a "Notes" row label — hide the pad chrome label. */
+.planning-desk-notes-strip:has(.planning-desk-notes-row) .arc-desk-notes-object-label{
+  display:none;
 }
 
 .planning-desk-notes-strip .arc-desk-notes-object-body,
@@ -133,8 +135,89 @@
   border:0;
 }
 
+.planning-desk-notes-row{
+  display:grid;
+  align-items:stretch;
+  min-width:0;
+  background:linear-gradient(180deg, color-mix(in srgb, #fff9ef 88%, var(--paper)), var(--paper));
+}
+
+.planning-row-label--notes{
+  align-items:center;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--soft-charcoal);
+}
+
+.planning-desk-notes-cell{
+  min-width:0;
+  padding:6px 8px 8px;
+  border-right:1px solid var(--line-subtle);
+}
+
+.planning-desk-notes-cell--focus{
+  background:color-mix(in srgb, var(--accent-blue-soft) 55%, transparent);
+}
+
+.planning-desk-notes-cell--off{
+  opacity:.72;
+}
+
+.planning-desk-notes-cell .calendar-day-notes{
+  margin:0;
+  gap:4px;
+}
+
+.planning-desk-notes-cell .calendar-day-note{
+  padding:5px 7px;
+  border-left:0;
+  border-radius:2px;
+  background:#fff5b3;
+  box-shadow:0 4px 10px -8px rgba(44,46,46,.55);
+  transform:rotate(-0.4deg);
+}
+
+.planning-desk-notes-cell .calendar-day-note-text{
+  font:500 12px/1.3 var(--font-ui);
+  color:var(--ink);
+}
+
+.planning-desk-notes-cell .calendar-day-note-add{
+  width:100%;
+  min-height:28px;
+  padding:4px 6px;
+  border:1px dashed color-mix(in srgb, var(--line-subtle) 80%, #c4b896);
+  border-radius:2px;
+  background:color-mix(in srgb, #fff9ef 70%, white);
+  color:var(--soft-charcoal);
+  font:700 10px/1.2 var(--font-ui);
+  letter-spacing:.04em;
+  text-align:left;
+}
+
+.planning-desk-notes-cell .calendar-day-note-add:hover,
+.planning-desk-notes-cell .calendar-day-note-add:focus-visible{
+  background:#fff5b3;
+  color:var(--ink);
+}
+
 .planning-desk-notes-strip--day{
   margin:0 0 var(--space-3);
+  padding:6px 0 10px;
+}
+
+.planning-desk-notes-strip--day .arc-desk-notes-object--strip{
+  padding:8px 10px;
+  border-radius:6px;
+  background:linear-gradient(180deg, #fff9ef, var(--field-elevated));
+}
+
+.planning-desk-notes-strip--day .arc-desk-notes-object-label{
+  margin:0 0 4px;
+  font:800 10px/1 var(--font-label);
+  letter-spacing:.1em;
 }
 
 .planning-course{

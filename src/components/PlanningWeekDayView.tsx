@@ -1,10 +1,13 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { ISODate, PlanNavigationContext } from '../calendar'
 import { isPlannableDayKind } from '../calendar/schoolCalendar'
+import type { PlanningNote } from '../planning'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
 import { ArcImportantObject } from './ArcImportantObject'
 import { ArcObjectMenu, type ArcObjectMenuItem } from './ArcObjectMenu'
+import { CalendarDayNotes, type CalendarDayNoteHandlers } from './CalendarDayNotes'
+import { DeskNotesObject } from './DeskNotesObject'
 import { formatLongDate, formatShortDate, formatWeekday } from './dateLabels'
 
 export function PlanningWeekDayView({
@@ -19,7 +22,7 @@ export function PlanningWeekDayView({
   onSetLessonImportant,
   onStartClass,
   lessonImportantById,
-  deskNotesStrip = null,
+  deskNotes = null,
 }: {
   days: ProjectedDay[]
   planning: PlanningRangeProjection
@@ -32,8 +35,12 @@ export function PlanningWeekDayView({
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onStartClass?: (sectionId: string, lessonId: string, liveDate?: ISODate) => void
   lessonImportantById?: (lessonId: string) => boolean
-  /** Optional desk notes strip — sits directly under weekday/date headers when enabled. */
-  deskNotesStrip?: ReactNode
+  /**
+   * Optional desk notes — when set, renders a day-aligned strip between the CLASS/date
+   * header and the first course row. Omit entirely when the Desk setup toggle is off
+   * so no leftover gap remains.
+   */
+  deskNotes?: { notes: PlanningNote[]; handlers: CalendarDayNoteHandlers } | null
 }) {
   if (planning.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -42,10 +49,13 @@ export function PlanningWeekDayView({
   return (
     <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'} data-focus-date={focusDate ?? ''}>
       <PlanningDateHeader days={days} single={single} focusDate={focusDate} onSelectDate={onSelectDate} />
-      {deskNotesStrip ? (
-        <div className="planning-desk-notes-strip" data-testid="planning-desk-notes-strip">
-          {deskNotesStrip}
-        </div>
+      {deskNotes ? (
+        <PlanningDeskNotesStrip
+          days={days}
+          focusDate={focusDate}
+          notes={deskNotes.notes}
+          handlers={deskNotes.handlers}
+        />
       ) : null}
       {planning.courses.map((course) => (
         <PlanningCourse
@@ -62,6 +72,54 @@ export function PlanningWeekDayView({
           lessonImportantById={lessonImportantById}
         />
       ))}
+    </div>
+  )
+}
+
+/** Day-column notes band — sits under weekday/date headers, above the first course row. */
+function PlanningDeskNotesStrip({
+  days,
+  focusDate,
+  notes,
+  handlers,
+}: {
+  days: ProjectedDay[]
+  focusDate?: string
+  notes: PlanningNote[]
+  handlers: CalendarDayNoteHandlers
+}) {
+  const dateBounds = days.length > 0
+    ? { min: days[0].date, max: days[days.length - 1].date }
+    : undefined
+
+  return (
+    <div className="planning-desk-notes-strip" data-testid="planning-desk-notes-strip">
+      <DeskNotesObject strip>
+        <div
+          className="planning-desk-notes-row"
+          style={gridTemplate(days, focusDate)}
+          role="row"
+          aria-label="Desk notes by day"
+        >
+          <span className="planning-row-label planning-row-label--notes" aria-hidden="true">Notes</span>
+          {days.map((day) => (
+            <div
+              key={day.date}
+              className={`planning-desk-notes-cell${day.date === focusDate ? ' planning-desk-notes-cell--focus' : ''}${!isPlannableDayKind(day.kind) ? ' planning-desk-notes-cell--off' : ''}`}
+              data-testid={`planning-desk-notes-cell-${day.date}`}
+              data-day-notes-date={day.date}
+            >
+              <CalendarDayNotes
+                notes={notes}
+                date={day.date}
+                compact
+                dateBounds={dateBounds}
+                handlers={handlers}
+              />
+            </div>
+          ))}
+        </div>
+      </DeskNotesObject>
     </div>
   )
 }

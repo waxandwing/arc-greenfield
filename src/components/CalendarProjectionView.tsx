@@ -16,7 +16,6 @@ import { SchoolYearDeskView } from './SchoolYearDeskView'
 import { CalendarDayNotes, type CalendarDayNoteHandlers } from './CalendarDayNotes'
 import { CalendarDayCell, MissingBoundary, ProjectionHeading, RangeProjection, TermContext, WeekdayAlignedRange } from './CalendarProjectionPrimitives'
 import { DeskNotesObject } from './DeskNotesObject'
-import { PlanningNotes } from './PlanningNotes'
 import { formatDateRange, formatLongDate, formatMonth } from './dateLabels'
 
 type PlanningContext = {
@@ -330,18 +329,13 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
   onOpenRecoveryForSection?: Props['onOpenRecoveryForSection']
   onStartClass?: Props['onStartClass']
 }) {
-  const weekDates = days.map((day) => day.date)
-  const deskNotesStrip = showDeskNotes && planningContext ? (
-    <DeskNotesObject strip>
-      <PlanningNotes
-        notes={planningContext.planning.notes ?? []}
-        dates={weekDates}
-        focusDate={focusDate}
-        onAdd={dayNotes?.onAdd}
-        onDelete={dayNotes?.onRemove}
-      />
-    </DeskNotesObject>
-  ) : null
+  const noteHandlers: CalendarDayNoteHandlers = {
+    onAdd: dayNotes?.onAdd,
+    onUpdateText: dayNotes?.onUpdateText,
+    onMove: dayNotes?.onMove,
+    onRemove: dayNotes?.onRemove,
+    onSetImportant: dayNotes?.onSetImportant,
+  }
 
   return (
     <section
@@ -373,7 +367,10 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
               onSetLessonImportant={onSetLessonImportant}
               onStartClass={onStartClass}
               lessonImportantById={(lessonId) => planningContext.lessons.lessons.find((lesson) => lesson.id === lessonId)?.important === true}
-              deskNotesStrip={deskNotesStrip}
+              deskNotes={showDeskNotes ? {
+                notes: planningContext.planning.notes ?? [],
+                handlers: noteHandlers,
+              } : null}
             />
           </div>
         </>

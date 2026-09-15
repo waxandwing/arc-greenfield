@@ -359,15 +359,26 @@ try {
   await page.getByTestId('planning-desk-notes-strip').waitFor({ state: 'visible', timeout: 8000 })
   assert(await page.getByTestId('arc-desk-notes-object').getAttribute('data-notes-placement') === 'planner-header', 'Desk notes must render as planner header strip, not wood dock.')
   assert(await page.locator('.arc-desk-notes-dock').count() === 0, 'Floating wood notes dock must stay off when strip is enabled.')
-  const notesBelowHeader = await page.evaluate(() => {
+  const notesBandPlacement = await page.evaluate(() => {
     const header = document.querySelector('.planning-date-header')
     const strip = document.querySelector('[data-testid="planning-desk-notes-strip"]')
-    if (!header || !strip) return false
+    const firstCourse = document.querySelector('.planning-grid > .planning-course')
+    if (!header || !strip || !firstCourse) return { ok: false, reason: 'missing nodes' }
     const headerBottom = header.getBoundingClientRect().bottom
     const stripTop = strip.getBoundingClientRect().top
-    return stripTop >= headerBottom - 2
+    const stripBottom = strip.getBoundingClientRect().bottom
+    const courseTop = firstCourse.getBoundingClientRect().top
+    const cells = [...document.querySelectorAll('.planning-desk-notes-cell')]
+    return {
+      ok: stripTop >= headerBottom - 2 && courseTop >= stripBottom - 2 && cells.length >= 3,
+      headerBottom,
+      stripTop,
+      stripBottom,
+      courseTop,
+      cellCount: cells.length,
+    }
   })
-  assert(notesBelowHeader, 'Notes strip must sit directly below weekday/date header row.')
+  assert(notesBandPlacement.ok, `Notes strip must sit between CLASS/date header and first course with day cells. got ${JSON.stringify(notesBandPlacement)}`)
   const dateCentered = await page.evaluate(() => {
     const heading = document.querySelector('.planning-date-heading')
     if (!heading) return false
@@ -375,6 +386,30 @@ try {
     return style.textAlign === 'center' && style.justifyItems === 'center'
   })
   assert(dateCentered, 'Week date headers must center the date under the weekday.')
+
+  await page.evaluate(() => {
+    const settings = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')
+    settings?.click()
+  })
+  await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
+  await deskNotesToggle.uncheck()
+  await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
+  await page.waitForFunction(() => !document.querySelector('[data-testid="planning-desk-notes-strip"]'), null, { timeout: 8000 })
+  const noLeftoverGap = await page.evaluate(() => {
+    const header = document.querySelector('.planning-date-header')
+    const firstCourse = document.querySelector('.planning-grid > .planning-course')
+    if (!header || !firstCourse) return false
+    return firstCourse.getBoundingClientRect().top - header.getBoundingClientRect().bottom < 48
+  })
+  assert(noLeftoverGap, 'Turning Desk notes strip off must remove the band without leaving a large gap.')
+  await page.evaluate(() => {
+    const settings = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')
+    settings?.click()
+  })
+  await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
+  await deskNotesToggle.check()
+  await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
+  await page.getByTestId('planning-desk-notes-strip').waitFor({ state: 'visible', timeout: 8000 })
 
   await page.evaluate(() => {
     const settings = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')
