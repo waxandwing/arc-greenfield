@@ -4,7 +4,17 @@ Calendar-first teacher planning for plans that change.
 
 This repository is the implementation source for Arc. Product and UX authority live in the canonical Google Drive Product Spec. Visual authority lives in the canonical Wax & Wing Brand System. GitHub issues translate those authorities into implementation work.
 
-**Arc wood desk (Kelly):** The Teaching week desk is on branch `cursor/arc-production-integration`, not `main`. Start here: [`docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md`](https://github.com/waxandwing/arc-greenfield/blob/cursor/arc-production-integration/docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md) on that branch (preview steps, project folder vs wrong branch).
+**Arc wood desk (Kelly) — three steps on `main`:**
+
+```bash
+git clone https://github.com/waxandwing/arc-greenfield.git
+cd arc-greenfield && npm install
+npm run kelly:desk
+```
+
+Demo URL (after the server starts): `http://127.0.0.1:4173/?demo=1&demoReset=1`  
+GitHub Pages (no local server): `https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1`  
+Confirm the bottom-right footer stamp shows **`desk-v2 · main · <sha>`**. Full handoff: [`docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md`](docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md).
 
 ## Branch authority
 
@@ -136,23 +146,20 @@ Onboarding, first-capture prompt, and progressive setup are skipped once the dem
 
 Example preview URL: `http://127.0.0.1:4173/?demo=1`
 
-### Local desk preview (integration branch)
+### Local desk preview (`main`)
 
-The Arc **desk** build lives on `cursor/arc-production-integration`, not on `main`.
+The Arc **desk** build is on **`main`** (merged from `cursor/arc-production-integration` on 2026-09-15).
 
 **Run all commands from the repo root** (the folder that contains `package.json`). Running `git` or `npm` from home (`~`) fails with “not a git repository” and missing `package.json`. If the repo is already on disk, `cd` to that clone first.
 
 ```bash
 git clone https://github.com/waxandwing/arc-greenfield.git
 cd arc-greenfield
-git fetch origin
-git checkout cursor/arc-production-integration
-git pull origin cursor/arc-production-integration
 npm install
-npm run preview:desk
+npm run kelly:desk
 ```
 
-Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. Still seeing cream **CALENDAR** chrome? [docs/overnight/KELLY-STILL-SEEING-OLD-CALENDAR.md](docs/overnight/KELLY-STILL-SEEING-OLD-CALENDAR.md). See [docs/LOCAL-PREVIEW.md](docs/LOCAL-PREVIEW.md) for dev server, smokes, and aliases (`dev:desk`, `start:desk`).
+Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. Still seeing cream **CALENDAR** chrome? [docs/overnight/KELLY-STILL-SEEING-OLD-CALENDAR.md](docs/overnight/KELLY-STILL-SEEING-OLD-CALENDAR.md). See [docs/LOCAL-PREVIEW.md](docs/LOCAL-PREVIEW.md) for dev server, smokes, and aliases (`preview:desk`, `dev:desk`, `start:desk`).
 
 **Work on your Mac (not cloud VM):** bookmark [docs/WORK-FROM-GITHUB-LOCALLY.md](docs/WORK-FROM-GITHUB-LOCALLY.md) and the full handoff [docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md](docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md).
 

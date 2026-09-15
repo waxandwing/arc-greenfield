@@ -3,7 +3,8 @@
 **Kelly one command:** `npm run kelly:desk` then open `http://127.0.0.1:4173/?demo=1&demoReset=1` (preflight + frees port 4173 + fresh desk build).
 
 **Clone URL:** `https://github.com/waxandwing/arc-greenfield.git`  
-**Desk branch:** `cursor/arc-production-integration`  
+**Default branch:** `main` — wood desk + `kelly:desk` (merged 2026-09-15).  
+**Optional:** `cursor/arc-production-integration` stays in sync for agent coordination; you do **not** need to check it out for daily preview.  
 **Full handoff:** [docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md](overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md)
 
 ---
@@ -38,16 +39,15 @@ cd arc-greenfield
 
 ```bash
 cd /path/to/arc-greenfield
-git fetch origin
-git checkout cursor/arc-production-integration
-git pull origin cursor/arc-production-integration
-npm install
+git pull origin main
 npm run kelly:desk
 ```
 
 Open: `http://127.0.0.1:4173/?demo=1&demoReset=1`
 
-Check footer: **`desk-v2 · cursor/arc-production-integration · <sha>`** (not cream-only old shell).
+Check footer: **`desk-v2 · main · <sha>`** (not cream-only old shell).
+
+First time after clone: run `npm install` once in the repo folder.
 
 Port stuck? `npm run preview:desk:stop` then retry.
 
@@ -57,7 +57,7 @@ Port stuck? `npm run preview:desk:stop` then retry.
 
 - **Local:** Agent chat with **your cloned folder** open — edits stay on your Mac.
 - **Cloud:** Run at cursor.com/agents; then **`git pull`** on Mac to get commits.
-- **Avoid:** Cloud “new project” that is not this repo; previewing from `main` or wrong folder.
+- **Avoid:** Cloud “new project” that is not this repo; opening the wrong clone folder or running plain `npm run dev` instead of `kelly:desk`.
 
 ---
 

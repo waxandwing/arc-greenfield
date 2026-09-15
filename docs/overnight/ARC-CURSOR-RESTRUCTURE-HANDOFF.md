@@ -2,9 +2,9 @@
 
 > **If you only read one thing**
 >
-> The **Arc wood desk** (Teaching week mock) lives on branch **`cursor/arc-production-integration`**, not **`main`**. Open the repo folder you cloned in Cursor, run the copy-paste block in [Local preview (copy-paste)](#local-preview-copy-paste), then open **`http://127.0.0.1:4173/?demo=1&demoReset=1`**. You should see **wood**, title **Teaching week**, kicker **SEPTEMBER 7 - 11 • WEEK 4**, and a tiny bottom-right **footer stamp** like **`desk-v2 · cursor/arc-production-integration · <sha>`**. If you see cream everywhere with **CALENDAR** / **Month** and **no** `desk-v2` stamp, you are on the wrong **branch** or wrong **project folder** — fix that before judging the desk.
+> The **Arc wood desk** (Teaching week mock) is on **`main`** as of **2026-09-15** (Kelly Option 1 merge). Clone, `npm install`, then **`npm run kelly:desk`**, and open **`http://127.0.0.1:4173/?demo=1&demoReset=1`**. You should see **wood**, title **Teaching week**, kicker **SEPTEMBER 7 - 11 • WEEK 4**, and a tiny bottom-right **footer stamp** like **`desk-v2 · main · <sha>`**. If you see cream everywhere with **CALENDAR** / **Month** and **no** `desk-v2` stamp, you are in the wrong **project folder** or you skipped **`kelly:desk`** — fix that before judging the desk.
 
-**Last updated:** 2026-09-15  
+**Last updated:** 2026-09-15 (desk merged to `main`)  
 **Repo:** [waxandwing/arc-greenfield](https://github.com/waxandwing/arc-greenfield)  
 **Mac cheat sheet:** [`docs/WORK-FROM-GITHUB-LOCALLY.md`](../WORK-FROM-GITHUB-LOCALLY.md)
 
@@ -14,7 +14,7 @@
 
 | Word | Meaning here |
 |------|----------------|
-| **Branch** | A named line of work in Git. Desk work = **`cursor/arc-production-integration`**. **`main`** = older plan shell only — **not** where the desk is built. |
+| **Branch** | **`main`** = default clone; wood desk + `kelly:desk`. **`cursor/arc-production-integration`** = agent coordination lane (optional checkout; kept in sync with `main`). |
 | **Project folder** | The folder you **opened in Cursor** (File → Open Folder). It must be the clone that contains **`package.json`** (usually named **`arc-greenfield`**). Running git/npm from your home folder or a different clone = wrong place. |
 | **Preview** | A built copy of the app running in the browser (local port **4173**, Cloud Agent preview link, or GitHub Pages). |
 | **Footer stamp** | Small text bottom-right: **`desk-v2 · <branch> · <short git sha>`** — proves you are on the integration desk build, not legacy cream UI. |
@@ -27,7 +27,7 @@
 
 That target is written in **`docs/overnight/MASTER-DESK-VISUAL-GOAL.md`**. Agents compare every pass to Kelly’s comp + Figma frame `37:11052`.
 
-**Kelly rule:** Do **not** merge desk work into **`main`** unless Kelly explicitly asks. **`main`** stays a legacy shell lane.
+**Kelly rule (updated 2026-09-15):** Desk is merged to **`main`** for simple clone + one command. Agents may still commit on **`cursor/arc-production-integration`**; merge or fast-forward to **`main`** when Kelly wants Mac preview updated.
 
 ---
 
@@ -35,12 +35,9 @@ That target is written in **`docs/overnight/MASTER-DESK-VISUAL-GOAL.md`**. Agent
 
 | Location | Use it for desk? |
 |----------|------------------|
-| **`cursor/arc-production-integration`** | **YES** — all desk slices, preview scripts, Pages deploy, overnight docs |
-| **`main`** | **NO** for desk preview — no `preview:desk`, no wood desk bundle |
+| **`main`** | **YES** — default branch; `kelly:desk`, wood desk, GitHub Pages deploy |
+| **`cursor/arc-production-integration`** | **YES** — agent lane; should match `main` tip after each merge |
 | **`develop` / feature branches** | Plan continuity history; not the desk coordination lane |
-
-**Spell it out:** `cursor/arc-production-integration`  
-(checkout name is exactly that, including the `cursor/` prefix.)
 
 ---
 
@@ -65,7 +62,7 @@ When Kelly (or an agent) runs a **Cursor Cloud Agent** on this repo **on the int
 
 ### C) GitHub Pages (no local server)
 
-Pushes to **`cursor/arc-production-integration`** can publish a stamped **desk-v2** build to Pages:
+Pushes to **`main`** (or **`cursor/arc-production-integration`**) publish a stamped **desk-v2** build to Pages:
 
 ```text
 https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1
@@ -80,12 +77,13 @@ Allow **2–5 minutes** after a push; hard-refresh if the stamp SHA looks old. O
 Run from the **repo root** (folder with `package.json`):
 
 ```bash
-git fetch origin
-git checkout cursor/arc-production-integration
-git pull origin cursor/arc-production-integration
+git clone https://github.com/waxandwing/arc-greenfield.git
+cd arc-greenfield
 npm install
-npm run preview:desk
+npm run kelly:desk
 ```
+
+Already cloned? `git pull origin main` then `npm run kelly:desk`.
 
 Then open in the browser:
 
@@ -104,10 +102,10 @@ You have the **correct** desk build when **all** of these are true:
 1. **Wood** fills the outer viewport (not a big cream mat with green pattern behind everything).
 2. Planner title **Teaching week** (not “This Month” or Year grid as home).
 3. Kicker **SEPTEMBER 7 - 11 • WEEK 4** (Kelly demo week).
-4. Bottom-right **footer stamp**: **`desk-v2 · cursor/arc-production-integration · <sha>`** matching **`git rev-parse --short HEAD`** on your machine.
+4. Bottom-right **footer stamp**: **`desk-v2 · main · <sha>`** matching **`git rev-parse --short HEAD`** on your machine.
 5. **IDEAS** (green drawer top-center) and **TO-DOS** (denim folder left) visible on the comp layout.
 
-**Wrong build signs:** **CALENDAR** header, month dropdown on the spread, cream-only surround, **no** `desk-v2` stamp → almost always **`main`**, wrong folder, or you ran **`npm run dev`** / plain **`npm run preview`** instead of **`npm run preview:desk`**.
+**Wrong build signs:** **CALENDAR** header, month dropdown on the spread, cream-only surround, **no** `desk-v2` stamp → wrong folder, stale clone, or you ran **`npm run dev`** / plain **`npm run preview`** instead of **`npm run kelly:desk`**.
 
 ---
 
@@ -116,13 +114,12 @@ You have the **correct** desk build when **all** of these are true:
 ### For Kelly
 
 - In Cursor, pick repo **`waxandwing/arc-greenfield`** (Create / repo pill — not a random empty project).
-- Tell agents: **work on branch `cursor/arc-production-integration`**, pull before preview, **no PR** unless you want one.
-- Ignore **`main`** for desk visual review — it will look “stuck” on the old shell.
-- After a **cloud agent** finishes, on your Mac: **`git pull origin cursor/arc-production-integration`** then **`npm run preview:desk`**.
+- Tell agents: desk on **`main`**; optional lane **`cursor/arc-production-integration`**, **no PR** unless you want one.
+- After a **cloud agent** finishes, on your Mac: **`git pull origin main`** then **`npm run kelly:desk`**.
 
 ### For Cloud Agents (every pass)
 
-1. **Branch:** `cursor/arc-production-integration` only — no merge to **`main`**, no Vercel deploy, no PR unless Kelly asks.
+1. **Branch:** prefer **`cursor/arc-production-integration`** for agent commits; land on **`main`** when Kelly wants Mac preview updated. No Vercel deploy, no PR unless Kelly asks.
 2. **Read first:** this handoff → **`MASTER-DESK-VISUAL-GOAL.md`** → **`AGENT-WORK-QUEUE.md`**.
 3. **Do not settle:** blockers → log questions for Kelly in the queue; pixel diff **~60%** is **not** done; no false “100%” claims.
 4. **Gates after desk UI changes:** `npm run test:arc-desk-pass`; after contracts/navigation touches: `npm run test:contracts`.
@@ -177,7 +174,8 @@ Short list (details in queue + ArcTable merge doc):
 
 ## 8. Quick links
 
-- GitHub branch: `https://github.com/waxandwing/arc-greenfield/tree/cursor/arc-production-integration`
+- GitHub default: `https://github.com/waxandwing/arc-greenfield/tree/main`
+- Agent lane: `https://github.com/waxandwing/arc-greenfield/tree/cursor/arc-production-integration`
 - Pages desk URL: `https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1`
 - Local preview guide: **`docs/LOCAL-PREVIEW.md`**
 - Mac clone + Cursor open folder: **`docs/WORK-FROM-GITHUB-LOCALLY.md`**
