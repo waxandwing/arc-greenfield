@@ -274,6 +274,11 @@ try {
     localStorage.setItem('arc.arctable.live.v1', JSON.stringify(live))
   })
   assert(await page.getByText('Synced materials pack', { exact: true }).count() === 0, 'Student Surface should not pick up storage edits until Sync.')
+  const partButtons = page.locator('[data-testid="arctable-student-parts"] button')
+  if (await partButtons.count() > 1) {
+    await partButtons.nth(1).click()
+    assert(await page.getByText(/preview/i).count() >= 1, 'Browsing a lesson part must leave follow mode until Sync.')
+  }
   await page.getByTestId('arctable-sync').click()
   assert(await page.getByText('Synced materials pack', { exact: true }).count() === 1, 'Sync must reload teacher live state (materials) from storage.')
   assert(await page.getByText('Voice 3', { exact: true }).count() === 1, 'Sync must reload teacher voice level from storage.')
@@ -305,7 +310,8 @@ try {
   await capture(page, '12-cleanup-student.png')
   assert(await page.getByTestId('arctable-teacher-mode').count() === 1, 'Projected surface keeps Teacher mode chrome in the header.')
   assert(await page.getByTestId('arctable-sync').count() === 1, 'Projected surface keeps Sync chrome in the header.')
-  assert(await page.locator('.arctable-student-stage button').count() === 0, 'Lesson stage itself must stay free of teacher tool controls (header chrome only).')
+  assert(await page.getByTestId('arctable-student-parts').count() === 1, 'Lesson parts strip must remain on the student stage.')
+  assert(await page.locator('.arctable-student-work button, .arctable-student-now button').count() === 0, 'Lesson work + now rail must stay free of teacher tool controls (header + parts strip only).')
   await page.setViewportSize({ width: 390, height: 844 })
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1), 'Projected Student Surface must reflow without document overflow at 390px.')
   await page.setViewportSize({ width: 1440, height: 1000 })
