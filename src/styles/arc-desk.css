@@ -626,6 +626,13 @@ html:has(.arc-shell--desk) body {
   overflow: auto;
 }
 
+.arc-desk-notes-object--strip {
+  height: auto;
+  box-shadow: none;
+  transform: none;
+  overflow: visible;
+}
+
 .arc-desk-notes-object-label {
   margin: 0 0 6px;
   font: 800 8px/1 var(--font-label);
@@ -1561,6 +1568,8 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .planning-date-weekday {
   display: block;
+  width: 100%;
+  text-align: center;
   font-family: 'League Spartan', var(--font-label), sans-serif;
   font-size: 9px;
   font-weight: 700;
@@ -1568,7 +1577,10 @@ html:has(.arc-shell--desk) body {
   text-transform: uppercase;
 }
 
-.b01-furniture-composition--desk .planning-date-heading span:last-child {
+.b01-furniture-composition--desk .planning-date-heading .planning-date-day {
+  display: block;
+  width: 100%;
+  text-align: center;
   font-family: 'League Spartan', var(--font-label), sans-serif;
   font-size: 1.15rem;
   font-weight: 800;

@@ -73,7 +73,6 @@ import { DeskEditToolbar } from './DeskEditToolbar'
 import { DeskCalendarPopOut } from './DeskCalendarPopOut'
 import { DeskQuickCaptureSticky } from './DeskQuickCaptureSticky'
 import { publicAssetUrl } from '../publicAssetUrl'
-import { DeskNotesObject } from './DeskNotesObject'
 import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
 import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
 import { readDeskPreviewSeededSession, shouldForceDeskShell } from '../demo/deskPreviewGate'
@@ -747,6 +746,7 @@ export function AppFrame() {
         onRemove: workspace.deleteCalendarNote,
         onSetImportant: workspace.setCalendarNoteImportant,
       }}
+      showDeskNotes={activeDeskPreferences.desk.showDeskNotes}
       onSetLessonImportant={workspace.setLessonImportant}
       onSetCaptureImportant={workspace.setCaptureImportant}
       onMoveCaptureToDate={workspace.moveCaptureToDate}
@@ -772,7 +772,7 @@ export function AppFrame() {
             yearExpanded={yearExpanded}
             deskTrayDock={deskTrayCompact}
             deskPriorityDock={deskPriorityPad}
-            deskNotesDock={activeDeskPreferences.desk.showDeskNotes ? <DeskNotesObject /> : null}
+            deskNotesDock={null}
             deskWoodWordmark={
               <button type="button" className="arc-wordmark arc-desk-wood-wordmark" aria-label="Teaching Day home" onClick={returnHome}>
                 <img src={publicAssetUrl('assets/arc/arc-mark.png')} alt="Arc" data-testid="arc-desk-wood-wordmark" />

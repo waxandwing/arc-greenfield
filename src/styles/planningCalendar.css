@@ -54,12 +54,13 @@
 .planning-date-heading{
   display:grid;
   gap:2px;
+  justify-items:center;
   width:100%;
   padding:0;
   border:0;
   border-right:1px solid var(--line-subtle);
   background:transparent;
-  text-align:left;
+  text-align:center;
   font-family:inherit;
   font-size:16px;
   font-weight:700;
@@ -82,13 +83,58 @@
 }
 
 .planning-date-weekday,
+.planning-date-day,
 .planning-date-kind{
+  display:block;
+  width:100%;
+  text-align:center;
   font-size:14px;
   color:var(--soft-charcoal);
 }
 
+.planning-date-day{
+  font-size:16px;
+  font-weight:700;
+  color:var(--ink);
+}
+
 .planning-date-kind{
   font-weight:600;
+}
+
+.planning-desk-notes-strip{
+  grid-column:1 / -1;
+  min-width:0;
+  margin:0;
+  padding:6px 0 10px;
+  border-bottom:1px solid var(--line-subtle);
+}
+
+.planning-desk-notes-strip .arc-desk-notes-object--strip{
+  height:auto;
+  padding:8px 10px;
+  border-radius:6px;
+  background:linear-gradient(180deg, #fff9ef, var(--field-elevated));
+  box-shadow:none;
+  transform:none;
+  overflow:visible;
+}
+
+.planning-desk-notes-strip .arc-desk-notes-object-label{
+  margin:0 0 4px;
+  font:800 10px/1 var(--font-label);
+  letter-spacing:.1em;
+}
+
+.planning-desk-notes-strip .arc-desk-notes-object-body,
+.planning-desk-notes-strip .planning-notes{
+  margin:0;
+  padding:0;
+  border:0;
+}
+
+.planning-desk-notes-strip--day{
+  margin:0 0 var(--space-3);
 }
 
 .planning-course{

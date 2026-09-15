@@ -230,8 +230,36 @@ try {
   const editWorkspace = page.getByRole('button', { name: 'Edit Workspace', exact: true })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   assert(await page.getByRole('heading', { name: 'Desk setup' }).isVisible(), 'Settings must expose Desk setup IA.')
+  const deskNotesToggle = page.getByRole('checkbox', { name: /Desk notes strip/i })
+  assert(await deskNotesToggle.count() === 1, 'Desk setup must keep optional Desk notes strip toggle.')
   await shot(page, '15-settings-home-desk.png')
+  await deskNotesToggle.check()
+  await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
+  await page.getByTestId('planning-desk-notes-strip').waitFor({ state: 'visible', timeout: 8000 })
+  assert(await page.getByTestId('arc-desk-notes-object').getAttribute('data-notes-placement') === 'planner-header', 'Desk notes must render as planner header strip, not wood dock.')
+  assert(await page.locator('.arc-desk-notes-dock').count() === 0, 'Floating wood notes dock must stay off when strip is enabled.')
+  const notesBelowHeader = await page.evaluate(() => {
+    const header = document.querySelector('.planning-date-header')
+    const strip = document.querySelector('[data-testid="planning-desk-notes-strip"]')
+    if (!header || !strip) return false
+    const headerBottom = header.getBoundingClientRect().bottom
+    const stripTop = strip.getBoundingClientRect().top
+    return stripTop >= headerBottom - 2
+  })
+  assert(notesBelowHeader, 'Notes strip must sit directly below weekday/date header row.')
+  const dateCentered = await page.evaluate(() => {
+    const heading = document.querySelector('.planning-date-heading')
+    if (!heading) return false
+    const style = getComputedStyle(heading)
+    return style.textAlign === 'center' && style.justifyItems === 'center'
+  })
+  assert(dateCentered, 'Week date headers must center the date under the weekday.')
 
+  await page.evaluate(() => {
+    const settings = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')
+    settings?.click()
+  })
+  await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   await editWorkspace.click()
   assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Edit Workspace must enter arrangement mode on the real desk.')
   assert(await page.locator('[data-desk-edit-mode="true"]').count() === 1, 'Desk edit mode flag must be set.')

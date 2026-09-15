@@ -65,6 +65,7 @@ type WorkspaceStageProps = {
   planningPeriodReturnPending?: boolean
   captureWorkspace?: import('../planning').CaptureWorkspace | null
   dayNotes?: import('./CalendarDayNotes').CalendarDayNoteHandlers
+  showDeskNotes?: boolean
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onSetCaptureImportant?: (captureId: string, important: boolean) => boolean
   onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
@@ -116,6 +117,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     planningPeriodReturnPending,
     captureWorkspace,
     dayNotes,
+    showDeskNotes = false,
     onSetLessonImportant,
     onMoveCaptureToDate: _moveCaptureToDate,
     onSetCaptureImportant: _setCaptureImportant,
@@ -254,6 +256,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         planningPeriodReturnPending={planningPeriodReturnPending}
         captureWorkspace={captureWorkspace}
         dayNotes={dayNotes}
+        showDeskNotes={showDeskNotes}
         onSetLessonImportant={onSetLessonImportant}
         onBeginPlanLessonMove={onBeginPlanLessonMove}
         onOpenRecoveryForSection={onOpenRecoveryForSection}

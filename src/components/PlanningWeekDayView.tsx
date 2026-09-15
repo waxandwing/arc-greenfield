@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { ISODate, PlanNavigationContext } from '../calendar'
 import { isPlannableDayKind } from '../calendar/schoolCalendar'
@@ -19,6 +19,7 @@ export function PlanningWeekDayView({
   onSetLessonImportant,
   onStartClass,
   lessonImportantById,
+  deskNotesStrip = null,
 }: {
   days: ProjectedDay[]
   planning: PlanningRangeProjection
@@ -31,6 +32,8 @@ export function PlanningWeekDayView({
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onStartClass?: (sectionId: string, lessonId: string, liveDate?: ISODate) => void
   lessonImportantById?: (lessonId: string) => boolean
+  /** Optional desk notes strip — sits directly under weekday/date headers when enabled. */
+  deskNotesStrip?: ReactNode
 }) {
   if (planning.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
@@ -39,6 +42,11 @@ export function PlanningWeekDayView({
   return (
     <div className={single ? 'planning-grid planning-grid--day' : 'planning-grid'} data-focus-date={focusDate ?? ''}>
       <PlanningDateHeader days={days} single={single} focusDate={focusDate} onSelectDate={onSelectDate} />
+      {deskNotesStrip ? (
+        <div className="planning-desk-notes-strip" data-testid="planning-desk-notes-strip">
+          {deskNotesStrip}
+        </div>
+      ) : null}
       {planning.courses.map((course) => (
         <PlanningCourse
           key={course.course.id}
@@ -65,7 +73,7 @@ function PlanningDateHeader({ days, single, focusDate, onSelectDate }: { days: P
       {days.map((day) => (
         <button type="button" key={day.date} className={`planning-date-heading planning-date-heading--${day.kind}${!isPlannableDayKind(day.kind) ? ' planning-date-heading--off' : ''}${day.kind === 'early-release' ? ' planning-date-heading--early-release' : ''}${day.date === focusDate ? ' planning-date-heading--focus' : ''}`} aria-current={day.date === focusDate ? 'date' : undefined} aria-label={`Open Day for ${formatLongDate(day.date)}${!isPlannableDayKind(day.kind) ? `. ${day.label || humanizeKind(day.kind)}` : day.kind === 'early-release' ? `. Early release${day.schoolEndTime ? `, school ends ${day.schoolEndTime}` : ''}` : ''}`} onClick={() => onSelectDate?.(day.date)}>
           {!single ? <span className="planning-date-weekday">{formatWeekday(day.date)}</span> : null}
-          <span>{formatShortDate(day.date)}</span>
+          <span className="planning-date-day">{formatShortDate(day.date)}</span>
           {day.kind === 'early-release' ? (
             <span className="planning-date-kind">{day.schoolEndTime ? `Ends ${day.schoolEndTime}` : (day.label || 'Early release')}</span>
           ) : day.kind !== 'instructional' && day.kind !== 'unknown' && day.kind !== 'no-school' ? (
