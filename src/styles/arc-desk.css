@@ -119,13 +119,13 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
-/* Locked to planner left edge (planner left = 17.2%). Open = extend left; closed = tab only. */
+/* Locked to planner left edge (planner left = 13.5%). Open = extend left; closed = tab only. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
   position: absolute;
-  left: calc(17.2% - 15.6%);
-  top: 26%;
+  left: calc(13.5% - 15.6%);
+  top: 16%;
   width: 15.6%;
-  height: 55%;
+  height: 62%;
   z-index: 8;
   transform: none;
   transform-origin: right center;
@@ -184,10 +184,10 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk.b01-furniture-composition--year-expanded
   .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
   opacity: 0.92;
-  left: calc(14% - 14%);
-  top: 22%;
+  left: calc(12% - 14%);
+  top: 14%;
   width: 14%;
-  height: 58%;
+  height: 62%;
 }
 
 .b01-furniture-composition--desk .arc-planner-object {
