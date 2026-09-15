@@ -109,6 +109,21 @@ try {
   assert(await page.getByTestId('desk-help-button').isVisible(), 'Desk must expose a quiet ? help button on the wood.')
   const ideasDockBox = await page.getByTestId('arc-desk-tray-dock').boundingBox()
   assert(ideasDockBox && ideasDockBox.width > ideasDockBox.height, 'IDEAS drawer dock must be landscape (wider than tall).')
+  assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'false', 'IDEAS drawer must start collapsed.')
+  const closedIdeasPeek = await page.getByTestId('arc-desk-tray-dock').evaluate((el) => {
+    const surface = el.closest('.arc-desk-surface')
+    const rect = el.getBoundingClientRect()
+    const surfaceTop = surface ? surface.getBoundingClientRect().top : 0
+    const art = el.querySelector('.arc-desk-green-drawer-art')
+    return {
+      peekPx: rect.bottom - surfaceTop,
+      artVisibility: art ? getComputedStyle(art).visibility : null,
+    }
+  })
+  assert(closedIdeasPeek.peekPx <= 56, `Closed IDEAS must be a slim tab peek (peek=${closedIdeasPeek.peekPx}px), not a large dim panel.`)
+  assert(closedIdeasPeek.artVisibility === 'hidden', 'Closed IDEAS must hide drawer chrome art so only the tab peeks.')
+  const woodMarkSrc = await page.getByTestId('arc-desk-wood-wordmark').getAttribute('src')
+  assert(woodMarkSrc?.includes('arc-mark-stacked.png'), 'Wood wordmark must use arc-mark-stacked.png (not sliced arc-mark.png).')
   assert(await page.getByTestId('desk-slice-ideas-drawer').count() === 1, 'IDEAS drawer must use ideas-drawer-chrome.png by default.')
   assert(await page.getByTestId('desk-source-ideas-drawer').count() === 0, 'SVG IDEAS fallback must be off when committed rasters are default.')
   assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-desk-slices')) === 'true', 'IDEAS dock must opt into committed raster chrome.')
@@ -145,7 +160,8 @@ try {
   assert(await page.getByTestId('desk-slice-todos-tab').count() === 1, 'TO-DOS side tab slice must render on denim folder edge.')
   assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-extended')) === 'true', 'TO-DOS denim folder stays visible.')
   assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render inside denim TO-DOS folder.')
-  await page.getByTestId('arc-desk-folders-tab').click()
+  // Accent post-its sit near the top edge; DOM click avoids pointer intercept on the slim tab.
+  await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
   assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in IDEAS/tray dock when extended.')
   const ideasOpen = await page.getByTestId('arc-desk-tray-dock').evaluate((el) => {
     const surface = el.closest('.arc-desk-surface')

@@ -775,7 +775,7 @@ export function AppFrame() {
             deskNotesDock={null}
             deskWoodWordmark={
               <button type="button" className="arc-wordmark arc-desk-wood-wordmark" aria-label="Teaching Day home" onClick={returnHome}>
-                <img src={publicAssetUrl('assets/arc/arc-mark.png')} alt="Arc" data-testid="arc-desk-wood-wordmark" />
+                <img src={publicAssetUrl('assets/arc/arc-mark-stacked.png')} alt="Arc" data-testid="arc-desk-wood-wordmark" />
               </button>
             }
             deskQuickCapture={
