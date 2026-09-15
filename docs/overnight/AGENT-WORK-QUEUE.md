@@ -12,7 +12,16 @@
 | 2 | **Implementation agent** | Apply changes on `main`, run smokes, **push**, post **handback packet** |
 | 3 | **ArcBuild audit agent** | Re-audit @ new SHA; repeat until PASS or Kelly blockers |
 
-**Current production tip for audits:** `git rev-parse HEAD` on `origin/main` after each push.
+**Current production tip for audits:** `origin/main` @ **`1149408`** (2026-09-15; ArcBuild asset check [Check GitHub PNG assets](bc-dcc61efa-b9cd-5551-b578-dd95b296a369)).
+
+| Asset state | Status |
+|-------------|--------|
+| Teaching week zip `1.png` + authority copies on GitHub | **YES** |
+| 11 slice PNGs (crops from comp) in `public/assets/desk/slices/` | **YES** — opt-in via `?deskSlices=1` only |
+| Discrete per-layer Figma export pack | **NO** — never in zip; **BLOCKED** until Kelly drops files in `uploads/desk-incoming/` |
+| Default desk runtime | Source SVG/CSS/wood (`TEACHING-WEEK-ASSETS-HONESTY.md`) |
+
+**Kelly Pages @ this SHA:** https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1
 
 ## Do not settle
 
