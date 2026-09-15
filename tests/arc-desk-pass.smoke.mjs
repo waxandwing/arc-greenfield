@@ -194,7 +194,7 @@ try {
   const storedNotes = await page.evaluate(() => localStorage.getItem('arc.desk-postit-notes.v1'))
   assert(storedNotes && storedNotes.includes('Kelly blue jot'), 'Accent note text must persist to localStorage per post-it id.')
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByTestId('arc-desk-surface').waitFor({ state: 'visible' })
+  await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
   assert(await page.getByTestId('arc-desk-post-it-accent-blue-note').inputValue() === 'Kelly blue jot', 'Accent note must reload from localStorage.')
   assert(
     await page.locator('.arc-desk-surface > [data-desk-post-it]').count() >= 4,
