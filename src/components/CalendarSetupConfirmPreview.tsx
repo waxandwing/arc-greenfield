@@ -20,9 +20,11 @@ export function CalendarSetupConfirmPreview({ input, sourceBackedEdit = false }:
   if (!input.firstDay || !input.lastDay) {
     return (
       <div className="calendar-setup-confirm-preview calendar-setup-confirm-preview--empty">
-        <p className="calendar-setup-confirm-kicker">Confirm</p>
-        <strong>This is what your calendar will look like</strong>
-        <p className="calendar-setup-confirm-hint">Enter your first and last day to preview instructional days, breaks, and exceptions.</p>
+        <div className="calendar-setup-confirm-copy">
+          <p className="calendar-setup-confirm-kicker">Confirm</p>
+          <h3 className="calendar-setup-confirm-title">This is what your calendar will look like</h3>
+          <p className="calendar-setup-confirm-hint">Enter your first and last day to preview instructional days, breaks, and exceptions.</p>
+        </div>
       </div>
     )
   }
@@ -31,9 +33,11 @@ export function CalendarSetupConfirmPreview({ input, sourceBackedEdit = false }:
   if (hydrationErrors.length > 0) {
     return (
       <div className="calendar-setup-confirm-preview calendar-setup-confirm-preview--empty">
-        <p className="calendar-setup-confirm-kicker">Confirm</p>
-        <strong>This is what your calendar will look like</strong>
-        <p className="calendar-setup-confirm-hint">Fix the fields above to see a month preview before you save.</p>
+        <div className="calendar-setup-confirm-copy">
+          <p className="calendar-setup-confirm-kicker">Confirm</p>
+          <h3 className="calendar-setup-confirm-title">This is what your calendar will look like</h3>
+          <p className="calendar-setup-confirm-hint">Fix the fields above to see a month preview before you save.</p>
+        </div>
       </div>
     )
   }
@@ -46,7 +50,7 @@ export function CalendarSetupConfirmPreview({ input, sourceBackedEdit = false }:
     <section className="calendar-setup-confirm-preview" aria-label="Calendar confirmation preview">
       <div className="calendar-setup-confirm-copy">
         <p className="calendar-setup-confirm-kicker">Confirm</p>
-        <strong>This is what your calendar looks like</strong>
+        <h3 className="calendar-setup-confirm-title">This is what your calendar looks like</h3>
         <p className="calendar-setup-confirm-summary">
           {input.schoolYearLabel.trim() || 'School year'}
           {' · '}
@@ -111,7 +115,7 @@ function SetupMonthMiniGrid({
 
   return (
     <article className="calendar-setup-confirm-month" aria-label={`${label} preview`}>
-      <h4>{label}</h4>
+      <h4 className="calendar-setup-confirm-month-label">{label}</h4>
       <div className="source-calendar-weekdays" aria-hidden="true">
         {WEEKDAY_LABELS.map((token) => <span key={token}>{token}</span>)}
       </div>

@@ -2,34 +2,48 @@
   flex: 1;
   min-width: 0;
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
+  align-content: start;
 }
 
 .calendar-setup-confirm-preview--empty {
   max-width: 620px;
 }
 
-.calendar-setup-confirm-kicker {
-  margin: 0;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--soft-charcoal);
+.calendar-setup-confirm-copy {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 42rem;
 }
 
-.calendar-setup-confirm-copy strong,
-.calendar-setup-confirm-preview--empty strong {
-  display: block;
-  margin-top: 4px;
-  font-size: 16px;
+/* Beat .setup-actions p { font-size/color } so Confirm stays a quiet step label. */
+.setup-actions .calendar-setup-confirm-kicker,
+.calendar-setup-confirm-kicker {
+  margin: 0;
+  font: var(--type-kicker);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--soft-charcoal) 72%, var(--ink));
+  max-width: none;
+}
+
+.calendar-setup-confirm-title {
+  margin: 0;
+  font: 500 clamp(1.35rem, 1.1rem + 0.9vw, 1.75rem) / 1.15 var(--font-display);
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
 
+.setup-actions .calendar-setup-confirm-summary,
+.setup-actions .calendar-setup-confirm-hint,
 .calendar-setup-confirm-summary,
 .calendar-setup-confirm-hint {
-  margin: 6px 0 0;
-  font-size: 14px;
-  color: var(--soft-charcoal);
+  margin: 0;
+  max-width: 42rem;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--soft-charcoal) 88%, var(--ink));
 }
 
 .calendar-setup-confirm-months {
@@ -39,7 +53,10 @@
   align-content: start;
   max-height: min(56vh, 720px);
   overflow-y: auto;
+  margin-top: var(--space-1);
+  padding-top: var(--space-4);
   padding-right: 2px;
+  border-top: 1px solid var(--line-subtle);
   scrollbar-gutter: stable;
 }
 
@@ -50,10 +67,12 @@
   background: color-mix(in srgb, var(--surface-paper) 92%, white);
 }
 
+.calendar-setup-confirm-month-label,
 .calendar-setup-confirm-month h4 {
   margin: 0 0 var(--space-3);
-  font-size: 14px;
-  font-weight: 600;
+  font: 700 12px/1.2 var(--font-label);
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--ink) 82%, var(--soft-charcoal));
 }
 
 .calendar-setup-confirm-grid {
