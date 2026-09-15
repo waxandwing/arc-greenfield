@@ -2,8 +2,11 @@
 import { execSync } from 'node:child_process'
 import { cwd } from 'node:process'
 
-const REQUIRED_BRANCH = 'cursor/arc-production-integration'
-const ORIGIN_REF = `origin/${REQUIRED_BRANCH}`
+const INTEGRATION_BRANCH = 'cursor/arc-production-integration'
+const MAIN_BRANCH = 'main'
+const ALLOWED_BRANCHES = [MAIN_BRANCH, INTEGRATION_BRANCH]
+const ORIGIN_INTEGRATION_REF = `origin/${INTEGRATION_BRANCH}`
+const ORIGIN_MAIN_REF = `origin/${MAIN_BRANCH}`
 
 const yellow = (text) => `\x1b[33m${text}\x1b[0m`
 
@@ -47,42 +50,56 @@ console.log(`  commit: ${sha}`)
 console.log('  open:   http://127.0.0.1:4173/?demo=1&demoReset=1')
 console.log('')
 
-let originHead = null
+let originIntegrationHead = null
+let originMainHead = null
 try {
-  // Remote may use a narrow fetch refspec; always fetch integration explicitly.
-  run(`git fetch origin ${REQUIRED_BRANCH}`)
-  originHead =
-    runOptional(`git rev-parse ${ORIGIN_REF}`)
+  run(`git fetch origin ${INTEGRATION_BRANCH} ${MAIN_BRANCH}`)
+  originIntegrationHead =
+    runOptional(`git rev-parse ${ORIGIN_INTEGRATION_REF}`)
     ?? runOptional('git rev-parse FETCH_HEAD')
+  originMainHead = runOptional(`git rev-parse ${ORIGIN_MAIN_REF}`)
 } catch {
   console.error('[preview:desk] git fetch origin failed (network or missing remote).')
-  console.error('  Fix network, then retry. To create the integration branch locally:')
-  console.error(
-    '  git fetch origin && git switch -c cursor/arc-production-integration --track origin/cursor/arc-production-integration',
-  )
+  console.error('  Fix network, then retry. Desk branches: main (default) or cursor/arc-production-integration.')
   process.exit(1)
 }
 
-const onRequiredBranch = branch === REQUIRED_BRANCH
-const matchesOrigin = Boolean(headFull && originHead && headFull === originHead)
+const onAllowedBranch = ALLOWED_BRANCHES.includes(branch)
+const matchesOriginIntegration = Boolean(
+  headFull && originIntegrationHead && headFull === originIntegrationHead,
+)
+const matchesOriginMain = Boolean(headFull && originMainHead && headFull === originMainHead)
 
-if (!onRequiredBranch && !matchesOrigin) {
-  console.error(`[preview:desk] Wrong branch: expected "${REQUIRED_BRANCH}" (or same commit as ${ORIGIN_REF}), got "${branch}".`)
-  if (originHead) {
-    console.error(`  origin ${ORIGIN_REF} is at ${runOptional(`git rev-parse --short ${ORIGIN_REF}`) ?? originHead.slice(0, 7)}; you are at ${sha}.`)
+if (branch === MAIN_BRANCH) {
+  if (originMainHead && headFull && headFull !== originMainHead) {
+    console.log(
+      yellow(
+        `[preview:desk] On "${MAIN_BRANCH}" but commit ${sha} differs from ${ORIGIN_MAIN_REF} — continuing (pull origin main when you want the latest desk).`,
+      ),
+    )
+    console.log('')
   }
-  console.error('  git fetch origin && git checkout cursor/arc-production-integration && git pull')
+} else if (!onAllowedBranch && !matchesOriginIntegration && !matchesOriginMain) {
   console.error(
-    '  If checkout fails (no local branch): git fetch origin && git switch -c cursor/arc-production-integration --track origin/cursor/arc-production-integration',
+    `[preview:desk] Wrong branch: expected "${MAIN_BRANCH}" or "${INTEGRATION_BRANCH}" (or same commit as origin), got "${branch}".`,
   )
+  if (originIntegrationHead) {
+    console.error(
+      `  origin ${ORIGIN_INTEGRATION_REF} is at ${runOptional(`git rev-parse --short ${ORIGIN_INTEGRATION_REF}`) ?? originIntegrationHead.slice(0, 7)}; you are at ${sha}.`,
+    )
+  }
+  if (originMainHead) {
+    console.error(
+      `  origin ${ORIGIN_MAIN_REF} is at ${runOptional(`git rev-parse --short ${ORIGIN_MAIN_REF}`) ?? originMainHead.slice(0, 7)}.`,
+    )
+  }
+  console.error('  git pull origin main   # default desk lane')
+  console.error('  git fetch origin && git checkout cursor/arc-production-integration && git pull')
   process.exit(1)
-}
-
-if (!onRequiredBranch && matchesOrigin) {
+} else if (!onAllowedBranch && (matchesOriginIntegration || matchesOriginMain)) {
+  const matchedRef = matchesOriginMain ? ORIGIN_MAIN_REF : ORIGIN_INTEGRATION_REF
   console.log(
-    yellow(
-      `[preview:desk] Branch name is "${branch}" (not "${REQUIRED_BRANCH}") but commit matches ${ORIGIN_REF} — continuing.`,
-    ),
+    yellow(`[preview:desk] Branch name is "${branch}" but commit matches ${matchedRef} — continuing.`),
   )
   console.log('')
 }

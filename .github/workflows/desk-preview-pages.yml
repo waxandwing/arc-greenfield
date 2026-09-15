@@ -3,6 +3,7 @@ name: Desk preview (GitHub Pages)
 on:
   push:
     branches:
+      - main
       - cursor/arc-production-integration
   workflow_dispatch:
 
