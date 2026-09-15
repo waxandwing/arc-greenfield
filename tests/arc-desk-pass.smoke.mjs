@@ -175,6 +175,27 @@ try {
   assert(await page.getByTestId('arc-desk-post-it-accent-mustard').isVisible(), 'Mustard accent post-it must be an independent desk object.')
   assert(await page.getByTestId('arc-desk-post-it-accent-pink').isVisible(), 'Pink accent post-it must be an independent desk object.')
   assert(await page.getByTestId('arc-desk-post-it-accent-blue').isVisible(), 'Blue accent post-it must be an independent desk object.')
+  for (const tone of ['mustard', 'pink', 'blue']) {
+    const accent = page.getByTestId(`arc-desk-post-it-accent-${tone}`)
+    const box = await accent.boundingBox()
+    assert(box && box.width >= 100 && box.width <= 140, `${tone} accent post-it must be readable sticky size (~100–140px), got ${box && Math.round(box.width)}`)
+    assert(box && box.height >= 100, `${tone} accent post-it height must be sticky-readable, got ${box && Math.round(box.height)}`)
+    const note = page.getByTestId(`arc-desk-post-it-accent-${tone}-note`)
+    assert(await note.count() === 1, `${tone} accent must expose a writable note textarea.`)
+    assert(await note.isVisible(), `${tone} accent note must be visible.`)
+    assert(await accent.locator('.arc-desk-post-it-grip').count() === 1, `${tone} accent must expose a drag grip separate from the note.`)
+  }
+  const blueAccent = page.getByTestId('arc-desk-post-it-accent-blue')
+  const blueNote = page.getByTestId('arc-desk-post-it-accent-blue-note')
+  await blueNote.click()
+  assert(await blueAccent.getAttribute('data-dragging') === 'false', 'Click-to-edit on accent note must not start a drag.')
+  await blueNote.fill('Kelly blue jot')
+  assert(await blueAccent.getAttribute('data-dragging') === 'false', 'Typing on accent note must not start a drag.')
+  const storedNotes = await page.evaluate(() => localStorage.getItem('arc.desk-postit-notes.v1'))
+  assert(storedNotes && storedNotes.includes('Kelly blue jot'), 'Accent note text must persist to localStorage per post-it id.')
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.getByTestId('arc-desk-surface').waitFor({ state: 'visible' })
+  assert(await page.getByTestId('arc-desk-post-it-accent-blue-note').inputValue() === 'Kelly blue jot', 'Accent note must reload from localStorage.')
   assert(
     await page.locator('.arc-desk-surface > [data-desk-post-it]').count() >= 4,
     'Post-its must be direct arc-desk-surface children (not nested in IDEAS tray raster).',

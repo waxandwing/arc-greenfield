@@ -23,6 +23,8 @@ type Props = {
 }
 
 const STORAGE_KEY = 'arc.desk-postit-positions.v1'
+/** Pixels of movement before a pointer on an editable target becomes a desk drag. */
+const EDIT_DRAG_THRESHOLD_PX = 8
 
 function readStoredPosition(postItId: string): DeskPostItPosition | null {
   try {
@@ -55,9 +57,23 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
 }
 
+type DragState = {
+  pointerId: number
+  originX: number
+  originY: number
+  startLeft: number
+  startTop: number
+  surfaceW: number
+  surfaceH: number
+  /** True until movement exceeds threshold when pointer began on an editable control. */
+  deferred: boolean
+  armed: boolean
+}
+
 /**
  * Independent desk post-it — lives on arc-desk-surface, not baked into IDEAS tray SVG/PNG chrome.
  * Pointer-drag repositions against the desk surface so stickies stay separate furniture.
+ * Click/focus on textarea/contenteditable does not start a drag; a short drag threshold still allows move.
  */
 export function DeskPostIt({
   tone = 'mustard',
@@ -73,28 +89,38 @@ export function DeskPostIt({
   const nodeRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState<DeskPostItPosition>(() => readStoredPosition(postItId) ?? defaultPosition)
   const [dragging, setDragging] = useState(false)
-  const dragRef = useRef<{
-    pointerId: number
-    originX: number
-    originY: number
-    startLeft: number
-    startTop: number
-    surfaceW: number
-    surfaceH: number
-  } | null>(null)
+  const dragRef = useRef<DragState | null>(null)
 
   useEffect(() => {
     writeStoredPosition(postItId, position)
   }, [postItId, position])
 
+  const armDrag = useCallback((pointerId: number) => {
+    const drag = dragRef.current
+    if (!drag || drag.pointerId !== pointerId || drag.armed) return
+    drag.deferred = false
+    drag.armed = true
+    const active = document.activeElement
+    if (active instanceof HTMLElement && nodeRef.current?.contains(active)) {
+      active.blur()
+    }
+    try {
+      nodeRef.current?.setPointerCapture(pointerId)
+    } catch {
+      /* ignore */
+    }
+    setDragging(true)
+  }, [])
+
   const onPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (!dragEnabled || event.button !== 0) return
     const target = event.target as HTMLElement | null
-    // Keep capture form controls interactive; drag from pad chrome / empty well.
-    if (target?.closest('button, a, input, textarea, select, label, dialog')) return
+    // Keep capture form controls interactive; never drag from buttons/links/inputs/selects.
+    if (target?.closest('button, a, input, select, label, dialog')) return
     const surface = nodeRef.current?.closest('.arc-desk-surface') as HTMLElement | null
     if (!surface || !nodeRef.current) return
     const surfaceRect = surface.getBoundingClientRect()
+    const editTarget = Boolean(target?.closest('textarea, [contenteditable="true"]'))
     dragRef.current = {
       pointerId: event.pointerId,
       originX: event.clientX,
@@ -103,34 +129,78 @@ export function DeskPostIt({
       startTop: position.topPct,
       surfaceW: surfaceRect.width,
       surfaceH: surfaceRect.height,
+      deferred: editTarget,
+      armed: !editTarget,
     }
-    nodeRef.current.setPointerCapture(event.pointerId)
-    setDragging(true)
-    event.preventDefault()
+    if (!editTarget) {
+      nodeRef.current.setPointerCapture(event.pointerId)
+      setDragging(true)
+      event.preventDefault()
+    }
   }, [dragEnabled, position.leftPct, position.topPct])
 
   const onPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== event.pointerId || drag.surfaceW <= 0 || drag.surfaceH <= 0) return
+
+    if (drag.deferred && !drag.armed) {
+      const dist = Math.hypot(event.clientX - drag.originX, event.clientY - drag.originY)
+      if (dist < EDIT_DRAG_THRESHOLD_PX) return
+      armDrag(event.pointerId)
+      event.preventDefault()
+    }
+
+    if (!drag.armed) return
+
     const dxPct = ((event.clientX - drag.originX) / drag.surfaceW) * 100
     const dyPct = ((event.clientY - drag.originY) / drag.surfaceH) * 100
     setPosition({
       leftPct: clamp(drag.startLeft + dxPct, 0, 92),
       topPct: clamp(drag.startTop + dyPct, 0, 88),
     })
-  }, [])
+  }, [armDrag])
 
   const endDrag = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== event.pointerId) return
+    const wasArmed = drag.armed
     dragRef.current = null
     setDragging(false)
-    try {
-      nodeRef.current?.releasePointerCapture(event.pointerId)
-    } catch {
-      /* already released */
+    if (wasArmed) {
+      try {
+        nodeRef.current?.releasePointerCapture(event.pointerId)
+      } catch {
+        /* already released */
+      }
     }
   }, [])
+
+  // Deferred edit-target drags do not capture on pointerdown; track leave via window listeners.
+  useEffect(() => {
+    const onWindowPointerMove = (event: PointerEvent) => {
+      const drag = dragRef.current
+      if (!drag || !drag.deferred || drag.armed || drag.pointerId !== event.pointerId) return
+      const dist = Math.hypot(event.clientX - drag.originX, event.clientY - drag.originY)
+      if (dist < EDIT_DRAG_THRESHOLD_PX) return
+      armDrag(event.pointerId)
+      event.preventDefault()
+    }
+    const onWindowPointerUp = (event: PointerEvent) => {
+      const drag = dragRef.current
+      if (!drag || drag.pointerId !== event.pointerId) return
+      if (drag.deferred && !drag.armed) {
+        dragRef.current = null
+      }
+    }
+    window.addEventListener('pointermove', onWindowPointerMove)
+    window.addEventListener('pointerup', onWindowPointerUp)
+    window.addEventListener('pointercancel', onWindowPointerUp)
+    return () => {
+      window.removeEventListener('pointermove', onWindowPointerMove)
+      window.removeEventListener('pointerup', onWindowPointerUp)
+      window.removeEventListener('pointercancel', onWindowPointerUp)
+    }
+  }, [armDrag])
 
   return (
     <div
