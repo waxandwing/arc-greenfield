@@ -1080,8 +1080,38 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
+/* Pyrography: Arc mark burned into the wood — monochromatic recessed brand, not a flat sticker. */
 .arc-desk-wood-wordmark {
-  filter: drop-shadow(0 10px 18px -12px rgba(33, 29, 23, 0.55));
+  position: relative;
+  isolation: isolate;
+  filter: none;
+  background: transparent;
+}
+
+.arc-desk-wood-wordmark img,
+.arc-desk-wood-wordmark [data-testid='arc-desk-wood-wordmark'] {
+  display: block;
+  mix-blend-mode: multiply;
+  filter: grayscale(1) sepia(0.95) contrast(1.7) brightness(0.38);
+  opacity: 0.78;
+  /* Soft carved rim — dark lip + faint wood highlight (inset reads as recessed burn). */
+  box-shadow:
+    inset 0 1px 2px rgba(28, 18, 10, 0.55),
+    inset 0 -1px 1px rgba(255, 246, 230, 0.2),
+    0 0.5px 0 rgba(255, 248, 235, 0.12);
+}
+
+.arc-desk-wood-wordmark::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 2px;
+  pointer-events: none;
+  box-shadow:
+    inset 0 1px 3px rgba(22, 14, 8, 0.42),
+    inset 0 -1px 2px rgba(255, 248, 235, 0.14);
+  mix-blend-mode: multiply;
+  opacity: 0.65;
 }
 
 /* Desk utilities: SETTINGS visible on wood (away from edge tabs); PLANNING/TRAY stay DOM-reachable for smokes. */
