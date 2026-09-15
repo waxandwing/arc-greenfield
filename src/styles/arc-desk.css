@@ -97,10 +97,10 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-object {
   position: absolute;
-  left: 17.2%;
-  top: 26%;
-  width: 65.6%;
-  height: 63.7%;
+  left: 13.5%;
+  top: 16%;
+  width: 76%;
+  height: 74%;
   z-index: 6;
 }
 
@@ -161,10 +161,10 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk.b01-furniture-composition--year-expanded
   .arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-object {
-  width: 72%;
-  height: 68%;
-  left: 14%;
-  top: 22%;
+  width: 78%;
+  height: 76%;
+  left: 12%;
+  top: 14%;
 }
 
 .b01-furniture-composition--desk.b01-furniture-composition--year-expanded
@@ -326,13 +326,22 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .arc-calendar-spread--desk,
 .b01-furniture-composition--desk .b01-calendar-owner {
   min-height: 0;
+  min-width: 0;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
 }
 
+.b01-furniture-composition--desk .arc-calendar-spread--desk > .b01-calendar-owner {
+  padding: 2px 6px 8px 8px;
+  overflow: hidden;
+}
+
 .b01-furniture-composition--desk .b01-calendar-owner > .calendar-canvas {
   min-height: 0;
+  min-width: 0;
+  max-width: none;
+  width: 100%;
   flex: 1 1 auto;
   overflow: auto;
 }
@@ -561,9 +570,19 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-capture-sticky .arc-capture-trigger {
   width: 100%;
-  min-height: 40px;
-  border-radius: 8px;
-  font-size: 12px;
+  min-height: 36px;
+  border-radius: 6px;
+  border: 1px dashed color-mix(in srgb, var(--ink) 22%, transparent);
+  background: color-mix(in srgb, #fff9ef 72%, transparent);
+  color: color-mix(in srgb, var(--ink) 68%, var(--mustard));
+  font: 650 11px/1.2 var(--font-ui);
+  letter-spacing: 0.02em;
+}
+
+.arc-desk-capture-sticky .arc-capture-trigger:hover:not(:disabled) {
+  background: color-mix(in srgb, #fffdf8 88%, transparent);
+  border-style: solid;
+  color: var(--ink);
 }
 
 .arc-desk-notes-object {
@@ -1065,11 +1084,28 @@ html:has(.arc-shell--desk) body {
   filter: drop-shadow(0 10px 18px -12px rgba(33, 29, 23, 0.55));
 }
 
-/* Kelly comp omits bottom pills; keep TRAY/SETTINGS in DOM for smokes (off-screen). */
+/* Desk utilities: SETTINGS visible on wood (away from edge tabs); PLANNING/TRAY stay DOM-reachable for smokes. */
 .b01-furniture-composition--desk .arc-desk-utility-tabs {
-  position: fixed;
+  position: absolute;
+  left: 2.4%;
+  bottom: 3.6%;
+  z-index: 22;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: auto;
+  max-width: none;
+  overflow: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--planning,
+.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--workspace {
+  position: absolute;
   left: -10000px;
-  bottom: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
@@ -1077,11 +1113,34 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
-/* Kelly comp: capture lives in TRAY / IDEAS — hide wood sticky for pixel fidelity (smoke still finds testid). */
+.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  width: auto;
+  height: auto;
+  min-height: 36px;
+  padding: 8px 14px;
+  overflow: visible;
+  opacity: 1;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  border-radius: 8px;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--field-elevated) 94%, transparent);
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 42%, var(--line-subtle));
+  box-shadow:
+    0 10px 22px -14px rgba(33, 29, 23, 0.5),
+    inset 0 1px 0 rgba(255, 253, 248, 0.65);
+}
+
+/* Teaching week / desk authority: Quick Capture is a wood sticky (upper-right), not a chat widget.
+   Captures still land in IDEAS/tray; sticky is the discoverable quick-jot affordance. */
 .b01-furniture-composition--desk .arc-desk-capture-sticky {
-  visibility: hidden;
-  pointer-events: none;
-  opacity: 0;
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
 }
 
 .arc-desk-utility-tabs {
@@ -1337,14 +1396,29 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .planning-week {
   padding-inline: 4px 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.b01-furniture-composition--desk .planning-week .planning-scroll-frame {
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) {
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course {
   border-radius: 8px;
+  min-width: 0;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading {
+  min-width: 0;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-unit-span {

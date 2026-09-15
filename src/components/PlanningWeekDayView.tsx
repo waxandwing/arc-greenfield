@@ -325,8 +325,9 @@ function LessonProgressiveActions({
 }
 
 function gridTemplate(days: ProjectedDay[], focusDate?: string): { gridTemplateColumns: string } {
-  const columns = days.map((day) => day.date === focusDate ? 'minmax(180px,1.7fr)' : 'minmax(104px,.78fr)')
-  return { gridTemplateColumns: `minmax(104px,.8fr) ${columns.join(' ')}` }
+  // Flexible mins so desk week (Mon–Fri) can fit the planner frame without horizontal clip.
+  const columns = days.map((day) => (day.date === focusDate ? 'minmax(0,1.45fr)' : 'minmax(0,1fr)'))
+  return { gridTemplateColumns: `minmax(4.25rem,0.72fr) ${columns.join(' ')}` }
 }
 
 function humanizeKind(kind: ProjectedDay['kind']): string {
