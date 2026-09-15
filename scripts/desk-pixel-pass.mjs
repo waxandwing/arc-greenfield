@@ -16,7 +16,7 @@ mkdirSync(evidenceDir, { recursive: true })
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const kellyRef =
   process.env.DESK_KELLY_REF ??
-  '/home/ubuntu/.cursor/projects/workspace/assets/f5602c3b-2ac0-4b74-a4ad-2f359a219b9a.png'
+  join(root, 'public/assets/desk/figma/kelly-desk-v3-comp-2026-08-03.png')
 const figmaRef = join(root, 'docs/overnight/evidence/figma-desk-6-3194/01-codex-image-37-11052.png')
 const targetSize = { w: 1696, h: 1254 }
 

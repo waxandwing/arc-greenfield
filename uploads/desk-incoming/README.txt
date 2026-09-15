@@ -22,4 +22,4 @@ Example line for the list below:
 
 Files in this folder (update this list when you add assets):
 
-  (none yet)
+  kelly-desk-v3-preview-repair-2026-08-03.png — full-desk comp reference (desk v3 preview repair); hero copy also at public/assets/desk/figma/kelly-desk-v3-comp-2026-08-03.png
