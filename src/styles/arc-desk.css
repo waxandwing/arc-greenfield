@@ -628,21 +628,15 @@ html:has(.arc-shell--desk) body {
 /* Peeks beside the IDEAS tab when the drawer is collapsed. */
 .arc-desk-clean-up--tab-side {
   position: absolute;
-  /* Sit left of IDEAS so we do not cover the mustard/pink/blue accent stickies. */
-  right: calc(50% + 4.15rem);
-  left: auto;
-  bottom: 0.2rem;
-  z-index: 3;
+  /* Anchored on the desk surface (not inside the translating drawer) left of IDEAS. */
+  left: 28%;
+  top: 0.35%;
+  z-index: 16;
   min-height: 2.1rem;
   padding: 6px 10px;
   border-radius: 8px 8px 10px 10px;
   white-space: nowrap;
-}
-
-.arc-desk-green-folders-drawer[data-extended='true'] .arc-desk-clean-up--tab-side {
-  /* Prefer the in-well Clean up when the tray is open */
-  visibility: hidden;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 .arc-desk-ideas-well-toolbar {

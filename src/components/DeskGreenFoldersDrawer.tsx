@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { deskCommittedRasterChromeEnabled } from '../desk/deskSliceRuntime'
 import { DESK_IDEAS_OPEN_EVENT, requestDeskIdeasCleanUp } from '../desk/deskIdeasEvents'
 import { DeskChromeSlice } from './DeskChromeSlice'
@@ -11,6 +12,7 @@ type Props = {
 
 export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Props) {
   const [extended, setExtended] = useState(defaultExtended)
+  const [surfaceHost, setSurfaceHost] = useState<Element | null>(null)
   const tabId = useId()
   const panelId = useId()
 
@@ -30,8 +32,24 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     return () => window.removeEventListener(DESK_IDEAS_OPEN_EVENT, onOpen)
   }, [openDrawer])
 
+  useEffect(() => {
+    setSurfaceHost(document.querySelector('.arc-desk-surface'))
+  }, [])
+
   // Textured PNG chrome by default (same gate as TO-DOS / edge tabs); SVG only when raster off.
   const slicesEnabled = deskCommittedRasterChromeEnabled()
+
+  const cleanUpTab = (
+    <button
+      type="button"
+      className="arc-desk-clean-up arc-desk-clean-up--tab-side"
+      data-testid="arc-desk-clean-up-tab"
+      title="Move desk post-its back into IDEAS"
+      onClick={() => requestDeskIdeasCleanUp()}
+    >
+      Clean up
+    </button>
+  )
 
   return (
     <aside
@@ -96,17 +114,9 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
         >
           IDEAS
         </button>
-        {/* Always available on the wood next to the IDEAS tab peek */}
-        <button
-          type="button"
-          className="arc-desk-clean-up arc-desk-clean-up--tab-side"
-          data-testid="arc-desk-clean-up-tab"
-          title="Move desk post-its back into IDEAS"
-          onClick={() => requestDeskIdeasCleanUp()}
-        >
-          Clean up
-        </button>
       </div>
+      {/* Portaled onto arc-desk-surface so year-expanded drawer transforms do not hide Clean up. */}
+      {surfaceHost ? createPortal(cleanUpTab, surfaceHost) : cleanUpTab}
     </aside>
   )
 }

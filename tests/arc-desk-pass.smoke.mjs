@@ -358,6 +358,9 @@ try {
   assert(await page.locator('.plan-state-header').count() === 1, 'Desk keeps a single plan-state editorial header.')
 
   // IDEAS + Clean up must remain on Year (year-expanded must not swallow the closed tab peek).
+  if ((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true') {
+    await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  }
   await selectView(page, 'Year')
   assert(await page.locator('[data-year-expanded="true"]').count() === 1, 'Year view must mark furniture year-expanded.')
   assert(await page.getByTestId('arc-desk-tray-dock').isVisible(), 'IDEAS tray must remain on Year view.')
