@@ -6,7 +6,7 @@ These assets are staged for visual reconciliation. They do **not** automatically
 
 ## Recon pass landing (2026-09-15)
 
-- **SHA:** `4dea09d` (feature) → lands on `main` after this pass.
+- **SHA:** `9fd392f` on `main` / `cursor/arc-production-integration` (feature commits `4dea09d` + evidence).
 - **P0 asset wires:** all **BLOCKED** — Kelly labeled SVG binaries still absent (Drive/Gmail/`uploads/desk-incoming`/`asset-reconciliation-labeled-svgs` empty of the 22 files).
 - **Shipped without binaries:** Week-grid repair (MON/day headers, paper lesson objects, denser unit/course hierarchy, softer planner rim, `object-fit:contain` on todos slice).
 - **Smokes:** `test:arc-desk-pass` + `test:desk-slices` passed on preview stamped `desk-v2` / `4dea09d`.
