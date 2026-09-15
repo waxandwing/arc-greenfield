@@ -360,6 +360,33 @@ try {
   assert((await edgeTabs.getAttribute('data-desk-slices')) === 'true', 'Planner edge tabs must use committed tab PNG assets by default.')
   const weekTabArt = await edgeTabs.locator('[data-desk-slice-tab="week"]').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(weekTabArt.includes('planner-edge-tab'), 'WEEK tab must use committed inactive/active slice rasters.')
+  const edgeTabMetrics = await edgeTabs.evaluate((nav) => {
+    const buttons = [...nav.querySelectorAll('button.arc-index-tab')]
+    return buttons.map((btn) => {
+      const label = btn.querySelector('.arc-index-tab-label')
+      const style = getComputedStyle(btn)
+      const labelBox = label?.getBoundingClientRect()
+      return {
+        name: (label?.textContent || btn.textContent || '').trim(),
+        writingMode: style.writingMode,
+        labelHeight: labelBox ? Math.round(labelBox.height) : 0,
+        labelWidth: labelBox ? Math.round(labelBox.width) : 0,
+      }
+    })
+  })
+  assert(edgeTabMetrics.length === 4, 'Edge tabs must expose DAY/WEEK/MONTH/YEAR.')
+  assert(
+    edgeTabMetrics.every((tab) => tab.writingMode === 'horizontal-tb'),
+    `Edge tabs must stay upright horizontal (got ${edgeTabMetrics.map((t) => t.writingMode).join(',')}).`,
+  )
+  const monthTab = edgeTabMetrics.find((tab) => tab.name === 'MONTH')
+  assert(Boolean(monthTab), 'MONTH edge tab must render.')
+  assert(
+    monthTab.labelHeight <= 18 && monthTab.labelWidth >= 36,
+    `MONTH label must stay one line (got ${monthTab.labelWidth}×${monthTab.labelHeight}).`,
+  )
+  const settingsTab = page.getByTestId('arc-desk-utility-tabs').getByRole('button', { name: 'SETTINGS', exact: true })
+  assert(await settingsTab.isVisible(), 'SETTINGS must stay visible on wood, away from edge tabs.')
   const titleMark = page.getByTestId('desk-planner-rainbow-mark')
   const titleMarkSource = await titleMark.getAttribute('data-desk-mark-source')
   assert(titleMarkSource === 'committed-png', 'Week title mark must use committed planner-rainbow-mark.png.')
