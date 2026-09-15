@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 
-const LOCAL_PREVIEW_DOC =
-  'https://github.com/waxandwing/arc-greenfield/blob/main/docs/LOCAL-PREVIEW.md'
-const HANDOFF_DOC =
-  'https://github.com/waxandwing/arc-greenfield/blob/main/docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md'
-
-/** Quiet “?” on the wood — desk tips + links to local preview / handoff docs. */
+/** Quiet “?” on the wood — short desk tips for teachers. */
 export function DeskHelpButton() {
   const [open, setOpen] = useState(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -45,22 +40,15 @@ export function DeskHelpButton() {
           <h2 id={titleId}>How this wood works</h2>
           <ul>
             <li>
-              Click <strong>IDEAS</strong> to slide the tray down from the top over the calendar. TO-DOS and sticky notes stay on the wood.
+              Click <strong>IDEAS</strong> to slide the tray down over the calendar. TO-DOS and sticky
+              notes stay on the wood.
             </li>
-            <li>Drag magnets and post-its on the desk — captures land in IDEAS / Tray.</li>
+            <li>Drag magnets and post-its on the desk — they land in IDEAS.</li>
             <li>
-              <strong>start class</strong> opens ArcTable for the next period on the mark.
+              <strong>start class</strong> opens ArcTable for the next period.
             </li>
           </ul>
-          <p className="arc-desk-help-links">
-            <a href={LOCAL_PREVIEW_DOC} target="_blank" rel="noreferrer">
-              Local preview
-            </a>
-            <a href={HANDOFF_DOC} target="_blank" rel="noreferrer">
-              Handoff notes
-            </a>
-          </p>
-          <button type="button" className="quiet-button arc-desk-help-close" onClick={close}>
+          <button type="button" className="arc-desk-help-close" onClick={close}>
             Close
           </button>
         </div>

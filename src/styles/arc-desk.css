@@ -2391,3 +2391,154 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .arc-desk-arctable-script-detail { display:none !important; }
 .b01-furniture-composition--desk .arc-desk-arctable-script { order:-1; }
 .b01-furniture-composition--desk .arc-planner-object { filter: drop-shadow(0 16px 34px -24px rgba(33, 29, 23, 0.4)); }
+
+/* Quiet desk help — paper note on wood (not native dialog chrome). */
+.arc-desk-help {
+  position: absolute;
+  right: 15.5%;
+  bottom: 4.2%;
+  top: auto;
+  z-index: 21;
+  pointer-events: auto;
+}
+
+.arc-desk-help-button {
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 38%, transparent);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 253, 248, 0.55), transparent 55%),
+    color-mix(in srgb, var(--field-elevated) 82%, transparent);
+  color: color-mix(in srgb, var(--ink) 78%, var(--shell-frame-green));
+  font-family: 'Instrument Serif', 'Iowan Old Style', Palatino, var(--font-display), serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 8px 16px -12px rgba(33, 29, 23, 0.55);
+}
+
+.arc-desk-help-button:hover {
+  filter: brightness(1.04);
+}
+
+.arc-desk-help-button:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 2px;
+}
+
+.arc-desk-help-dialog {
+  width: min(22rem, calc(100vw - 2rem));
+  max-width: min(22rem, calc(100vw - 2rem));
+  margin: auto;
+  padding: 0;
+  border: var(--shell-planner-border) solid var(--shell-frame-green);
+  border-radius: calc(var(--shell-frame-radius) - 2px);
+  background-color: var(--field-elevated);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--field-elevated) 94%, transparent), color-mix(in srgb, var(--field-elevated) 94%, transparent)),
+    var(--plan-surface-paper-texture),
+    var(--plan-surface-paper);
+  background-size: auto, 420px, cover;
+  background-blend-mode: normal, soft-light, normal;
+  color: var(--ink);
+  box-shadow:
+    var(--shell-planner-shadow),
+    inset 0 1px 0 rgba(255, 253, 248, 0.9),
+    inset 0 3px 0 0 color-mix(in srgb, var(--mustard) 78%, transparent);
+}
+
+.arc-desk-help-dialog::backdrop {
+  background: color-mix(in srgb, #1a1510 32%, transparent);
+}
+
+.arc-desk-help-dialog-inner {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1.05rem 1.15rem 1.1rem;
+}
+
+.arc-desk-help-kicker {
+  margin: 0;
+  font: 800 11px/1 var(--font-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--shell-frame-green) 72%, var(--ink));
+}
+
+.arc-desk-help-dialog-inner h2 {
+  margin: 0;
+  font-family: 'Instrument Serif', 'Iowan Old Style', Palatino, var(--font-display), serif;
+  font-size: clamp(1.35rem, 2.4vw, 1.55rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.arc-desk-help-dialog-inner ul {
+  margin: 0.1rem 0 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.45rem;
+  font-family: 'Instrument Serif', 'Iowan Old Style', Palatino, var(--font-display), serif;
+  font-size: 0.98rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--ink) 88%, var(--soft-charcoal));
+}
+
+.arc-desk-help-dialog-inner ul strong {
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-weight: 750;
+  font-size: 0.86em;
+  letter-spacing: 0.04em;
+}
+
+.arc-desk-help-close {
+  justify-self: start;
+  margin-top: 0.35rem;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 22%, var(--line-subtle));
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--field-elevated) 92%, transparent), color-mix(in srgb, var(--field-elevated) 92%, transparent)),
+    var(--plan-surface-paper-texture);
+  background-size: auto, 280px;
+  background-blend-mode: normal, soft-light;
+  color: var(--ink);
+  font: 750 11px/1 var(--font-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.85);
+}
+
+.arc-desk-help-close:hover {
+  border-color: color-mix(in srgb, var(--shell-frame-green) 42%, var(--mustard));
+  background-color: color-mix(in srgb, var(--field-elevated) 88%, var(--mustard-soft));
+}
+
+.arc-desk-help-close:focus-visible {
+  outline: 3px solid var(--dusty-blue);
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .arc-desk-help {
+    right: 4%;
+    bottom: 3.2%;
+  }
+
+  .arc-desk-help-dialog {
+    width: min(20.5rem, calc(100vw - 1.5rem));
+    max-width: min(20.5rem, calc(100vw - 1.5rem));
+  }
+
+  .arc-desk-help-dialog-inner {
+    padding: 0.95rem 1rem 1rem;
+  }
+}
