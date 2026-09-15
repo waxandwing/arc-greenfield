@@ -777,6 +777,8 @@ export function AppFrame() {
       protectedUnitIds={workspace.protectedUnitIds}
       protectedSectionIds={workspace.protectedSectionIds}
       onUseCalendar={workspace.useCalendar}
+      onSchoolIdentitySelected={(candidate) => updateOnboarding({ ...onboardingDraft, schoolNcesId: candidate.id })}
+      loadedSchoolNcesId={onboardingDraft.schoolNcesId ?? null}
       onUseTerms={workspace.useTerms}
       onUseClasses={workspace.useClasses}
       onUseUnits={workspace.useUnits}

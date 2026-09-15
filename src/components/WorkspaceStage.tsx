@@ -9,7 +9,7 @@ import { TeachingDaySetup } from './TeachingDaySetup'
 import { CurriculumImport } from './CurriculumImport'
 import { PlanLessonMovePanel } from './PlanLessonMovePanel'
 import type { LessonMovePreview } from '../planning'
-import type { CalendarHydrationInput, ISODate, PlanNavigationContext, SchoolCalendar } from '../calendar'
+import type { CalendarHydrationInput, ISODate, OfficialSourceCandidate, PlanNavigationContext, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import type {
@@ -47,6 +47,8 @@ type WorkspaceStageProps = {
   protectedUnitIds: Set<string>
   protectedSectionIds: Set<string>
   onUseCalendar: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
+  onSchoolIdentitySelected?: (candidate: OfficialSourceCandidate) => void
+  loadedSchoolNcesId?: string | null
   onUseTerms: (input: CalendarHydrationInput) => void
   onUseClasses: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
   onUseUnits: (input: UnitWorkspaceInput, workspace: UnitWorkspace) => void
@@ -101,6 +103,8 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     protectedUnitIds,
     protectedSectionIds,
     onUseCalendar,
+    onSchoolIdentitySelected,
+    loadedSchoolNcesId = null,
     onUseTerms,
     onUseClasses,
     onUseUnits,
@@ -142,6 +146,8 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         initialValue={calendarInput}
         onSave={onUseCalendar}
         onCancel={calendar ? onReturnToSettings : undefined}
+        onSchoolIdentitySelected={onSchoolIdentitySelected}
+        loadedSchoolNcesId={loadedSchoolNcesId}
       />
     )
   }
@@ -164,7 +170,15 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
   }
 
   if (mode === 'teaching-day' && planningInput) {
-    return <TeachingDaySetup initialValue={planningInput} onSave={onUseClasses} onCancel={onReturnToSettings} />
+    return (
+      <TeachingDaySetup
+        initialValue={planningInput}
+        schoolNcesId={loadedSchoolNcesId ?? undefined}
+        calendarProvenance={calendarInput?.provenance}
+        onSave={onUseClasses}
+        onCancel={onReturnToSettings}
+      />
+    )
   }
 
   if (mode === 'import') {

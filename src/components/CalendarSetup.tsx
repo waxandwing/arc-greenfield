@@ -68,9 +68,11 @@ type Props = {
   onCancel?: () => void
   onDraftChange?: (input: CalendarHydrationInput) => void
   onSchoolIdentitySelected?: (candidate: import('../calendar').OfficialSourceCandidate) => void
+  /** Already-loaded NCES token so Calendar Setup can show “School loaded”. */
+  loadedSchoolNcesId?: string | null
 }
 
-export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftChange, onSchoolIdentitySelected }: Props) {
+export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftChange, onSchoolIdentitySelected, loadedSchoolNcesId = null }: Props) {
   const [calendarId] = useState(() => initialValue?.id ?? createManualCalendarId())
   const [schoolYearLabel, setSchoolYearLabel] = useState(initialValue?.schoolYearLabel ?? '')
   const [firstDay, setFirstDay] = useState(initialValue?.firstDay ?? '')
@@ -264,17 +266,19 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
         <p>Start with your school. Arc will look for an official identity before you enter dates yourself.</p>
       </div>
 
-      {!initialValue && <SchoolIdentitySearch onUseCalendar={onSave} onSchoolIdentitySelected={onSchoolIdentitySelected} />}
+      <SchoolIdentitySearch
+        onUseCalendar={onSave}
+        onSchoolIdentitySelected={onSchoolIdentitySelected}
+        loadedSchoolNcesId={loadedSchoolNcesId}
+      />
       {isSourceBackedEdit && initialValue && <SourceCalendarReview input={initialValue} />}
 
       <form className="calendar-setup-form" onSubmit={submit} noValidate>
-        {!initialValue && (
-          <div className="manual-calendar-divider">
-            <p className="section-label">Manual calendar</p>
-            <h3>Enter dates yourself if Arc does not have them yet.</h3>
-            <p>Manual entry remains available, but an official school identity does not become calendar truth until Arc has a calendar source for you to review.</p>
-          </div>
-        )}
+        <div className="manual-calendar-divider">
+          <p className="section-label">Manual calendar</p>
+          <h3>{initialValue ? 'Adjust dates yourself when you need to.' : 'Enter dates yourself if Arc does not have them yet.'}</h3>
+          <p>Manual entry remains available. Loading a school identity does not invent calendar dates until Arc has a calendar source for you to review — or you enter first and last day here.</p>
+        </div>
 
         {errors.length > 0 && (
           <div

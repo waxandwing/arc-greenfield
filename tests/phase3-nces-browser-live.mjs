@@ -21,7 +21,7 @@ try {
   await page.getByLabel('School name').fill('Oak Ridge')
   await page.getByLabel('City').fill('Orlando')
   await page.getByLabel('State').fill('FL')
-  await page.getByRole('button', { name: 'Find my school' }).click()
+  await page.getByRole('button', { name: 'Load school' }).click()
 
   const results = page.locator('.school-identity-results')
   const providerError = page.locator('.school-identity-message--error')

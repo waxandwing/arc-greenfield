@@ -1,8 +1,8 @@
-.school-identity-search{display:grid;gap:var(--space-5);margin:0 0 var(--space-8);padding:var(--space-6) 0 var(--space-8);border-top:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle)}
+.school-identity-search{display:grid;gap:var(--space-4);margin:0 0 var(--space-6);padding:var(--space-4) 0 var(--space-6);border-top:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle)}
 .school-identity-search-heading{max-width:720px}
 .school-identity-search-heading h3,.manual-calendar-divider h3{margin:6px 0 8px;font:600 24px/1.18 var(--font-editorial);letter-spacing:-.018em}
 .school-identity-search-heading>p:last-child,.manual-calendar-divider>p:last-child{margin:0;color:var(--soft-charcoal)}
-.school-identity-search-form{display:grid;gap:var(--space-4)}
+.school-identity-search-form{display:grid;gap:var(--space-3)}
 .school-identity-fields{display:grid;grid-template-columns:1.4fr 1fr 90px 1.25fr;gap:var(--space-3)}
 .school-identity-fields label{display:grid;gap:6px;font-weight:650}
 .school-identity-fields label>span{font-size:14px;color:var(--soft-charcoal)}
@@ -25,6 +25,8 @@
 .school-identity-selection{max-width:720px;padding:var(--space-4) 0 0;border-top:1px solid var(--line-strong)}
 .school-identity-selection>strong{display:block;margin:3px 0;font:600 20px/1.2 var(--font-editorial)}
 .school-identity-selection p{margin:3px 0;color:var(--soft-charcoal)}
+.school-identity-selection--loaded{display:grid;gap:4px;padding:var(--space-4);border:1px solid var(--line-strong);border-left:4px solid var(--mustard);background:color-mix(in srgb, var(--mustard) 8%, transparent)}
+.school-identity-selection--loaded .quiet-button{justify-self:start;margin-top:var(--space-2)}
 
 .official-calendar-source{display:grid;gap:var(--space-4);max-width:820px;padding:var(--space-5) 0 0;border-top:1px solid var(--line-subtle)}
 .official-calendar-source-heading{max-width:720px}
@@ -66,7 +68,7 @@
 }
 
 @media (max-width:520px){
-  .school-identity-search{padding-block:var(--space-4) var(--space-6)}
+  .school-identity-search{padding-block:var(--space-3) var(--space-5)}
   .school-identity-fields,.official-calendar-source-fields{grid-template-columns:1fr}
   .school-identity-fields label:first-child,.school-identity-fields label:last-child{grid-column:auto}
   .school-identity-search-action,.school-identity-candidate,.official-calendar-source-actions,.official-calendar-source-read,.official-calendar-proposal-actions{display:flex;align-items:stretch;flex-direction:column}

@@ -73,6 +73,8 @@ try {
   assert(await page.getByRole('heading', { level: 1, name: 'Teaching day' }).isVisible(), 'Setup nav must open Teaching day.')
   await page.getByRole('navigation', { name: 'Setup sections' }).getByRole('button', { name: 'Calendar', exact: true }).click()
   assert(await page.getByRole('heading', { level: 1, name: 'Calendar' }).isVisible(), 'Setup nav must open Calendar.')
+  assert(await page.getByTestId('school-load').count() === 1, 'School load must stay visible when editing an existing calendar.')
+  assert(await page.getByRole('button', { name: 'Load school' }).count() === 1, 'Load school CTA must be present on Calendar Setup with existing dates.')
   await page.getByRole('navigation', { name: 'Setup sections' }).getByRole('button', { name: 'Import', exact: true }).click()
   assert(await page.getByRole('heading', { level: 1, name: 'Import curriculum' }).isVisible(), 'Setup nav must open Import.')
 

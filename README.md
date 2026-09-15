@@ -97,6 +97,11 @@ npm run build
 
 This runs canonical contracts, TypeScript checks, and the production bundle. Desk/interaction changes should also run the relevant focused smoke suites documented in `package.json` and the current handoff.
 
+
+## School load (NCES)
+
+Calendar Setup always shows **Load school** before manual dates. Live lookup uses `/api/nces` (Vercel/server proxy to the NCES public-school layer). On static hosts such as GitHub Pages — or when the proxy is unreachable — Arc falls back to a small curated local school directory (`src/calendar/localSchoolDirectory.ts`) so teachers can still complete the identity step. Fallback results are labeled honestly; they never invent calendar dates.
+
 ## Working rule
 
 Build the system, not the branch. Once a short-lived branch has landed on `main`, delete it. If historical code appears useful, mine the behavior or preserve a deliberate archive tag before branch deletion rather than keeping another permanent implementation lane.
