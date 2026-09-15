@@ -30,6 +30,7 @@ type SharedProps = {
   onOpenSettings?: () => void
   onShowTeacher: () => void
   onShowStudent: () => void
+  onSyncLive?: () => boolean
   onUpdate: (value: Partial<Omit<ArcTableLiveState, 'version' | 'session' | 'startedAt'>>) => void
   onEnd: (outcome: ArcTableTeachingOutcome) => string | null
 }
@@ -247,8 +248,9 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
   )
 }
 
-export function ArcTableStudentSurface({ live, onShowTeacher, onUpdate }: SharedProps) {
+export function ArcTableStudentSurface({ live, onShowTeacher, onSyncLive, onUpdate }: SharedProps) {
   const now = useClock()
+  const [syncNote, setSyncNote] = useState('Following teacher')
   const timerRemaining = countdownRemaining(live.timer, now)
   const cleanupRemaining = countdownRemaining(live.cleanupTimer, now)
   const cleanupActive = cleanupIsActive(live)
@@ -260,6 +262,12 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onUpdate }: Shared
     window.addEventListener('keydown', leaveProjection)
     return () => window.removeEventListener('keydown', leaveProjection)
   }, [onShowTeacher])
+
+  function syncWithTeacher() {
+    const ok = onSyncLive?.() ?? true
+    setSyncNote(ok ? 'Synced · following teacher' : 'No live session to sync')
+  }
+
   return (
     <main className={`arctable arctable--student${cleanupActive ? ' is-cleanup' : ''}`}>
       <header className="arctable-student-header">
@@ -271,8 +279,28 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onUpdate }: Shared
           height={46}
           data-testid="arctable-student-header-mark"
         />
-        <div><strong>Projected view</strong><span>{live.session.sectionName} · {live.session.courseTitle}</span></div>
-        <time>{formatClock(now)}</time>
+        <div className="arctable-student-session">
+          <strong>{live.session.sectionName} · {live.session.courseTitle}</strong>
+          <span data-testid="arctable-sync-status" role="status">{syncNote}</span>
+        </div>
+        <div className="arctable-student-header-actions">
+          <button
+            type="button"
+            className="arctable-sync-button"
+            data-testid="arctable-sync"
+            onClick={syncWithTeacher}
+          >
+            Sync
+          </button>
+          <button
+            type="button"
+            className="arctable-projection-exit"
+            data-testid="arctable-teacher-mode"
+            onClick={onShowTeacher}
+          >
+            Teacher mode
+          </button>
+        </div>
       </header>
       <section className="arctable-student-stage">
         <nav className="arctable-student-parts" aria-label="Lesson parts" data-testid="arctable-student-parts">
@@ -374,7 +402,6 @@ function useSettleCountdowns(live: ArcTableLiveState, now: Date, onUpdate: Share
 }
 
 function useClock() { const [now, setNow] = useState(() => new Date()); useEffect(() => { const timer = window.setInterval(() => setNow(new Date()), 1_000); return () => window.clearInterval(timer) }, []); return now }
-function formatClock(now: Date): string { return new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(now) }
 function formatDuration(totalSeconds: number): string { const minutes = Math.floor(totalSeconds / 60); const seconds = totalSeconds % 60; return `${minutes}:${seconds.toString().padStart(2, '0')}` }
 function TimerDigits({ seconds, as: Tag = 'span' }: { seconds: number; as?: 'span' | 'strong' }) {
   const label = formatDuration(seconds)

@@ -747,7 +747,17 @@ export function AppFrame() {
   }
 
   if (arcTable.live && arcTable.surface === 'student') {
-    return <ArcTableStudentSurface live={arcTable.live} onOpenPlan={arcTable.showPlan} onShowTeacher={arcTable.showTeacher} onShowStudent={arcTable.showStudent} onUpdate={arcTable.update} onEnd={endClass} />
+    return (
+      <ArcTableStudentSurface
+        live={arcTable.live}
+        onOpenPlan={arcTable.showPlan}
+        onShowTeacher={arcTable.showTeacher}
+        onShowStudent={arcTable.showStudent}
+        onSyncLive={arcTable.syncLive}
+        onUpdate={arcTable.update}
+        onEnd={endClass}
+      />
+    )
   }
 
   const settingsContent = showPlanFurniture ? (
