@@ -319,8 +319,12 @@ try {
     'Post-its must be direct arc-desk-surface children (not nested in IDEAS tray raster).',
   )
   assert(
-    await page.locator('.arc-desk-green-drawer-art [data-desk-post-it], .arc-desk-tray-dock [data-desk-post-it]').count() === 0,
-    'Post-its must not live inside IDEAS tray chrome.',
+    await page.locator('.arc-desk-green-drawer-art [data-desk-post-it]').count() === 0,
+    'Post-its must not live inside IDEAS tray chrome art.',
+  )
+  assert(
+    await page.locator('.arc-desk-tray-dock [data-desk-post-it]').count() === 0,
+    'Loose accent post-its must stay on the wood until Clean up gathers them into IDEAS.',
   )
   assert(await page.getByTestId('global-capture-trigger').count() === 0, 'Desk Quick Capture must not show a + Capture button.')
   assert(

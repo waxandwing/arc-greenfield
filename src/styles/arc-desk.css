@@ -628,7 +628,9 @@ html:has(.arc-shell--desk) body {
 /* Peeks beside the IDEAS tab when the drawer is collapsed. */
 .arc-desk-clean-up--tab-side {
   position: absolute;
-  left: calc(50% + 4.15rem);
+  /* Sit left of IDEAS so we do not cover the mustard/pink/blue accent stickies. */
+  right: calc(50% + 4.15rem);
+  left: auto;
   bottom: 0.2rem;
   z-index: 3;
   min-height: 2.1rem;
