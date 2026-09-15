@@ -290,6 +290,25 @@ html:has(.arc-shell--desk) body {
   transform: translateX(-2px);
 }
 
+.arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab--desk-slice {
+  border: 0;
+  box-shadow: none;
+  background-color: transparent;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: color-mix(in srgb, var(--ink) 88%, white);
+  text-shadow: 0 1px 0 rgba(255, 253, 248, 0.65);
+  min-height: 58px;
+  padding: 8px 4px;
+}
+
+.arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab--desk-slice-active {
+  transform: translateX(-3px);
+  color: color-mix(in srgb, var(--shell-frame-green) 55%, var(--ink));
+  font-weight: 800;
+}
+
 /* Legacy elevated horizontal strip — removed from default desk surface. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-physical-tabs--desk-elevated {
   display: none !important;
@@ -1135,11 +1154,42 @@ html:has(.arc-shell--desk) body {
   font-size: 13px;
 }
 
-.desk-planner-today {
-  border-radius: 999px;
+.b01-furniture-composition--desk .desk-planner-today-cluster {
+  gap: 2px;
+  padding-bottom: 1px;
+}
+
+.b01-furniture-composition--desk .desk-planner-today-cluster .quiet-button {
+  min-width: 44px;
   min-height: 34px;
-  padding-inline: 14px;
+  padding-inline: 10px;
+  border-color: rgba(44, 46, 46, 0.16);
+  background: rgba(247, 241, 231, 0.56);
+  box-shadow: none;
+}
+
+.b01-furniture-composition--desk .desk-planner-today-cluster .desk-planner-today {
+  min-width: 68px;
+  border-inline-color: transparent;
+  background: transparent;
+  border-radius: 999px;
   font-weight: 700;
+}
+
+.b01-furniture-composition--desk .desk-planner-today-cluster .desk-planner-today-nav:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+
+.b01-furniture-composition--desk .planning-section-row > .planning-row-label strong {
+  display: block;
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 82%, var(--soft-charcoal));
 }
 
 .arc-desk-todos-folder {
@@ -1471,6 +1521,136 @@ html:has(.arc-shell--desk) body {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 8px;
+}
+
+/* Figma slice chrome (see docs/overnight/DESK-SLICE-PLACEMENT.md) */
+.arc-desk-chrome-slice {
+  display: block;
+  user-select: none;
+}
+
+.arc-desk-green-drawer-art {
+  position: absolute;
+  inset: 0;
+}
+
+.arc-desk-green-folders-drawer[data-desk-slices='true'] .arc-desk-green-drawer-art {
+  background: none;
+}
+
+.arc-desk-green-folders-drawer[data-desk-slices='true'] .arc-desk-green-drawer-art .arc-desk-chrome-slice {
+  width: 100%;
+  height: 100%;
+}
+
+.arc-desk-todos-folder[data-desk-slices='true'] {
+  background: none;
+  box-shadow: none;
+  padding: 26px 12px 12px 18px;
+}
+
+.arc-desk-todos-folder[data-desk-slices='true'] .arc-desk-todos-folder-body {
+  z-index: 3;
+}
+
+.arc-desk-planner-frame-slices {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.b01-furniture-composition--desk .arc-calendar-spread--desk {
+  position: relative;
+}
+
+.b01-furniture-composition--desk .b01-calendar-owner {
+  position: relative;
+  z-index: 4;
+}
+
+.arc-desk-arctable[data-desk-slices='true'] {
+  position: relative;
+}
+
+.arc-desk-arctable[data-desk-slices='true'] .arc-desk-arctable-mark-wrap {
+  position: relative;
+  z-index: 2;
+}
+
+.desk-planner-enlarge {
+  min-height: 34px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.desk-calendar-popout-placeholder {
+  margin: 0;
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--soft-charcoal);
+  font: 600 13px/1.4 var(--font-ui);
+}
+
+.desk-calendar-popout-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vmin, 28px);
+  background: color-mix(in srgb, var(--shell-frame-green) 42%, rgba(12, 22, 18, 0.72));
+  backdrop-filter: blur(6px);
+}
+
+.desk-calendar-popout-stage {
+  display: flex;
+  flex-direction: column;
+  width: min(1120px, 100%);
+  max-height: min(92dvh, 920px);
+  border-radius: 18px;
+  border: 3px solid var(--shell-frame-green);
+  background: var(--field-elevated);
+  box-shadow: 0 32px 64px -28px rgba(12, 22, 18, 0.65);
+  overflow: hidden;
+}
+
+.desk-calendar-popout-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-frame-green) 16%, var(--line-subtle));
+}
+
+.desk-calendar-popout-header h2 {
+  margin: 4px 0 0;
+  font-family: 'Instrument Serif', var(--font-display), serif;
+  font-weight: 400;
+  font-size: 1.65rem;
+}
+
+.desk-calendar-popout-subtitle {
+  margin: 4px 0 0;
+  font: 600 12px/1.3 var(--font-ui);
+  color: var(--soft-charcoal);
+}
+
+.desk-calendar-popout-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px 12px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.desk-calendar-popout-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 16px 20px;
 }
 
 @media (prefers-reduced-motion: reduce) {

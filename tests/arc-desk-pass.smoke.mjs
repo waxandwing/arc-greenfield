@@ -78,6 +78,13 @@ try {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
+  await page.getByTestId('desk-calendar-enlarge-trigger').click()
+  await page.getByTestId('desk-calendar-popout').waitFor({ state: 'visible' })
+  assert(await page.getByTestId('desk-calendar-popout-body').isVisible(), 'Enlarge must open calendar pop-out body.')
+  await page.getByTestId('desk-calendar-popout-dismiss').click()
+  await page.getByTestId('desk-calendar-popout').waitFor({ state: 'hidden' })
+  assert(await page.getByTestId('desk-calendar-popout-placeholder').count() === 0, 'Dismiss must restore inline calendar.')
+
   const returnTabLabel = (await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim()
     || 'DAY'
 
@@ -95,6 +102,7 @@ try {
   assert(!deskFramePattern.includes('pattern-grid'), 'Desk composition must not repeat exterior pattern tile.')
   assert(await page.getByTestId('arc-desk-arctable').isVisible(), 'ArcTable desk mark must render on wood.')
   assert(await page.getByTestId('arc-desk-tray-dock').isVisible(), 'Tray dock must render on desk.')
+  assert(await page.getByTestId('desk-slice-ideas-drawer').count() === 1, 'IDEAS drawer must render Figma slice chrome when enabled.')
   assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render on desk.')
   await page.getByTestId('arc-desk-folders-tab').click()
   assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in IDEAS/tray dock when extended.')
@@ -108,6 +116,10 @@ try {
     tray?.click()
   })
   await page.locator('.b01-fridge-owner[data-state="open"]').waitFor({ state: 'attached' })
+  const edgeTabs = page.getByTestId('arc-planner-physical-tabs')
+  assert((await edgeTabs.getAttribute('data-desk-slices')) === 'true', 'Planner edge tabs must enable slice mode by default.')
+  const weekTabArt = await edgeTabs.locator('[data-desk-slice-tab="week"]').evaluate((el) => getComputedStyle(el).backgroundImage)
+  assert(weekTabArt.includes('planner-edge-tab-week-inactive'), 'WEEK tab must use committed vertical tab slice raster.')
   assert(await page.getByTestId('arc-desk-tray-dock').count() === 0, 'TRAY drawer must replace the molded tray dock, not stack beside it.')
   assert(await page.locator('.b01-fridge-owner[data-state="open"] .b01-fridge-content').count() === 1, 'TRAY drawer must expose one workspace panel.')
   await page.getByRole('button', { name: 'Close Tray', exact: true }).click()

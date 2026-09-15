@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react'
+import type { ComponentProps, RefObject } from 'react'
 import { PlanStateHeader } from './PlanStateHeader'
 
 type PlanStateProps = ComponentProps<typeof PlanStateHeader>
@@ -9,6 +9,9 @@ type Props = PlanStateProps & {
   onToday?: () => void
   searchQuery?: string
   onSearchQueryChange?: (value: string) => void
+  onEnlargeCalendar?: () => void
+  calendarEnlarged?: boolean
+  enlargeTriggerRef?: React.RefObject<HTMLButtonElement | null>
 }
 
 export function DeskPlannerHeadRow({
@@ -17,6 +20,9 @@ export function DeskPlannerHeadRow({
   onToday,
   searchQuery = '',
   onSearchQueryChange,
+  onEnlargeCalendar,
+  calendarEnlarged = false,
+  enlargeTriggerRef,
   ...planState
 }: Props) {
   if (!deskEnabled) {
@@ -38,15 +44,52 @@ export function DeskPlannerHeadRow({
             onChange={(event) => onSearchQueryChange?.(event.target.value)}
           />
         </label>
-        <button
-          type="button"
-          className="quiet-button today-button desk-planner-today"
-          data-testid="desk-planner-today"
-          disabled={todayDisabled}
-          onClick={onToday}
+        <div
+          className="desk-planner-today-cluster period-controls"
+          role="group"
+          aria-label="Today navigation"
         >
-          Today
-        </button>
+          <button
+            type="button"
+            className="quiet-button period-button desk-planner-today-nav"
+            data-testid="desk-planner-today-prev"
+            disabled
+            aria-label="Previous day"
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            className="quiet-button today-button desk-planner-today"
+            data-testid="desk-planner-today"
+            disabled={todayDisabled}
+            onClick={onToday}
+          >
+            Today
+          </button>
+          <button
+            type="button"
+            className="quiet-button period-button desk-planner-today-nav"
+            data-testid="desk-planner-today-next"
+            disabled
+            aria-label="Next day"
+          >
+            →
+          </button>
+        </div>
+        {onEnlargeCalendar ? (
+          <button
+            ref={enlargeTriggerRef as RefObject<HTMLButtonElement> | undefined}
+            type="button"
+            className="quiet-button desk-planner-enlarge"
+            data-testid="desk-calendar-enlarge-trigger"
+            aria-expanded={calendarEnlarged}
+            aria-haspopup="dialog"
+            onClick={onEnlargeCalendar}
+          >
+            Enlarge
+          </button>
+        ) : null}
       </div>
     </div>
   )

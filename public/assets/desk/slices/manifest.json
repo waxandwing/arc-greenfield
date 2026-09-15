@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "source": {
+    "figmaFileKey": "CfWcuQPY4ljYXondICj2ZX",
+    "heroNodeId": "37:11052",
+    "cropReferenceNodeId": "37:11053",
+    "referenceFrame": { "width": 1440, "height": 1024 },
+    "evidenceDir": "docs/overnight/evidence/figma-desk-6-3194/"
+  },
+  "slices": [
+    {
+      "id": "ideas-drawer-chrome",
+      "file": "ideas-drawer-chrome.png",
+      "role": "decorative",
+      "liveChrome": false,
+      "target": "DeskGreenFoldersDrawer",
+      "placement": {
+        "scope": "component",
+        "position": "absolute",
+        "inset": "0",
+        "objectFit": "cover",
+        "objectPosition": "center top",
+        "zIndex": 1
+      }
+    },
+    {
+      "id": "todos-folder-body",
+      "file": "todos-folder-body.png",
+      "role": "decorative",
+      "liveChrome": false,
+      "target": "DeskTodosFolder",
+      "placement": {
+        "scope": "component",
+        "position": "absolute",
+        "inset": "0",
+        "objectFit": "fill",
+        "zIndex": 0
+      }
+    },
+    {
+      "id": "todos-folder-tab",
+      "file": "todos-folder-tab.png",
+      "role": "decorative",
+      "liveChrome": false,
+      "target": "DeskTodosFolder",
+      "placement": {
+        "scope": "component",
+        "position": "absolute",
+        "left": "-8%",
+        "top": "34%",
+        "width": "28%",
+        "height": "42%",
+        "objectFit": "contain",
+        "zIndex": 2
+      }
+    },
+    {
+      "id": "planner-frame-top-accent",
+      "file": "planner-frame-top-accent.png",
+      "role": "decorative",
+      "liveChrome": false,
+      "target": "arc-calendar-spread--desk",
+      "placement": {
+        "scope": "spread",
+        "position": "absolute",
+        "left": "0",
+        "right": "44px",
+        "top": "-2px",
+        "height": "18px",
+        "objectFit": "cover",
+        "objectPosition": "center top",
+        "zIndex": 3
+      }
+    },
+    {
+      "id": "planner-frame-left-accent",
+      "file": "planner-frame-left-accent.png",
+      "role": "decorative",
+      "liveChrome": false,
+      "target": "arc-calendar-spread--desk",
+      "placement": {
+        "scope": "spread",
+        "position": "absolute",
+        "left": "-1px",
+        "top": "12%",
+        "bottom": "8%",
+        "width": "12px",
+        "objectFit": "cover",
+        "zIndex": 3
+      }
+    },
+    {
+      "id": "start-class-frame",
+      "file": "start-class-frame.png",
+      "role": "decorative",
+      "liveChrome": false,
+      "target": "ArcTableDeskFixture",
+      "placement": {
+        "scope": "component",
+        "position": "absolute",
+        "inset": "-8%",
+        "objectFit": "contain",
+        "zIndex": 0
+      }
+    },
+    {
+      "id": "planner-edge-tab-active",
+      "file": "planner-edge-tab-active.png",
+      "role": "interactive-chrome",
+      "liveChrome": true,
+      "target": "arc-planner-physical-tabs--desk-edge",
+      "placement": { "scope": "spread", "position": "absolute", "zIndex": 46 }
+    },
+    {
+      "id": "planner-edge-tab-day-inactive",
+      "file": "planner-edge-tab-day-inactive.png",
+      "role": "interactive-chrome",
+      "liveChrome": true,
+      "target": "arc-planner-physical-tabs--desk-edge",
+      "placement": { "scope": "spread", "position": "absolute", "zIndex": 45 }
+    },
+    {
+      "id": "planner-edge-tab-week-inactive",
+      "file": "planner-edge-tab-week-inactive.png",
+      "role": "interactive-chrome",
+      "liveChrome": true,
+      "target": "arc-planner-physical-tabs--desk-edge",
+      "placement": { "scope": "spread", "position": "absolute", "zIndex": 45 }
+    },
+    {
+      "id": "planner-edge-tab-month-inactive",
+      "file": "planner-edge-tab-month-inactive.png",
+      "role": "interactive-chrome",
+      "liveChrome": true,
+      "target": "arc-planner-physical-tabs--desk-edge",
+      "placement": { "scope": "spread", "position": "absolute", "zIndex": 45 }
+    },
+    {
+      "id": "planner-edge-tab-year-inactive",
+      "file": "planner-edge-tab-year-inactive.png",
+      "role": "interactive-chrome",
+      "liveChrome": true,
+      "target": "arc-planner-physical-tabs--desk-edge",
+      "placement": { "scope": "spread", "position": "absolute", "zIndex": 45 }
+    }
+  ]
+}

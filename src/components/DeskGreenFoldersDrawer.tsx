@@ -1,4 +1,6 @@
 import { useCallback, useId, useState, type ReactNode } from 'react'
+import { deskSliceUsesEnabled } from '../desk/deskSliceRuntime'
+import { DeskChromeSlice } from './DeskChromeSlice'
 
 type Props = {
   children: ReactNode
@@ -15,19 +17,28 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     setExtended((current) => !current)
   }, [])
 
+  const slicesEnabled = deskSliceUsesEnabled()
+
   return (
     <aside
       className="arc-desk-tray-dock arc-desk-green-folders-drawer"
       aria-label="Folders tray"
       data-testid="arc-desk-tray-dock"
       data-extended={extended ? 'true' : 'false'}
+      data-desk-slices={slicesEnabled ? 'true' : 'false'}
     >
       <div className="arc-desk-green-drawer-shell">
         <div className="arc-desk-green-drawer-art" aria-hidden="true">
-          <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--mustard" />
-          <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--terracotta" />
-          <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--blue" />
-          <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--forest" />
+          {slicesEnabled ? (
+            <DeskChromeSlice sliceId="ideas-drawer-chrome" testId="desk-slice-ideas-drawer" />
+          ) : (
+            <>
+              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--mustard" />
+              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--terracotta" />
+              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--blue" />
+              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--forest" />
+            </>
+          )}
         </div>
         <div
           id={panelId}

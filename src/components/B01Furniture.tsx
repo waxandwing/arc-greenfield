@@ -14,6 +14,8 @@ import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
 import { DeskGreenFoldersDrawer } from './DeskGreenFoldersDrawer'
 import { DeskTodosFolder } from './DeskTodosFolder'
+import { deskPlannerEdgeTabAssetUrl, deskSliceUsesEnabled } from '../desk/deskSliceRuntime'
+import { DeskPlannerFrameSlices } from './DeskPlannerFrameSlices'
 
 type DrawerName = 'settings' | 'workspace' | 'tasks'
 
@@ -280,21 +282,30 @@ export function B01Furniture({
 
   function renderPlannerViewTabs(className: string) {
     if (!indexNav) return null
+    const edgeTabSlices = deskEnabled && deskSliceUsesEnabled()
     return (
-      <nav className={className} aria-label="Planner index" data-testid="arc-planner-physical-tabs">
+      <nav
+        className={className}
+        aria-label="Planner index"
+        data-testid="arc-planner-physical-tabs"
+        data-desk-slices={edgeTabSlices ? 'true' : 'false'}
+      >
         {VIEW_TABS.map(({ view, label, tabClass }) => {
           const availability = indexNav.availabilityFor(view)
           const unavailable = !availability.available
           const isCurrent = !indexNav.planningIndexActive && view === indexNav.activeView && !workspaceIsOpen && !open.settings && !tasksIsOpen
+          const tabArt = edgeTabSlices ? deskPlannerEdgeTabAssetUrl(label, isCurrent) : null
           return (
             <button
               key={view}
               type="button"
-              className={`arc-index-tab ${tabClass}`}
+              className={`arc-index-tab ${tabClass}${edgeTabSlices ? ' arc-index-tab--desk-slice' : ''}${isCurrent && edgeTabSlices ? ' arc-index-tab--desk-slice-active' : ''}`}
               aria-current={isCurrent ? 'page' : undefined}
               aria-disabled={unavailable || indexNav.viewSelectionDisabled ? 'true' : undefined}
               title={unavailable ? availability.reason : calendarViewLabel(view)}
               disabled={indexNav.viewSelectionDisabled || unavailable}
+              data-desk-slice-tab={label.toLowerCase()}
+              style={tabArt ? { backgroundImage: `url(${tabArt})` } : undefined}
               onClick={() => selectViewTab(view)}
             >
               {label}
@@ -412,6 +423,7 @@ export function B01Furniture({
         : null}
       {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
       <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
+        {deskEnabled ? <DeskPlannerFrameSlices /> : null}
         {spreadChrome}
         {deskEditToolbar}
         <div className={`b01-calendar-owner${deskEditMode ? ' b01-calendar-owner--workspace-edit' : ''}`}>{children}</div>

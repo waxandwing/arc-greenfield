@@ -2,7 +2,9 @@
 
 **Source authority:** Kelly comp PNG (`Teaching week IDEAS/TO-DOS`), Figma desk export, prior audit at `50a51b3`.
 
-**Honest pixel gate (1696×1254, scale-normalized):** see `docs/overnight/evidence/desk-pixel-pass/round-2-REPORT.md` — **~60% RGB diff vs Kelly** (SSIM ~0.24). Structural smoke checks can pass while pixels differ.
+**Honest pixel gate (1696×1254, scale-normalized):** see `docs/overnight/evidence/desk-pixel-pass/round-3-REPORT.md` (latest) — **~60% RGB diff vs Kelly** (SSIM ~0.24). Structural smoke checks can pass while pixels differ.
+
+**Queue alignment:** `docs/overnight/AGENT-WORK-QUEUE.md` — slice wiring **A1** in progress; header **B** next; pixel loop **F** blocked on assets.
 
 | # | Requirement | File / selector / testid | Status |
 |---|-------------|---------------------------|--------|
@@ -16,31 +18,31 @@
 | 6 | Collapsed default (stones visible, not TRAY copy) | `defaultExtended={false}`, `data-extended="false"` | PASS |
 | 7 | IDEAS tab label (not FOLDERS) | `.arc-desk-ideas-tab`, `green-folders-drawer.svg` | PASS |
 | 8 | Four circular stone tokens (mustard, terracotta, blue, forest) | `.arc-desk-green-drawer-token--*` | PASS |
-| 9 | SVG drawer art matches comp depth | `public/assets/desk/green-folders-drawer.svg` | PARTIAL |
+| 9 | SVG drawer art matches comp depth | `ideas-drawer-chrome.png` slice + SVG fallback | IN PROGRESS (A) |
 | **TO-DOS folder** |
-| 10 | Denim vertical folder left of planner | `DeskTodosFolder`, `.arc-desk-todos-folder` | PARTIAL |
+| 10 | Denim vertical folder left of planner | `DeskTodosFolder`, slice `todos-folder-*` | IN PROGRESS (A) |
 | 11 | Vertical TO-DOS tab on folder edge | `.arc-desk-todos-folder-tab` | PASS |
 | 12 | MUST DO / SHOULD DO / COULD DO labels | `DeskPriorityPad` `folderChrome`, `.desk-priority-pad--folder` | PASS |
-| 13 | Denim texture vs Kelly photographic fold | `arc-desk.css` gradients | FAIL |
+| 13 | Denim texture vs Kelly photographic fold | `todos-folder-body.png` when slices on | IN PROGRESS (A) |
 | **Planner spread** |
 | 14 | Cream paper + green frame border | `.arc-calendar-spread--desk` | PASS |
 | 15 | Title “Teaching week” (Instrument Serif) | `.plan-state-primary`, `arc-fonts.css` | PASS |
 | 16 | Kicker `SEPTEMBER 7 - 11 • WEEK 4` | `formatKellyDeskWeekSecondary`, `deskWeekRangeLabel` | PASS |
 | 17 | Search + Today pill (header right) | `desk-planner-search`, `desk-planner-today` | PASS |
 | 18 | Rainbow/arch mark beside title | Kelly comp | FAIL |
-| 19 | `< Today >` chevron pill styling | `.desk-planner-today` | PARTIAL |
+| 19 | `< Today >` chevron pill styling | `.desk-planner-today-cluster`, `desk-planner-today` | PARTIAL (chevron cluster; chevrons not wired) |
 | **Week grid** |
 | 20 | MON–FRI day numbers header row | `PlanningWeekDayView`, desk date CSS | PARTIAL |
 | 21 | Thu focus marker (orange semicircle) | `.planning-date-heading--focus` | PARTIAL |
 | 22 | Three courses AP / 2D / 3D | Kelly demo seed `kellyDeskDemo.ts` | PASS |
 | 23 | Unit bar `UNIT 2.1 Ancient Mesopotamia` | demo units + `.planning-unit-span` | PASS |
 | 24 | Daily lesson pills (Mesopotamia set) | demo lessons | PASS |
-| 25 | Course time blocks `P1 • 8:05–9:00` style | comp typography on row headers | FAIL |
+| 25 | Course time blocks `P1 • 8:05–9:00` style | Kelly demo section names + `.planning-row-label` desk CSS | PARTIAL (labels; colored left rails still off) |
 | 26 | “Weekends?” footer on spread | Kelly comp | FAIL |
 | **Vertical tabs** |
 | 27 | DAY / WEEK / MONTH / YEAR on planner right edge | `.arc-planner-physical-tabs--desk-edge` | PASS |
 | 28 | WEEK active state (cream tab) | `.arc-index-tab[aria-current='page']` | PASS |
-| 29 | Denim/tab texture match comp | tab background assets | PARTIAL |
+| 29 | Denim/tab texture match comp | `planner-edge-tab-*.png` + slice CSS | IN PROGRESS (A) |
 | **Start class** |
 | 30 | Quadrant AT mark + green frame | `ArcTableDeskFixture`, `.arc-desk-arctable` | PASS |
 | 31 | Script “start class” (lowercase serif) | `.arc-desk-arctable-script` | PASS |
@@ -55,7 +57,7 @@
 | 38 | Integration branch + `npm run preview:desk` | `docs/LOCAL-PREVIEW.md` | PASS |
 | **Tests** |
 | 39 | `npm run test:desk-pixel-pass` | `scripts/desk-pixel-pass.mjs` | PASS |
-| 40 | `npm run test:arc-desk-pass` | `tests/arc-desk-pass.smoke.mjs` | PASS |
+| 40 | `npm run test:arc-desk-pass` | `tests/arc-desk-pass.smoke.mjs` (+ slice testids) | PASS (re-run after A1 commit) |
 | 41 | `npm run test:desk-fidelity-audit` (structural) | `tests/desk-fidelity-audit.mjs` | PASS (not pixel) |
 
 ## Evidence paths

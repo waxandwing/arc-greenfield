@@ -13,7 +13,9 @@ import {
   quadrantLauncherMeetsA11y,
   type ArcTableDeskAccess,
 } from '../planning/arcTableDeskAccess'
+import { deskSliceUsesEnabled } from '../desk/deskSliceRuntime'
 import { ArcTableDeskMarkSvg } from './ArcTableDeskMarkSvg'
+import { DeskChromeSlice } from './DeskChromeSlice'
 
 const DEFAULT_MARK_SIZE = 96
 
@@ -129,7 +131,11 @@ export function ArcTableDeskFixture({
         data-quadrant-mode={quadrantMode ? 'true' : 'false'}
         data-live={liveActive ? 'true' : 'false'}
         data-interactions-disabled={interactionsDisabled ? 'true' : 'false'}
+        data-desk-slices={deskSliceUsesEnabled() ? 'true' : 'false'}
       >
+        {deskSliceUsesEnabled() ? (
+          <DeskChromeSlice sliceId="start-class-frame" testId="desk-slice-start-class-frame" />
+        ) : null}
         {liveActive ? <span className="arc-desk-arctable-live-badge">Live</span> : null}
         <div className="arc-desk-arctable-mark-wrap">
           {quadrantMode ? (

@@ -58,6 +58,7 @@ const contracts = [
   'tests/generated/src/planning/interactionLaws.contract.js',
   'tests/generated/src/navigation/deskPreferences.contract.js',
   'tests/generated/src/navigation/deskLayout.contract.js',
+  'tests/generated/src/navigation/deskSliceManifest.contract.js',
   'tests/generated/src/navigation/workspaceLayout.contract.js',
   'tests/generated/src/planning/arcTableDeskActions.contract.js',
   'tests/generated/src/planning/dragTargets.contract.js',

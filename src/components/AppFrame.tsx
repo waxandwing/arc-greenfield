@@ -70,6 +70,7 @@ import { PlannerShellBar } from './PlannerShellBar'
 import { ArcTableDeskFixture } from './ArcTableDeskFixture'
 import { DeskPriorityPad } from './DeskPriorityPad'
 import { DeskEditToolbar } from './DeskEditToolbar'
+import { DeskCalendarPopOut } from './DeskCalendarPopOut'
 import { DeskQuickCaptureSticky } from './DeskQuickCaptureSticky'
 import { publicAssetUrl } from '../publicAssetUrl'
 import { DeskNotesObject } from './DeskNotesObject'
@@ -103,6 +104,8 @@ export function AppFrame() {
   const [deskSelectedObject, setDeskSelectedObject] = useState<DeskObjectKind>('tray')
   const [deskResetArmed, setDeskResetArmed] = useState(false)
   const [deskPlannerSearch, setDeskPlannerSearch] = useState('')
+  const [deskCalendarPopOutOpen, setDeskCalendarPopOutOpen] = useState(false)
+  const deskCalendarEnlargeRef = useRef<HTMLButtonElement>(null)
 
   const deskEditActive = deskEditSession !== null
   const activeDeskLayout = deskEditSession?.draftLayout ?? workspaceLayout
@@ -586,6 +589,21 @@ export function AppFrame() {
   const deskEnabled = showPlanFurniture && workspaceMode.mode === 'calendar'
   const yearExpanded = deskEnabled && workspace.activeView === 'Year Map'
 
+  const deskCalendarIndexNav = deskEnabled
+    ? {
+        activeView: workspace.activeView,
+        viewSelectionDisabled: workspaceBusy || onboardingActive,
+        availabilityFor: workspace.viewAvailability,
+        onSelectView: selectView,
+      }
+    : null
+
+  useEffect(() => {
+    if (!deskEnabled || workspaceOverlayOpen || deskEditActive) {
+      setDeskCalendarPopOutOpen(false)
+    }
+  }, [deskEnabled, workspaceOverlayOpen, deskEditActive])
+
   function openWorkspaceOverlay(open: boolean) {
     if (open && deskEnabled && workspace.activeView === 'Year Map') {
       workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
@@ -643,6 +661,64 @@ export function AppFrame() {
       onDelete={taskBar.delete}
     />
   ) : <p className="b01-furniture-empty">Tasks become available after the school calendar is set.</p>
+
+  const calendarWorkspaceStage = (
+    <WorkspaceStage
+      mode={workspaceMode.mode}
+      activeView={workspace.activeView}
+      showWeekends={viewPreferences.showWeekends}
+      calendar={workspace.calendar}
+      calendarInput={workspace.calendarInput}
+      anchorDate={workspace.anchorDate}
+      planContext={workspace.planContext}
+      planningWorkspace={workspace.planningWorkspace}
+      planningInput={workspace.planningInput}
+      unitWorkspace={workspace.unitWorkspace}
+      unitInput={workspace.unitInput}
+      lessonWorkspace={workspace.lessonWorkspace}
+      lessonInput={workspace.lessonInput}
+      shiftState={workspace.shiftState}
+      protectedCourseIds={workspace.protectedCourseIds}
+      protectedUnitIds={workspace.protectedUnitIds}
+      protectedSectionIds={workspace.protectedSectionIds}
+      onUseCalendar={workspace.useCalendar}
+      onUseTerms={workspace.useTerms}
+      onUseClasses={workspace.useClasses}
+      onUseUnits={workspace.useUnits}
+      onUseLessons={workspace.useLessons}
+      onUseCurriculumImport={workspace.useCurriculumImport}
+      onApplyRecoveryShift={workspace.applyRecoveryShift}
+      onStartClass={startClass}
+      onSelectDate={deepenTo}
+      onSelectYearUnit={workspace.selectYearUnit}
+      onSelectTeachingBlock={workspace.selectTeachingBlock}
+      onSelectLesson={workspace.selectLesson}
+      onRetreatPlanFocus={workspace.retreatFocus}
+      onOpenWorkspace={() => openWorkspaceOverlay(true)}
+      onFollowPlanningAttention={workspace.followPlanningAttention}
+      onReturnToPlanningPeriod={workspace.returnToPlanningPeriod}
+      planningPeriodReturnPending={Boolean(workspace.planningPeriodReturnBlockId)}
+      captureWorkspace={workspace.captureWorkspace}
+      dayNotes={{
+        onAdd: workspace.addCalendarNote,
+        onUpdateText: workspace.updateCalendarNote,
+        onMove: workspace.moveCalendarNote,
+        onRemove: workspace.deleteCalendarNote,
+        onSetImportant: workspace.setCalendarNoteImportant,
+      }}
+      onSetLessonImportant={workspace.setLessonImportant}
+      onSetCaptureImportant={workspace.setCaptureImportant}
+      onMoveCaptureToDate={workspace.moveCaptureToDate}
+      onCloseMode={workspaceMode.mode === 'recovery' ? closeRecoveryMode : workspaceMode.close}
+      onOpenMode={workspaceMode.open}
+      planMoveIntent={workspace.planMoveIntent}
+      onBeginPlanLessonMove={workspace.beginPlanLessonMove}
+      onCancelPlanLessonMove={workspace.cancelPlanLessonMove}
+      onConfirmPlanLessonMove={workspace.confirmPlanLessonMove}
+      onOpenRecoveryForSection={(sectionId) => openRecovery(sectionId)}
+      recoveryFocusSectionId={recoveryFocusSectionId}
+    />
+  )
 
   return (
     <div className={`arc-shell${deskEnabled ? ' arc-shell--desk' : ''}`}>
@@ -849,6 +925,9 @@ export function AppFrame() {
                     onToday={workspace.goToday}
                     searchQuery={deskPlannerSearch}
                     onSearchQueryChange={setDeskPlannerSearch}
+                    onEnlargeCalendar={() => setDeskCalendarPopOutOpen(true)}
+                    calendarEnlarged={deskCalendarPopOutOpen}
+                    enlargeTriggerRef={deskCalendarEnlargeRef}
                   />
                 ) : (
                   <PlanStateHeader
@@ -872,67 +951,29 @@ export function AppFrame() {
                   />
                 )
               ) : null}
-              <WorkspaceStage
-                mode={workspaceMode.mode}
-                activeView={workspace.activeView}
-                showWeekends={viewPreferences.showWeekends}
-                calendar={workspace.calendar}
-                calendarInput={workspace.calendarInput}
-                anchorDate={workspace.anchorDate}
-                planContext={workspace.planContext}
-                planningWorkspace={workspace.planningWorkspace}
-                planningInput={workspace.planningInput}
-                unitWorkspace={workspace.unitWorkspace}
-                unitInput={workspace.unitInput}
-                lessonWorkspace={workspace.lessonWorkspace}
-                lessonInput={workspace.lessonInput}
-                shiftState={workspace.shiftState}
-                protectedCourseIds={workspace.protectedCourseIds}
-                protectedUnitIds={workspace.protectedUnitIds}
-                protectedSectionIds={workspace.protectedSectionIds}
-                onUseCalendar={workspace.useCalendar}
-                onUseTerms={workspace.useTerms}
-                onUseClasses={workspace.useClasses}
-                onUseUnits={workspace.useUnits}
-                onUseLessons={workspace.useLessons}
-                onUseCurriculumImport={workspace.useCurriculumImport}
-                onApplyRecoveryShift={workspace.applyRecoveryShift}
-                onStartClass={startClass}
-                onSelectDate={deepenTo}
-                onSelectYearUnit={workspace.selectYearUnit}
-                onSelectTeachingBlock={workspace.selectTeachingBlock}
-                onSelectLesson={workspace.selectLesson}
-                onRetreatPlanFocus={workspace.retreatFocus}
-                onOpenWorkspace={() => openWorkspaceOverlay(true)}
-                onFollowPlanningAttention={workspace.followPlanningAttention}
-                onReturnToPlanningPeriod={workspace.returnToPlanningPeriod}
-                planningPeriodReturnPending={Boolean(workspace.planningPeriodReturnBlockId)}
-                captureWorkspace={workspace.captureWorkspace}
-                dayNotes={{
-                  onAdd: workspace.addCalendarNote,
-                  onUpdateText: workspace.updateCalendarNote,
-                  onMove: workspace.moveCalendarNote,
-                  onRemove: workspace.deleteCalendarNote,
-                  onSetImportant: workspace.setCalendarNoteImportant,
-                }}
-                onSetLessonImportant={workspace.setLessonImportant}
-                onSetCaptureImportant={workspace.setCaptureImportant}
-                onMoveCaptureToDate={workspace.moveCaptureToDate}
-                onCloseMode={workspaceMode.mode === 'recovery' ? closeRecoveryMode : workspaceMode.close}
-                onOpenMode={workspaceMode.open}
-                planMoveIntent={workspace.planMoveIntent}
-                onBeginPlanLessonMove={workspace.beginPlanLessonMove}
-                onCancelPlanLessonMove={workspace.cancelPlanLessonMove}
-                onConfirmPlanLessonMove={workspace.confirmPlanLessonMove}
-                onOpenRecoveryForSection={(sectionId) => openRecovery(sectionId)}
-                recoveryFocusSectionId={recoveryFocusSectionId}
-              />
+              {deskEnabled && deskCalendarPopOutOpen ? (
+                <p className="desk-calendar-popout-placeholder" data-testid="desk-calendar-popout-placeholder">
+                  Calendar is enlarged.
+                </p>
+              ) : (
+                calendarWorkspaceStage
+              )}
                 </>
               )}
             </section>
           </B01Furniture>
         </main>
       </div>
+      {deskEnabled && deskCalendarPopOutOpen && deskCalendarIndexNav ? (
+        <DeskCalendarPopOut
+          open
+          onClose={() => setDeskCalendarPopOutOpen(false)}
+          indexNav={deskCalendarIndexNav}
+          returnFocusRef={deskCalendarEnlargeRef}
+        >
+          {calendarWorkspaceStage}
+        </DeskCalendarPopOut>
+      ) : null}
     </div>
   )
 }
