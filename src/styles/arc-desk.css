@@ -1283,16 +1283,35 @@ html:has(.arc-shell--desk) body {
   gap: 8px;
 }
 
-/* Desk Settings sheet — same paper family as Teaching week planner. */
-.b01-furniture-composition--desk .b01-settings-surface {
-  top: max(72px, 8dvh);
-  right: max(18px, 2.4vw);
-  bottom: max(18px, 3dvh);
-  left: auto;
-  width: min(400px, calc(100vw - 36px));
+/* Desk Settings sheet — opaque paper card over the wood (not a frosted rail). */
+.b01-furniture-composition--desk .b01-settings-surface,
+.b01-furniture-composition--desk[data-side-panel='settings'] .b01-settings-owner[data-state='open'] .b01-settings-surface {
+  position: fixed;
+  z-index: 70;
+  top: max(64px, 7dvh);
+  right: auto;
+  left: max(12px, 1.2vw);
+  bottom: max(16px, 2.5dvh);
+  width: min(392px, calc(100vw - 28px));
+  min-height: 0;
+  max-height: none;
+  margin: 0;
   padding: 20px 22px 26px;
+  border: var(--shell-planner-border) solid var(--shell-frame-green);
   border-radius: 14px;
   opacity: 1;
+  background-color: var(--field-elevated);
+  background-image:
+    linear-gradient(var(--field-elevated), var(--field-elevated)),
+    var(--plan-surface-paper-texture),
+    var(--plan-surface-paper);
+  background-size: auto, 420px, cover;
+  background-blend-mode: normal, soft-light, normal;
+  box-shadow:
+    0 22px 48px -24px rgba(33, 29, 23, 0.55),
+    0 6px 18px -8px rgba(15, 35, 28, 0.28),
+    inset 0 1px 0 rgba(255, 253, 248, 0.92),
+    inset 0 3px 0 0 color-mix(in srgb, var(--mustard) 78%, transparent);
 }
 
 .b01-furniture-composition--desk .b01-settings-content {
