@@ -12,6 +12,16 @@ function gitSha(): string {
   }
 }
 
+function gitBranch(): string {
+  const fromEnv = process.env.VITE_ARC_GIT_BRANCH?.trim()
+  if (fromEnv) return fromEnv
+  try {
+    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+}
+
 function deskPreviewBuildActive(): boolean {
   return (
     process.env.VITE_ARC_DESK_PREVIEW === 'true'
@@ -38,9 +48,10 @@ function arcDeskBuildStampPlugin(): Plugin {
       if (!deskPreviewBuildActive()) return html
 
       const sha = gitSha()
+      const branch = gitBranch()
       const label = process.env.VITE_ARC_BUILD_LABEL?.trim() || 'desk-v2'
-      const dataBuild = `${label}@${sha}`
-      const footerText = `${label} · ${sha}`
+      const dataBuild = branch ? `${label}@${branch}@${sha}` : `${label}@${sha}`
+      const footerText = branch ? `${label} · ${branch} · ${sha}` : `${label} · ${sha}`
 
       let next = html.replace(/<html([^>]*)>/i, (_match, attrs: string) => {
         const withoutBuild = attrs.replace(/\sdata-build="[^"]*"/gi, '')
@@ -71,6 +82,7 @@ export default defineConfig({
   plugins: [react(), arcDeskBuildStampPlugin()],
   define: {
     'import.meta.env.VITE_ARC_GIT_SHA': JSON.stringify(gitSha()),
+    'import.meta.env.VITE_ARC_GIT_BRANCH': JSON.stringify(gitBranch()),
     'import.meta.env.VITE_ARC_BUILD_LABEL': JSON.stringify(process.env.VITE_ARC_BUILD_LABEL ?? ''),
     'import.meta.env.VITE_ARC_DESK_PREVIEW': JSON.stringify(process.env.VITE_ARC_DESK_PREVIEW ?? ''),
   },

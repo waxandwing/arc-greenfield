@@ -1,5 +1,9 @@
 # Local desk build and preview
 
+**Kelly — you must be on the integration branch before any desk preview:** `git fetch origin && git checkout cursor/arc-production-integration && git pull origin cursor/arc-production-integration`
+
+**Do not run `npm run preview:desk` from `main`.** `main` has no desk slices, no `preview:desk` script, and no wood/ArcTable build — you will see the old cream plan shell with no useful footer stamp.
+
 Use the **integration branch** for the Arc desk (wood tabletop, tray, MSC pad, ArcTable). `main` does not carry this build by default.
 
 ## Kelly checklist (must match this order)
@@ -8,7 +12,7 @@ Use the **integration branch** for the Arc desk (wood tabletop, tray, MSC pad, A
 2. **Install:** `npm install` (after pull when lockfile changed).
 3. **Build + serve:** `npm run preview:desk` only (sets `desk-v2` stamp + Kelly demo seed on `demoReset`).
 4. **Open:** `http://127.0.0.1:4173/?demo=1&demoReset=1`
-5. **Verify stamp:** bottom-right **`desk-v2 · <git sha>`** must match `git rev-parse --short HEAD` on the same checkout.
+5. **Verify stamp:** bottom-right **`desk-v2 · cursor/arc-production-integration · <git sha>`** — branch and SHA must match `git rev-parse --abbrev-ref HEAD` and `git rev-parse --short HEAD`.
 
 If the stamp SHA ≠ your local `git rev-parse --short HEAD`, you are viewing a stale server or wrong clone/port.
 

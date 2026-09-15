@@ -1,6 +1,7 @@
 export const arcBuildInfo = {
   sha: import.meta.env.VITE_ARC_GIT_SHA ?? 'dev',
   label: import.meta.env.VITE_ARC_BUILD_LABEL ?? '',
+  branch: import.meta.env.VITE_ARC_GIT_BRANCH ?? '',
 }
 
 export function deskPreviewBuildEnabled(): boolean {
