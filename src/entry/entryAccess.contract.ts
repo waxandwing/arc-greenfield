@@ -1,5 +1,10 @@
-import assert from 'node:assert/strict'
 import { isEntryComplete, isEntryGateEnabled, markEntryComplete, shouldBypassEntryGate } from './entryAccess'
+
+function assertEqual<T>(actual: T, expected: T, message?: string): void {
+  if (actual !== expected) {
+    throw new Error(message ?? `Expected ${String(expected)}, received ${String(actual)}`)
+  }
+}
 
 const memoryStorage = (): Storage => {
   const map = new Map<string, string>()
@@ -13,12 +18,12 @@ const memoryStorage = (): Storage => {
   }
 }
 
-assert.equal(shouldBypassEntryGate('?skipEntry=1'), true)
-assert.equal(shouldBypassEntryGate('?demo=1'), false)
+assertEqual(shouldBypassEntryGate('?skipEntry=1'), true)
+assertEqual(shouldBypassEntryGate('?demo=1'), false)
 
 const storage = memoryStorage()
-assert.equal(isEntryComplete(storage), !isEntryGateEnabled() || shouldBypassEntryGate())
+assertEqual(isEntryComplete(storage), !isEntryGateEnabled() || shouldBypassEntryGate())
 markEntryComplete(storage)
-assert.equal(isEntryComplete(storage), true)
+assertEqual(isEntryComplete(storage), true)
 
 console.log('entry access contract passed')
