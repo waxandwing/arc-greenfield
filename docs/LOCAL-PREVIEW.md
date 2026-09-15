@@ -1,5 +1,8 @@
 # Local desk build and preview
 
+> **Start here for the big picture:** [`docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md`](overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md) — plain-English handoff for Kelly and Cursor agents (which branch, project folder vs `main`, three preview paths, done vs next).  
+> Use **this** file when you are already on **`cursor/arc-production-integration`** and need step-by-step terminal commands.
+
 **Kelly — you must be on the integration branch before any desk preview:** `git fetch origin && git checkout cursor/arc-production-integration && git pull origin cursor/arc-production-integration`
 
 **Do not run `npm run preview:desk` from `main`.** `main` has no desk slices, no `preview:desk` script, and no wood/ArcTable build — you will see the old cream plan shell with no useful footer stamp.
