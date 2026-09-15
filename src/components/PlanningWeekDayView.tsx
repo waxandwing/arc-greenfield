@@ -108,6 +108,8 @@ function PlanningDeskNotesStrip({
               className={`planning-desk-notes-cell${day.date === focusDate ? ' planning-desk-notes-cell--focus' : ''}${!isPlannableDayKind(day.kind) ? ' planning-desk-notes-cell--off' : ''}`}
               data-testid={`planning-desk-notes-cell-${day.date}`}
               data-day-notes-date={day.date}
+              data-desk-postit-drop="date"
+              data-desk-postit-date={day.date}
             >
               <CalendarDayNotes
                 notes={notes}
