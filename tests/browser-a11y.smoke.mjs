@@ -79,7 +79,7 @@ async function auditShellHierarchyAndZoom(browser) {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await configureCalendar(page)
 
-  assert(await page.getByRole('heading', { level: 1, name: 'Month' }).count() === 1, 'Shell hierarchy: Month must be the single level-one workspace heading.')
+  assert(await page.getByRole('heading', { level: 1, name: 'This Month', exact: true }).count() === 1, 'Shell hierarchy: the editorial Month plan-state title must be the single level-one workspace heading.')
   assert(await page.locator('h1').count() === 1, 'Shell hierarchy: expected exactly one h1 after calendar setup.')
   const indexNav = page.getByRole('navigation', { name: 'Planner index' })
   assert(await indexNav.count() === 1, 'Shell navigation: planner index tabs must be the always-reachable view controls.')
@@ -95,7 +95,7 @@ async function auditShellHierarchyAndZoom(browser) {
   assert(await options.count() === 1, 'Shell hierarchy: View options disclosure is missing or duplicated.')
 
   await selectCalendarView(page, 'Week')
-  assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'B01 evidence: exact shell artifact must render Week as the level-one workspace heading.')
+  assert(await page.getByRole('heading', { level: 1, name: 'Teaching week', exact: true }).count() === 1, 'B01 evidence: the editorial Week plan-state title must be the level-one workspace heading.')
   assert(await indexNav.getByRole('button', { name: 'WEEK', exact: true }).getAttribute('aria-current') === 'page', 'B01 evidence: Week tab must reflect the active view.')
   assert(await page.getByRole('group', { name: 'Week date navigation' }).count() === 1, 'B01 evidence: Week date navigation must remain explicitly named.')
 
@@ -106,13 +106,13 @@ async function auditShellHierarchyAndZoom(browser) {
   await page.evaluate(() => { document.documentElement.style.zoom = '2' })
   const zoom200 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(zoom200.scroll <= zoom200.width + 1, `200% zoom: document overflowed horizontally (${zoom200.scroll} > ${zoom200.width}).`)
-  assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '200% zoom: primary workspace heading became unavailable.')
+  assert(await page.getByRole('heading', { level: 1, name: 'This Month', exact: true }).isVisible(), '200% zoom: primary workspace heading became unavailable.')
   assert(await indexNav.getByRole('button', { name: 'MONTH', exact: true }).isVisible(), '200% zoom: planner index Month tab became unavailable.')
 
   await page.evaluate(() => { document.documentElement.style.zoom = '4' })
   const zoom400 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(zoom400.scroll <= zoom400.width + 1, `400% zoom: document overflowed horizontally (${zoom400.scroll} > ${zoom400.width}).`)
-  assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '400% zoom: primary workspace heading became unavailable.')
+  assert(await page.getByRole('heading', { level: 1, name: 'This Month', exact: true }).isVisible(), '400% zoom: primary workspace heading became unavailable.')
   assert(await indexNav.getByRole('button', { name: 'MONTH', exact: true }).isVisible(), '400% zoom: planner index Month tab became unavailable.')
 
   assert(runtimeErrors.length === 0, `Shell hierarchy/zoom runtime errors: ${runtimeErrors.join(' | ')}`)
@@ -135,7 +135,7 @@ async function auditCalendarEditPreservesContext(browser) {
   await page.locator('#last-school-day').fill('2027-06-01')
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 
-  assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'Calendar edit continuity: saving calendar dates reset the active view instead of preserving Week.')
+  assert(await page.getByRole('heading', { level: 1, name: 'Teaching week', exact: true }).count() === 1, 'Calendar edit continuity: saving calendar dates reset the active view instead of preserving Week.')
   const afterRange = await page.locator('.projection-section').first().getAttribute('aria-label')
   assert(afterRange === beforeRange, `Calendar edit continuity: saving calendar dates moved the current Week anchor (${beforeRange} → ${afterRange}).`)
   assert(runtimeErrors.length === 0, `Calendar edit continuity runtime errors: ${runtimeErrors.join(' | ')}`)
