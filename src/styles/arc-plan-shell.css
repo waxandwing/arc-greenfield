@@ -1,0 +1,118 @@
+/* Arc Plan shell: dark green frame, brand pattern outside cream planner object. */
+
+.arc-shell {
+  min-height: 100dvh;
+  background-color: var(--shell-exterior-base);
+  background-image:
+    linear-gradient(var(--shell-pattern-wash), var(--shell-pattern-wash)),
+    var(--shell-pattern);
+  background-size: auto, var(--shell-pattern-size);
+  background-repeat: no-repeat, repeat;
+  background-blend-mode: normal, soft-light;
+  color: var(--ink);
+}
+
+.arc-shell::before,
+.arc-shell::after {
+  content: none;
+}
+
+/* App-level header removed in Repair Pass 3; brand lives in .planner-shell-bar */
+
+.arc-layout {
+  position: relative;
+  z-index: 1;
+}
+
+.section-label {
+  font: var(--type-section);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--field-elevated) 72%, transparent);
+}
+
+.calendar-stage-header .section-label {
+  color: var(--soft-charcoal);
+}
+
+.view-title {
+  font: var(--type-view-title);
+  letter-spacing: -0.035em;
+}
+
+.plan-state-header[data-plan-focus='class'] .plan-state-primary {
+  font-size: 32px;
+}
+
+.plan-state-header[data-plan-focus='lesson'] .plan-state-primary {
+  max-width: 20ch;
+  font-size: clamp(36px, 4.4vw, 46px);
+  line-height: 1;
+}
+
+.plan-state-header[data-plan-focus='class'] .plan-state-kicker,
+.plan-state-header[data-plan-focus='lesson'] .plan-state-kicker {
+  color: var(--accent-blue-deep);
+}
+
+.calendar-canvas {
+  background: transparent;
+}
+
+.primary-button {
+  border-color: rgba(44, 46, 46, 0.22);
+  background: var(--mustard);
+  color: var(--ink);
+  transition: background var(--duration-fast) var(--ease-out-soft);
+}
+
+.primary-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--mustard) 88%, white);
+}
+
+.arc-btn-accent {
+  min-height: 44px;
+  border: 1px solid color-mix(in srgb, var(--accent-blue-deep) 35%, transparent);
+  border-radius: 999px;
+  background: var(--accent-blue-deep);
+  color: var(--field-elevated);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.arc-btn-accent:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-blue-deep) 90%, var(--ink));
+}
+
+.arc-live-return {
+  border-color: color-mix(in srgb, var(--mustard) 55%, var(--line-strong));
+  background: rgba(228, 179, 61, 0.14);
+}
+
+.arc-live-return strong {
+  color: var(--ink);
+}
+
+.workspace-capture {
+  border-color: color-mix(in srgb, var(--accent-blue) 45%, transparent);
+  background: rgba(255, 253, 248, 0.45);
+  color: var(--accent-blue-deep);
+}
+
+.day-continuity-lesson .primary-button {
+  background: var(--accent-blue-deep);
+  color: var(--field-elevated);
+  border-color: transparent;
+}
+
+@media (max-width: 520px) {
+  .arc-shell {
+    background-size: auto, var(--shell-pattern-size-mobile);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-button {
+    transition: none;
+  }
+}

@@ -1,0 +1,98 @@
+# ARC Desk Pass Report
+
+Branch: `cursor/arc-production-integration`  
+Baseline: Edit Workspace + stack MVP land on integration (`80c8953`)
+
+## Stop condition (A–Z)
+
+| ID | Item | Status |
+|----|------|--------|
+| A | Arc IS the Desk — single viewport, internal scroll only | **GREEN** — `.arc-shell--desk` locks page overflow; planner canvas scrolls internally |
+| B | Material hierarchy (pattern → wood → cream/blue/paper) | **GREEN** — full-viewport wood on `.arc-shell--desk`; pattern reserved for onboarding/non-desk shell |
+| C | Planner object (Day/Week/Month/Year index) | **GREEN** — existing index tabs retained |
+| D | Preferred desk planner view persisted | **GREEN** — `arc.desk-preferences.v1` + Settings → Home desk |
+| E | Year view IA (mini months, remain, caught-up, quarters) | **GREEN** — `SchoolYearDeskView` + open course progression |
+| F | Year expansion compresses tray/MSC | **GREEN** — `b01-furniture-composition--year-expanded` |
+| G | Tray visible language | **GREEN** — TRAY tab + headings; internal `workspace` drawer id retained |
+| H | Tray persistence / migration | **GREEN** — same `arc.captures.v1` + lesson unplaced flows |
+| I | MSC pad on desk (not in tray) | **GREEN** — `DeskPriorityPad` column |
+| J | Capture → tray + feedback | **GREEN** — existing global capture + "Captured." |
+| K | Capture → MSC (canonical move) | **GREEN** — drag capture to lane promotes to task + removes capture |
+| L | Drag audit | **YELLOW** — capture tray↔Month DATE DnD added; lesson tray↔calendar DnD not expanded |
+| M | Day notes / Important laws | **GREEN** — untouched through integration (`2079ff4`) |
+| N | Settings Desk setup addendum | **GREEN** — teacher IA (My school year … Data / import / reuse); **Edit Workspace** → live edit mode; **Pin it down** / **Reset desk** |
+| O | Onboarding / school lookup / logo | **GREEN** — no regressions in touched paths |
+| P | ArcTable entry | **GREEN** — AT-001 desk mark on wood; ArcTable session internals unchanged |
+| Q | Move/Shift/Recovery | **GREEN** — out of scope, unchanged |
+| R | Now/Needs Attention | **GREEN** — unchanged |
+| S | Day retreat law | **GREEN** — unchanged |
+| T | Section divergence | **GREEN** — unchanged |
+| U | ArcTable internals | **GREEN** — unchanged |
+| V | Import confirmation law | **GREEN** — unchanged |
+| W | Evidence contact sheet | **GREEN** — `docs/overnight/evidence/arc-desk-pass/` |
+| X | Contracts | **GREEN** — desk prefs, year desk projection, desk drag |
+| Y | Smokes | **GREEN** — `tests/arc-desk-pass.smoke.mjs` + updated TRAY smokes |
+| Z | Visual addendum (wood, tray, tab, year grid) | **GREEN** — assets in `public/assets/desk/` |
+
+## Drag audit (summary)
+
+| Flow | Before | After |
+|------|--------|-------|
+| Day note move | HTML5 drag in `CalendarDayNotes` | Unchanged |
+| Task priority | Select menu in task bar | + desk pad drag + drop between lanes |
+| Tray capture | Click/select promote | + drag to MSC lanes (removes capture id) |
+| Tray ↔ calendar | Not implemented in source | **GREEN** — capture anchor drag to Month DATE + return to TRAY drop surface |
+
+## Visual addendum compliance
+
+- Light wood desk: `public/assets/desk/light-wood-desk.png` edge-to-edge on `.arc-shell--desk` (not a nested frame)
+- ArcTable mark: `logo-icon-framed-arc-primary-512.png` raster in desk fixture (vector hit targets only)
+- Blue molded tray: rim/well uses `blue-molded-tray.png` + inset shadows
+- Mustard tab: texture on `.arc-index-tab--workspace`
+- Year authority: mini-month grid, countdown, caught-up X, quarter legend
+
+## Edit Workspace (Addendum §1–4, 30)
+
+| Item | Status |
+|------|--------|
+| Settings → **Edit Workspace** (no tray/planner coordinate dropdowns) | **GREEN** |
+| Real desk edit mode + normalized zones/grid; size presets in edit toolbar | **GREEN** |
+| Planning drag de-emphasized during edit (tray captures + MSC tasks) | **GREEN** |
+| Finish copy | **GREEN** — primary **Pin it down**; **Reset desk** with confirm when customized |
+| Layout persisted (`arc.desk-layout.v1` / `workspaceLayout` alias) separate from planning placement | **GREEN** |
+| Furniture locked after pin; tray post-its still draggable | **GREEN** |
+
+## Stacks (Addendum §7–31) — MVP
+
+| Item | Status |
+|------|--------|
+| `stackId`, `memberIds`, `memberOrder`, label — `stacks.ts` + `arc.object-stacks.v1` | **GREEN** |
+| Dwell stack create (tray captures) | **GREEN** |
+| Open stack / unstack / reorder; collapsed stack drag | **GREEN** |
+| Stack ≠ Unit | **GREEN** — `interactionLaws.contract.ts` |
+| Unit magnet UI | **YELLOW** — `UNIT_MAGNET` typed only |
+| Stack bulk calendar drop | **YELLOW** — single-capture DATE drop only; stack-as-unit drop deferred |
+
+## Drag targets (§6, 20–24)
+
+| Target | Status |
+|--------|--------|
+| DATE, TRAY, PRIORITY_LANE, STACK_GROUP, UNIT_MAGNET, EMPTY | **GREEN** — `dragTargets.ts` |
+| Tray↔calendar canonical unplace/place | **YELLOW** — unchanged |
+
+## Honest scope notes
+
+- **Desk notes strip**: preference only; placeholder copy (optional surface not fully built).
+- **Mobile desk**: tray/MSC docks hidden `<900px`; index TRAY drawer remains.
+- **Lesson stack UI**: data model + contracts; capture stacks are the happy path.
+
+## Tests
+
+```bash
+npm run test:contracts
+npm run test:arc-desk-pass
+npm run test:edit-workspace
+npm run test:plan-year
+```
+
+Evidence screenshots: `docs/overnight/evidence/arc-desk-pass/01–04` (+ reference `00`).

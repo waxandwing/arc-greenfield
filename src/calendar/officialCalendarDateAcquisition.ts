@@ -195,6 +195,7 @@ function buildExplicitExceptions(
 function explicitExceptionKind(label: string): DayKind | null {
   const normalized = normalizeLabel(label)
   if (normalized.includes('thanksgiving break') || normalized.includes('winter break') || normalized.includes('spring break')) return 'break'
+  if (normalized.includes('early release') || normalized.includes('early dismissal') || normalized.includes('early-out')) return 'early-release'
   if (normalized.includes('teacher workday') || normalized.includes('professional day') || normalized.includes('professional development day')) return 'teacher-workday'
   if (normalized.includes('student holiday') || normalized.includes('holiday') || normalized.includes('schools closed')) return 'holiday'
   return null

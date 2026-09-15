@@ -1,39 +1,135 @@
 :root {
-  --paper:#F3EBDD;
-  --paper-raised:#F7F1E7;
-  --ink:#2C2E2E;
-  --mustard:#E4B33D;
-  --terracotta:#C96845;
-  --terracotta-text:#A84F32;
-  --dusty-blue:#7C9CAD;
-  --focus-blue:#657F90;
-  --sage:#9AAA89;
-  --dusty-pink:#C99A9E;
-  --lavender:#AAA0B8;
-  --kraft:#C6A77D;
-  --soft-charcoal:#4A4945;
+  /* —— Color: paper & ink —— */
+  --paper: #F3EBDD;
+  --paper-raised: #F7F1E7;
+  --field: #FBF8F0;
+  --field-elevated: #FFFDF8;
+  --ink: #2C2E2E;
+  --soft-charcoal: #4A4945;
+  --muted-ink: rgba(74, 73, 69, 0.72);
 
-  --line-subtle:rgba(44,46,46,.12);
-  --line-strong:rgba(44,46,46,.22);
-  --control-border:rgba(44,46,46,.55);
-  --shadow-hairline:0 1px 0 rgba(44,46,46,.04);
+  /* —— Color: brand accents (Plan prefers blue; live classroom keeps pine on ArcTable) —— */
+  --mustard: #E4B33D;
+  --terracotta: #C96845;
+  --terracotta-text: #A84F32;
+  --dusty-blue: #7C9CAD;
+  --focus-blue: #657F90;
+  --accent-blue: #657F90;
+  --accent-blue-deep: #4A6678;
+  --accent-blue-soft: rgba(124, 156, 173, 0.14);
+  --accent-blue-field: rgba(124, 156, 173, 0.24);
+  --mustard-soft: rgba(228, 179, 61, 0.18);
+  --terracotta-soft: rgba(201, 104, 69, 0.14);
+  --sage-soft: rgba(154, 170, 137, 0.16);
+  --lavender-soft: rgba(170, 160, 184, 0.16);
+  --sage: #9AAA89;
+  --dusty-pink: #C99A9E;
+  --lavender: #AAA0B8;
+  --kraft: #C6A77D;
+  --pine-live: #1F4B3A;
+  --pine-live-soft: rgba(31, 75, 58, 0.12);
 
-  --space-1:4px;
-  --space-2:8px;
-  --space-3:12px;
-  --space-4:16px;
-  --space-6:24px;
-  --space-8:32px;
-  --space-12:48px;
-  --space-16:64px;
+  /* Plan shell frame (Stage 7.2.2 visibility lock) */
+  --shell-frame-green: #1F4B3A;
+  /* Light cream field + faded Arc pattern (Kelly / Photoroom AT-PATTERN remakes) */
+  --shell-exterior-base: var(--paper);
+  --shell-pattern-wash: color-mix(in srgb, var(--shell-exterior-base) 88%, transparent);
+  --shell-frame-inset: 22px;
+  --shell-frame-radius: 14px;
+  --shell-frame-border: 5px;
+  --shell-planner-border: 3px;
+  --shell-spread-gutter-width: 1px;
+  --shell-pattern: url('/assets/arc/pattern-grid-tile-2048.png');
+  --shell-pattern-dots: url('/assets/arc/patterns/at-pattern-06-small-dots-512.png');
+  --shell-pattern-legacy-breezeblock: url('/assets/arctable/breezeblock-tile.png');
+  --shell-pattern-size: 560px;
+  --shell-pattern-size-mobile: 380px;
+  --shell-frame-outer-shadow:
+    0 0 0 1px rgba(44, 46, 46, 0.12),
+    0 36px 80px -24px rgba(44, 46, 46, 0.22),
+    0 12px 28px -8px rgba(44, 46, 46, 0.14);
+  --shell-planner-shadow:
+    0 22px 52px -18px rgba(8, 22, 16, 0.55),
+    0 6px 18px -4px rgba(15, 35, 28, 0.35),
+    inset 0 0 0 1px rgba(31, 75, 58, 0.22);
 
-  --radius-sm:4px;
-  --radius-md:8px;
-  --radius-lg:12px;
+  /* Main desk viewport + tabletop — Icarus texture-wood (Kelly desk visual law) */
+  --arc-wood-surface-image: url('/assets/arc/icarus/texture-wood.png');
+  /* Schedule setup / onboarding calendar-on-wood — not canonical desk surface */
+  --arc-schedule-setup-wood: url('/assets/desk/light-wood-desk.png');
+  --arc-wood-surface-base: #e8dcc8;
+  --arc-desk-wood-field: color-mix(in srgb, var(--arc-wood-surface-base) 62%, var(--field-elevated));
+  --arc-desk-wood-highlight: color-mix(in srgb, var(--field-elevated) 52%, transparent);
+  --arc-desk-wood-shadow-tint: color-mix(in srgb, var(--arc-wood-surface-base) 10%, transparent);
 
-  --page-gutter:32px;
-  --mobile-gutter:20px;
+  /* Course band colors */
+  --course-apah-accent: var(--mustard);
+  --course-2d-accent: var(--dusty-blue);
+  --course-3d-accent: var(--sage);
+  --course-apah-band: rgba(228, 179, 61, 0.36);
+  --course-2d-band: rgba(124, 156, 173, 0.34);
+  --course-3d-band: rgba(154, 170, 137, 0.34);
 
-  --font-ui:'Nunito Sans','Avenir Next Rounded','Avenir Next',Avenir,system-ui,sans-serif;
-  --font-editorial:Georgia,'Source Serif 4','Newsreader',serif;
+  /* Plan state header bands (aligned with ArcTable surface family) */
+  --plan-surface-view: rgba(255, 253, 248, 0.78);
+  --plan-surface-context: rgba(255, 253, 248, 0.92);
+  --plan-surface-time: rgba(225, 233, 213, 0.92);
+  --plan-surface-paper: url('/assets/arctable/paper-cream.png');
+  --plan-surface-paper-texture: url('/assets/arc/texture-cream-paper.png');
+  --plan-surface-people: url('/assets/arctable/people-surface-open.png');
+
+  /* —— Lines & shadows —— */
+  --line-subtle: rgba(44, 46, 46, 0.12);
+  --line-strong: rgba(44, 46, 46, 0.22);
+  --control-border: rgba(44, 46, 46, 0.55);
+  --shadow-hairline: 0 1px 0 rgba(44, 46, 46, 0.04);
+  --shadow-field: 0 20px 48px -46px rgba(44, 46, 46, 0.28);
+  --shadow-overlay: 0 24px 65px -30px rgba(33, 29, 23, 0.45);
+
+  /* —— Spacing —— */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* —— Geometry —— */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-bloop: 49% 52% 47% 53% / 53% 46% 54% 48%;
+  --page-gutter: 32px;
+  --mobile-gutter: 20px;
+
+  /* Vertical stack: app header → shell frame → planner chrome → spread header → canvas */
+  --arc-app-header-block: calc(var(--space-16) + var(--space-2));
+  --shell-composition-inset-block: calc(var(--shell-frame-inset) + 2px);
+  --shell-planner-chrome-block: calc(var(--shell-frame-border) + 6px + calc(var(--shell-planner-border) + 2px));
+  --shell-spread-surface-top: calc(
+    var(--arc-app-header-block) + var(--shell-composition-inset-block) + var(--shell-planner-chrome-block)
+  );
+  /* Sync with .calendar-stage-header min-height + .arc-calendar-spread > .calendar-stage-header padding */
+  --calendar-spread-header-padding-block: calc(10px + 8px);
+  --calendar-spread-header-block: calc(var(--calendar-spread-header-padding-block) + 76px + 1px);
+  --shell-workspace-fridge-top: calc(var(--shell-spread-surface-top) + var(--calendar-spread-header-block));
+
+  /* —— Typography —— */
+  --font-display: 'Instrument Serif', Georgia, 'Source Serif 4', 'Newsreader', serif;
+  --font-editorial: var(--font-display);
+  --font-ui: 'Inter', 'League Spartan', system-ui, sans-serif;
+  --font-label: 'League Spartan', var(--font-ui);
+  --type-kicker: 800 11px/1 var(--font-label);
+  --type-section: 800 12px/1 var(--font-label);
+  --type-view-title: 500 clamp(34px, 4.2vw, 42px)/1.06 var(--font-display);
+  --type-editorial-lg: 600 clamp(26px, 3vw, 34px)/1.12 var(--font-display);
+
+  /* —— Motion —— */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-medium: 220ms;
 }

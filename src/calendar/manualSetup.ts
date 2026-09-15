@@ -1,4 +1,5 @@
 import type { CalendarHydrationInput, Weekday } from './hydration'
+import type { RecurringEarlyReleaseRule } from './recurringEarlyRelease'
 import type { CalendarDay, CalendarProvenance, CalendarSource, Confidence, ISODate, TermBoundary } from './types'
 
 export type ManualCalendarDraft = {
@@ -8,6 +9,7 @@ export type ManualCalendarDraft = {
   lastDay: string
   instructionalWeekdays: Weekday[]
   exceptions: CalendarDay[]
+  recurringEarlyRelease?: RecurringEarlyReleaseRule[]
   quarters?: TermBoundary[]
   semesters?: TermBoundary[]
   existingTruth?: {
@@ -34,6 +36,10 @@ export function buildManualCalendarInput(draft: ManualCalendarDraft): CalendarHy
     patternSource: draft.existingTruth?.patternSource ?? 'manual',
     patternConfidence: draft.existingTruth?.patternConfidence ?? 'confirmed',
     exceptions: draft.exceptions.map((day) => ({ ...day })),
+    recurringEarlyRelease: draft.recurringEarlyRelease?.map((rule) => ({
+      ...rule,
+      weekdays: [...rule.weekdays],
+    })),
     quarters: draft.quarters ? draft.quarters.map((boundary) => ({ ...boundary })) : [],
     semesters: draft.semesters ? draft.semesters.map((boundary) => ({ ...boundary })) : [],
     provenance: draft.existingTruth?.provenance?.map((item) => ({ ...item })) ?? [],

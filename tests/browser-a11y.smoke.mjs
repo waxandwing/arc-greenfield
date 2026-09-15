@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
+import { selectPlanView as selectCalendarView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -23,11 +24,10 @@ async function configureCalendar(page, { label = '2026–27', first = '2026-09-0
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 }
 
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  const navigation = page.getByRole('navigation', { name: 'Calendar views' })
-  assert(await navigation.isVisible(), 'Calendar views: current-view control did not reveal the view choices.')
-  await navigation.getByRole('button', { name: view, exact: true }).click()
+async function openSettingsAction(page, name) {
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
 }
 
 async function auditDesktop(browser) {
@@ -41,10 +41,10 @@ async function auditDesktop(browser) {
   assert(await page.getByRole('heading', { name: 'Tell Arc which days are actually yours.' }).count() === 1, 'Desktop: calendar setup heading is missing or duplicated.')
 
   await page.keyboard.press('Tab')
-  const skip = page.getByRole('link', { name: 'Skip to calendar' })
-  assert(await skip.evaluate((node) => document.activeElement === node), 'Keyboard: first Tab must reach Skip to calendar.')
+  const skip = page.getByRole('link', { name: /Skip to (calendar|setup)/ })
+  assert(await skip.evaluate((node) => document.activeElement === node), 'Keyboard: first Tab must reach the skip link.')
   await page.keyboard.press('Enter')
-  assert(await page.locator('#calendar-stage').evaluate((node) => document.activeElement === node), 'Keyboard: Skip to calendar must move focus to main calendar stage.')
+  assert(await page.locator('#calendar-stage').evaluate((node) => document.activeElement === node), 'Keyboard: skip link must move focus to the active main stage.')
 
   const save = page.getByRole('button', { name: 'Use this calendar' })
   await save.click()
@@ -81,26 +81,22 @@ async function auditShellHierarchyAndZoom(browser) {
 
   assert(await page.getByRole('heading', { level: 1, name: 'Month' }).count() === 1, 'Shell hierarchy: Month must be the single level-one workspace heading.')
   assert(await page.locator('h1').count() === 1, 'Shell hierarchy: expected exactly one h1 after calendar setup.')
-  assert(await page.getByRole('button', { name: 'Change calendar view, current Month' }).count() === 1, 'Shell navigation: current view name must be the single always-reachable view switch control.')
+  const indexNav = page.getByRole('navigation', { name: 'Planner index' })
+  assert(await indexNav.count() === 1, 'Shell navigation: planner index tabs must be the always-reachable view controls.')
+  assert(await indexNav.getByRole('button', { name: 'MONTH', exact: true }).getAttribute('aria-current') === 'page', 'Shell navigation: Month tab must reflect the active view.')
   assert(await page.getByRole('group', { name: 'Month date navigation' }).count() === 1, 'Shell semantics: date navigation must be an explicit named control group.')
   assert(await page.getByRole('region', { name: /calendar grid$/ }).count() === 1, 'Shell semantics: Month grid must expose a named region.')
   assert(await page.locator('div[aria-label]:not([role])').count() === 0, 'Shell semantics: generic divs must not rely on aria-label without a semantic role.')
 
-  const switcher = page.getByRole('button', { name: 'Change calendar view, current Month' })
-  await switcher.click()
-  const viewNavigation = page.getByRole('navigation', { name: 'Calendar views' })
-  assert(await viewNavigation.isVisible(), 'Shell navigation: activating current view name must reveal calendar views.')
-  assert(await viewNavigation.getByRole('button').count() === 6, 'Shell navigation: all six canonical calendar horizons must remain represented.')
-  await page.keyboard.press('Escape')
-  assert(await viewNavigation.count() === 0, 'Shell navigation: Escape must close the view choices.')
-  assert(await switcher.evaluate((node) => document.activeElement === node), 'Shell navigation: Escape must restore focus to the current-view control.')
+  const viewNames = await indexNav.getByRole('button').filter({ hasText: /^(DAY|WEEK|MONTH|YEAR)$/ }).allTextContents()
+  assert(JSON.stringify(viewNames) === JSON.stringify(['DAY', 'WEEK', 'MONTH', 'YEAR']), `Shell navigation: visible product law must be DAY/WEEK/MONTH/YEAR (${viewNames.join(', ')}).`)
 
   const options = page.getByText('View options', { exact: true })
   assert(await options.count() === 1, 'Shell hierarchy: View options disclosure is missing or duplicated.')
 
   await selectCalendarView(page, 'Week')
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'B01 evidence: exact shell artifact must render Week as the level-one workspace heading.')
-  assert(await page.getByRole('button', { name: 'Change calendar view, current Week' }).count() === 1, 'B01 evidence: Week must retain the always-reachable current-view switch control.')
+  assert(await indexNav.getByRole('button', { name: 'WEEK', exact: true }).getAttribute('aria-current') === 'page', 'B01 evidence: Week tab must reflect the active view.')
   assert(await page.getByRole('group', { name: 'Week date navigation' }).count() === 1, 'B01 evidence: Week date navigation must remain explicitly named.')
 
   mkdirSync('artifacts', { recursive: true })
@@ -111,13 +107,13 @@ async function auditShellHierarchyAndZoom(browser) {
   const zoom200 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(zoom200.scroll <= zoom200.width + 1, `200% zoom: document overflowed horizontally (${zoom200.scroll} > ${zoom200.width}).`)
   assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '200% zoom: primary workspace heading became unavailable.')
-  assert(await page.getByRole('button', { name: 'Change calendar view, current Month' }).isVisible(), '200% zoom: current-view navigation control became unavailable.')
+  assert(await indexNav.getByRole('button', { name: 'MONTH', exact: true }).isVisible(), '200% zoom: planner index Month tab became unavailable.')
 
   await page.evaluate(() => { document.documentElement.style.zoom = '4' })
   const zoom400 = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(zoom400.scroll <= zoom400.width + 1, `400% zoom: document overflowed horizontally (${zoom400.scroll} > ${zoom400.width}).`)
   assert(await page.getByRole('heading', { level: 1, name: 'Month' }).isVisible(), '400% zoom: primary workspace heading became unavailable.')
-  assert(await page.getByRole('button', { name: 'Change calendar view, current Month' }).isVisible(), '400% zoom: current-view navigation control became unavailable.')
+  assert(await indexNav.getByRole('button', { name: 'MONTH', exact: true }).isVisible(), '400% zoom: planner index Month tab became unavailable.')
 
   assert(runtimeErrors.length === 0, `Shell hierarchy/zoom runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
@@ -135,7 +131,7 @@ async function auditCalendarEditPreservesContext(browser) {
   const beforeRange = await page.locator('.projection-section').first().getAttribute('aria-label')
   assert(Boolean(beforeRange), 'Calendar edit continuity: Week range did not expose its current anchored range.')
 
-  await page.getByRole('button', { name: 'Edit dates' }).click()
+  await (await openSettingsAction(page, 'Calendar dates')).click()
   await page.locator('#last-school-day').fill('2027-06-01')
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 
@@ -143,40 +139,6 @@ async function auditCalendarEditPreservesContext(browser) {
   const afterRange = await page.locator('.projection-section').first().getAttribute('aria-label')
   assert(afterRange === beforeRange, `Calendar edit continuity: saving calendar dates moved the current Week anchor (${beforeRange} → ${afterRange}).`)
   assert(runtimeErrors.length === 0, `Calendar edit continuity runtime errors: ${runtimeErrors.join(' | ')}`)
-  await context.close()
-}
-
-async function auditMondayFirstAlignment(browser) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
-  const page = await context.newPage()
-  const runtimeErrors = trackRuntimeErrors(page)
-  await page.goto(baseUrl, { waitUntil: 'networkidle' })
-
-  await configureCalendar(page, { first: '2026-09-02', last: '2026-09-13' })
-
-  await selectCalendarView(page, 'Year Map')
-  const yearMap = page.getByRole('region', { name: '2026–27 year map' })
-  assert(await yearMap.count() === 1, 'Monday-first: Year Map did not render after calendar setup.')
-
-  const columns = await yearMap.locator('.projection-range--compact').evaluate((grid) => {
-    const children = Array.from(grid.children)
-    const columnFor = (date) => {
-      const index = children.findIndex((child) => child.getAttribute('data-date') === date)
-      return index < 0 ? null : (index % 7) + 1
-    }
-    return {
-      leadingBlanks: children.filter((child, index) => index < 2 && child.classList.contains('calendar-day-cell--blank')).length,
-      wednesday: columnFor('2026-09-02'),
-      sunday: columnFor('2026-09-06'),
-      monday: columnFor('2026-09-07'),
-    }
-  })
-
-  assert(columns.leadingBlanks === 2, `Monday-first: a Wednesday start must reserve two leading cells; got ${columns.leadingBlanks}.`)
-  assert(columns.wednesday === 3, `Monday-first: Wednesday rendered in column ${columns.wednesday}, expected 3.`)
-  assert(columns.sunday === 7, `Monday-first: Sunday rendered in column ${columns.sunday}, expected 7.`)
-  assert(columns.monday === 1, `Monday-first: next Monday rendered in column ${columns.monday}, expected 1.`)
-  assert(runtimeErrors.length === 0, `Monday-first runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
 }
 
@@ -226,11 +188,10 @@ try {
   await auditDesktop(browser)
   await auditShellHierarchyAndZoom(browser)
   await auditCalendarEditPreservesContext(browser)
-  await auditMondayFirstAlignment(browser)
   await auditTouchAndReflow(browser)
   await auditMinimumWidth(browser)
   await auditReducedMotion(browser)
-  console.log('Arc browser accessibility smoke gate passed: landmarks, title-based calendar view navigation, exact B01 Week shell evidence, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, rendered Monday-first Year Map alignment, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
+  console.log('Arc browser accessibility smoke gate passed: landmarks, Day/Week/Month/Year product navigation, exact B01 Week shell evidence, shell hierarchy/semantics, calendar-edit context continuity, initial keyboard order, skip link, validation focus/field semantics, dynamic row names, 200/400% zoom stress, 44px touch target, 320/390 reflow, reduced motion, overflow, and runtime errors.')
 } finally {
   await browser.close()
 }

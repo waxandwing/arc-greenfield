@@ -1,0 +1,80 @@
+{
+  "wood_icarus": {
+    "mean_rgb": [
+      227.4,
+      190.0,
+      142.3
+    ],
+    "stddev_l": 5.22,
+    "grain_contrast": 19.47
+  },
+  "wood_light_desk_crop": {
+    "mean_rgb": [
+      224.5,
+      169.2,
+      106.3
+    ],
+    "stddev_l": 21.88,
+    "grain_contrast": 20.9
+  },
+  "wood_figma_folder_crop": {
+    "mean_rgb": [
+      216.4,
+      167.4,
+      108.6
+    ],
+    "stddev_l": 29.86,
+    "grain_contrast": 16.71
+  },
+  "cream_icarus": {
+    "mean_rgb": [
+      239.6,
+      230.6,
+      215.9
+    ],
+    "stddev_l": 3.02,
+    "grain_contrast": 26.65
+  },
+  "cream_planner": {
+    "mean_rgb": [
+      243.9,
+      235.9,
+      221.4
+    ],
+    "stddev_l": 3.55,
+    "grain_contrast": 25.35
+  },
+  "figma_reference": {
+    "full_comp": {
+      "mean_rgb": [
+        207.3,
+        161.9,
+        109.1
+      ],
+      "stddev_l": 36.1,
+      "grain_contrast": 26.98
+    },
+    "wood_band_bottom": {
+      "mean_rgb": [
+        210.7,
+        161.2,
+        105.9
+      ],
+      "stddev_l": 29.43,
+      "grain_contrast": 27.23
+    },
+    "wood_folder_body": {
+      "mean_rgb": [
+        213.3,
+        165.8,
+        108.5
+      ],
+      "stddev_l": 31.71,
+      "grain_contrast": 30.55
+    }
+  },
+  "file_md5": {
+    "icarus_cream_vs_arc_texture_cream": true,
+    "planner_vs_arctable_paper_cream": true
+  }
+}

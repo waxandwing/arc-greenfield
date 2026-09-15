@@ -5,18 +5,27 @@ import { LessonSetup } from './LessonSetup'
 import { RecoveryReview } from './RecoveryReview'
 import { TermBoundarySetup } from './TermBoundarySetup'
 import { UnitSetup } from './UnitSetup'
-import type { CalendarHydrationInput, ISODate, SchoolCalendar } from '../calendar'
+import { TeachingDaySetup } from './TeachingDaySetup'
+import { CurriculumImport } from './CurriculumImport'
+import { PlanLessonMovePanel } from './PlanLessonMovePanel'
+import type { LessonMovePreview } from '../planning'
+import type { CalendarHydrationInput, ISODate, PlanNavigationContext, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import type {
+  DayContinuityLesson,
   LessonWorkspace,
   LessonWorkspaceInput,
   PlanningWorkspace,
   PlanningWorkspaceInput,
   ShiftOperation,
   ShiftPersistenceInput,
+  TeachingDayRailItem,
   UnitWorkspace,
   UnitWorkspaceInput,
+  CurriculumImportProposal,
+  CurriculumImportReceipt,
+  ReimportDecision,
 } from '../planning'
 
 type WorkspaceStageProps = {
@@ -26,6 +35,7 @@ type WorkspaceStageProps = {
   calendar: SchoolCalendar | null
   calendarInput: CalendarHydrationInput | null
   anchorDate: ISODate | null
+  planContext?: PlanNavigationContext | null
   planningWorkspace: PlanningWorkspace | null
   planningInput: PlanningWorkspaceInput | null
   unitWorkspace: UnitWorkspace | null
@@ -41,8 +51,31 @@ type WorkspaceStageProps = {
   onUseClasses: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => void
   onUseUnits: (input: UnitWorkspaceInput, workspace: UnitWorkspace) => void
   onUseLessons: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => void
+  onUseCurriculumImport: (proposal: CurriculumImportProposal, courseMatches: Record<string, string>, decisions: Record<string, ReimportDecision>) => CurriculumImportReceipt | string
   onApplyRecoveryShift: (operation: ShiftOperation) => string | null
+  onStartClass: (sectionId: string, lessonId: string, liveDate?: import('../calendar').ISODate) => void
+  onSelectDate: (date: ISODate, view: CalendarView) => void
+  onSelectYearUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
+  onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
+  onSelectLesson?: (lesson: DayContinuityLesson) => void
+  onRetreatPlanFocus?: () => void
+  onOpenWorkspace?: () => void
+  onFollowPlanningAttention?: (item: import('../planning').PlanningPeriodAttentionItem) => void
+  onReturnToPlanningPeriod?: () => void
+  planningPeriodReturnPending?: boolean
+  captureWorkspace?: import('../planning').CaptureWorkspace | null
+  dayNotes?: import('./CalendarDayNotes').CalendarDayNoteHandlers
+  onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
+  onSetCaptureImportant?: (captureId: string, important: boolean) => boolean
+  onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
   onCloseMode: () => void
+  onOpenMode: (mode: WorkspaceMode) => void
+  planMoveIntent?: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null } | null
+  onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
+  onCancelPlanLessonMove?: () => void
+  onConfirmPlanLessonMove?: (destination: ISODate, preview: LessonMovePreview) => void
+  onOpenRecoveryForSection?: (sectionId: string) => void
+  recoveryFocusSectionId?: string | null
 }
 
 export function WorkspaceStage(props: WorkspaceStageProps) {
@@ -53,6 +86,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     calendar,
     calendarInput,
     anchorDate,
+    planContext,
     planningWorkspace,
     planningInput,
     unitWorkspace,
@@ -68,8 +102,31 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onUseClasses,
     onUseUnits,
     onUseLessons,
+    onUseCurriculumImport,
     onApplyRecoveryShift,
+    onStartClass,
+    onSelectDate,
+    onSelectYearUnit,
+    onSelectTeachingBlock,
+    onSelectLesson,
+    onRetreatPlanFocus,
+    onOpenWorkspace,
+    onFollowPlanningAttention,
+    onReturnToPlanningPeriod,
+    planningPeriodReturnPending,
+    captureWorkspace,
+    dayNotes,
+    onSetLessonImportant,
+    onMoveCaptureToDate: _moveCaptureToDate,
+    onSetCaptureImportant: _setCaptureImportant,
     onCloseMode,
+    onOpenMode,
+    planMoveIntent,
+    onBeginPlanLessonMove,
+    onCancelPlanLessonMove,
+    onConfirmPlanLessonMove,
+    onOpenRecoveryForSection,
+    recoveryFocusSectionId,
   } = props
 
   const needsCalendarSetup = !calendar || !anchorDate || mode === 'calendar-setup'
@@ -99,6 +156,14 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         onCancel={onCloseMode}
       />
     )
+  }
+
+  if (mode === 'teaching-day' && planningInput) {
+    return <TeachingDaySetup initialValue={planningInput} onSave={onUseClasses} onCancel={onCloseMode} />
+  }
+
+  if (mode === 'import') {
+    return <CurriculumImport calendarId={calendar.id} existingCourses={planningWorkspace?.courses ?? []} existingUnits={unitWorkspace?.units ?? []} existingLessons={lessonWorkspace?.lessons ?? []} onCommit={onUseCurriculumImport} onCancel={onCloseMode} onOpenCalendar={() => onOpenMode('calendar-setup')} onOpenClasses={() => onOpenMode('classes')} onOpenTeachingDay={() => onOpenMode('teaching-day')} />
   }
 
   if (mode === 'units' && planningWorkspace) {
@@ -140,6 +205,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         overrides={shiftState?.overrides ?? []}
         onApply={onApplyRecoveryShift}
         onClose={onCloseMode}
+        focusSectionId={recoveryFocusSectionId}
       />
     )
   }
@@ -154,13 +220,46 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     : null
 
   return (
-    <CalendarProjectionView
-      view={activeView}
-      showWeekends={showWeekends}
-      calendar={calendar}
-      anchorDate={anchorDate}
-      planningContext={planningContext}
-    />
+    <>
+      {planMoveIntent && planningWorkspace && unitWorkspace && lessonWorkspace && shiftState && onCancelPlanLessonMove && onConfirmPlanLessonMove ? (
+        <PlanLessonMovePanel
+          calendar={calendar}
+          planning={planningWorkspace}
+          units={unitWorkspace}
+          lessons={lessonWorkspace}
+          shiftState={shiftState}
+          lessonId={planMoveIntent.lessonId}
+          sectionId={planMoveIntent.sectionId}
+          defaultDestination={planMoveIntent.defaultDestination}
+          onConfirm={onConfirmPlanLessonMove}
+          onCancel={onCancelPlanLessonMove}
+        />
+      ) : null}
+      <CalendarProjectionView
+        view={activeView}
+        showWeekends={showWeekends}
+        calendar={calendar}
+        anchorDate={anchorDate}
+        planningContext={planningContext}
+        planContext={planContext}
+        onStartClass={onStartClass}
+        onSelectDate={onSelectDate}
+        onSelectYearUnit={onSelectYearUnit}
+        onSelectTeachingBlock={onSelectTeachingBlock}
+        onSelectLesson={onSelectLesson}
+        onRetreatPlanFocus={onRetreatPlanFocus}
+        onOpenWorkspace={onOpenWorkspace}
+        onFollowPlanningAttention={onFollowPlanningAttention}
+        onReturnToPlanningPeriod={onReturnToPlanningPeriod}
+        planningPeriodReturnPending={planningPeriodReturnPending}
+        captureWorkspace={captureWorkspace}
+        dayNotes={dayNotes}
+        onSetLessonImportant={onSetLessonImportant}
+        onBeginPlanLessonMove={onBeginPlanLessonMove}
+        onOpenRecoveryForSection={onOpenRecoveryForSection}
+        onMoveCaptureToDate={_moveCaptureToDate}
+      />
+    </>
   )
 }
 

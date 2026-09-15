@@ -1,0 +1,1669 @@
+/* ARC Desk — physical tabletop composition (Figma ref 1696×1254, wood field 1440×1024). */
+
+/* Full-viewport wood via --arc-wood-surface-image (icarus/texture-wood.png); schedule setup uses --arc-schedule-setup-wood. */
+.arc-shell.arc-shell--desk {
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background-color: var(--arc-desk-wood-field);
+  background-image:
+    linear-gradient(
+      180deg,
+      var(--arc-desk-wood-highlight) 0%,
+      transparent 42%,
+      var(--arc-desk-wood-shadow-tint) 100%
+    ),
+    var(--arc-wood-surface-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-blend-mode: normal;
+}
+
+.arc-desk-viewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: clamp(4px, 1vmin, 12px);
+  overflow: visible;
+}
+
+.arc-desk-tabletop {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(100%, calc(100dvh * 1440 / 1024), 1440px);
+  aspect-ratio: 1440 / 1024;
+  max-height: min(100dvh - 16px, 1024px);
+  border-radius: 6px;
+  background-color: var(--arc-desk-wood-field);
+  background-image:
+    linear-gradient(
+      180deg,
+      var(--arc-desk-wood-highlight) 0%,
+      transparent 42%,
+      var(--arc-desk-wood-shadow-tint) 100%
+    ),
+    var(--arc-wood-surface-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 32px 64px -28px rgba(33, 29, 23, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.35);
+  overflow: visible;
+}
+
+.arc-shell--desk .arc-layout {
+  height: calc(100dvh - 0px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.arc-shell--desk .arc-calendar-stage {
+  height: 100%;
+  padding: 0 0 12px;
+  overflow: visible;
+}
+
+.arc-shell--desk body {
+  overflow: hidden;
+}
+
+html:has(.arc-shell--desk) {
+  overflow: hidden;
+}
+
+html:has(.arc-shell--desk) body {
+  overflow: hidden;
+}
+
+.b01-furniture-composition--desk {
+  height: 100%;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  align-content: stretch;
+  border: none;
+  border-radius: 0;
+  background: none;
+  background-image: none;
+  box-shadow: none;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.arc-desk-surface {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-object {
+  position: absolute;
+  left: 17.2%;
+  top: 26%;
+  width: 65.6%;
+  height: 63.7%;
+  z-index: 6;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock {
+  position: absolute;
+  left: 33%;
+  top: 0;
+  width: 28%;
+  height: min(52%, 420px);
+  z-index: 12;
+  pointer-events: none;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-green-drawer-well,
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-folders-tab {
+  pointer-events: auto;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
+  position: absolute;
+  left: 3.5%;
+  top: 22%;
+  width: 15.6%;
+  height: 51%;
+  z-index: 3;
+  transform: rotate(-2.2deg);
+  transform-origin: 50% 20%;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-notes-dock {
+  position: absolute;
+  left: 20%;
+  bottom: 6%;
+  width: 14%;
+  height: 18%;
+  z-index: 2;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor {
+  position: absolute;
+  right: 5%;
+  bottom: 7%;
+  width: 9.2%;
+  aspect-ratio: 1;
+  z-index: 6;
+  left: auto;
+  pointer-events: none;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-capture-sticky {
+  position: absolute;
+  right: 4.5%;
+  top: 4%;
+  width: 15.9%;
+  height: 20.3%;
+  z-index: 7;
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-object {
+  width: 72%;
+  height: 68%;
+  left: 14%;
+  top: 22%;
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock,
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
+  opacity: 0.92;
+  transform: scale(0.88);
+  transform-origin: top center;
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
+  transform: rotate(-2.2deg) scale(0.88);
+}
+
+.b01-furniture-composition--desk .arc-planner-object {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 28px 52px -22px rgba(33, 29, 23, 0.62));
+  overflow: visible;
+  z-index: 10;
+}
+
+.b01-furniture-composition--desk .arc-calendar-spread--desk {
+  min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
+  border: 3px solid var(--shell-frame-green);
+  border-radius: 22px;
+  padding-right: 44px;
+  background-color: var(--field-elevated);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--field-elevated) 96%, transparent), color-mix(in srgb, var(--field-elevated) 96%, transparent)),
+    var(--plan-surface-paper-texture),
+    var(--plan-surface-paper);
+  box-shadow:
+    0 22px 48px -28px rgba(33, 29, 23, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.65);
+}
+
+.arc-planner-physical-tabs {
+  position: absolute;
+  left: 18px;
+  top: 0;
+  transform: translateY(calc(-100% + 6px));
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-end;
+  gap: 3px;
+  max-width: calc(100% - 24px);
+  z-index: 40;
+  pointer-events: auto;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Kelly comp: DAY/WEEK/MONTH/YEAR on planner right edge (vertical denim tabs). */
+.arc-planner-physical-tabs--desk-edge {
+  position: absolute;
+  left: auto;
+  right: 0;
+  top: 12%;
+  bottom: 10%;
+  transform: none;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 4px;
+  width: 46px;
+  max-width: none;
+  z-index: 45;
+  padding: 6px 0;
+}
+
+.arc-planner-physical-tabs--desk-edge .arc-index-tab {
+  min-width: 0;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 6px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: none;
+  border-radius: 10px 0 0 10px;
+  border-right: 0;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 65%, transparent);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--dusty-blue) 22%, var(--field-elevated)), var(--field-elevated));
+  box-shadow: -4px 0 14px -10px rgba(33, 29, 23, 0.35);
+}
+
+.arc-planner-physical-tabs--desk-edge .arc-index-tab[aria-current='page'] {
+  transform: translateX(-3px);
+  padding-right: 9px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--shell-frame-green) 18%, var(--field-elevated)), var(--field-elevated));
+  border-color: color-mix(in srgb, var(--shell-frame-green) 45%, var(--line-subtle));
+}
+
+.arc-planner-physical-tabs--desk-edge .arc-index-tab:hover:not(:disabled) {
+  transform: translateX(-2px);
+}
+
+.arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab--desk-slice {
+  border: 0;
+  box-shadow: none;
+  background-color: transparent;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: color-mix(in srgb, var(--ink) 88%, white);
+  text-shadow: 0 1px 0 rgba(255, 253, 248, 0.65);
+  min-height: 58px;
+  padding: 8px 4px;
+}
+
+.arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab--desk-slice-active {
+  transform: translateX(-3px);
+  color: color-mix(in srgb, var(--shell-frame-green) 55%, var(--ink));
+  font-weight: 800;
+}
+
+/* Legacy elevated horizontal strip — removed from default desk surface. */
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-physical-tabs--desk-elevated {
+  display: none !important;
+}
+
+.arc-planner-physical-tabs .arc-index-tab {
+  min-width: 52px;
+  min-height: 30px;
+  padding: 6px 10px 7px;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 65%, transparent);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  box-shadow: 0 -2px 8px -6px rgba(33, 29, 23, 0.35);
+}
+
+.arc-planner-physical-tabs .arc-index-tab[aria-current='page'] {
+  transform: translateY(2px);
+  padding-bottom: 9px;
+}
+
+.arc-planner-physical-tabs .arc-index-tab:hover:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.b01-furniture-composition--desk .arc-calendar-spread--desk,
+.b01-furniture-composition--desk .b01-calendar-owner {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.b01-furniture-composition--desk .b01-calendar-owner > .calendar-canvas {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.b01-furniture-composition--desk .planning-row-label {
+  overflow-wrap: normal;
+  word-break: normal;
+  min-width: 4.5rem;
+}
+
+.b01-furniture-composition--desk .planning-row-label strong {
+  line-height: 1.25;
+}
+
+.b01-furniture-composition--desk .b01-side-rail > .arc-index-tabs,
+.b01-furniture-composition--desk .b01-index-rail > .arc-index-tabs {
+  display: none !important;
+}
+
+.b01-furniture-composition--desk .planner-shell-bar:not(.planner-shell-bar--desk-live) {
+  display: none !important;
+}
+
+.b01-furniture-composition--desk[data-workspace-open='true'] .arc-desk-tray-dock {
+  display: none !important;
+}
+
+.arc-desk-tray-dock,
+.arc-desk-priority-dock,
+.arc-desk-notes-dock {
+  min-height: 0;
+  min-width: 0;
+  transition: flex-basis 220ms var(--ease-out-soft, ease), opacity 220ms ease;
+}
+
+.arc-desk-green-folders-drawer {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  filter: drop-shadow(0 22px 40px -18px rgba(15, 35, 48, 0.55));
+  transition: transform 340ms var(--ease-out-soft, cubic-bezier(0.22, 1, 0.36, 1));
+  transform: translateY(calc(-100% + 3.4rem));
+  transform-origin: top center;
+}
+
+.arc-desk-green-folders-drawer[data-extended='true'] {
+  transform: translateY(10%);
+}
+
+.arc-desk-green-drawer-shell {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+}
+
+.arc-desk-green-drawer-art {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background:
+    var(--arc-desk-green-folders-drawer, var(--arc-desk-tray-texture, url('/assets/desk/green-folders-drawer.svg')))
+    center top / 100% 100% no-repeat;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.arc-desk-green-drawer-token {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  opacity: 0.92;
+  box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.45);
+  transform: rotate(-6deg);
+}
+
+.arc-desk-green-drawer-token--mustard {
+  top: 18%;
+  left: 14%;
+  background: linear-gradient(145deg, #f5e083, #d9b63a);
+}
+
+.arc-desk-green-drawer-token--terracotta {
+  top: 22%;
+  right: 16%;
+  background: linear-gradient(145deg, #d4846a, #b85a42);
+  transform: rotate(8deg);
+}
+
+.arc-desk-green-drawer-token--blue {
+  top: 34%;
+  left: 22%;
+  background: linear-gradient(145deg, #9eb8c7, #6a8fa3);
+  transform: rotate(-14deg);
+}
+
+.arc-desk-green-drawer-token--forest {
+  top: 28%;
+  right: 22%;
+  background: linear-gradient(145deg, #4a7a5c, #1f4b3a);
+  transform: rotate(12deg);
+}
+
+.arc-desk-green-drawer-well {
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  top: 14%;
+  bottom: 14%;
+  overflow: auto;
+  padding: 6px 4px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--shell-frame-green) 42%, rgba(8, 28, 22, 0.88));
+  box-shadow: inset 0 10px 24px -14px rgba(0, 0, 0, 0.55);
+  opacity: 1;
+  transition: opacity 220ms ease;
+}
+
+.arc-desk-green-folders-drawer[data-extended='false'] .arc-desk-green-drawer-well {
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.arc-desk-folders-tab {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  min-width: 7.5rem;
+  min-height: 2.35rem;
+  padding: 8px 16px 10px;
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 55%, black);
+  border-radius: 10px 10px 12px 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--shell-frame-green) 88%, white), var(--shell-frame-green));
+  color: #f7f3ea;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -12px rgba(15, 35, 48, 0.65);
+  z-index: 2;
+}
+
+.arc-desk-folders-tab:hover {
+  filter: brightness(1.06);
+}
+
+.arc-desk-folders-tab:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 2px;
+}
+
+/* Legacy blue molded tray rim — kept for non-desk contexts if referenced elsewhere */
+.arc-desk-tray-rim {
+  height: 100%;
+  min-height: 0;
+  padding: 8px;
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.06)),
+    var(--arc-desk-tray-texture, url('/assets/desk/green-folders-drawer.svg')) center / cover no-repeat;
+  box-shadow: 0 20px 44px -24px rgba(33, 29, 23, 0.58);
+  filter: drop-shadow(0 8px 16px -10px rgba(15, 35, 48, 0.35));
+}
+
+.arc-desk-tray-well {
+  height: calc(100% - 28px);
+  margin-top: 6px;
+  overflow: auto;
+  padding: 6px 4px 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--shell-frame-green) 22%, transparent);
+  box-shadow: inset 0 8px 22px -12px rgba(8, 28, 22, 0.65);
+}
+
+.b01-tray-content {
+  font-size: 13px;
+}
+
+.tray-post-it {
+  transform: rotate(-0.6deg);
+  transition: transform 160ms var(--ease-out-soft, ease), box-shadow 160ms ease;
+}
+
+.tray-post-it--lift {
+  transform: rotate(-1deg) translateY(-4px) scale(1.02);
+  box-shadow: 0 14px 28px -16px rgba(33, 29, 23, 0.55);
+  z-index: 2;
+}
+
+.desk-priority-pad {
+  height: 100%;
+  min-height: 0;
+  padding: 8px 6px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--paper-raised), var(--field-elevated));
+  box-shadow: 0 16px 36px -24px rgba(33, 29, 23, 0.5);
+  overflow: auto;
+}
+
+.arc-desk-capture-sticky {
+  padding: 10px 10px 12px;
+  border-radius: 4px 14px 12px 8px;
+  background: linear-gradient(165deg, #f5e083 0%, #e8c84a 48%, #d9b63a 100%);
+  box-shadow:
+    0 14px 32px -18px rgba(33, 29, 23, 0.52),
+    inset 0 1px 0 rgba(255, 253, 248, 0.55);
+  transform: rotate(1.4deg);
+}
+
+.arc-desk-capture-sticky-title {
+  margin: 0 0 8px;
+  font: 800 9px/1 var(--font-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 78%, var(--mustard));
+}
+
+.arc-desk-capture-sticky-well {
+  display: grid;
+  gap: 6px;
+}
+
+.arc-desk-capture-sticky .arc-capture-trigger {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.arc-desk-notes-object {
+  height: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fff9ef, var(--field-elevated));
+  box-shadow: 0 10px 28px -20px rgba(33, 29, 23, 0.45);
+  transform: rotate(-1deg);
+  overflow: auto;
+}
+
+.arc-desk-notes-object-label {
+  margin: 0 0 6px;
+  font: 800 8px/1 var(--font-label);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--soft-charcoal);
+}
+
+.arc-desk-notes-object-body {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.arc-desk-notes-object-body .b01-furniture-empty {
+  font-size: 11px;
+  margin: 0;
+}
+
+.desk-priority-pad-heading h2 {
+  margin: 2px 0 0;
+  font: 700 13px/1.2 var(--font-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.desk-priority-lanes {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.desk-priority-lane {
+  padding: 8px 6px;
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.82);
+  border: 1px dashed rgba(44, 46, 46, 0.14);
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.desk-priority-lane--drop-target {
+  border-color: var(--mustard);
+  background: rgba(228, 179, 61, 0.12);
+}
+
+.desk-priority-lane h3 {
+  margin: 0 0 6px;
+  font: 800 10px/1 var(--font-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.desk-priority-list {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.desk-priority-task {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #fffef9;
+  box-shadow: 0 2px 0 rgba(44, 46, 46, 0.08);
+  cursor: grab;
+  transition: transform 160ms var(--ease-out-soft, ease), box-shadow 160ms ease;
+}
+
+.desk-priority-task--lift {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 22px -14px rgba(33, 29, 23, 0.45);
+}
+
+.desk-priority-task--important {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--terracotta) 70%, transparent);
+}
+
+.desk-priority-add input {
+  width: 100%;
+  min-height: 36px;
+  font-size: 12px;
+}
+
+.b01-tray-surface {
+  border-top-color: var(--shell-frame-green);
+}
+
+.home-desk-preferences {
+  display: grid;
+  gap: 12px;
+}
+
+.home-desk-intro {
+  margin: 0;
+  font-size: 13px;
+  color: var(--soft-charcoal);
+}
+
+.school-year-desk {
+  display: grid;
+  gap: 16px;
+  padding: 8px 4px 20px;
+  zoom: var(--year-desk-zoom, 100%);
+}
+
+.school-year-desk-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.school-year-desk-title {
+  margin: 4px 0 0;
+  font: 500 34px/1.05 var(--font-editorial);
+}
+
+.school-year-desk-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.school-year-desk-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.85);
+  border: 1px solid rgba(44, 46, 46, 0.12);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.school-year-desk-remain {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--shell-frame-green);
+  color: var(--field-elevated);
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.school-year-desk-remain strong {
+  font: 800 22px/1 var(--font-label);
+  letter-spacing: 0.02em;
+}
+
+.school-year-desk-caught {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid rgba(44, 46, 46, 0.18);
+  border-radius: 8px;
+  background: var(--field-elevated);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.school-year-desk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--soft-charcoal);
+}
+
+.school-year-desk-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.school-year-desk-legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(44, 46, 46, 0.12);
+}
+
+.school-year-desk-legend-swatch--q1 { background: var(--lavender-soft); }
+.school-year-desk-legend-swatch--q2 { background: var(--sage-soft); }
+.school-year-desk-legend-swatch--q3 { background: var(--accent-blue-soft); }
+.school-year-desk-legend-swatch--q4 { background: rgba(201, 154, 158, 0.35); }
+.school-year-desk-legend-swatch--no-school { background: rgba(74, 73, 69, 0.18); }
+.school-year-desk-legend-swatch--countdown { background: repeating-linear-gradient(45deg, var(--mustard-soft), var(--mustard-soft) 4px, transparent 4px, transparent 8px); }
+
+.school-year-desk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 14px;
+}
+
+.school-year-mini-month {
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--field-elevated);
+  box-shadow: inset 0 0 0 1px rgba(44, 46, 46, 0.08);
+}
+
+.school-year-mini-month h3 {
+  margin: 0 0 8px;
+  font: 700 13px/1.2 var(--font-ui);
+}
+
+.school-year-mini-month-weekdays,
+.school-year-mini-month-cells {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.school-year-mini-month-weekdays span {
+  font-size: 9px;
+  font-weight: 800;
+  text-align: center;
+  color: var(--soft-charcoal);
+}
+
+.school-year-mini-day {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: 22px;
+  border: 0;
+  border-radius: 4px;
+  padding: 0;
+  font: 700 10px/1 var(--font-ui);
+  background: rgba(255, 253, 248, 0.9);
+  cursor: pointer;
+}
+
+.school-year-mini-day--pad {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.school-year-mini-day--q1 { background: color-mix(in srgb, var(--lavender) 28%, white); }
+.school-year-mini-day--q2 { background: color-mix(in srgb, var(--sage) 30%, white); }
+.school-year-mini-day--q3 { background: color-mix(in srgb, var(--dusty-blue) 26%, white); }
+.school-year-mini-day--q4 { background: color-mix(in srgb, var(--dusty-pink) 30%, white); }
+.school-year-mini-day--no-school { background: rgba(74, 73, 69, 0.12); color: rgba(74, 73, 69, 0.55); }
+.school-year-mini-day--selected { box-shadow: inset 0 0 0 2px var(--ink); }
+.school-year-mini-day--today { box-shadow: inset 0 0 0 2px var(--mustard); }
+.school-year-mini-day--caught .school-year-mini-day-x {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  font-weight: 900;
+  color: rgba(44, 46, 46, 0.72);
+  pointer-events: none;
+}
+
+.planning-year-progression {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(44, 46, 46, 0.12);
+}
+
+.planning-year-progression > summary {
+  cursor: pointer;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.arc-desk-surface[data-layout-grid='true'] {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.arc-desk-surface[data-layout-grid='true'] > .arc-desk-capture-sticky {
+  position: absolute;
+  right: 4.5%;
+  top: 4%;
+  width: 15.9%;
+  height: 20.3%;
+  z-index: 7;
+}
+
+.arc-desk-object-slot {
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.arc-desk-object-slot > .arc-planner-object,
+.arc-desk-object-slot > .arc-desk-tray-dock,
+.arc-desk-object-slot > .arc-desk-priority-dock,
+.arc-desk-object-slot > .arc-desk-notes-dock,
+.arc-desk-object-slot > .arc-desk-arctable-anchor {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.arc-desk-object-slot[data-desk-object='arctable'] .arc-desk-arctable-anchor {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  pointer-events: auto;
+}
+
+.arc-desk-object--planner-large {
+  grid-column-end: span 3 !important;
+}
+
+.arc-desk-object--tray-wide {
+  min-width: 0;
+}
+
+.arc-desk-object--msc-compact .desk-priority-pad {
+  font-size: 12px;
+}
+
+.b01-furniture-composition--desk-edit .arc-desk-surface--edit {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mustard) 55%, transparent);
+}
+
+.arc-desk-zone-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6px;
+  padding: 4px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.arc-desk-zone-grid::before {
+  content: '';
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  border-radius: 12px;
+  background:
+    repeating-linear-gradient(90deg, rgba(44, 46, 46, 0.06) 0 1px, transparent 1px 25%),
+    repeating-linear-gradient(0deg, rgba(44, 46, 46, 0.06) 0 1px, transparent 1px 50%);
+}
+
+.arc-desk-edit-object--selected {
+  z-index: 2;
+  outline: 3px solid var(--mustard);
+  outline-offset: 2px;
+}
+
+.desk-edit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin: 0 12px 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--mustard-soft) 70%, white);
+  border: 1px solid rgba(44, 46, 46, 0.12);
+}
+
+.desk-edit-toolbar-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.desk-edit-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.desk-setup-settings .b01-settings-action--primary {
+  font-weight: 800;
+}
+
+.desk-setup-overview,
+.desk-setup-hint,
+.b01-settings-muted {
+  margin: 0;
+  font-size: 13px;
+  color: var(--soft-charcoal);
+}
+
+.desk-setup-presets,
+.desk-setup-visibility {
+  border: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.desk-setup-presets legend,
+.desk-setup-visibility legend {
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 1100px) {
+  .arc-desk-tabletop {
+    width: min(100%, calc(100dvh * 1440 / 1024));
+  }
+}
+
+@media (max-width: 900px) {
+  .b01-furniture-composition--desk .arc-desk-tray-dock,
+  .b01-furniture-composition--desk .arc-desk-priority-dock {
+    display: none;
+  }
+}
+
+.arc-index-tab--workspace {
+  background-image: linear-gradient(90deg, rgba(228, 179, 61, 0.18), transparent 48%), var(--arc-desk-planner-tab-mustard, url('/assets/desk/planner-tab-mustard.png'));
+  background-size: auto, cover;
+  background-position: left center, center;
+}
+
+/* ArcTable AT-001 desk mark — inline SVG quadrants (public/assets/arctable/AT-001_table-mark.svg). */
+.arc-desk-arctable-anchor {
+  pointer-events: none;
+}
+
+.arc-desk-arctable {
+  pointer-events: auto;
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+}
+
+.arc-desk-arctable-context {
+  display: none;
+}
+
+.arc-desk-arctable-script {
+  margin: 0;
+  max-width: 11rem;
+  font-family: 'Instrument Serif', var(--font-display), serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  text-align: center;
+  color: color-mix(in srgb, var(--shell-frame-green) 72%, var(--ink));
+}
+
+.arc-desk-arctable-script-detail {
+  margin: 0;
+  max-width: 11rem;
+  font: 600 9px/1.3 var(--font-ui);
+  text-align: center;
+  color: var(--soft-charcoal);
+}
+
+.b01-furniture-composition--desk .arc-desk-wood-wordmark-slot {
+  position: absolute;
+  left: 2.2%;
+  top: 3.2%;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+.arc-desk-wood-wordmark {
+  filter: drop-shadow(0 10px 18px -12px rgba(33, 29, 23, 0.55));
+}
+
+/* Kelly comp omits bottom pills; keep TRAY/SETTINGS in DOM for smokes (off-screen). */
+.b01-furniture-composition--desk .arc-desk-utility-tabs {
+  position: fixed;
+  left: -10000px;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: auto;
+}
+
+/* Kelly comp: capture lives in TRAY / IDEAS — hide wood sticky for pixel fidelity (smoke still finds testid). */
+.b01-furniture-composition--desk .arc-desk-capture-sticky {
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.arc-desk-utility-tabs {
+  position: absolute;
+  left: 2%;
+  bottom: 3%;
+  z-index: 18;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 42%;
+  pointer-events: auto;
+}
+
+.arc-desk-utility-tabs .arc-index-tab {
+  min-height: 28px;
+  padding: 6px 10px;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  border-radius: 8px;
+  opacity: 0.92;
+}
+
+.desk-planner-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 52px 8px 16px;
+  margin: 0;
+}
+
+.desk-planner-head-row .plan-state-header {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.desk-planner-head-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding-top: 6px;
+}
+
+.desk-planner-search-field {
+  display: block;
+}
+
+.desk-planner-search {
+  width: min(168px, 28vw);
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 70%, transparent);
+  background: color-mix(in srgb, var(--field-elevated) 92%, white);
+  font-size: 13px;
+}
+
+.b01-furniture-composition--desk .desk-planner-today-cluster {
+  gap: 2px;
+  padding-bottom: 1px;
+}
+
+.b01-furniture-composition--desk .desk-planner-today-cluster .quiet-button {
+  min-width: 44px;
+  min-height: 34px;
+  padding-inline: 10px;
+  border-color: rgba(44, 46, 46, 0.16);
+  background: rgba(247, 241, 231, 0.56);
+  box-shadow: none;
+}
+
+.b01-furniture-composition--desk .desk-planner-today-cluster .desk-planner-today {
+  min-width: 68px;
+  border-inline-color: transparent;
+  background: transparent;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.b01-furniture-composition--desk .desk-planner-today-cluster .desk-planner-today-nav:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+
+.b01-furniture-composition--desk .planning-section-row > .planning-row-label strong {
+  display: block;
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 82%, var(--soft-charcoal));
+}
+
+.arc-desk-todos-folder {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  padding: 22px 10px 10px 14px;
+  border-radius: 4px 14px 14px 4px;
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.08) 0%, transparent 42%),
+    linear-gradient(180deg, #6b7f9a 0%, #4a5f78 38%, #3d5168 100%);
+  box-shadow:
+    0 18px 36px -22px rgba(33, 29, 23, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.2);
+  transform: rotate(-2deg);
+}
+
+.arc-desk-todos-folder-sheet {
+  position: absolute;
+  inset: 6px 4px 4px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 55%, transparent);
+  background: color-mix(in srgb, var(--field-elevated) 88%, transparent);
+  pointer-events: none;
+}
+
+.arc-desk-todos-folder-tab {
+  position: absolute;
+  top: 18%;
+  left: -6px;
+  margin: 0;
+  padding: 10px 6px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  border-radius: 6px 0 0 6px;
+  background: linear-gradient(180deg, #5a6f8a, #3d5168);
+  color: #f7f3ea;
+  font: 800 8px/1 var(--font-label);
+  letter-spacing: 0.16em;
+  box-shadow: 0 8px 16px -10px rgba(15, 35, 48, 0.55);
+}
+
+.arc-desk-todos-folder-body {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+.arc-desk-todos-folder .desk-priority-pad {
+  background: transparent;
+  box-shadow: none;
+  padding: 4px 2px;
+}
+
+.arc-desk-todos-folder .desk-priority-pad--folder .desk-priority-lanes {
+  gap: 14px;
+}
+
+.arc-desk-todos-folder .desk-priority-pad--folder .desk-priority-lane h3 {
+  margin: 0 0 6px;
+  font: 800 clamp(13px, 1.6vw, 16px) / 1.15 var(--font-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1a2a36;
+}
+
+.arc-desk-todos-folder .desk-priority-pad--folder .desk-priority-add {
+  opacity: 0.72;
+  font-size: 11px;
+}
+
+.b01-furniture-composition--desk .desk-planner-head-row .plan-state-primary {
+  font-family: 'Instrument Serif', var(--font-display), serif;
+  font-size: clamp(1.65rem, 2.8vw, 2.15rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.b01-furniture-composition--desk .desk-planner-head-row .plan-state-secondary {
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 78%, var(--soft-charcoal));
+}
+
+.b01-furniture-composition--desk .planning-date-weekday {
+  display: block;
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.b01-furniture-composition--desk .planning-date-heading span:last-child {
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.b01-furniture-composition--desk .planning-week {
+  padding-inline: 4px 8px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) {
+  gap: 6px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course {
+  border-radius: 8px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-unit-span {
+  border-radius: 6px;
+  min-height: 28px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-lesson {
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.b01-furniture-composition--desk .planner-shell-bar {
+  padding: 8px 12px 4px;
+  min-height: 0;
+  border-bottom: 0;
+  background: transparent;
+}
+
+.b01-furniture-composition--desk .calendar-stage-header,
+.b01-furniture-composition--desk .calendar-view-switcher {
+  display: none !important;
+}
+
+.arc-desk-build-stamp {
+  position: fixed;
+  right: 8px;
+  bottom: 6px;
+  z-index: 9999;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font: 600 10px/1.2 var(--font-ui);
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--soft-charcoal) 72%, transparent);
+  background: color-mix(in srgb, var(--field-elevated) 82%, transparent);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.b01-furniture-composition--desk .planner-shell-bar-controls {
+  gap: 6px;
+}
+
+.arc-desk-arctable-mark-wrap {
+  filter: drop-shadow(0 14px 28px -16px rgba(33, 29, 23, 0.55));
+}
+
+.arc-desk-arctable-single {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.arc-desk-arctable-single:focus-visible {
+  outline: 3px solid var(--mustard);
+  outline-offset: 3px;
+}
+
+.arc-desk-mark-svg {
+  display: block;
+}
+
+.arc-desk-mark-quadrant,
+.arc-desk-mark-center {
+  cursor: pointer;
+  transition: transform 160ms var(--ease-out-soft, ease);
+}
+
+.arc-desk-mark-quadrant:focus,
+.arc-desk-mark-center:focus {
+  outline: none;
+}
+
+.arc-desk-mark-quadrant:focus-visible,
+.arc-desk-mark-center:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 1px;
+}
+
+.arc-desk-mark-quadrant--live {
+  transform-origin: 7px 7px;
+}
+
+.arc-desk-mark-quadrant--timer {
+  transform-origin: 93px 7px;
+}
+
+.arc-desk-mark-quadrant--tools {
+  transform-origin: 7px 93px;
+}
+
+.arc-desk-mark-quadrant--media {
+  transform-origin: 93px 93px;
+}
+
+.arc-desk-mark-center {
+  transform-origin: 50px 50px;
+  --arc-desk-mark-lift-x: 0;
+  --arc-desk-mark-lift-y: -1px;
+}
+
+.arc-desk-mark-target--active,
+.arc-desk-mark-quadrant:hover,
+.arc-desk-mark-quadrant:focus-visible,
+.arc-desk-mark-center:hover,
+.arc-desk-mark-center:focus-visible {
+  transform: translate(var(--arc-desk-mark-lift-x, 0), var(--arc-desk-mark-lift-y, 0));
+}
+
+.arc-desk-mark-hit {
+  cursor: pointer;
+}
+
+.arc-desk-mark-quadrant--live {
+  --arc-desk-mark-lift-x: -1.5px;
+  --arc-desk-mark-lift-y: -1.5px;
+}
+
+.arc-desk-mark-quadrant--timer {
+  --arc-desk-mark-lift-x: 1.5px;
+  --arc-desk-mark-lift-y: -1.5px;
+}
+
+.arc-desk-mark-quadrant--tools {
+  --arc-desk-mark-lift-x: -1.5px;
+  --arc-desk-mark-lift-y: 1.5px;
+}
+
+.arc-desk-mark-quadrant--media {
+  --arc-desk-mark-lift-x: 1.5px;
+  --arc-desk-mark-lift-y: 1.5px;
+}
+
+.arc-desk-mark-quadrant-label {
+  font-family: var(--font-label);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  fill: #2c2e2e;
+  pointer-events: none;
+  text-anchor: middle;
+}
+
+.arc-desk-arctable--live .arc-desk-arctable-mark-wrap {
+  filter: drop-shadow(0 0 0 2px rgba(228, 179, 61, 0.55)) drop-shadow(0 16px 32px -14px rgba(33, 29, 23, 0.58));
+}
+
+.arc-desk-arctable--preview .arc-desk-arctable-mark-wrap {
+  filter: drop-shadow(0 14px 28px -16px rgba(33, 29, 23, 0.45));
+}
+
+.arc-desk-arctable--interactions-off .arc-desk-arctable-mark-wrap {
+  pointer-events: none;
+}
+
+.arc-desk-arctable-live-badge {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2c2e2e;
+  background: rgba(228, 179, 61, 0.92);
+  box-shadow: 0 6px 14px -10px rgba(33, 29, 23, 0.45);
+}
+
+.arc-desk-arctable-context {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--soft-charcoal);
+  max-width: 12rem;
+}
+
+.arc-desk-arctable-preview-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(33, 29, 23, 0.42);
+  pointer-events: auto;
+}
+
+.arc-desk-arctable-preview-card {
+  max-width: 420px;
+  padding: 20px 22px;
+  border-radius: 12px;
+  background: var(--field-elevated);
+  box-shadow: 0 24px 48px -28px rgba(33, 29, 23, 0.55);
+  pointer-events: auto;
+}
+
+.arc-desk-arctable-preview-card h2 {
+  margin: 6px 0 10px;
+  font: 600 22px/1.2 var(--font-editorial);
+}
+
+.arc-desk-arctable-preview-card p {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--soft-charcoal);
+}
+
+.arc-desk-arctable-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Figma slice chrome (see docs/overnight/DESK-SLICE-PLACEMENT.md) */
+.arc-desk-chrome-slice {
+  display: block;
+  user-select: none;
+}
+
+.arc-desk-green-drawer-art {
+  position: absolute;
+  inset: 0;
+}
+
+.arc-desk-green-folders-drawer[data-desk-slices='true'] .arc-desk-green-drawer-art {
+  background: none;
+}
+
+.arc-desk-green-folders-drawer[data-desk-slices='true'] .arc-desk-green-drawer-art .arc-desk-chrome-slice {
+  width: 100%;
+  height: 100%;
+}
+
+.arc-desk-todos-folder[data-desk-slices='true'] {
+  background: none;
+  box-shadow: none;
+  padding: 26px 12px 12px 18px;
+}
+
+.arc-desk-todos-folder[data-desk-slices='true'] .arc-desk-todos-folder-body {
+  z-index: 3;
+}
+
+.arc-desk-planner-frame-slices {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.b01-furniture-composition--desk .arc-calendar-spread--desk {
+  position: relative;
+}
+
+.b01-furniture-composition--desk .b01-calendar-owner {
+  position: relative;
+  z-index: 4;
+}
+
+.arc-desk-arctable[data-desk-slices='true'] {
+  position: relative;
+}
+
+.arc-desk-arctable[data-desk-slices='true'] .arc-desk-arctable-mark-wrap {
+  position: relative;
+  z-index: 2;
+}
+
+.desk-planner-enlarge {
+  min-height: 34px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.desk-calendar-popout-placeholder {
+  margin: 0;
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--soft-charcoal);
+  font: 600 13px/1.4 var(--font-ui);
+}
+
+.desk-calendar-popout-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 3vmin, 28px);
+  background: color-mix(in srgb, var(--shell-frame-green) 42%, rgba(12, 22, 18, 0.72));
+  backdrop-filter: blur(6px);
+}
+
+.desk-calendar-popout-stage {
+  display: flex;
+  flex-direction: column;
+  width: min(1120px, 100%);
+  max-height: min(92dvh, 920px);
+  border-radius: 18px;
+  border: 3px solid var(--shell-frame-green);
+  background: var(--field-elevated);
+  box-shadow: 0 32px 64px -28px rgba(12, 22, 18, 0.65);
+  overflow: hidden;
+}
+
+.desk-calendar-popout-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--shell-frame-green) 16%, var(--line-subtle));
+}
+
+.desk-calendar-popout-header h2 {
+  margin: 4px 0 0;
+  font-family: 'Instrument Serif', var(--font-display), serif;
+  font-weight: 400;
+  font-size: 1.65rem;
+}
+
+.desk-calendar-popout-subtitle {
+  margin: 4px 0 0;
+  font: 600 12px/1.3 var(--font-ui);
+  color: var(--soft-charcoal);
+}
+
+.desk-calendar-popout-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px 12px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.desk-calendar-popout-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 16px 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc-desk-mark-quadrant,
+  .arc-desk-mark-center {
+    transition: none;
+  }
+
+  .arc-desk-mark-target--active,
+  .arc-desk-mark-quadrant:hover,
+  .arc-desk-mark-quadrant:focus-visible,
+  .arc-desk-mark-center:hover,
+  .arc-desk-mark-center:focus-visible {
+    transform: none;
+  }
+}

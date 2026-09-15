@@ -1,15 +1,21 @@
 import { createCourse, createSection, validateCourse, validateSection, validateSectionCourse, type Course, type Section } from './courses'
+import { createPlanningNote, validatePlanningNote, type PlanningNote, type PlanningNoteInput } from './notes'
+import { normalizeTeachingDaySchedule, validateTeachingDaySchedule, type TeachingDaySchedule } from './teachingDay'
 
 export type PlanningWorkspace = {
   calendarId: string
   courses: Course[]
   sections: Section[]
+  notes?: PlanningNote[]
+  teachingDay?: TeachingDaySchedule
 }
 
 export type PlanningWorkspaceInput = {
   calendarId: string
   courses: Course[]
   sections: Section[]
+  notes?: PlanningNoteInput[]
+  teachingDay?: TeachingDaySchedule
 }
 
 export function hydratePlanningWorkspace(input: PlanningWorkspaceInput): PlanningWorkspace {
@@ -17,6 +23,8 @@ export function hydratePlanningWorkspace(input: PlanningWorkspaceInput): Plannin
     calendarId: input.calendarId.trim(),
     courses: input.courses.map((course) => createCourse(course)),
     sections: input.sections.map((section) => createSection(section)),
+    notes: (input.notes ?? []).map((note) => createPlanningNote(note)),
+    teachingDay: normalizeTeachingDaySchedule(input.teachingDay),
   }
 
   const errors = validatePlanningWorkspace(normalized)
@@ -41,26 +49,32 @@ export function validatePlanningWorkspace(workspace: PlanningWorkspace): string[
     if (sectionIds.has(section.id)) errors.push(`Duplicate Section ID: ${section.id}.`)
     sectionIds.add(section.id)
 
-    if (section.calendarId !== workspace.calendarId) {
-      errors.push(`${section.name || section.id} belongs to a different school calendar.`)
-    }
-
+    if (section.calendarId !== workspace.calendarId) errors.push(`${section.name || section.id} belongs to a different school calendar.`)
     const course = workspace.courses.find((candidate) => candidate.id === section.courseId)
-    if (!course) {
-      errors.push(`${section.name || section.id} references a Course that does not exist.`)
-    } else {
-      errors.push(...validateSectionCourse(section, course))
-    }
+    if (!course) errors.push(`${section.name || section.id} references a Course that does not exist.`)
+    else errors.push(...validateSectionCourse(section, course))
   }
+
+  const noteIds = new Set<string>()
+  for (const note of workspace.notes ?? []) {
+    errors.push(...validatePlanningNote(note))
+    if (noteIds.has(note.id)) errors.push(`Duplicate Note ID: ${note.id}.`)
+    noteIds.add(note.id)
+    if (note.calendarId !== workspace.calendarId) errors.push(`Note ${note.id} belongs to a different school calendar.`)
+  }
+
+  if (workspace.teachingDay) errors.push(...validateTeachingDaySchedule(workspace.teachingDay, workspace.sections))
 
   return unique(errors)
 }
 
 export function removeCourseFromWorkspace(workspace: PlanningWorkspace, courseId: string): PlanningWorkspace {
+  const removedSectionIds = new Set(workspace.sections.filter((section) => section.courseId === courseId).map((section) => section.id))
   return {
     ...workspace,
     courses: workspace.courses.filter((course) => course.id !== courseId),
     sections: workspace.sections.filter((section) => section.courseId !== courseId),
+    teachingDay: workspace.teachingDay ? { blocks: workspace.teachingDay.blocks.filter((block) => !block.sectionId || !removedSectionIds.has(block.sectionId)).map((block, index) => ({ ...block, order: index + 1 })) } : undefined,
   }
 }
 

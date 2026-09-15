@@ -1,4 +1,5 @@
 import { validateHydrationInput, type CalendarHydrationInput } from './hydration'
+import { cloneRecurringEarlyReleaseRules } from './recurringEarlyRelease'
 import type { CalendarSource } from './types'
 
 export type CalendarEvidence = {
@@ -31,6 +32,7 @@ export function buildCalendarProposal(draft: CalendarProposalDraft): CalendarPro
   const input: CalendarHydrationInput = {
     ...draft.input,
     exceptions: draft.input.exceptions?.map((day) => ({ ...day })),
+    recurringEarlyRelease: cloneRecurringEarlyReleaseRules(draft.input.recurringEarlyRelease),
     quarters: draft.input.quarters?.map((boundary) => ({ ...boundary })),
     semesters: draft.input.semesters?.map((boundary) => ({ ...boundary })),
     provenance: evidence.map((item) => ({ ...item })),
@@ -109,6 +111,7 @@ function cloneInput(input: CalendarHydrationInput): CalendarHydrationInput {
     ...input,
     instructionalWeekdays: [...input.instructionalWeekdays],
     exceptions: input.exceptions?.map((day) => ({ ...day })),
+    recurringEarlyRelease: cloneRecurringEarlyReleaseRules(input.recurringEarlyRelease),
     quarters: input.quarters?.map((boundary) => ({ ...boundary })),
     semesters: input.semesters?.map((boundary) => ({ ...boundary })),
     provenance: input.provenance?.map((item) => ({ ...item })),

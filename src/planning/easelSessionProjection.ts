@@ -1,6 +1,7 @@
 import { isConfirmedInstructionalDay } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { DayContinuityLesson, DayContinuityProjection } from './dayContinuityProjection'
+import type { LessonResource } from './lessons'
 
 export type EaselLaunchSource = 'scheduled' | 'carryover'
 
@@ -32,6 +33,10 @@ export type EaselSessionProjection = {
   deliveryStatus: DayContinuityLesson['deliveryStatus']
   taughtDate: ISODate | null
   resumeNote: string | null
+  directions: string[]
+  materials: string[]
+  phases: string[]
+  resources: LessonResource[]
 }
 
 export function easelLaunchOptions(input: {
@@ -117,6 +122,10 @@ export function projectEaselSession(input: {
     deliveryStatus: lesson.deliveryStatus,
     taughtDate: lesson.taughtDate,
     resumeNote: lesson.resumeNote,
+    directions: [...lesson.directions],
+    materials: [...lesson.materials],
+    phases: [...lesson.phases],
+    resources: lesson.resources.map((resource) => ({ ...resource })),
   }
 }
 

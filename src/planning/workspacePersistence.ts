@@ -1,6 +1,6 @@
 import { hydratePlanningWorkspace, type PlanningWorkspace, type PlanningWorkspaceInput } from './workspace'
 
-const STORAGE_KEY = 'arc.planningWorkspace.v1'
+export const PLANNING_WORKSPACE_STORAGE_KEY = 'arc.planningWorkspace.v1'
 
 type StoredPlanningWorkspace = {
   schemaVersion: 1
@@ -27,6 +27,8 @@ export function deserializePlanningWorkspace(raw: string): PlanningWorkspaceInpu
       calendarId: workspace.calendarId,
       courses: workspace.courses.map((course) => ({ ...course })),
       sections: workspace.sections.map((section) => ({ ...section })),
+      notes: (workspace.notes ?? []).map((note) => ({ ...note })),
+      teachingDay: workspace.teachingDay ? { blocks: workspace.teachingDay.blocks.map((block) => ({ ...block })) } : undefined,
     }
   } catch {
     return null
@@ -35,7 +37,7 @@ export function deserializePlanningWorkspace(raw: string): PlanningWorkspaceInpu
 
 export function savePlanningWorkspaceToBrowser(input: PlanningWorkspaceInput): boolean {
   try {
-    window.localStorage.setItem(STORAGE_KEY, serializePlanningWorkspace(input))
+    window.localStorage.setItem(PLANNING_WORKSPACE_STORAGE_KEY, serializePlanningWorkspace(input))
     return true
   } catch {
     return false
@@ -45,7 +47,7 @@ export function savePlanningWorkspaceToBrowser(input: PlanningWorkspaceInput): b
 export function loadPlanningWorkspaceFromBrowser(expectedCalendarId: string): PlanningWorkspaceLoadResult {
   let raw: string | null
   try {
-    raw = window.localStorage.getItem(STORAGE_KEY)
+    raw = window.localStorage.getItem(PLANNING_WORKSPACE_STORAGE_KEY)
   } catch {
     return { status: 'unavailable' }
   }

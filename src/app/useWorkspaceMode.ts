@@ -2,9 +2,12 @@ import { useState } from 'react'
 
 export type WorkspaceMode =
   | 'calendar'
+  | 'onboarding'
   | 'calendar-setup'
   | 'terms'
   | 'classes'
+  | 'teaching-day'
+  | 'import'
   | 'units'
   | 'lessons'
   | 'recovery'

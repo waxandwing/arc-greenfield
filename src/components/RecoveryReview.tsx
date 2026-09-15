@@ -23,6 +23,7 @@ type Props = {
   overrides: SectionLessonDateOverride[]
   onApply: (operation: ShiftOperation) => string | null
   onClose: () => void
+  focusSectionId?: string | null
 }
 
 type ReviewItem = {
@@ -32,7 +33,7 @@ type ReviewItem = {
   draft: ReturnType<typeof createRecoveryShiftDraft>
 }
 
-export function RecoveryReview({ calendar, planning, units, lessons, overrides, onApply, onClose }: Props) {
+export function RecoveryReview({ calendar, planning, units, lessons, overrides, onApply, onClose, focusSectionId = null }: Props) {
   const [chosenDates, setChosenDates] = useState<Record<string, ISODate>>({})
   const [applyErrors, setApplyErrors] = useState<Record<string, string>>({})
 
@@ -54,6 +55,8 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
       return { section, lesson, preview, draft: createRecoveryShiftDraft(preview) }
     })
     .filter((item): item is ReviewItem => item !== null)
+
+  const reviewItems = focusSectionId ? items.filter((item) => item.section.id === focusSectionId) : items
 
   function selectedDatesFor(item: ReviewItem): Record<string, ISODate> {
     const selected: Record<string, ISODate> = {}
@@ -91,11 +94,11 @@ export function RecoveryReview({ calendar, planning, units, lessons, overrides, 
         <p>Review the consequences first. Nothing moves until you explicitly apply the Shift for that class.</p>
       </div>
 
-      {items.length === 0 ? (
-        <p className="projection-empty-state">No classes are currently marked in progress.</p>
+      {reviewItems.length === 0 ? (
+        <p className="projection-empty-state">{focusSectionId ? 'This class has no in-progress Lesson that needs a governed Shift.' : 'No classes are currently marked in progress.'}</p>
       ) : (
         <div className="recovery-review-list">
-          {items.map((item) => {
+          {reviewItems.map((item) => {
             const { section, lesson, preview, draft } = item
             const error = applyErrors[preview.sectionId]
             const unresolved = draft?.changes.filter((change) => change.lessonId !== draft.interruptedLessonId) ?? []

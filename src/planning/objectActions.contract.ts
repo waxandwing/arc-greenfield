@@ -2,7 +2,7 @@ import { hydrateSchoolCalendar } from '../calendar/hydration'
 import { createCourse, createSection } from './courses'
 import { createLessonDeliveryState, updateLessonDeliveryState } from './deliveryState'
 import { createLesson } from './lessons'
-import { deleteLesson, deleteUnit, moveLesson, moveUnit, unplaceLessonFromCalendar, unplaceUnitFromCalendar } from './objectActions'
+import { copyLesson, deleteLesson, deleteUnit, moveLesson, moveUnit, unplaceLessonFromCalendar, unplaceUnitFromCalendar } from './objectActions'
 import type { LessonWorkspace } from './lessonWorkspace'
 import type { SectionLessonDateOverride } from './sectionSchedule'
 import { createUnit, placeUnit } from './units'
@@ -62,6 +62,14 @@ expectThrow(() => deleteLesson({ calendar, units, lessons: withHistory, override
 const deletedLessonWorkspace = deleteLesson({ calendar, units, lessons, overrides, lessonId: fixed.id })
 assert(!deletedLessonWorkspace.lessons.some((item) => item.id === fixed.id), 'Delete Lesson must remove the requested Lesson when no history/override blocks it.')
 assert(deletedLessonWorkspace.lessons.some((item) => item.id === lesson.id), 'Delete Lesson must not remove neighboring Lessons.')
+
+const copied = copyLesson({ calendar, units, lessons, overrides, lessonId: lesson.id })
+assert(copied.copy.id !== lesson.id, 'Copy must create a new Lesson identity.')
+assert(copied.copy.importProvenance === undefined, 'A copied Lesson must not share mutable import provenance with its source.')
+assert(copied.copy.plannedDate === null, 'Copy must enter Workspace unscheduled instead of silently colliding with the original date.')
+assert(copied.copy.directions !== lesson.directions && copied.copy.resources !== lesson.resources, 'Copy must not share mutable content collections with the original.')
+copied.copy.directions.push('Only on the copy')
+assert(!lesson.directions.includes('Only on the copy'), 'Editing copied content must not mutate the original Lesson.')
 
 const movedUnitWorkspace = moveUnit({ calendar, units, lessons: withHistory, overrides, unitId: unit.id, placement: { startDate: '2026-09-14', endDate: '2026-09-30' } })
 assert(movedUnitWorkspace.units.find((item) => item.id === unit.id)?.placement?.endDate === '2026-09-30', 'Move Unit must update its span.')

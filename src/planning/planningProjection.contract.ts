@@ -59,7 +59,7 @@ const weekDates = ['2026-09-14', '2026-09-15', '2026-09-16', '2026-09-17', '2026
 const week = projectPlanningRange({ dates: [...weekDates], planning, units, lessons, overrides })
 assert(week.courses.length === 1, 'Projection should group the shared Course once.')
 assert(week.courses[0].unitSpans.length === 1, 'A shared Unit should render once per Course, not once per Section.')
-assert(week.courses[0].unitSpans[0].startIndex === 0 && week.courses[0].unitSpans[0].endIndex === 4, 'Unit span should clip to the visible Monday–Friday Week range.')
+assert(week.courses[0].unitSpans[0].startIndex === 0 && week.courses[0].unitSpans[0].endIndex === 4, 'Unit span should clip to the visible weekday Week range.')
 assert(week.courses[0].sections.length === 3, 'All three Sections should receive their own effective schedule row.')
 
 const p2Row = week.courses[0].sections.find((row) => row.section.id === p2.id)!

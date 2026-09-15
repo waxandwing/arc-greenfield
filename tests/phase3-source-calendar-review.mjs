@@ -71,7 +71,8 @@ await page.addInitScript((value) => {
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
 assert(await page.getByRole('heading', { level: 1, name: 'Month' }).count() === 1, 'Source review: seeded source-backed calendar did not restore into the planner.')
 
-await page.getByRole('button', { name: 'Edit dates' }).click()
+await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
+await page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: 'Calendar dates', exact: true }).click()
 const review = page.getByRole('region', { name: 'Check the school-year truth before you change it.' })
 assert(await review.count() === 1, 'Source review: source-backed calendar review region is missing.')
 assert((await review.textContent())?.includes('District source'), 'Source review: source classification is not visible.')
@@ -97,8 +98,8 @@ const gridColumns = await mini.locator('.source-calendar-grid').evaluate((grid) 
   }
   return { wednesday: columnFor('2026-09-02'), monday: columnFor('2026-09-07') }
 })
-assert(gridColumns.wednesday === 3, `Source review: Wednesday fixture start rendered in column ${gridColumns.wednesday}, expected 3.`)
-assert(gridColumns.monday === 1, `Source review: Monday rendered in column ${gridColumns.monday}, expected 1.`)
+assert(gridColumns.wednesday === 4, `Source review: Wednesday fixture start rendered in column ${gridColumns.wednesday}, expected 4.`)
+assert(gridColumns.monday === 2, `Source review: Monday rendered in column ${gridColumns.monday}, expected 2.`)
 
 mkdirSync('artifacts/phase3-source-review', { recursive: true })
 await page.screenshot({ path: 'artifacts/phase3-source-review/source-calendar-review-1280.png', fullPage: true })
@@ -116,7 +117,8 @@ assert(editedException?.source === 'manual', `Source review: teacher-edited exce
 assert(editedException?.confidence === 'confirmed', `Source review: teacher-edited exception did not become confirmed (${editedException?.confidence}).`)
 
 await page.reload({ waitUntil: 'networkidle' })
-await page.getByRole('button', { name: 'Edit dates' }).click()
+await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
+await page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: 'Calendar dates', exact: true }).click()
 const reloadedReview = page.getByRole('region', { name: 'Check the school-year truth before you change it.' })
 assert(await reloadedReview.count() === 1, 'Source review: provenance review surface disappeared after save/reload.')
 assert((await reloadedReview.textContent())?.includes('fixture://phase3/source-calendar-review'), 'Source review: provenance evidence did not survive save/reload.')

@@ -1,4 +1,5 @@
 import { chromium } from 'playwright'
+import { selectPlanView as selectCalendarView, retreatToTeachingDayViaDayTab } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -22,13 +23,8 @@ async function configureCalendar(page) {
   await page.getByRole('button', { name: 'Use this calendar' }).click()
 }
 
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
-}
-
 async function openViewOptions(page) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
   await page.getByText('View options', { exact: true }).click()
 }
@@ -57,12 +53,14 @@ try {
   const nextRange = await weekRegion.getAttribute('aria-label')
   assert(Boolean(nextRange), 'RGAV-B: navigated Week lost its accessible range label.')
 
-  await page.getByRole('button', { name: /Return to Week view/ }).click()
-  assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: Arc wordmark did not honor Last used Week behavior.')
+  await retreatToTeachingDayViaDayTab(page)
+  assert(await page.getByRole('heading', { level: 1, name: 'Day' }).count() === 1, 'RGAV-B: Home must land on Teaching Day.')
+  await selectCalendarView(page, 'Week')
+  assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: Last used Week must restore from planner index.')
 
   await page.reload({ waitUntil: 'networkidle' })
   assert(await page.getByRole('heading', { level: 1, name: 'Week' }).count() === 1, 'RGAV-B: reload did not restore Last used Week behavior.')
-  assert(await page.getByRole('button', { name: 'Change calendar view, current Week' }).count() === 1, 'RGAV-B: title-based view navigation did not survive reload.')
+  assert(await page.getByRole('navigation', { name: 'Planner index' }).getByRole('button', { name: 'WEEK', exact: true }).getAttribute('aria-current') === 'page', 'RGAV-B: planner index Week tab did not survive reload.')
   await openViewOptions(page)
   assert(await page.getByLabel('Show weekends in Week view').isChecked(), 'RGAV-B: weekend preference did not persist across reload.')
 

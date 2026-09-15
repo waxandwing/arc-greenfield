@@ -20,6 +20,12 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function settingsAction(page, name) {
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
+}
+
 async function keyboardActivate(locator, key = 'Enter') {
   await locator.focus()
   assert(await locator.evaluate((node) => document.activeElement === node), `Keyboard parity: ${await locator.innerText()} did not receive focus.`)
@@ -35,21 +41,21 @@ async function configureCalendar(page) {
 }
 
 async function seedPlanningState(page) {
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('AP Art History')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
   await page.getByRole('textbox', { name: 'Period or section', exact: true }).fill('Period 2')
   await page.getByRole('button', { name: 'Save classes', exact: true }).click()
 
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('Keyboard Unit')
   await page.getByRole('textbox', { name: 'Start', exact: true }).fill('2026-09-14')
   await page.getByRole('textbox', { name: 'End', exact: true }).fill('2026-09-25')
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   await page.getByRole('button', { name: 'Add Lesson', exact: true }).click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('Move me')
   await page.getByRole('textbox', { name: 'Planned date', exact: true }).fill('2026-09-16')
@@ -93,7 +99,7 @@ try {
   assert(await page.locator('[draggable="true"]').count() === 0, 'Keyboard parity: current planning surface unexpectedly exposes a draggable-only planning control.')
 
   // From this point onward, core mutation actions use focus/typing/keyboard activation only.
-  await keyboardActivate(headerAction(page, 'Edit Lessons'))
+  await keyboardActivate(await settingsAction(page, 'Lesson library'))
   await selectLessonByKeyboard(page, 'Recovery lesson')
   await page.screenshot({ path: 'artifacts/phase2-behavior/lesson-editor-1366.png', fullPage: true })
   await selectLessonByKeyboard(page, 'Move me')
@@ -104,7 +110,7 @@ try {
   await keyboardActivate(page.getByRole('button', { name: 'Save Lessons', exact: true }))
 
   await page.reload({ waitUntil: 'networkidle' })
-  await keyboardActivate(headerAction(page, 'Edit Lessons'))
+  await keyboardActivate(await settingsAction(page, 'Lesson library'))
   await selectLessonByKeyboard(page, 'Move me')
   assert(await page.getByRole('textbox', { name: 'Planned date', exact: true }).inputValue() === '2026-09-22', 'Keyboard parity: keyboard-driven Lesson move did not survive reload.')
 
@@ -114,7 +120,7 @@ try {
   await keyboardActivate(page.getByRole('button', { name: 'Save Lessons', exact: true }))
 
   await page.reload({ waitUntil: 'networkidle' })
-  await keyboardActivate(headerAction(page, 'Edit Lessons'))
+  await keyboardActivate(await settingsAction(page, 'Lesson library'))
   await selectLessonByKeyboard(page, 'Move me')
   assert(await page.getByRole('textbox', { name: 'Planned date', exact: true }).inputValue() === '', 'Keyboard parity: keyboard Unplace did not survive reload.')
 
@@ -126,7 +132,7 @@ try {
   await keyboardActivate(page.getByRole('button', { name: 'Save Lessons', exact: true }))
 
   await page.reload({ waitUntil: 'networkidle' })
-  await keyboardActivate(headerAction(page, 'Edit Lessons'))
+  await keyboardActivate(await settingsAction(page, 'Lesson library'))
   assert(await page.getByRole('button', { name: /^Delete me/ }).count() === 0, 'Keyboard parity: keyboard-deleted Lesson returned after reload.')
   await keyboardActivate(page.getByRole('button', { name: 'Cancel', exact: true }))
 

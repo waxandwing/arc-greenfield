@@ -1,0 +1,20 @@
+.plan-move-panel{max-width:920px;margin:var(--space-6) auto 0;padding:var(--space-6);border-top:1px solid var(--line-strong)}
+.plan-move-panel-heading h2{margin:6px 0 0;font:600 27px/1.16 var(--font-editorial)}
+.plan-move-panel-context{margin:6px 0 0;color:var(--soft-charcoal)}
+.plan-move-destination{display:grid;gap:6px;margin-top:var(--space-5);max-width:280px;font-size:14px;font-weight:700}
+.plan-move-destination input{min-height:44px;padding:8px 10px;border:1px solid var(--control-border);border-radius:var(--radius-sm);font:inherit}
+.plan-move-actions{display:flex;gap:var(--space-4);margin-top:var(--space-4)}
+.plan-move-consequence{margin-top:var(--space-6);padding-top:var(--space-5);border-top:1px solid var(--line-subtle)}
+.plan-move-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-5)}
+.plan-move-grid h4{margin:0 0 var(--space-3);font-size:14px}
+.plan-move-grid section{padding:var(--space-4);border-left:1px solid var(--line-subtle)}
+.plan-move-grid section:first-child{border-left:0}
+.plan-move-fixed{color:var(--terracotta);font-weight:700}
+.plan-move-confirm{margin-top:var(--space-5)}
+.plan-lesson-action-row{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center}
+.planning-lesson-actions{margin-top:6px;display:flex;gap:var(--space-3);flex-wrap:wrap}
+@media (max-width:900px){
+  .plan-move-grid{grid-template-columns:1fr}
+  .plan-move-grid section{border-left:0;border-top:1px solid var(--line-subtle);padding-top:var(--space-4)}
+  .plan-move-grid section:first-child{border-top:0;padding-top:0}
+}

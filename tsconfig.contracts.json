@@ -8,9 +8,12 @@
     "rootDir": ".",
     "outDir": "tests/generated"
   },
+  "exclude": ["src/navigation/deskSliceManifest.ts"],
   "include": [
     "src/calendar/**/*.ts",
+    "src/navigation/**/*.ts",
     "src/planning/**/*.ts",
+    "src/demo/**/*.ts",
     "tests/calendar.contract.ts"
   ]
 }

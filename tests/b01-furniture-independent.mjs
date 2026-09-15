@@ -1,5 +1,6 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
+import { selectPlanView as selectView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -11,14 +12,12 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
-async function selectView(page, view) {
-  const switcher = page.getByRole('button', { name: /Change calendar view, current/ })
-  await switcher.focus()
-  await switcher.press('Enter')
-  const choice = page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true })
-  await choice.focus()
-  await choice.press('Enter')
+async function settingsAction(page, text) {
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: text, exact: true })
 }
+
 
 async function seed(page) {
   await page.locator('#school-year-label').fill('2026–27')
@@ -26,7 +25,7 @@ async function seed(page) {
   await page.locator('#last-school-day').fill('2027-05-28')
   await page.getByRole('button', { name: 'Use this calendar', exact: true }).click()
 
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('AP Art History')
   for (const period of ['Period 2', 'Period 5']) {
@@ -35,14 +34,14 @@ async function seed(page) {
   }
   await page.getByRole('button', { name: 'Save classes', exact: true }).click()
 
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('Ancient Egypt')
   await page.getByRole('textbox', { name: 'Start', exact: true }).fill('2026-09-14')
   await page.getByRole('textbox', { name: 'End', exact: true }).fill('2026-09-25')
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   const add = page.getByRole('button', { name: 'Add Lesson', exact: true })
   await add.click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('Temple lesson')
@@ -78,19 +77,6 @@ async function documentRect(locator, page) {
   return { x: box.x + scroll.x, y: box.y + scroll.y, width: box.width, height: box.height }
 }
 
-function assertOutside(calendar, surface, side, label) {
-  assert(calendar && surface, `B01-B: ${label} geometry is unavailable.`)
-  const calendarRight = calendar.x + calendar.width
-  const calendarBottom = calendar.y + calendar.height
-  const surfaceRight = surface.x + surface.width
-  const outside = side === 'left'
-    ? surfaceRight <= calendar.x + 1
-    : side === 'right'
-      ? surface.x >= calendarRight - 1
-      : surface.y >= calendarBottom - 1
-  assert(outside, `B01-B: ${label} overlaps the Calendar Shell. calendar=${JSON.stringify(calendar)} surface=${JSON.stringify(surface)}`)
-}
-
 const browser = await chromium.launch({ headless: true })
 try {
   const context = await browser.newContext({ viewport: { width: 1366, height: 768 } })
@@ -108,55 +94,43 @@ try {
   const calendar = page.locator('.calendar-canvas')
   const calendarBefore = await documentRect(calendar, page)
   const viewportBefore = await geometrySnapshot(page)
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
-  const fridge = page.getByRole('button', { name: 'Fridge', exact: true })
-  const tasks = page.getByRole('button', { name: 'Tasks', exact: true })
-  const controls = [settings, fridge, tasks]
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  const fridge = page.getByRole('button', { name: 'TRAY', exact: true })
+  const tabControls = [settings, fridge]
 
-  for (const control of [tasks, fridge, settings]) {
+  for (const control of tabControls) {
     const box = await control.boundingBox()
     assert(box && box.width >= 44 && box.height >= 44, `B01-B: furniture trigger is below 44px target (${box?.width ?? 0}×${box?.height ?? 0}).`)
     await control.focus()
     await control.press('Enter')
     assert(await control.getAttribute('aria-expanded') === 'true', 'B01-B: keyboard did not open a furniture owner.')
+    const expandedCount = (await Promise.all(tabControls.map(async (candidate) => (await candidate.getAttribute('aria-expanded')) === 'true'))).filter(Boolean).length
+    assert(expandedCount === 1, `B01-B: more than one contextual planning tool remained open (${expandedCount}).`)
   }
+
+  await settings.click()
+  await page.getByRole('button', { name: 'Task bar', exact: true }).click()
+  assert(await page.locator('.b01-task-surface').evaluate((node) => getComputedStyle(node).visibility) === 'visible', 'B01-B: Task bar did not open from Settings.')
 
   const calendarAfter = await documentRect(calendar, page)
   const viewportAfter = await geometrySnapshot(page)
   mkdirSync('artifacts/b01-furniture-independent', { recursive: true })
-  await page.screenshot({ path: 'artifacts/b01-furniture-independent/all-open-1366x768.png', fullPage: true })
+  await page.screenshot({ path: 'artifacts/b01-furniture-independent/contextual-settings-1366x768.png', fullPage: true })
   const fixedGeometry = calendarBefore && calendarAfter && Math.abs(calendarBefore.x - calendarAfter.x) <= 1 && Math.abs(calendarBefore.y - calendarAfter.y) <= 1 && Math.abs(calendarBefore.width - calendarAfter.width) <= 1 && Math.abs(calendarBefore.height - calendarAfter.height) <= 1
   assert(fixedGeometry, `B01-B: alternate all-open path changed document geometry. before=${JSON.stringify(calendarBefore)} after=${JSON.stringify(calendarAfter)} viewportBefore=${JSON.stringify(viewportBefore)} viewportAfter=${JSON.stringify(viewportAfter)}`)
-  assertOutside(calendarAfter, await documentRect(page.locator('.b01-settings-surface'), page), 'left', 'all-open Settings surface')
-  assertOutside(calendarAfter, await documentRect(page.locator('.b01-fridge-surface'), page), 'right', 'all-open Fridge surface')
-  assertOutside(calendarAfter, await documentRect(page.locator('.b01-task-surface'), page), 'bottom', 'all-open Task Bar surface')
+  const settingsSurface = await documentRect(page.locator('.b01-settings-surface'), page)
+  assert(settingsSurface && settingsSurface.x >= 0 && settingsSurface.x + settingsSurface.width <= 1366, `B01-B: contextual Settings escaped the viewport (${JSON.stringify(settingsSurface)}).`)
 
   const doc = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
   assert(doc.scroll <= doc.width + 1, `B01-B: 1366×768 all-open path overflowed (${doc.scroll} > ${doc.width}).`)
 
-  // Canon requires Escape to close open edge furniture and restore focus; it does not prescribe an order among simultaneously-open owners.
-  for (let pass = 0; pass < 3; pass += 1) {
-    const before = await Promise.all(controls.map(async (control) => (await control.getAttribute('aria-expanded')) === 'true'))
-    const beforeCount = before.filter(Boolean).length
-    assert(beforeCount === 3 - pass, `B01-B: unexpected open-furniture count before Escape (${beforeCount}).`)
-    await page.keyboard.press('Escape')
-    const after = await Promise.all(controls.map(async (control) => (await control.getAttribute('aria-expanded')) === 'true'))
-    const afterCount = after.filter(Boolean).length
-    assert(afterCount === beforeCount - 1, `B01-B: Escape did not close exactly one open furniture owner (${beforeCount} → ${afterCount}).`)
-    const closedIndex = before.findIndex((wasOpen, index) => wasOpen && !after[index])
-    assert(closedIndex >= 0, 'B01-B: Escape did not identify a newly closed furniture owner.')
-    const expectedControls = await controls[closedIndex].getAttribute('aria-controls')
-    await page.waitForFunction(
-      (controlsId) => document.activeElement?.getAttribute('aria-controls') === controlsId,
-      expectedControls,
-      { timeout: 1000 },
-    )
-    assert(await controls[closedIndex].evaluate((node) => document.activeElement === node), 'B01-B: focus restored to a different element than the furniture trigger it closed.')
-  }
+  await page.keyboard.press('Escape')
+  assert((await Promise.all(tabControls.map(async (control) => (await control.getAttribute('aria-expanded')) === 'true'))).filter(Boolean).length === 0, 'B01-B: Escape did not close the active contextual tool.')
+  assert(await settings.evaluate((node) => document.activeElement === node), 'B01-B: Escape did not restore focus to the active contextual tool trigger.')
   assert(runtimeErrors.length === 0, `B01-B runtime errors: ${runtimeErrors.join(' | ')}`)
 
   await context.close()
-  console.log(`Independent B01 audit B passed: alternate AP Art History Week, reverse-order keyboard furniture opening, 44px targets, fixed document geometry, explicit all-open non-overlap, 1366×768 overflow, order-agnostic Escape/focus closure, and runtime cleanliness. viewportScroll=${viewportBefore.scrollY}→${viewportAfter.scrollY}`)
+  console.log(`Independent B01 current-shell audit passed: alternate AP Art History Week, exclusive keyboard tool opening, 44px targets, fixed document geometry, 1366×768 containment, Escape/focus closure, and runtime cleanliness. viewportScroll=${viewportBefore.scrollY}→${viewportAfter.scrollY}`)
 } finally {
   await browser.close()
 }

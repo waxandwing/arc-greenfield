@@ -4,22 +4,7 @@ Calendar-first teacher planning for plans that change.
 
 This repository is the implementation source for Arc. Product and UX authority live in the canonical Google Drive Product Spec. Visual authority lives in the canonical Wax & Wing Brand System. GitHub issues translate those authorities into implementation work.
 
-## Arc desk preview (not on `main`)
-
-Production desk work (wood tabletop, desk slices, ArcTable, `npm run preview:desk`) lives on branch **`cursor/arc-production-integration`** — **do not preview the desk from `main`**. On `main` you get the legacy plan shell only (cream/green calendar chrome, no `desk-v2` footer).
-
-**Kelly + Cursor agents — primary handoff:** [`docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md`](https://github.com/waxandwing/arc-greenfield/blob/cursor/arc-production-integration/docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md) on branch `cursor/arc-production-integration` (plain English: project folder, three preview paths, done vs next).
-
-```bash
-cd /path/to/arc-greenfield   # folder that contains package.json
-git fetch origin
-git checkout cursor/arc-production-integration
-git pull origin cursor/arc-production-integration
-npm install
-npm run preview:desk
-```
-
-Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. Footer must show `desk-v2 · cursor/arc-production-integration · <sha>` matching `git rev-parse --short HEAD` after pull.
+**Arc wood desk (Kelly):** The Teaching week desk is on branch `cursor/arc-production-integration`, not `main`. Start here: [`docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md`](https://github.com/waxandwing/arc-greenfield/blob/cursor/arc-production-integration/docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md) on that branch (preview steps, project folder vs wrong branch).
 
 ## Branch authority
 
@@ -135,8 +120,41 @@ CI reports separate gates for:
 - TypeScript
 - production bundle
 - browser accessibility/interaction
+- Arc Plan navigation spine (`npm run test:plan-navigation` against a running preview)
 
 `tests/run-contracts.mjs` verifies that every discovered `*.contract.ts` file is represented in the contract runner. Adding a contract that CI does not execute must fail the gate.
+
+### Skip setup (demo calendar)
+
+To open Arc straight on **My Teaching Day** with prefilled AP / 2D / 3D content (same data as plan smokes):
+
+- **URL:** add `?demo=1` or `?demo=gauntlet` (first visit, or when local storage is empty).
+- **Reset and re-seed:** `?demo=1&demoReset=1` overwrites saved data and reloads.
+- **Build flag:** set `VITE_ARC_DEMO=true` before `npm run build` so empty browsers auto-seed without a query string.
+
+Onboarding, first-capture prompt, and progressive setup are skipped once the demo bundle is written.
+
+Example preview URL: `http://127.0.0.1:4173/?demo=1`
+
+### Local desk preview (integration branch)
+
+The Arc **desk** build lives on `cursor/arc-production-integration`, not on `main`.
+
+**Run all commands from the repo root** (the folder that contains `package.json`). Running `git` or `npm` from home (`~`) fails with “not a git repository” and missing `package.json`. If the repo is already on disk, `cd` to that clone first.
+
+```bash
+git clone https://github.com/waxandwing/arc-greenfield.git
+cd arc-greenfield
+git fetch origin
+git checkout cursor/arc-production-integration
+git pull origin cursor/arc-production-integration
+npm install
+npm run preview:desk
+```
+
+Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. See [docs/LOCAL-PREVIEW.md](docs/LOCAL-PREVIEW.md) for dev server, smokes, and aliases (`dev:desk`, `start:desk`).
+
+**Work on your Mac (not cloud VM):** bookmark [docs/WORK-FROM-GITHUB-LOCALLY.md](docs/WORK-FROM-GITHUB-LOCALLY.md) and the full handoff [docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md](docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md).
 
 ## Integration rule
 

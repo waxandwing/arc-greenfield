@@ -1,0 +1,175 @@
+/* Repair pass 1 — remove app chrome (IA / progressive disclosure). */
+
+/* —— 1. Spread header: period tools only when plan-state owns the title —— */
+.calendar-stage-header--tools-only {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-4);
+  min-height: 44px;
+  padding-block: 6px;
+}
+
+.calendar-stage-header--tools-only > div:first-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.calendar-stage-header--tools-only .calendar-header-tools {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.calendar-context-group .calendar-context {
+  display: none;
+}
+
+/* —— 2. Editorial state header (single h1) —— */
+.plan-state-header {
+  margin: 0 0 var(--space-3);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.plan-state-kicker {
+  padding: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  background: transparent;
+  border: 0;
+}
+
+.plan-state-primary {
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.2vw, 38px);
+  font-weight: 500;
+  line-height: 1.06;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.plan-state-secondary {
+  padding: 4px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--soft-charcoal);
+  background: transparent;
+}
+
+.plan-state-header[data-plan-focus='class'] .plan-state-primary,
+.plan-state-header[data-plan-focus='lesson'] .plan-state-primary {
+  font-size: clamp(26px, 3vw, 34px);
+}
+
+/* —— 3. Notes: collapsed by default —— */
+.planning-notes {
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  border: 0;
+  align-items: center;
+}
+
+.planning-notes--collapsed {
+  justify-content: flex-end;
+  min-height: 0;
+}
+
+.planning-notes-add-trigger {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--line-subtle) 80%, transparent);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--soft-charcoal);
+  font: 700 12px/1 var(--font-label);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.planning-notes-add-trigger:hover,
+.planning-notes-add-trigger:focus-visible {
+  border-color: var(--dusty-blue);
+  color: var(--ink);
+  outline: 2px solid var(--accent-blue-soft);
+  outline-offset: 1px;
+}
+
+.planning-notes--expanded .planning-notes-list {
+  flex: 1 1 auto;
+  width: 100%;
+  margin-bottom: var(--space-2);
+}
+
+.planning-note-date-advanced {
+  margin-top: var(--space-2);
+}
+
+.planning-note-date-advanced summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--soft-charcoal);
+}
+
+/* —— 4. Top app bar —— */
+.arc-header {
+  min-height: 44px;
+  padding: 4px var(--page-gutter);
+}
+
+/* —— 5. Frame: one less boundary —— */
+.b01-furniture-composition {
+  outline: none;
+}
+
+.arc-planner-object {
+  padding: 3px;
+  box-shadow: var(--shell-planner-shadow);
+}
+
+/* —— 6. Index rail: lighter —— */
+.arc-index-tabs {
+  min-width: 46px;
+  padding: 10px 0 10px 4px;
+  border-left-width: 2px;
+  border-left-color: rgba(255, 253, 248, 0.08);
+  background: color-mix(in srgb, var(--shell-frame-green) 68%, black);
+  box-shadow: none;
+}
+
+.arc-index-tab {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 8px 3px;
+  color: color-mix(in srgb, var(--field-elevated) 62%, transparent);
+  font-size: 9px;
+}
+
+.arc-index-tab[aria-current='page'] {
+  background: color-mix(in srgb, var(--field-elevated) 14%, transparent);
+  color: var(--field-elevated);
+  box-shadow: inset 3px 0 0 var(--mustard);
+}
+
+/* —— 7. Week: content priority —— */
+.planning-week .planning-scroll-frame {
+  margin-top: 0;
+}
+
+.arc-calendar-spread > .b01-calendar-owner {
+  padding: var(--space-3) var(--space-5) var(--space-4);
+}
+
+.arc-calendar-stage {
+  padding: var(--space-4) var(--page-gutter) var(--space-6);
+}

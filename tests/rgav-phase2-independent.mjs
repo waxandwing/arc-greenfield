@@ -1,4 +1,5 @@
 import { chromium } from 'playwright'
+import { selectPlanView as selectCalendarView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -8,6 +9,12 @@ function assert(condition, message) {
 
 function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
+}
+
+async function settingsAction(page, text) {
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  if (await settings.getAttribute('aria-expanded') !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: text, exact: true })
 }
 
 function trackRuntimeErrors(page) {
@@ -25,13 +32,8 @@ async function press(locator, key = 'Enter') {
   await locator.press(key)
 }
 
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
-}
-
 async function openViewOptions(page) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
   await page.getByText('View options', { exact: true }).click()
 }
@@ -49,7 +51,7 @@ async function configure(page) {
 }
 
 async function makeClasses(page) {
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('Studio Art')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
@@ -60,14 +62,14 @@ async function makeClasses(page) {
 }
 
 async function makePlan(page) {
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('Color Unit')
   await page.getByRole('textbox', { name: 'Start', exact: true }).fill('2026-09-14')
   await page.getByRole('textbox', { name: 'End', exact: true }).fill('2026-09-25')
   await page.getByRole('button', { name: 'Save Units', exact: true }).click()
 
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   const add = page.getByRole('button', { name: 'Add Lesson', exact: true })
   await add.click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('Color intro')
@@ -87,8 +89,11 @@ async function makePlan(page) {
 async function moveToTargetWeek(page) {
   await selectCalendarView(page, 'Month')
   await selectCalendarView(page, 'Week')
-  await page.getByRole('button', { name: 'Next Week', exact: true }).click()
-  await page.getByRole('button', { name: 'Next Week', exact: true }).click()
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (await page.getByRole('button', { name: /Open Day for Monday, September 14, 2026/ }).count()) return
+    await page.getByRole('button', { name: 'Next Week', exact: true }).click()
+  }
+  throw new Error('RGAV B: could not navigate to the target week.')
 }
 
 async function titlesInRow(page, sectionName) {
@@ -115,13 +120,13 @@ try {
   await selectCalendarView(page, 'Day')
   assert(await page.getByRole('heading', { level: 1, name: 'Day', exact: true }).count() === 1, 'RGAV B: Day projection did not open.')
 
-  await press(headerAction(page, 'Edit Lessons'))
+  await press(await settingsAction(page, 'Lesson library'))
   await press(page.getByRole('button', { name: /^Mixing lab/ }))
   const plannedDate = page.getByRole('textbox', { name: 'Planned date', exact: true })
   await plannedDate.fill('2026-09-17')
   await press(page.getByRole('button', { name: 'Save Lessons', exact: true }))
   await page.reload({ waitUntil: 'networkidle' })
-  await press(headerAction(page, 'Edit Lessons'))
+  await press(await settingsAction(page, 'Lesson library'))
   await press(page.getByRole('button', { name: /^Mixing lab/ }))
   assert(await page.getByRole('textbox', { name: 'Planned date', exact: true }).inputValue() === '2026-09-17', 'RGAV B: shared Lesson move did not survive reload.')
 

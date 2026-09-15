@@ -1,4 +1,5 @@
 import { chromium } from 'playwright'
+import { selectPlanView as selectCalendarView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -19,6 +20,12 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
+async function settingsAction(page, name) {
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
+}
+
 async function configureCalendar(page) {
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-02')
@@ -28,7 +35,7 @@ async function configureCalendar(page) {
 }
 
 async function createClasses(page) {
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('AP Art History')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
@@ -39,7 +46,7 @@ async function createClasses(page) {
 }
 
 async function createUnit(page) {
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   await page.getByRole('textbox', { name: 'Unit', exact: true }).fill('Recovery Unit')
   await page.getByRole('textbox', { name: 'Start', exact: true }).fill('2026-09-14')
@@ -55,7 +62,7 @@ async function addLesson(page, title, date, fixed = false) {
 }
 
 async function createRecoveryLessons(page) {
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
   await addLesson(page, 'Interrupted lesson', '2026-09-16')
   await addLesson(page, 'Flexible follow-up', '2026-09-17')
   await addLesson(page, 'Fixed checkpoint', '2026-09-23', true)
@@ -71,17 +78,13 @@ async function createRecoveryLessons(page) {
   await page.getByRole('button', { name: 'Save Lessons', exact: true }).click()
 }
 
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  const navigation = page.getByRole('navigation', { name: 'Calendar views' })
-  assert(await navigation.isVisible(), 'Recovery gate: current-view control did not reveal the view choices.')
-  await navigation.getByRole('button', { name: view, exact: true }).click()
-}
-
 async function moveToWeekOfSeptember14(page) {
   await selectCalendarView(page, 'Week')
-  await page.getByRole('button', { name: 'Next Week', exact: true }).click()
-  await page.getByRole('button', { name: 'Next Week', exact: true }).click()
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (await page.getByRole('button', { name: /Open Day for Monday, September 14, 2026/ }).count()) return
+    await page.getByRole('button', { name: 'Next Week', exact: true }).click()
+  }
+  throw new Error('Recovery gate could not navigate to the week of September 14.')
 }
 
 function sectionRow(page, name) {
@@ -175,7 +178,7 @@ try {
   assert(await fixedTiles.count() === 0, 'Fixed checkpoint should remain outside the Sep 14 Week rather than being pulled into recovery movement.')
 
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
+  await page.getByRole('navigation', { name: 'Planner index' }).waitFor({ state: 'visible' })
   assert(await headerAction(page, 'Undo last Shift').count() === 1, 'Reload lost the persisted Recovery Undo token.')
   await moveToWeekOfSeptember14(page)
   await assertShiftedWeek(page)
@@ -188,7 +191,7 @@ try {
   await assertRestoredWeek(page)
 
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
+  await page.getByRole('navigation', { name: 'Planner index' }).waitFor({ state: 'visible' })
   assert(await headerAction(page, 'Undo last Shift').count() === 0, 'Consumed Undo token returned after reload.')
   await moveToWeekOfSeptember14(page)
   await assertRestoredWeek(page)

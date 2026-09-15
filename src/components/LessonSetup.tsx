@@ -4,6 +4,8 @@ import {
   createLesson,
   createLessonDeliveryState,
   createLessonId,
+  createLessonResourceId,
+  copyLesson,
   deleteLesson,
   effectiveLessonDeliveryState,
   hydrateLessonWorkspace,
@@ -14,6 +16,7 @@ import {
   type DeliveryStatus,
   type Lesson,
   type LessonDatePolicy,
+  type LessonResourceKind,
   type LessonDeliveryState,
   type LessonWorkspace,
   type LessonWorkspaceInput,
@@ -67,6 +70,10 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
       sequence: siblings.length + 1,
       plannedDate: null,
       datePolicy: 'flexible',
+      directions: [],
+      materials: [],
+      phases: [],
+      resources: [],
     }
     setLessons((current) => [...current, lesson])
     setSelectedLessonId(lesson.id)
@@ -156,6 +163,18 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
     }
   }
 
+  function copyDraftLesson(lessonId: string) {
+    try {
+      const result = copyLesson({ calendar, units, lessons: currentWorkspace(), overrides, lessonId })
+      setLessons(result.workspace.lessons)
+      setSelectedLessonId(result.copy.id)
+      setErrors([])
+      setActionNotice('Lesson copied into Workspace with a new identity. The original Lesson and class history were not changed.')
+    } catch (error) {
+      reportActionError(error)
+    }
+  }
+
   function changeDelivery(
     lesson: Lesson,
     sectionId: string,
@@ -224,7 +243,7 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
         <div className="lesson-detail">
           {!selectedLesson ? <p className="projection-empty-state">Choose a Lesson or add one.</p> : <>
             <section className="lesson-shared-plan">
-              <div className="lesson-detail-heading"><div><p className="section-label">Shared plan</p><h3>{selectedLesson.title || 'Untitled Lesson'}</h3></div><div>{selectedLesson.plannedDate && <button type="button" className="text-button" onClick={() => unplaceDraftLesson(selectedLesson.id)}>Unplace</button>}<button type="button" className="text-button" onClick={() => deleteDraftLesson(selectedLesson.id)}>Delete</button></div></div>
+              <div className="lesson-detail-heading"><div><p className="section-label">Shared plan</p><h3>{selectedLesson.title || 'Untitled Lesson'}</h3></div><div><button type="button" className="text-button" onClick={() => copyDraftLesson(selectedLesson.id)}>Copy</button>{selectedLesson.plannedDate && <button type="button" className="text-button" onClick={() => unplaceDraftLesson(selectedLesson.id)}>Unplace</button>}<button type="button" className="text-button" onClick={() => deleteDraftLesson(selectedLesson.id)}>Delete</button></div></div>
               <div className="lesson-field-grid lesson-field-grid--schedule">
                 <label><span>Lesson title</span><input value={selectedLesson.title} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, title: event.target.value } : lesson))} /></label>
                 <label><span>Unit</span><select value={selectedLesson.unitId} onChange={(event) => changeUnit(selectedLesson.id, event.target.value)}>{units.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}</select></label>
@@ -233,6 +252,15 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
                 <label><span>Date behavior</span><select value={selectedLesson.datePolicy} disabled={!selectedLesson.plannedDate} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, datePolicy: event.target.value as LessonDatePolicy } : lesson))}><option value="flexible">Flexible</option><option value="fixed">Fixed</option></select></label>
               </div>
               <p className="lesson-date-policy-note">Flexible dates may be surfaced for recovery review. Fixed dates are anchors: Arc may show a collision, but it will not move them automatically.</p>
+              <div className="lesson-teaching-content" aria-labelledby="lesson-teaching-content-heading">
+                <div><p className="section-label">Teaching content</p><h3 id="lesson-teaching-content-heading">What ArcTable should carry</h3><p>Reusable content stays with this Lesson. Live timers, passes, picks, and cleanup never save here.</p></div>
+                <label><span>Directions · one per line</span><textarea rows={5} value={selectedLesson.directions.join('\n')} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, directions: event.target.value.split('\n') } : lesson))} /></label>
+                <label><span>Materials · one per line</span><textarea rows={3} value={selectedLesson.materials.join('\n')} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, materials: event.target.value.split('\n') } : lesson))} /></label>
+                <label><span>Teaching phases · one label per line</span><textarea rows={3} value={selectedLesson.phases.join('\n')} placeholder="Look\nDiscuss\nMake\nReflect" onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, phases: event.target.value.split('\n') } : lesson))} /></label>
+                <div className="lesson-resource-list"><div><strong>Resources</strong><button type="button" className="quiet-button" onClick={() => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, resources: [...lesson.resources, { id: createLessonResourceId(), title: '', kind: 'image', source: '' }] } : lesson))}>Add resource</button></div>
+                  {selectedLesson.resources.length === 0 ? <p className="projection-empty-state">No reusable media references yet.</p> : selectedLesson.resources.map((resource) => <fieldset key={resource.id}><legend>Lesson resource</legend><label><span>Title</span><input value={resource.title} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, resources: lesson.resources.map((item) => item.id === resource.id ? { ...item, title: event.target.value } : item) } : lesson))} /></label><label><span>Type</span><select value={resource.kind} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, resources: lesson.resources.map((item) => item.id === resource.id ? { ...item, kind: event.target.value as LessonResourceKind } : item) } : lesson))}><option value="image">Image</option><option value="slides">Google Slides</option><option value="link">Reference link</option></select></label><label><span>URL or path</span><input value={resource.source} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, resources: lesson.resources.map((item) => item.id === resource.id ? { ...item, source: event.target.value } : item) } : lesson))} /></label><button type="button" className="text-button" onClick={() => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, resources: lesson.resources.filter((item) => item.id !== resource.id) } : lesson))}>Remove resource</button></fieldset>)}
+                </div>
+              </div>
             </section>
             <section className="lesson-section-progress">
               <div className="lesson-progress-heading"><p className="section-label">Class progress</p><h3>Where did each class stop?</h3></div>

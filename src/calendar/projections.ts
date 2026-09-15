@@ -1,4 +1,4 @@
-import { addCalendarDays, compareISODate, eachCalendarDay, mondayFirstWeekdayIndex } from './dateMath'
+import { addCalendarDays, compareISODate, eachCalendarDay, sundayFirstWeekdayIndex } from './dateMath'
 import { findContainingBoundary, getCalendarDay } from './schoolCalendar'
 import type { CalendarDay, ISODate, SchoolCalendar, TermBoundary } from './types'
 
@@ -71,8 +71,8 @@ export function projectDay(calendar: SchoolCalendar, date: ISODate): DayProjecti
 }
 
 export function projectWeek(calendar: SchoolCalendar, anchorDate: ISODate): WeekProjection {
-  const startDate = startOfMondayWeek(anchorDate)
-  const endDate = addCalendarDays(startDate, 6)
+  const startDate = startOfSundayWeek(anchorDate)
+  const endDate = endOfSaturdayWeek(anchorDate)
   return {
     kind: 'week',
     startDate,
@@ -87,8 +87,8 @@ export function projectMonth(calendar: SchoolCalendar, anchorDate: ISODate): Mon
   const { year, month } = parseISODate(anchorDate)
   const first = formatISODate(year, month, 1)
   const last = lastDayOfMonth(year, month)
-  const gridStartDate = startOfMondayWeek(first)
-  const gridEndDate = endOfSundayWeek(last)
+  const gridStartDate = startOfSundayWeek(first)
+  const gridEndDate = endOfSaturdayWeek(last)
   const allDays = eachCalendarDay(gridStartDate, gridEndDate).map((date) => projectCalendarDay(calendar, date))
   const weeks: MonthWeek[] = []
 
@@ -167,13 +167,12 @@ function boundariesIntersectingRange(boundaries: TermBoundary[], startDate: ISOD
   )
 }
 
-function startOfMondayWeek(date: ISODate): ISODate {
-  return addCalendarDays(date, -mondayFirstWeekdayIndex(date))
+function startOfSundayWeek(date: ISODate): ISODate {
+  return addCalendarDays(date, -sundayFirstWeekdayIndex(date))
 }
 
-function endOfSundayWeek(date: ISODate): ISODate {
-  const mondayIndex = mondayFirstWeekdayIndex(date)
-  return addCalendarDays(date, 6 - mondayIndex)
+function endOfSaturdayWeek(date: ISODate): ISODate {
+  return addCalendarDays(startOfSundayWeek(date), 6)
 }
 
 function parseISODate(date: ISODate): { year: number; month: number; day: number } {

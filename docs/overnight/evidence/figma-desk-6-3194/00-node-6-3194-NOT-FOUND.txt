@@ -1,0 +1,3 @@
+Figma node 6:3194 not present in file CfWcuQPY4ljYXondICj2ZX (MCP 2026-09-15).
+Top page: 30:46 Arc Multi-Prep Synthesis.
+Closest desk-adjacent exports saved with alternate node IDs.

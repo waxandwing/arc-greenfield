@@ -1,6 +1,6 @@
 *,*::before,*::after{box-sizing:border-box}
-html{min-width:320px;scrollbar-gutter:stable;background:#E9E0D1;color:var(--ink);font-synthesis:none;text-rendering:optimizeLegibility}
-body{margin:0;min-width:320px;min-height:100vh;overflow-y:scroll;background:#E9E0D1;font:400 16px/1.45 var(--font-ui)}
+html{min-width:320px;scrollbar-gutter:stable;background:var(--shell-frame-green);color:var(--ink);font-synthesis:none;text-rendering:optimizeLegibility}
+body{margin:0;min-width:320px;min-height:100vh;overflow-y:scroll;background:var(--shell-frame-green);font:400 16px/1.45 var(--font-ui)}
 button,input,textarea,select{font:inherit;color:inherit}
 button{appearance:none}
 input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--paper-raised);padding:9px 10px}
@@ -10,18 +10,18 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .skip-link{position:fixed;z-index:100;top:8px;left:8px;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;padding:0;border:0;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:700}
 .skip-link:focus{width:auto;height:auto;overflow:visible;clip:auto;clip-path:none;white-space:normal;padding:8px 12px;border-radius:var(--radius-sm)}
 
-.arc-shell{min-height:100dvh;background:linear-gradient(180deg,#EEE6D8 0,#E9E0D1 100%);color:var(--ink)}
-.arc-header{height:68px;display:grid;grid-template-columns:96px minmax(0,1fr);align-items:center;padding-inline:var(--page-gutter);background:transparent}
-.arc-wordmark{border:0;background:transparent;padding:8px 0;text-align:left;font:600 32px/1 var(--font-editorial);letter-spacing:-.045em;cursor:pointer}
-.arc-wordmark::after{content:'';display:block;width:22px;height:2px;margin-top:5px;background:var(--terracotta);transform:rotate(-2deg);transform-origin:left center}
+/* Shell field + header: see arc-plan-shell.css */
+.arc-wordmark{width:48px;height:48px;border:0;background:transparent;padding:2px;cursor:pointer}
+.arc-wordmark img{display:block;width:44px;height:44px;object-fit:contain}
 .arc-header-space{min-width:0}
+.arc-live-return{display:flex;align-items:center;gap:16px;min-height:44px;padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer}.arc-live-return span{font-size:13px;font:700 13px/1.2 var(--font-label);letter-spacing:.04em;text-transform:uppercase}
 
-.arc-layout{position:relative;min-height:calc(100dvh - 68px);overflow:hidden}
-.arc-calendar-stage{min-width:0;padding:0 var(--page-gutter) var(--page-gutter);outline:none}
-.calendar-stage-header{display:grid;grid-template-columns:minmax(180px,1fr) auto;align-items:end;gap:var(--space-6);min-height:84px;margin-bottom:var(--space-2);padding:0 2px}
+.arc-layout{position:relative;min-height:calc(100dvh - 64px);overflow:hidden}
+.arc-calendar-stage{min-width:0;padding:0 var(--page-gutter) 28px;outline:none}
+.calendar-stage-header{display:grid;grid-template-columns:minmax(180px,1fr) auto;align-items:end;gap:var(--space-6);min-height:76px;margin:0;padding:8px 0 7px}
 .calendar-stage-header>div:first-child{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
-.section-label{margin:0;font-size:12px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--soft-charcoal)}
-.view-title{margin:0;font:400 40px/1.06 var(--font-editorial);letter-spacing:-.035em}
+.section-label{margin:0}
+.view-title{margin:0}
 .calendar-view-switcher{position:relative;display:inline-block;max-width:100%}
 .view-title-trigger{display:inline-flex;align-items:center;gap:8px;max-width:100%;min-height:44px;margin:-4px 0 -4px -4px;padding:4px;border:0;border-radius:var(--radius-sm);background:transparent;color:inherit;font:inherit;letter-spacing:inherit;text-align:left;cursor:pointer}
 .view-title-trigger:disabled{cursor:default}
@@ -32,8 +32,8 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .view-choice[aria-current='page']{background:rgba(228,179,61,.22);color:var(--ink);font-weight:800}
 .view-choice[aria-disabled='true']{cursor:not-allowed;color:rgba(74,73,69,.46)}
 .calendar-context{margin:0;font-size:12px;font-weight:800;letter-spacing:.05em;color:var(--soft-charcoal)}
-.calendar-canvas{position:relative;isolation:isolate;min-height:calc(100dvh - 168px);overflow:auto;border:1px solid rgba(44,46,46,.18);border-radius:var(--radius-sm);background:var(--paper-raised);box-shadow:3px 3px 0 rgba(198,167,125,.22),7px 8px 0 rgba(44,46,46,.035),0 18px 36px -30px rgba(44,46,46,.45)}
-.calendar-canvas::before{content:'';position:absolute;z-index:-1;inset:auto 10px -5px 10px;height:5px;border-radius:0 0 3px 3px;background:rgba(198,167,125,.18)}
+.calendar-canvas{position:relative;isolation:isolate;min-height:calc(100dvh - 188px);overflow:auto;border:0;border-radius:0;background:transparent;box-shadow:none}
+.calendar-canvas::before{display:none}
 
 .calendar-setup{max-width:920px;margin:0 auto;padding:var(--space-8)}
 .calendar-setup-intro{max-width:620px;margin-bottom:var(--space-8)}
@@ -55,12 +55,22 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .weekday-option input:checked+span{background:var(--mustard);border-color:rgba(44,46,46,.35)}
 .weekday-option input:focus-visible+span{outline:3px solid var(--dusty-blue);outline-offset:3px}
 .exceptions-section{display:grid;gap:var(--space-4);padding-top:var(--space-6);border-top:1px solid var(--line-subtle)}
+.recurring-early-release-section{display:grid;gap:var(--space-4);padding-top:var(--space-6);border-top:1px solid var(--line-subtle)}
+.recurring-early-release-list{display:grid;gap:var(--space-4)}
+.recurring-early-release-row{display:grid;gap:var(--space-3);padding:var(--space-4);border:1px solid var(--line-subtle);border-radius:var(--radius-sm);background:var(--paper-raised)}
+.recurring-early-release-preview{margin-top:8px;font-size:14px}
+.recurring-weekday-fieldset{border:0;margin:0;padding:0}
+.recurring-weekday-fieldset legend{margin-bottom:var(--space-2);font-weight:700}
+.recurring-time-field,.recurring-label-field{display:grid;gap:6px;font-weight:600;max-width:280px}
+.recurring-early-release-row .text-button{justify-self:start}
 .exceptions-heading{display:flex;justify-content:space-between;align-items:start;gap:var(--space-4)}
 .exceptions-heading h3{margin:0 0 4px;font:600 22px/1.2 var(--font-editorial)}
 .exceptions-heading p,.empty-exceptions,.setup-actions p{margin:0;color:var(--soft-charcoal)}
 .exception-list{display:grid;gap:var(--space-2)}
 .exception-row{display:grid;grid-template-columns:minmax(150px,.9fr) minmax(170px,1fr) minmax(180px,1.4fr) auto;gap:var(--space-2);align-items:end}
-.exception-label-field{min-width:0}
+.exception-row--early-release{grid-template-columns:minmax(150px,.85fr) minmax(160px,.95fr) minmax(140px,1fr) minmax(120px,.75fr) auto}
+.exception-label-field,.exception-time-field{min-width:0}
+.exception-time-field input{width:100%}
 .quiet-button,.text-button,.primary-button{min-height:44px;cursor:pointer;font-weight:700}
 .quiet-button{border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:transparent;padding:8px 12px}
 .text-button{border:0;background:transparent;padding:8px;color:var(--terracotta-text);text-underline-offset:3px}
@@ -83,17 +93,22 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
 .calendar-day-label,.calendar-day-status{display:block;margin-top:6px;font-size:12px;line-height:1.25;color:var(--soft-charcoal)}
 .calendar-day-cell--weekend{background:rgba(74,73,69,.05)}
 .calendar-day-cell--outside-year{opacity:.42}
+.calendar-day-cell--early-release{background:rgba(201,162,74,.12)}
 .calendar-day-cell--no-school,.calendar-day-cell--holiday,.calendar-day-cell--break,.calendar-day-cell--teacher-workday{background:rgba(124,156,173,.08)}
 .calendar-day-cell--unknown{background:repeating-linear-gradient(135deg,rgba(44,46,46,.025) 0,rgba(44,46,46,.025) 6px,transparent 6px,transparent 12px)}
 .projection-empty-state{margin:0;padding:var(--space-4);color:var(--soft-charcoal)}
 .calendar-unconfigured{padding:var(--space-4)}
+.workspace-capture{width:100%;min-height:46px;margin-top:16px;border:1px dashed;border-radius:var(--radius-sm);font-weight:800;cursor:pointer}
+.planning-year{display:grid;gap:38px;min-width:850px;padding:36px}.planning-year-heading{display:flex;justify-content:space-between;gap:32px;align-items:end}.planning-year-heading h2{margin:4px 0 0;font:500 40px/1.04 var(--font-editorial);letter-spacing:-.025em}.planning-year-heading>p{max-width:520px;margin:0;color:var(--soft-charcoal)}.planning-year-course{display:grid;grid-template-columns:240px minmax(0,1fr);gap:30px;align-items:center}.planning-year-course-title{padding-left:16px;border-left:5px solid var(--mustard)}.planning-year-course--1 .planning-year-course-title{border-left-color:var(--sage)}.planning-year-course--2 .planning-year-course-title{border-left-color:var(--lavender)}.planning-year-course-title h3{margin:0 0 5px;font:500 30px/1.06 var(--font-editorial)}.planning-year-course-title span{font-size:13px;color:var(--soft-charcoal)}.planning-year-track{position:relative;display:flex;gap:0;min-height:150px;padding:28px 18px}.planning-year-underlay{position:absolute;inset:8px -10px;border:0;border-radius:var(--radius-bloop);background:var(--mustard-soft);transform:rotate(-.35deg)}.planning-year-course--1 .planning-year-underlay{background:var(--sage-soft);transform:rotate(.3deg)}.planning-year-course--2 .planning-year-underlay{background:var(--lavender-soft);transform:rotate(-.2deg)}.planning-year-unit{position:relative;z-index:1;display:grid;flex:1;align-content:center;min-width:180px;min-height:100px;padding:16px 18px;border:0;border-left:1px solid var(--line-strong);border-radius:0;background:transparent;box-shadow:none}.planning-year-unit:first-of-type{border-left:0}.planning-year-unit span,.planning-year-unit small{font-size:12px;color:var(--soft-charcoal)}.planning-year-unit strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:600 19px/1.15 var(--font-editorial)}.planning-year-empty{position:relative;z-index:1;margin:0;padding:32px 24px;color:var(--soft-charcoal)}
+.day-continuity-lesson .primary-button{margin-top:12px}
 
 @media (max-width:800px){
-  .arc-header{height:64px;padding-inline:var(--mobile-gutter)}
+  .arc-header{min-height:64px;padding-inline:var(--mobile-gutter)}
+  .arc-live-return span{display:none}
   .arc-layout{min-height:calc(100dvh - 64px)}
   .arc-calendar-stage{padding:0 var(--mobile-gutter) var(--mobile-gutter)}
   .calendar-stage-header{align-items:end;grid-template-columns:1fr;gap:var(--space-2);min-height:88px}
-  .calendar-canvas{min-height:calc(100dvh - 164px)}
+  .calendar-canvas{min-height:calc(100dvh - 196px)}
   .projection-section{padding:var(--space-3)}
   .calendar-setup{padding:var(--space-6)}
   .setup-field-grid{grid-template-columns:1fr 1fr}
@@ -111,7 +126,7 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
   .arc-calendar-stage{padding:0 var(--space-3) var(--space-3)}
   .view-title{font-size:34px}
   .calendar-view-choices{max-width:calc(100vw - (2 * var(--space-3)))}
-  .calendar-canvas{border-radius:var(--radius-sm);box-shadow:0 1px 0 rgba(44,46,46,.04)}
+  .calendar-canvas{border-radius:0;box-shadow:none}
   .calendar-canvas::before{display:none}
   .month-week,.projection-range{min-width:644px}
   .projection-day-strip{min-width:720px}
@@ -125,6 +140,8 @@ input,select{min-height:44px;border:1px solid var(--line-strong);border-radius:v
   .setup-actions{display:flex}
   .primary-button{width:100%}
 }
+
+.planning-year-unit[type="button"]{text-align:left;font:inherit;color:inherit;cursor:pointer}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}

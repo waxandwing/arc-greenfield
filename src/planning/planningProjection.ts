@@ -1,7 +1,7 @@
 import type { ISODate } from '../calendar/types'
 import type { Course, Section } from './courses'
 import { effectiveLessonDeliveryState, type DeliveryStatus, type LessonDeliveryState } from './deliveryState'
-import type { Lesson, LessonDatePolicy } from './lessons'
+import type { Lesson, LessonDatePolicy, LessonResource } from './lessons'
 import { effectiveLessonDate, type SectionLessonDateOverride } from './sectionSchedule'
 import type { Unit } from './units'
 import type { PlanningWorkspace } from './workspace'
@@ -31,6 +31,10 @@ export type PlanningLessonPlacement = {
   deliveryStatus: DeliveryStatus
   taughtDate: ISODate | null
   resumeNote: string | null
+  directions: string[]
+  materials: string[]
+  phases: string[]
+  resources: LessonResource[]
 }
 
 export type PlanningDaySlot = {
@@ -142,6 +146,10 @@ function projectSectionRow(
       deliveryStatus: delivery.status,
       taughtDate: delivery.taughtDate,
       resumeNote: delivery.resumeNote,
+      directions: [...lesson.directions],
+      materials: [...lesson.materials],
+      phases: [...lesson.phases],
+      resources: lesson.resources.map((resource) => ({ ...resource })),
     })
   }
 

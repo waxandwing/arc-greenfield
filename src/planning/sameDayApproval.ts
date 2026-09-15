@@ -1,4 +1,5 @@
 import { assertISODate } from '../calendar/dateMath'
+import { getCalendarDay, isPlannableDayKind } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Section } from './courses'
 import type { Lesson } from './lessons'
@@ -34,9 +35,9 @@ export function validateSameDayLessonApproval(input: {
   const errors = validateSameDayApprovalShape(approval)
   if (approval.sectionId !== section.id) errors.push('Same-day approval belongs to a different Section.')
 
-  const day = calendar.days[approval.date]
-  if (!day || day.kind !== 'instructional' || day.confidence !== 'confirmed') {
-    errors.push('Same-day approval requires a confirmed instructional date.')
+  const day = getCalendarDay(calendar, approval.date)
+  if (!isPlannableDayKind(day.kind) || day.confidence !== 'confirmed') {
+    errors.push('Same-day approval requires a confirmed school day.')
   }
 
   for (const lessonId of approval.lessonIds) {

@@ -1,4 +1,5 @@
 import { chromium } from 'playwright'
+import { selectPlanView as selectCalendarView } from './helpers/selectPlanView.mjs'
 
 const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 
@@ -19,13 +20,14 @@ function headerAction(page, text) {
   return page.locator('.calendar-context-actions button').filter({ hasText: text })
 }
 
-async function selectCalendarView(page, view) {
-  await page.getByRole('button', { name: /Change calendar view, current/ }).click()
-  await page.getByRole('navigation', { name: 'Calendar views' }).getByRole('button', { name: view, exact: true }).click()
+async function settingsAction(page, name) {
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
+  if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
+  return page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name, exact: true })
 }
 
 async function openViewOptions(page) {
-  const settings = page.getByRole('button', { name: 'Settings', exact: true })
+  const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   if ((await settings.getAttribute('aria-expanded')) !== 'true') await settings.click()
   await page.getByText('View options', { exact: true }).click()
 }
@@ -50,7 +52,7 @@ async function configureCalendarWithEdges(page) {
 }
 
 async function createClass(page) {
-  await headerAction(page, 'Set classes').click()
+  await (await settingsAction(page, 'Set courses & sections')).click()
   await page.getByRole('button', { name: 'Add a course', exact: true }).click()
   await page.getByRole('textbox', { name: 'Course', exact: true }).fill('Studio Art')
   await page.getByRole('button', { name: 'Add a period or section', exact: true }).click()
@@ -59,7 +61,7 @@ async function createClass(page) {
 }
 
 async function createAndProbeUnits(page) {
-  await headerAction(page, 'Add Units').click()
+  await (await settingsAction(page, 'Add Units')).click()
   await page.getByRole('button', { name: 'Add Unit', exact: true }).click()
   const unitFields = page.getByRole('textbox', { name: 'Unit', exact: true })
   const startFields = page.getByRole('textbox', { name: 'Start', exact: true })
@@ -83,7 +85,7 @@ async function createAndProbeUnits(page) {
 }
 
 async function createAndProbeLessons(page) {
-  await headerAction(page, 'Add Lessons').click()
+  await (await settingsAction(page, 'Add Lessons')).click()
 
   await page.getByRole('button', { name: 'Add Lesson', exact: true }).click()
   await page.getByRole('textbox', { name: 'Lesson title', exact: true }).fill('No-school lesson')
@@ -106,8 +108,11 @@ async function createAndProbeLessons(page) {
 
 async function moveToWeekOfSeptember14(page) {
   await selectCalendarView(page, 'Week')
-  await page.getByRole('button', { name: 'Next Week', exact: true }).click()
-  await page.getByRole('button', { name: 'Next Week', exact: true }).click()
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    if (await page.getByRole('button', { name: /Open Day for Monday, September 14, 2026/ }).count()) return
+    await page.getByRole('button', { name: 'Next Week', exact: true }).click()
+  }
+  throw new Error('Calendar-edge gate could not navigate to the week of September 14.')
 }
 
 const browser = await chromium.launch({ headless: true })
@@ -138,13 +143,17 @@ try {
   assert(await calendarSurface.locator('.planning-date-heading').count() === 7, 'Phase 2 calendar edge: Week did not expand to seven days when weekends were enabled.')
   assert(await calendarSurface.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: confirmed Saturday Lesson was not restored when weekends were shown.')
 
-  await weekendToggle.uncheck()
+  await openViewOptions(page)
+  await page.getByRole('checkbox', { name: 'Show weekends in Week view', exact: true }).uncheck()
   assert(await calendarSurface.getByText('Saturday studio lesson', { exact: true }).count() === 0, 'Phase 2 calendar edge: Saturday Lesson remained visible in the calendar after weekends were hidden again.')
-  await weekendToggle.check()
+  await page.getByRole('checkbox', { name: 'Show weekends in Week view', exact: true }).check()
   assert(await calendarSurface.getByText('Saturday studio lesson', { exact: true }).count() === 1, 'Phase 2 calendar edge: hiding weekends mutated/deleted Saturday planning data.')
 
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).waitFor({ state: 'visible' })
+  await page.getByRole('navigation', { name: 'Planner index' }).waitFor({ state: 'visible' })
+  if (await page.getByRole('heading', { level: 1, name: 'Month', exact: true }).count() === 0) {
+    await selectCalendarView(page, 'Month')
+  }
   assert(await page.locator('.planning-month-unit-band').filter({ hasText: 'Span Unit' }).count() >= 1, 'Phase 2 calendar edge: multi-day Unit did not survive reload.')
   assert(await page.locator('.planning-month-day').filter({ hasText: 'Faculty meeting' }).count() === 1, 'Phase 2 calendar edge: no-school exception did not survive reload.')
   assert(await page.locator('.planning-month-signal').filter({ hasText: 'Saturday studio lesson' }).count() === 1, 'Phase 2 calendar edge: Saturday Lesson did not survive reload.')

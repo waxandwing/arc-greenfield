@@ -12,15 +12,19 @@ export function getCalendarDay(calendar: SchoolCalendar, date: ISODate): Calenda
   }
 }
 
+export function isPlannableDayKind(kind: CalendarDay['kind']): boolean {
+  return kind === 'instructional' || kind === 'early-release'
+}
+
 export function isInstructionalDay(calendar: SchoolCalendar, date: ISODate): boolean {
   if (compareISODate(date, calendar.firstDay) < 0 || compareISODate(date, calendar.lastDay) > 0) return false
-  return getCalendarDay(calendar, date).kind === 'instructional'
+  return isPlannableDayKind(getCalendarDay(calendar, date).kind)
 }
 
 export function isConfirmedInstructionalDay(calendar: SchoolCalendar, date: ISODate): boolean {
   if (compareISODate(date, calendar.firstDay) < 0 || compareISODate(date, calendar.lastDay) > 0) return false
   const day = getCalendarDay(calendar, date)
-  return day.kind === 'instructional' && day.confidence === 'confirmed'
+  return isPlannableDayKind(day.kind) && day.confidence === 'confirmed'
 }
 
 export function nextInstructionalDay(calendar: SchoolCalendar, from: ISODate): ISODate | null {

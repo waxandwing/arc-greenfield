@@ -1,0 +1,333 @@
+/* Repair Pass 3 — capture-first, quiet chrome, planner-embedded brand. */
+
+.arc-header {
+  display: none;
+}
+
+.planner-shell-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 48px;
+  padding: 6px var(--space-3) 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line-subtle) 65%, transparent);
+}
+
+.planner-shell-bar-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.arc-wordmark--in-planner {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.arc-wordmark--in-planner img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: none;
+}
+
+.arc-capture-trigger {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid color-mix(in srgb, var(--accent-blue-deep) 28%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--field-elevated) 96%, var(--accent-blue-soft));
+  color: var(--accent-blue-deep);
+  font: 750 13px/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.arc-capture-trigger:hover:not(:disabled) {
+  background: var(--accent-blue-soft);
+}
+
+.arc-capture-dialog {
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 25%, transparent);
+  border-radius: 8px;
+  background: var(--field-elevated);
+  box-shadow: var(--shadow-overlay);
+}
+
+.arc-capture-dialog::backdrop {
+  background: rgba(22, 28, 26, 0.35);
+}
+
+.arc-capture-dialog-inner {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px 16px;
+}
+
+.arc-capture-dialog-inner input,
+.arc-capture-dialog-inner select {
+  width: 100%;
+}
+
+.arc-capture-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.arc-capture-notice {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--shell-frame-green);
+}
+
+.capture-coach-mark {
+  max-width: 260px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--mustard) 45%, transparent);
+  background: color-mix(in srgb, var(--field-elevated) 94%, var(--mustard));
+  font-size: 13px;
+  box-shadow: 0 8px 24px -16px rgba(20, 30, 24, 0.45);
+}
+
+.capture-coach-mark p {
+  margin: 0 0 6px;
+  color: var(--soft-charcoal);
+}
+
+.capture-coach-target {
+  font-weight: 800;
+}
+
+.recovery-review-trigger--quiet {
+  font-weight: 600;
+  color: var(--soft-charcoal);
+  opacity: 0.88;
+}
+
+/* —— Pass 3 tab + drawer refinement (overrides shell-emphasis / visibility-lock dark rail) —— */
+
+.b01-furniture-composition[data-workspace-open='true'] .calendar-canvas,
+.b01-furniture-composition[data-workspace-open='true'] .calendar-stage-header,
+.b01-furniture-composition[data-settings-open='true'] .calendar-canvas,
+.b01-furniture-composition[data-settings-open='true'] .calendar-stage-header {
+  opacity: 1;
+  filter: none;
+}
+
+.arc-index-tabs {
+  margin-left: -2px;
+  padding: 16px 0 16px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.arc-index-tab {
+  writing-mode: horizontal-tb;
+  transform: none;
+  color: var(--soft-charcoal);
+}
+
+.arc-index-tab--day {
+  background: color-mix(in srgb, var(--accent-blue-soft) 72%, var(--field-elevated));
+  border-color: color-mix(in srgb, var(--accent-blue-deep) 22%, transparent);
+  color: var(--accent-blue-deep);
+}
+
+.arc-index-tab--week {
+  background: color-mix(in srgb, var(--mustard-soft) 85%, var(--field-elevated));
+  border-color: color-mix(in srgb, var(--mustard) 35%, transparent);
+  color: color-mix(in srgb, var(--ink) 82%, var(--mustard));
+}
+
+.arc-index-tab--month {
+  background: color-mix(in srgb, var(--sage-soft) 90%, var(--field-elevated));
+  border-color: color-mix(in srgb, var(--sage) 35%, transparent);
+  color: color-mix(in srgb, var(--shell-frame-green) 70%, var(--soft-charcoal));
+}
+
+.arc-index-tab--year {
+  background: color-mix(in srgb, var(--terracotta-soft) 88%, var(--field-elevated));
+  border-color: color-mix(in srgb, var(--terracotta) 30%, transparent);
+  color: var(--terracotta-text);
+}
+
+.arc-index-tab--planning {
+  background: color-mix(in srgb, var(--accent-blue-field) 55%, var(--field-elevated));
+  border-color: color-mix(in srgb, var(--dusty-blue) 32%, transparent);
+  color: color-mix(in srgb, var(--accent-blue-deep) 88%, var(--soft-charcoal));
+}
+
+.arc-index-tab--workspace {
+  background: color-mix(in srgb, var(--mustard-soft) 45%, var(--accent-blue-soft));
+  border-color: color-mix(in srgb, var(--dusty-blue) 28%, transparent);
+  color: color-mix(in srgb, var(--accent-blue-deep) 75%, var(--soft-charcoal));
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.arc-index-tab--settings {
+  background: color-mix(in srgb, var(--field-elevated) 88%, var(--soft-charcoal) 8%);
+  border-color: color-mix(in srgb, var(--soft-charcoal) 18%, transparent);
+  color: var(--soft-charcoal);
+}
+
+.arc-index-tab[aria-current='page'] {
+  color: var(--ink);
+  background: var(--field-elevated);
+  box-shadow:
+    0 4px 14px -8px rgba(33, 29, 23, 0.55),
+    inset 0 0 0 1px color-mix(in srgb, var(--mustard) 62%, transparent);
+}
+
+.arc-index-tab--day[aria-current='page'] {
+  background: color-mix(in srgb, var(--accent-blue-soft) 35%, var(--field-elevated));
+  color: var(--accent-blue-deep);
+}
+
+.arc-index-tab--week[aria-current='page'] {
+  background: color-mix(in srgb, var(--mustard-soft) 55%, var(--field-elevated));
+}
+
+.arc-index-tab--month[aria-current='page'] {
+  background: color-mix(in srgb, var(--sage-soft) 65%, var(--field-elevated));
+}
+
+.arc-index-tab--year[aria-current='page'] {
+  background: color-mix(in srgb, var(--terracotta-soft) 60%, var(--field-elevated));
+}
+
+.arc-index-tab--planning[aria-current='page'] {
+  background: color-mix(in srgb, var(--accent-blue-field) 40%, var(--field-elevated));
+}
+
+.b01-furniture-composition[data-side-panel='workspace'] .arc-index-tab--workspace[aria-current='page'],
+.b01-furniture-composition[data-side-panel='settings'] .arc-index-tab--settings[aria-current='page'] {
+  border-radius: 0 0 0 0;
+  border-right: 0;
+  margin-right: -1px;
+  padding-right: 14px;
+  z-index: 2;
+}
+
+@media (min-width: 901px) {
+  .b01-furniture-composition[data-side-panel='workspace'] .b01-fridge-owner[data-state='open'] .b01-fridge-surface {
+    border-radius: 0 8px 8px 0;
+    border-color: color-mix(in srgb, var(--dusty-blue) 28%, rgba(33, 29, 23, 0.16));
+    background: color-mix(in srgb, var(--field-elevated) 96%, var(--accent-blue-soft));
+  }
+
+  .b01-furniture-composition[data-side-panel='settings'] .b01-settings-owner[data-state='open'] .b01-settings-surface {
+    border-radius: 0 8px 8px 0;
+    border-color: color-mix(in srgb, var(--soft-charcoal) 14%, rgba(33, 29, 23, 0.16));
+    background: color-mix(in srgb, var(--field-elevated) 94%, rgba(44, 46, 46, 0.04));
+  }
+
+  .b01-furniture-composition[data-side-panel='workspace'] .arc-index-tab--workspace[aria-current='page'] {
+    background: color-mix(in srgb, var(--field-elevated) 96%, var(--accent-blue-soft));
+  }
+
+  .b01-furniture-composition[data-side-panel='settings'] .arc-index-tab--settings[aria-current='page'] {
+    background: color-mix(in srgb, var(--field-elevated) 94%, rgba(44, 46, 46, 0.04));
+  }
+}
+
+@media (max-width: 900px) {
+  .b01-furniture-composition[data-side-panel='workspace'] .b01-fridge-owner[data-state='open'] .b01-fridge-surface,
+  .b01-furniture-composition[data-side-panel='settings'] .b01-settings-owner[data-state='open'] .b01-settings-surface {
+    z-index: 60;
+  }
+}
+
+@media (max-width: 520px) {
+  .b01-furniture-composition[data-settings-open='true'] .b01-settings-surface {
+    width: calc(100vw - 16px);
+    right: 8px;
+    left: 8px;
+  }
+}
+
+.b01-fridge-content--repair-pass-3 .workspace-captures-primary {
+  margin-bottom: 12px;
+}
+
+.workspace-captures-heading-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.workspace-capture-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--soft-charcoal);
+}
+
+.workspace-capture-card {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.workspace-capture-card--selected {
+  border-color: color-mix(in srgb, var(--dusty-blue) 35%, transparent);
+  background: color-mix(in srgb, var(--accent-blue-soft) 40%, transparent);
+}
+
+.workspace-capture-card-select {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workspace-capture-actions {
+  display: grid;
+  gap: 8px;
+  padding: 0 10px 10px;
+}
+
+.workspace-secondary-block {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.workspace-secondary-block summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--soft-charcoal);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.teaching-day-schedule-notice {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent-blue-soft) 55%, transparent);
+  font-size: 14px;
+}
+
+.teaching-day-schedule-source {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--soft-charcoal);
+}

@@ -54,10 +54,31 @@
 .planning-date-heading{
   display:grid;
   gap:2px;
+  width:100%;
+  padding:0;
+  border:0;
   border-right:1px solid var(--line-subtle);
+  background:transparent;
+  text-align:left;
+  font-family:inherit;
   font-size:16px;
   font-weight:700;
   color:var(--ink);
+  cursor:pointer;
+}
+
+.planning-date-heading--focus{
+  font-weight:800;
+  border-top:4px solid var(--dusty-blue);
+  background:var(--accent-blue-soft);
+}
+
+.planning-week-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin:0 0 var(--space-3);
 }
 
 .planning-date-weekday,
@@ -73,9 +94,13 @@
 .planning-course{
   display:grid;
   gap:var(--space-2);
-  border-top:1px solid var(--line-subtle);
-  padding-top:var(--space-3);
+  border-top:3px solid var(--line-strong);
+  padding-top:var(--space-4);
 }
+
+.planning-course:nth-of-type(3n + 2){border-top-color:var(--dusty-blue)}
+.planning-course:nth-of-type(3n + 3){border-top-color:var(--terracotta)}
+.planning-course:nth-of-type(3n + 4){border-top-color:var(--sage)}
 
 .planning-course-heading{
   display:flex;
@@ -88,7 +113,7 @@
   margin:0;
   max-width:100%;
   overflow-wrap:anywhere;
-  font-family:Georgia,'Times New Roman',serif;
+  font-family:var(--font-editorial);
   font-size:18px;
   font-weight:600;
   color:var(--ink);
@@ -107,15 +132,30 @@
   align-self:center;
   min-width:0;
   margin:4px 6px;
-  padding:7px 10px;
+  padding:10px 12px;
   overflow:hidden;
-  border-left:4px solid var(--terracotta);
+  border-left:6px solid var(--terracotta);
   background:rgba(201,104,69,.12);
-  font-size:14px;
+  font-size:15px;
   font-weight:700;
   color:var(--ink);
   text-overflow:ellipsis;
   white-space:nowrap;
+}
+
+.planning-course[data-course-id='course-apah'] .planning-unit-span{
+  border-left-color:var(--course-apah-accent);
+  background:var(--course-apah-band);
+}
+
+.planning-course[data-course-id='course-2d'] .planning-unit-span{
+  border-left-color:var(--course-2d-accent);
+  background:var(--course-2d-band);
+}
+
+.planning-course[data-course-id='course-3d'] .planning-unit-span{
+  border-left-color:var(--course-3d-accent);
+  background:var(--course-3d-band);
 }
 
 .planning-section-list{
@@ -136,30 +176,93 @@
   display:grid;
   align-content:start;
   gap:6px;
-  border-right:1px solid var(--line-subtle);
-  background:rgba(255,255,255,.16);
+  border-right:1px solid rgba(44,46,46,.07);
+  background:rgba(255,255,255,.12);
+}
+
+.planning-day-slot--focus{
+  background:linear-gradient(180deg,var(--accent-blue-soft),rgba(255,255,255,.18));
+}
+
+.planning-date-heading--early-release,
+.planning-day-slot--early-release{
+  background:linear-gradient(180deg,rgba(201,162,74,.14),rgba(255,255,255,.18));
+  border-bottom:2px solid rgba(201,162,74,.35);
+}
+
+.planning-date-heading--early-release .planning-date-kind{
+  color:#7b5a22;
+  font-weight:700;
+}
+
+.planning-date-heading--off,
+.planning-day-slot--off{
+  background-color:var(--accent-blue-soft);
+  background-image:repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 6px,
+    rgba(101, 127, 144, 0.1) 6px,
+    rgba(101, 127, 144, 0.1) 12px
+  );
+}
+
+.planning-date-heading--off{
+  cursor:pointer;
 }
 
 .planning-day-slot--no-school,
 .planning-day-slot--holiday,
 .planning-day-slot--break,
-.planning-day-slot--teacher-workday{
-  background:rgba(74,73,69,.045);
+.planning-day-slot--teacher-workday,
+.planning-day-slot--unknown{
+  /* off-day column uses --off pattern above */
 }
 
 .planning-day-slot--unknown{
-  background:repeating-linear-gradient(135deg,rgba(74,73,69,.04),rgba(74,73,69,.04) 6px,transparent 6px,transparent 12px);
+  /* legacy hook; pattern from --off */
 }
 
 .planning-lesson{
   display:grid;
-  gap:6px;
-  padding:10px 11px;
+  gap:4px;
+  padding:8px 10px;
   border:1px solid var(--line-subtle);
-  border-left:4px solid var(--dusty-blue);
+  border-left:3px solid var(--dusty-blue);
   border-radius:4px;
-  background:rgba(243,235,221,.82);
+  background:rgba(255,253,248,.72);
   color:var(--ink);
+  font-size:14px;
+}
+
+.planning-lesson-meta{
+  font-size:12px;
+  color:var(--muted-ink);
+}
+
+.planning-lesson-title{
+  font-weight:650;
+}
+
+.planning-lesson-actions{
+  margin-top:2px;
+  gap:var(--space-2);
+}
+
+.planning-lesson-actions .planning-lesson-more-toggle{
+  color:var(--soft-charcoal);
+  font-weight:650;
+}
+
+.planning-lesson-more-panel{
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--space-2);
+  width:100%;
+}
+
+.planning-lesson-actions:not(.is-expanded) .planning-lesson-more-panel{
+  display:none;
 }
 
 .planning-lesson--in-progress{
@@ -176,7 +279,7 @@
 }
 
 .planning-lesson--fixed{
-  border-top-color:var(--terracotta);
+  box-shadow:inset 0 2px var(--terracotta);
 }
 
 .planning-lesson-title-row{
@@ -244,6 +347,22 @@
   min-height:120px;
 }
 
+.planning-notes{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;margin:14px 0 22px;padding:12px 0;border-block:1px solid var(--line-subtle)}
+.planning-notes-list{display:flex;align-items:center;flex-wrap:wrap;gap:10px;min-width:0}
+.planning-notes-list>strong{font:800 11px/1 var(--font-ui);letter-spacing:.1em;text-transform:uppercase}
+.planning-notes-list>span{color:var(--soft-charcoal);font-size:13px}
+.planning-notes-list article{display:flex;align-items:center;gap:8px;max-width:440px;padding:7px 10px;background:#fff5b3;box-shadow:0 5px 12px -11px rgba(44,46,46,.7);transform:rotate(-.15deg)}
+.planning-notes-list article>span{flex:none;color:var(--soft-charcoal);font-size:11px;font-weight:800}
+.planning-notes-list article p{margin:0;font-size:13px;line-height:1.35}
+.planning-notes-list article button{min-height:34px;border:0;background:transparent;color:var(--terracotta-text);font:800 11px/1 var(--font-ui);cursor:pointer}
+.planning-note-add{display:flex;align-items:end;gap:7px;flex:none}
+.planning-note-add label{display:grid;gap:3px;font:700 11px/1.2 var(--font-ui)}
+.planning-note-add input{min-height:38px;max-width:180px;border:1px solid var(--line-strong);border-radius:4px;background:rgba(255,255,255,.65);padding:6px 8px;font:500 13px/1.2 var(--font-ui)}
+.planning-note-add button{min-height:38px;border:1px solid color-mix(in srgb,var(--accent-blue-deep) 35%,transparent);border-radius:var(--radius-sm);background:var(--accent-blue-deep);color:var(--field-elevated);padding:6px 10px;font:800 12px/1 var(--font-label);letter-spacing:.04em;cursor:pointer}
+.planning-note-add button:disabled{opacity:.45;cursor:not-allowed}
+
 @media (max-width:900px){
   .planning-grid:not(.planning-grid--day){min-width:820px}
 }
+
+@media(max-width:760px){.planning-notes{align-items:stretch;flex-direction:column}.planning-note-add{display:grid;grid-template-columns:1fr}.planning-note-add input{width:100%;max-width:none;box-sizing:border-box}}

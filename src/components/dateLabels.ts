@@ -12,6 +12,31 @@ export function formatLongDate(date: ISODate): string {
   return dateFormatter({ weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(toUTCDate(date))
 }
 
+export function formatPlanHeaderDate(date: ISODate): string {
+  return dateFormatter({ weekday: 'long', month: 'short', day: 'numeric' }).format(toUTCDate(date))
+}
+
+/** Kelly desk comp: SEPTEMBER 7 - 11 • WEEK 4 */
+export function formatKellyDeskWeekSecondary(start: ISODate, end: ISODate, instructionalWeekLabel?: number | null): string {
+  const startDate = toUTCDate(start)
+  const endDate = toUTCDate(end)
+  const month = dateFormatter({ month: 'long' }).format(startDate).toUpperCase()
+  const startDay = startDate.getUTCDate()
+  const endDay = endDate.getUTCDate()
+  const weekSuffix =
+    instructionalWeekLabel != null && instructionalWeekLabel > 0 ? ` • WEEK ${instructionalWeekLabel}` : ''
+  return `${month} ${startDay} - ${endDay}${weekSuffix}`
+}
+
+export function formatPlanHeaderWeekRange(start: ISODate, end: ISODate): string {
+  const startDate = toUTCDate(start)
+  const endDate = toUTCDate(end)
+  const sameMonth = startDate.getUTCMonth() === endDate.getUTCMonth() && startDate.getUTCFullYear() === endDate.getUTCFullYear()
+  const startLabel = dateFormatter({ month: 'short', day: 'numeric' }).format(startDate)
+  const endLabel = dateFormatter(sameMonth ? { day: 'numeric' } : { month: 'short', day: 'numeric' }).format(endDate)
+  return `${startLabel}–${endLabel}`
+}
+
 export function formatMonthKey(monthKey: `${number}-${number}`): string {
   return dateFormatter({ month: 'long', year: 'numeric' }).format(new Date(`${monthKey}-01T00:00:00Z`))
 }

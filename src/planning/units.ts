@@ -3,6 +3,7 @@ import { assessCalendarReadiness } from '../calendar/readiness'
 import { instructionalDaysBetween } from '../calendar/schoolCalendar'
 import type { ISODate, SchoolCalendar } from '../calendar/types'
 import type { Course, CourseId, Section } from './courses'
+import { normalizeImportProvenance, validateImportProvenance, type ImportProvenance } from './importProvenance'
 
 export type UnitId = string
 
@@ -17,6 +18,8 @@ export type Unit = {
   courseId: CourseId
   title: string
   placement: UnitPlacement | null
+  importProvenance?: ImportProvenance
+  important?: boolean
 }
 
 export type UnitPlacementSummary = {
@@ -39,6 +42,7 @@ export function createUnit(input: {
   courseId: CourseId
   title: string
   id?: UnitId
+  importProvenance?: ImportProvenance
 }): Unit {
   const unit: Unit = {
     id: input.id ?? createUnitId(),
@@ -46,6 +50,8 @@ export function createUnit(input: {
     courseId: input.courseId,
     title: input.title.trim(),
     placement: null,
+    importProvenance: normalizeImportProvenance(input.importProvenance),
+    important: false,
   }
   const errors = validateUnit(unit)
   if (errors.length > 0) throw new Error(`Cannot create unit. ${errors.join(' ')}`)
@@ -58,6 +64,7 @@ export function validateUnit(unit: Unit): string[] {
   if (!unit.calendarId.trim()) errors.push('Unit calendar ID is required.')
   if (!unit.courseId.trim()) errors.push('Unit course ID is required.')
   if (!unit.title.trim()) errors.push('Unit title is required.')
+  if (unit.importProvenance) errors.push(...validateImportProvenance(unit.importProvenance))
 
   if (unit.placement) {
     try { assertISODate(unit.placement.startDate) } catch (error) { errors.push(messageOf(error)) }
@@ -76,6 +83,14 @@ export function validateUnitCourse(unit: Unit, course: Course): string[] {
 
 export function sectionsUsingUnit(unit: Unit, sections: Section[]): Section[] {
   return sections.filter((section) => section.courseId === unit.courseId && section.calendarId === unit.calendarId)
+}
+
+export function setUnitImportant(unit: Unit, important: boolean): Unit {
+  return { ...unit, important }
+}
+
+export function isUnitImportant(unit: Unit): boolean {
+  return unit.important === true
 }
 
 export function placeUnit(

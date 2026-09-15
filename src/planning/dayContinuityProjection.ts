@@ -80,6 +80,10 @@ export function projectDayContinuity(input: {
               deliveryStatus: delivery.status,
               taughtDate: delivery.taughtDate,
               resumeNote: delivery.resumeNote,
+              directions: [...lesson.directions],
+              materials: [...lesson.materials],
+              phases: [...lesson.phases],
+              resources: lesson.resources.map((resource) => ({ ...resource })),
               unitTitle: unit.title,
             }
           })

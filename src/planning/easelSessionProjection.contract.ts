@@ -47,6 +47,10 @@ const lesson17 = createLesson({
   title: 'Lesson 17',
   sequence: 17,
   plannedDate: '2026-09-16',
+  directions: ['Find one vertical line.', 'Compare façade and nave.'],
+  materials: ['Workbook', 'Pencil'],
+  phases: ['Look', 'Compare'],
+  resources: [{ id: 'chartres-image', title: 'Chartres west façade', kind: 'image', source: '/chartres.png' }],
 })
 const lesson18 = createLesson({
   id: 'lesson-18',
@@ -106,6 +110,8 @@ assert(interruptedSession.lessonId === lesson17.id && interruptedSession.unitId 
 assert(interruptedSession.source === 'carryover', 'Unresolved interrupted work must enter Easel as carryover, not be rewritten as today’s schedule.')
 assert(interruptedSession.resumeNote === 'Stopped after demo.' && interruptedSession.deliveryStatus === 'in-progress', 'Easel must receive the exact P5 stopping point.')
 assert(interruptedSession.effectiveDate === '2026-09-16', 'Easel must preserve the current effective schedule date before recovery Shift.')
+assert(interruptedSession.directions[0] === 'Find one vertical line.' && interruptedSession.materials[1] === 'Pencil', 'Easel must project canonical Lesson directions and materials into the live teaching session.')
+assert(interruptedSession.phases.join(',') === 'Look,Compare' && interruptedSession.resources[0]?.id === 'chartres-image', 'Easel must project canonical Lesson phase and resource references without inventing ArcTable-owned content.')
 
 const p2SameLesson = projectEaselSession({ day: unresolvedDay, sectionId: p2.id, lessonId: lesson17.id, calendar, liveDate })
 assert(p2SameLesson.lessonId === interruptedSession.lessonId, 'Two Sections may launch the same shared Lesson identity.')

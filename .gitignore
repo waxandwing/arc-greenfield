@@ -8,3 +8,11 @@ coverage/
 .vite/
 .vercel/
 tests/generated/
+artifacts/
+.local/assets910/*
+!.local/assets910/README.md
+.local/photoroom-patterns/*
+!.local/photoroom-patterns/README.md
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts

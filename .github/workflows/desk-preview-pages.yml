@@ -1,0 +1,52 @@
+name: Desk preview (GitHub Pages)
+
+on:
+  push:
+    branches:
+      - cursor/arc-production-integration
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-desk-preview
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact commit
+        uses: actions/checkout@v5
+      - name: Use repository Node version
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build desk preview bundle for GitHub Pages
+        run: npm run build:bundle
+        env:
+          GITHUB_PAGES: 'true'
+          VITE_ARC_DESK_PREVIEW: 'true'
+          VITE_ARC_BUILD_LABEL: desk-v2
+          VITE_ARC_GIT_SHA: ${{ github.sha }}
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

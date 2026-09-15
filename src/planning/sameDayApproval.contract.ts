@@ -51,7 +51,7 @@ assert(
 )
 
 const badDay = createSameDayLessonApproval({ sectionId: section.id, date: '2026-09-22', lessonIds: [a.id, b.id] })
-assert(validateSameDayLessonApproval({ approval: badDay, calendar, section, lessons: lessons.lessons }).some((error) => error.includes('confirmed instructional')), 'Approval must reject a no-school date.')
+assert(validateSameDayLessonApproval({ approval: badDay, calendar, section, lessons: lessons.lessons }).some((error) => error.includes('confirmed school day')), 'Approval must reject a no-school date.')
 
 let duplicateIdsRejected = false
 try {

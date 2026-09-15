@@ -1,15 +1,15 @@
-import { eachCalendarDay, hydrateSchoolCalendar, type CalendarHydrationInput, type ISODate } from '../calendar'
+import { eachCalendarDay, hydrateSchoolCalendar, sundayFirstWeekdayIndex, type CalendarHydrationInput, type ISODate } from '../calendar'
 
 type Props = {
   input: CalendarHydrationInput
 }
 
-const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export function SourceCalendarReview({ input }: Props) {
   const calendar = hydrateSchoolCalendar(input)
   const dates = eachCalendarDay(input.firstDay, input.lastDay).slice(0, 35)
-  const leading = dates.length > 0 ? mondayColumn(dates[0]) : 0
+  const leading = dates.length > 0 ? sundayFirstWeekdayIndex(dates[0]) : 0
   const previewCells: Array<ISODate | null> = [
     ...Array.from({ length: leading }, () => null),
     ...dates,
@@ -91,11 +91,6 @@ export function SourceCalendarReview({ input }: Props) {
       </section>
     </section>
   )
-}
-
-function mondayColumn(date: ISODate) {
-  const day = new Date(`${date}T00:00:00Z`).getUTCDay()
-  return day === 0 ? 6 : day - 1
 }
 
 function capitalize(value: string) {

@@ -1,7 +1,7 @@
 import type { ISODate, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
-import { CalendarViewSwitcher } from './CalendarViewSwitcher'
+import { calendarViewLabel } from '../navigation/calendarViews'
 
 type ViewAvailability = { available: boolean; reason?: string }
 
@@ -13,24 +13,17 @@ type CalendarStageHeaderProps = {
   previousTarget: ISODate | null
   nextTarget: ISODate | null
   todayTarget: ISODate | null
-  hasTerms: boolean
-  hasClasses: boolean
-  hasUnits: boolean
-  hasLessons: boolean
   recoveryCount: number
   undoAvailable: boolean
   stageTitle: string
+  /** Plan state header owns the visible h1; spread shows period tools only. */
+  editorialTitleManaged?: boolean
   viewSelectionDisabled: boolean
   availabilityFor: (view: CalendarView) => ViewAvailability
   onSelectView: (view: CalendarView) => void
   onMovePrevious: () => void
   onMoveNext: () => void
   onToday: () => void
-  onOpenCalendarSetup: () => void
-  onOpenTerms: () => void
-  onOpenClasses: () => void
-  onOpenUnits: () => void
-  onOpenLessons: () => void
   onOpenRecovery: () => void
   onUndoShift: () => void
 }
@@ -44,43 +37,35 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     previousTarget,
     nextTarget,
     todayTarget,
-    hasTerms,
-    hasClasses,
-    hasUnits,
-    hasLessons,
     recoveryCount,
     undoAvailable,
     stageTitle,
-    viewSelectionDisabled,
-    availabilityFor,
-    onSelectView,
+    editorialTitleManaged = false,
     onMovePrevious,
     onMoveNext,
     onToday,
-    onOpenCalendarSetup,
-    onOpenTerms,
-    onOpenClasses,
-    onOpenUnits,
-    onOpenLessons,
     onOpenRecovery,
     onUndoShift,
   } = props
 
   const isCalendarMode = mode === 'calendar'
 
+  const showSpreadTitle = !editorialTitleManaged
+
   return (
-    <header className="calendar-stage-header">
+    <header className={`calendar-stage-header${editorialTitleManaged ? ' calendar-stage-header--tools-only' : ''}`}>
       <div>
-        <p className="section-label">Calendar</p>
-        {calendar && isCalendarMode ? (
-          <CalendarViewSwitcher
-            activeView={activeView}
-            disabled={viewSelectionDisabled}
-            availabilityFor={availabilityFor}
-            onSelect={onSelectView}
-          />
+        {showSpreadTitle ? (
+          <>
+            <p className="section-label">Calendar</p>
+            {calendar && isCalendarMode ? (
+              <h1 className="view-title" aria-live="polite">{calendarViewLabel(activeView)}</h1>
+            ) : (
+              <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
+            )}
+          </>
         ) : (
-          <h1 className="view-title" aria-live="polite">{stageTitle}</h1>
+          <span className="section-label">{calendar && isCalendarMode ? `${calendarViewLabel(activeView)} navigation` : stageTitle}</span>
         )}
       </div>
 
@@ -95,12 +80,11 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
           <div className="calendar-context-group">
             <p className="calendar-context">{calendar.schoolYearLabel}</p>
             <div className="calendar-context-actions">
-              <button type="button" className="text-button" onClick={onOpenCalendarSetup}>Edit dates</button>
-              <button type="button" className="text-button" onClick={onOpenTerms}>{hasTerms ? 'Edit terms' : 'Set terms'}</button>
-              <button type="button" className="text-button" onClick={onOpenClasses}>{hasClasses ? 'Edit classes' : 'Set classes'}</button>
-              {hasClasses && <button type="button" className="text-button" onClick={onOpenUnits}>{hasUnits ? 'Edit Units' : 'Add Units'}</button>}
-              {hasUnits && <button type="button" className="text-button" onClick={onOpenLessons}>{hasLessons ? 'Edit Lessons' : 'Add Lessons'}</button>}
-              {recoveryCount > 0 && <button type="button" className="text-button recovery-review-trigger" onClick={onOpenRecovery}>Review recovery ({recoveryCount})</button>}
+              {recoveryCount > 0 && (
+                <button type="button" className="text-button recovery-review-trigger recovery-review-trigger--header recovery-review-trigger--quiet" onClick={onOpenRecovery}>
+                  Recovery · {recoveryCount}
+                </button>
+              )}
               {undoAvailable && <button type="button" className="text-button" onClick={onUndoShift}>Undo last Shift</button>}
             </div>
           </div>

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { mondayFirstWeekdayIndex } from '../calendar/dateMath'
+import { sundayFirstWeekdayIndex } from '../calendar/dateMath'
 import type { ProjectedDay } from '../calendar/projections'
 import type { TermBoundary } from '../calendar/types'
 import { formatDateRange, formatLongDate, formatWeekday } from './dateLabels'
@@ -28,7 +28,7 @@ export function RangeProjection({ title, subtitle, days }: { title: string; subt
 }
 
 export function WeekdayAlignedRange({ days, compact = false }: { days: ProjectedDay[]; compact?: boolean }) {
-  const leadingBlankCount = days.length > 0 ? mondayFirstWeekdayIndex(days[0].date) : 0
+  const leadingBlankCount = days.length > 0 ? sundayFirstWeekdayIndex(days[0].date) : 0
 
   return (
     <div className={`projection-range${compact ? ' projection-range--compact' : ''}`}>
@@ -68,7 +68,13 @@ export function CalendarDayCell({ day, compact = false, showWeekday = false }: {
     compact ? 'calendar-day-cell--compact' : '',
   ].filter(Boolean).join(' ')
 
-  const status = day.kind === 'instructional' ? 'Instructional day' : day.kind === 'unknown' ? 'Unknown calendar status' : day.label || humanizeKind(day.kind)
+  const status = day.kind === 'instructional'
+    ? 'Instructional day'
+    : day.kind === 'early-release'
+      ? (day.schoolEndTime ? `Early release · ends ${day.schoolEndTime}` : (day.label || 'Early release'))
+      : day.kind === 'unknown'
+        ? 'Unknown calendar status'
+        : day.label || humanizeKind(day.kind)
   const accessibleLabel = `${formatLongDate(day.date)}. ${status}.`
 
   return (
@@ -76,7 +82,7 @@ export function CalendarDayCell({ day, compact = false, showWeekday = false }: {
       {showWeekday && !compact ? <span className="calendar-day-weekday">{formatWeekday(day.date)}</span> : null}
       <span className="calendar-day-date">{day.date.slice(8)}</span>
       {!compact && day.label ? <span className="calendar-day-label">{day.label}</span> : null}
-      {!compact && day.kind === 'unknown' ? <span className="calendar-day-status">Unknown</span> : null}
+      {!compact && day.kind === 'unknown' && day.inSchoolYear ? <span className="calendar-day-status">Unknown</span> : null}
     </div>
   )
 }
@@ -92,6 +98,7 @@ function humanizeKind(kind: ProjectedDay['kind']): string {
     case 'holiday': return 'Holiday'
     case 'break': return 'Break'
     case 'instructional': return 'Instructional day'
+    case 'early-release': return 'Early release'
     case 'unknown': return 'Unknown calendar status'
   }
 }

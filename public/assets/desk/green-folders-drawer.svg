@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 520" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Green folders drawer</title>
+  <desc id="desc">Muted forest green desk drawer with folder well and FOLDERS pull tab</desc>
+  <defs>
+    <linearGradient id="panelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3d6b55"/>
+      <stop offset="45%" stop-color="#2f5844"/>
+      <stop offset="100%" stop-color="#1F4B3A"/>
+    </linearGradient>
+    <linearGradient id="wellGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#163d2f"/>
+      <stop offset="100%" stop-color="#0f2d22"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0a1a14" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <g filter="url(#softShadow)">
+    <rect x="12" y="8" width="336" height="456" rx="22" fill="url(#panelGrad)"/>
+    <rect x="12" y="8" width="336" height="456" rx="22" stroke="#0d261c" stroke-width="2" opacity="0.35"/>
+    <rect x="28" y="52" width="304" height="340" rx="16" fill="url(#wellGrad)" opacity="0.92"/>
+    <rect x="28" y="52" width="304" height="340" rx="16" stroke="#0a2219" stroke-width="1.5" opacity="0.5"/>
+    <!-- decorative sticky notes (mockup accents) -->
+    <g opacity="0.95">
+      <rect x="44" y="28" width="52" height="48" rx="4" fill="#f5e6a8" transform="rotate(-6 70 52)"/>
+      <rect x="44" y="28" width="52" height="48" rx="4" stroke="#c9b86a" stroke-width="1" transform="rotate(-6 70 52)"/>
+      <rect x="108" y="22" width="46" height="42" rx="4" fill="#f0c4c8" transform="rotate(4 131 43)"/>
+      <rect x="108" y="22" width="46" height="42" rx="4" stroke="#d49aa0" stroke-width="1" transform="rotate(4 131 43)"/>
+      <rect x="248" y="30" width="48" height="44" rx="4" fill="#dce8f4" transform="rotate(-3 272 52)"/>
+    </g>
+    <!-- inner rim highlight -->
+    <path d="M28 68 Q180 58 332 68" stroke="#5a8f72" stroke-width="2" opacity="0.35" fill="none"/>
+    <!-- FOLDERS pull tab -->
+    <rect x="118" y="468" width="124" height="44" rx="10" fill="#1a4032"/>
+    <rect x="118" y="468" width="124" height="44" rx="10" stroke="#0d261c" stroke-width="1.5" opacity="0.4"/>
+    <text x="180" y="497" text-anchor="middle" fill="#f7f3ea" font-family="system-ui,Segoe UI,sans-serif" font-size="13" font-weight="700" letter-spacing="0.14em">IDEAS</text>
+  </g>
+</svg>

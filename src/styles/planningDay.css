@@ -1,6 +1,33 @@
 .day-continuity {
+  position: relative;
   display: grid;
   gap: var(--space-8);
+}
+
+.day-continuity::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: var(--radius-bloop);
+}
+
+.day-continuity[data-plan-focus='class']::before {
+  top: 72px;
+  right: -92px;
+  width: 250px;
+  height: 180px;
+  background: var(--accent-blue-soft);
+  transform: rotate(-9deg);
+}
+
+.day-continuity[data-plan-focus='lesson']::before {
+  top: 62px;
+  right: -78px;
+  width: 210px;
+  height: 230px;
+  background: var(--terracotta-soft);
+  transform: rotate(14deg);
 }
 
 .day-continuity-day-note {
@@ -15,6 +42,20 @@
 
 .day-continuity-day-note strong {
   color: var(--ink);
+}
+
+.day-continuity-day-note--early-release {
+  border-block-color: rgba(201, 162, 74, 0.35);
+  background: linear-gradient(180deg, rgba(201, 162, 74, 0.08), transparent 72%);
+}
+
+.day-period-button.is-after-release,
+.day-period-gap.is-after-release {
+  opacity: 0.45;
+}
+
+.day-period-button.is-after-release:not(.is-selected) {
+  border-style: dashed;
 }
 
 .day-continuity-course {
@@ -48,6 +89,13 @@
 .day-continuity-course-heading h2 {
   font: 600 22px/1.2 var(--font-editorial);
   color: var(--ink);
+}
+
+.day-continuity[data-plan-focus='class'] .day-continuity-course-heading h2 {
+  max-width: 18ch;
+  font-size: clamp(34px, 4vw, 44px);
+  line-height: 1.02;
+  letter-spacing: -.025em;
 }
 
 .day-continuity-units {
@@ -169,11 +217,241 @@
   padding-block: var(--space-2);
 }
 
+.plan-state-header {
+  display: grid;
+  gap: 0;
+  margin: 8px 0 12px;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid var(--line-subtle);
+}
+
+.plan-state-kicker {
+  margin: 0;
+  padding: 8px 12px;
+  font: var(--type-section);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--soft-charcoal);
+  background: var(--plan-surface-view) var(--plan-surface-paper) repeat;
+}
+
+.plan-state-primary {
+  margin: 0;
+  padding: 10px 12px;
+  font: var(--type-view-title);
+  background: var(--plan-surface-context) var(--plan-surface-paper) repeat;
+  border-top: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+  box-shadow: var(--shadow-hairline);
+}
+
+.plan-state-secondary {
+  margin: 0;
+  padding: 8px 12px 8px 12px;
+  color: var(--soft-charcoal);
+  font-size: 15px;
+  font-weight: 600;
+  background:
+    var(--plan-surface-time)
+    var(--plan-surface-people) right -20px top / min(220px, 42%) auto no-repeat;
+}
+
+.plan-back-link {
+  justify-self: start;
+  min-height: 44px;
+  margin: 0 0 8px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--terracotta-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lesson-focus {
+  position: relative;
+  display: grid;
+  gap: 20px;
+  min-height: 430px;
+  margin-inline: calc(var(--space-6) * -1) 0;
+  padding: 28px 36px 18px;
+  border-top: 0;
+  border-left: 6px solid var(--mustard);
+  background: linear-gradient(110deg, var(--mustard-soft), rgba(255, 253, 248, .54) 34%, transparent 74%);
+}
+
+.lesson-focus-heading h2 {
+  max-width: 19ch;
+  margin: 6px 0 12px;
+  font: 500 clamp(42px, 5vw, 58px)/.98 var(--font-editorial);
+  letter-spacing: -.035em;
+}
+
+.lesson-focus-field h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.lesson-focus-field {
+  max-width: 780px;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line-subtle);
+}
+
+.lesson-focus-field ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.day-continuity-lesson-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.day-start-class {
+  justify-self: start;
+  min-height: 44px;
+  margin-top: var(--space-2);
+  padding: 9px 18px;
+  border: 1px solid color-mix(in srgb, var(--accent-blue-deep) 30%, transparent);
+  border-radius: 999px;
+  background: var(--accent-blue-deep);
+  color: var(--field-elevated);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.day-period-rail {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 2px 14px;
+}
+
+.day-period-rail > * {
+  flex: 1 0 118px;
+}
+
+.day-period-button,
+.day-period-gap {
+  display: grid;
+  min-height: 74px;
+  padding: 12px 14px;
+  border: 1px solid rgba(44, 46, 46, .14);
+  border-radius: var(--radius-md);
+  background: rgba(247, 241, 231, .72);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.day-continuity[data-plan-focus='class'] .day-period-button:not(.is-selected),
+.day-continuity[data-plan-focus='class'] .day-period-gap:not(.is-selected),
+.day-continuity[data-plan-focus='lesson'] .day-period-button:not(.is-selected),
+.day-continuity[data-plan-focus='lesson'] .day-period-gap:not(.is-selected) {
+  opacity: .46;
+}
+
+.day-continuity[data-plan-focus='lesson'] .day-period-rail {
+  margin-inline: 18px;
+  opacity: .8;
+}
+
+.day-period-gap {
+  border-style: dashed;
+  background: rgba(255, 253, 248, .38);
+}
+
+.day-period-gap strong {
+  white-space: normal;
+}
+
+.day-period-button span,
+.day-period-gap span {
+  color: var(--soft-charcoal);
+  font-size: 12px;
+}
+
+.day-period-button strong,
+.day-period-gap strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-period-gap strong {
+  overflow: visible;
+  white-space: normal;
+}
+
+.day-period-button.is-selected {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--field-elevated);
+  box-shadow: var(--shadow-field);
+}
+
+.day-period-button.is-selected span {
+  color: rgba(255, 255, 255, .74);
+}
+
+.day-period-gap.is-selected {
+  border-style:solid;
+  border-color:#7b5a22;
+  background:#fff1bb;
+  box-shadow:0 10px 24px -20px #7b5a22;
+}
+
+.planning-period-lens{display:grid;gap:26px;min-height:430px;padding:26px 0;border-top:1px solid var(--line-strong)}
+.planning-period-lens>header{display:flex;align-items:end;justify-content:space-between;gap:28px}
+.planning-period-lens>header h2{margin:0;font:500 34px/1.08 var(--font-editorial)}
+.planning-period-secondary{margin:8px 0 0;color:var(--soft-charcoal);font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.planning-period-buckets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-block:1px solid var(--line-subtle)}
+.planning-period-bucket{display:grid;align-content:start;gap:12px;padding:22px 24px 24px 0;border-top:4px solid var(--dusty-blue)}
+.planning-period-bucket:nth-child(2){border-top-color:var(--terracotta);background:linear-gradient(180deg,var(--terracotta-soft),transparent 72%)}
+.planning-period-bucket:nth-child(3){border-top-color:var(--sage);background:linear-gradient(180deg,var(--sage-soft),transparent 72%)}
+.planning-period-bucket+ .planning-period-bucket{padding-left:24px;border-left:1px solid var(--line-subtle)}
+.planning-period-bucket h3{margin:0;font:800 12px/1 var(--font-ui);letter-spacing:.08em;text-transform:uppercase}
+.planning-period-items{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.planning-period-item{display:grid;gap:4px;width:100%;padding:0;border:0;background:transparent;text-align:left;color:inherit;font:inherit;cursor:pointer}
+.planning-period-item strong{font:600 16px/1.25 var(--font-editorial)}
+.planning-period-item span{color:var(--soft-charcoal);font-size:13px;line-height:1.45}
+.planning-period-empty{margin:0;color:var(--soft-charcoal);font-size:13px;line-height:1.45}
+.planning-period-courses{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-block:1px solid var(--line-subtle)}
+.planning-period-courses article{display:grid;align-content:start;gap:10px;padding:22px 24px 24px 0}
+.planning-period-courses article+article{padding-left:24px;border-left:1px solid var(--line-subtle)}
+.planning-period-courses h3,.planning-period-courses p{margin:0}
+.planning-period-courses h3{font:600 21px/1.2 var(--font-editorial)}
+.planning-period-courses p{color:var(--soft-charcoal);font-size:14px;line-height:1.45}
+.planning-period-courses p strong{color:var(--ink)}
+.planning-period-courses .planning-period-sections{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+
+.day-continuity-course--focus {
+  min-height: 430px;
+}
+
+.day-continuity[data-plan-focus='class'] .day-continuity-course--focus {
+  margin-inline: calc(var(--space-6) * -1) 0;
+  padding: var(--space-7) var(--space-8);
+  border-left: 6px solid var(--dusty-blue);
+  background: linear-gradient(108deg, var(--accent-blue-soft), rgba(255,253,248,.46) 42%, transparent 78%);
+}
+
 @media (max-width: 900px) {
   .day-continuity-section {
     grid-template-columns: 1fr;
     gap: var(--space-3);
   }
+  .planning-period-buckets{grid-template-columns:1fr}
+  .planning-period-bucket+ .planning-period-bucket{padding-left:0;border-left:0;border-top:1px solid var(--line-subtle)}
+  .planning-period-courses{grid-template-columns:1fr}
+  .planning-period-courses article+article{padding-left:0;border-left:0;border-top:1px solid var(--line-subtle)}
 }
 
 @media (max-width: 680px) {
@@ -188,5 +466,12 @@
 
   .day-continuity-held {
     padding-left: var(--space-3);
+  }
+  .planning-period-lens>header{align-items:flex-start;flex-direction:column}
+
+  .lesson-focus,
+  .day-continuity[data-plan-focus='class'] .day-continuity-course--focus {
+    margin-inline: 0;
+    padding-inline: var(--space-5);
   }
 }
