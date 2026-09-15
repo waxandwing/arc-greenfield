@@ -1,5 +1,7 @@
 # Kelly desk asset incorporation pass
 
+**Drop-folder steps (drag, add, commit, push):** see `uploads/desk-incoming/README.txt`.
+
 **Run:** 2026-09-15 (Cloud Agent, after Kelly reported files in `uploads/desk-incoming`)  
 **Branch checked:** `main` @ `94a35d64684474db8d04d9e4301c3ea706355c9f` (before this doc commit)  
 **Prior agent:** bc-0b3c8b5b likely ran when the drop folder had no assets yet.
