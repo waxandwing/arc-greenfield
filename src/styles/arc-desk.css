@@ -1,6 +1,6 @@
 /* ARC Desk — physical tabletop composition (Figma ref 1696×1254, wood field 1440×1024). */
 
-/* Full-viewport light wood (Kelly spec); centered tabletop is composition + shadow, not a cream mat. */
+/* Full-viewport wood via --arc-wood-surface-image (icarus/texture-wood.png); schedule setup uses --arc-schedule-setup-wood. */
 .arc-shell.arc-shell--desk {
   height: 100dvh;
   min-height: 100dvh;

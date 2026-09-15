@@ -33,6 +33,8 @@ jobs:
         env:
           GITHUB_PAGES: 'true'
           VITE_ARC_DESK_PREVIEW: 'true'
+          VITE_ARC_ENTRY_REQUIRED: 'true'
+          VITE_ARC_BETA_PASSWORD: 'icarus'
           VITE_ARC_BUILD_LABEL: desk-v2
           VITE_ARC_GIT_SHA: ${{ github.sha }}
       - name: Upload Pages artifact

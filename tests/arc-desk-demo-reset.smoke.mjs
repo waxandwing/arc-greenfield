@@ -18,7 +18,7 @@ try {
 
   assert(await page.locator('.arc-shell--desk').count() === 1, 'Demo reset must mount the desk shell.')
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
-  assert(shellWood.includes('light-wood-desk'), 'Desk shell must use light wood background after demo reset.')
+  assert(shellWood.includes('texture-wood'), 'Desk shell must use icarus texture-wood after demo reset.')
   const planShellPattern = await page.locator('.arc-shell').first().evaluate((el) => getComputedStyle(el).backgroundImage.includes('pattern'))
   assert(!planShellPattern, 'Legacy cream plan shell pattern must not show after demo reset.')
 

@@ -65,3 +65,7 @@ The **Figma-ish desk composition is correct** on Pages: physical planner tabs, *
 - **Molded tray** visibility/contrast vs reference
 
 Unless a quick CSS tweak is obvious, treat these as follow-up reconciliation — not regressions from the Pages mark fix.
+
+## Desk wood authority (2026-09-15)
+
+Main Plan desk wood is **`public/assets/arc/icarus/texture-wood.png`**, not `desk/light-wood-desk.png`. The latter is reserved for **schedule setup / onboarding** (`--arc-schedule-setup-wood`). Details: `docs/overnight/DESK-SURFACE-AUTHORITY.md`.

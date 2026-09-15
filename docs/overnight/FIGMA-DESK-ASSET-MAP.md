@@ -15,14 +15,15 @@ Evidence PNGs: `docs/overnight/evidence/figma-desk-6-3194/`.
 | **Today’s Priorities folder (left)** | Wood folder tab “YOUR DAY” / priorities copy in `37:11052` | **None** — `DeskPriorityPad` is CSS + `DeskPriorityPad.tsx` | Missing **folder tab raster** (wood grain + tab geometry) |
 | **Quick Capture sticky** | Yellow sticky + “Quick Capture” in comp | **None** — sticky is CSS (`DeskQuickCaptureSticky`) | Missing optional **sticky note texture** PNG |
 | **ArcTable logo (corner)** | Circular mark in comp | `arctable/AT-001_table-mark.svg` (+ PNG icon set under `arctable/logo-icon-*`) | Mark OK; **132px desk scale** is CSS/SVG, not Figma slice |
-| **Light wood tabletop** | Full-bleed wood in comp | `desk/light-wood-desk.png` | Shipped |
+| **Light wood tabletop** | Full-bleed wood in comp | `arc/icarus/texture-wood.png` | Shipped (`--arc-wood-surface-image`) |
 | **Exterior / pattern (non-desk)** | Pattern visible behind folder in some comps | `arc/pattern-grid-tile-2048.png`, `arc/patterns/*` | Desk mode correctly **suppresses** pattern on shell; Figma still shows pattern in marketing comps |
 
 ## `public/assets/desk/` (committed)
 
 | File | Role |
 |------|------|
-| `light-wood-desk.png` | Desk shell + tabletop background |
+| `texture-wood.png` (icarus) | Desk shell + tabletop background |
+| `light-wood-desk.png` | Schedule setup / onboarding alt (`--arc-schedule-setup-wood`) |
 | `blue-molded-tray.png` | Molded tray dock texture |
 | `planner-tab-mustard.png` | Selected planner index tab fill |
 

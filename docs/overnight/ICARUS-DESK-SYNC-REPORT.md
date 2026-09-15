@@ -16,10 +16,11 @@ For **desk-first Plan** (`arc-shell--desk`), Kelly direction is:
 
 | Layer | Rule |
 |-------|------|
-| **Viewport field** | Full viewport **light wood** tabletop (`public/assets/desk/light-wood-desk.png` + CSS), not cream shell wash |
+| **Viewport field** | Full viewport wood via **`public/assets/arc/icarus/texture-wood.png`** (`--arc-wood-surface-image`), not cream shell wash |
 | **On the wood** | Cream **planner**, **molded blue tray** (not flat blue paper), MSC pad, **yellow** quick capture, ArcTable mark, secondary **notes** |
 | **Pattern** | Geometric / grid pattern is **secondary** — onboarding, bands, or subtle accents — **not** the main desk exterior around the live planner viewport |
-| **Icarus wood texture** | Candidate reference only until side-by-side with Figma `6:3194` wood; **do not** auto-promote to production authority |
+| **Icarus wood texture** | **Wired** for main desk surface (Kelly 2026-09-15); still compare visually to Figma `6:3194` |
+| **Schedule-setup wood** | `public/assets/desk/light-wood-desk.png` → `--arc-schedule-setup-wood` only (onboarding / calendar-on-wood alt) |
 
 Prior reconciliation docs that prioritized **light cream exterior + faded pattern** for the **non-desk Plan shell** still apply to calendar shell modes; **desk mode law above wins** when both are discussed.
 
@@ -84,7 +85,7 @@ Per Kelly approval: `fridge-open-surface`, `fridge-notes-blue`, `fridge-notes-cr
 
 | Icarus candidate | Existing production | Assessment |
 |------------------|---------------------|------------|
-| `texture-wood.png` (1536×1024, opaque RGB grain) | `desk/light-wood-desk.png` (1024×576 RGBA, `ca191c8f…`) | **Different assets** — desk uses cropped/transparency-friendly wood; icarus wood is full-bleed environment plate. Compare to Figma wood before any swap. |
+| `texture-wood.png` (1536×1024, opaque RGB grain) | `desk/light-wood-desk.png` (1024×576 RGBA, `ca191c8f…`) | **Different assets** — production **desk viewport** uses icarus wood; `light-wood-desk` is schedule-setup alt only. |
 | `texture-cream-paper.png` | `arc/planner-paper.png` + `arctable/paper-cream.png` (2048×2048, `4bec8e8c…`, identical) | **Not duplicate** — icarus cream is smaller RGB sheet; production planner interior uses square cream tile. Pick one canonical cream after visual compare to ArcTable spread. |
 | `texture-blue-paper.png` | `desk/blue-molded-tray.png` (565×1024 RGBA) | **Not substitute** — paper texture ≠ molded tray silhouette. Keep tray asset for live desk. |
 | `texture-mustard-paper.png` | `desk/planner-tab-mustard.png` (576×1024) | **Related hue, different role** — tab chrome vs full paper sheet; mustard paper for **small accents** only if approved. |
@@ -92,11 +93,12 @@ Per Kelly approval: `fridge-open-surface`, `fridge-notes-blue`, `fridge-notes-cr
 
 ---
 
-## Recommended production usage (Kelly rules — **no CSS/token wiring in this pass**)
+## Recommended production usage (Kelly rules)
 
 | Asset | Recommendation | Approved for wiring? |
 |-------|----------------|----------------------|
-| `texture-wood.png` | Reference vs Figma + `light-wood-desk.png`; candidate desk surface only | **No** — compare first |
+| `texture-wood.png` | Main desk viewport + tabletop (`--arc-wood-surface-image`) | **Yes** — wired 2026-09-15 |
+| `desk/light-wood-desk.png` | Schedule setup / onboarding calendar-on-wood (`--arc-schedule-setup-wood`) | **Yes** — token only until UI surfaces adopt it |
 | `texture-cream-paper.png` | Candidate planner/settings paper; compare to `planner-paper.png` / ArcTable cream | **No** — compare first |
 | `pattern-arc-geometric.png` | Secondary pattern (onboarding, side bands); **not** around main desk viewport | **No** |
 | `texture-mustard-paper.png` | Small accents (AP band, sticky adjacency) | **No** |
@@ -111,7 +113,7 @@ Per Kelly approval: `fridge-open-surface`, `fridge-notes-blue`, `fridge-notes-cr
 
 | Asset | Desk law fit | Notes |
 |-------|--------------|-------|
-| `texture-wood.png` | **Conditional** | Aligns with “full viewport light wood” *intent* but may differ from Figma grain/crop; production already uses `light-wood-desk.png`. |
+| `texture-wood.png` | **Primary desk surface** | Live on `.arc-shell--desk` / `.arc-desk-tabletop`; reconcile grain/crop vs Figma as needed. |
 | `texture-cream-paper.png` | **Good reference** | Supports cream planner interior; must be judged against live `planner-paper` / CSS frame. |
 | `pattern-arc-geometric.png` | **Fails if used as desk exterior** | Strong branded band — correct as **secondary** only; contradicts desk law if wrapped around planner viewport. |
 | `texture-mustard-paper.png` | **Accent-only** | OK at small scale; too loud as primary surface. |
@@ -121,17 +123,17 @@ Per Kelly approval: `fridge-open-surface`, `fridge-notes-blue`, `fridge-notes-cr
 
 ---
 
-## Engineering actions **not** taken (by design)
+## Engineering actions (desk wood — 2026-09-15)
 
-- No updates to `src/styles/tokens.css`, `arc-desk.css`, or component `url(...)` paths
-- No replacement of `public/assets/arc/arc-mark.png`
-- No import of Fridge / Task Bar / Settings folder icarus furniture
-- No tests run (asset-only sync)
+- `--arc-wood-surface-image` → `assets/arc/icarus/texture-wood.png` via `src/publicAssetUrl.ts` + `src/styles/tokens.css`
+- `--arc-schedule-setup-wood` → `assets/desk/light-wood-desk.png` (no main tabletop wiring)
+- See `docs/overnight/DESK-SURFACE-AUTHORITY.md`
+
+Still **not** done in icarus sync scope: mark replacement, Fridge / Task Bar / Settings folder imports.
 
 ---
 
 ## Next step for Kelly
 
-1. Review contact sheet and icarus/ folder at SHA above.  
-2. Approve per-asset promotion from `icarus/` → root or `desk/` (or reject).  
-3. Only then: CSS/token wiring + desk smokes (`test:arc-desk-pass`, figma evidence).
+1. Visual compare live desk vs Figma `6:3194` with wired `texture-wood.png`.  
+2. Approve or reject other icarus assets (cream paper, pattern, etc.) per contact sheet.

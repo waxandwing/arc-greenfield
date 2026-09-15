@@ -13,7 +13,10 @@ export function publicAssetCssUrl(path: string): string {
 }
 
 const DESK_ASSET_PATHS = {
-  wood: 'assets/desk/light-wood-desk.png',
+  /** Full viewport / `.arc-desk-tabletop` — Icarus wood (compare to Figma). */
+  woodSurface: 'assets/arc/icarus/texture-wood.png',
+  /** Schedule setup / onboarding calendar-on-wood only — not main desk authority. */
+  scheduleSetupWood: 'assets/desk/light-wood-desk.png',
   blueTray: 'assets/desk/blue-molded-tray.png',
   plannerTabMustard: 'assets/desk/planner-tab-mustard.png',
 } as const
@@ -22,7 +25,8 @@ const DESK_ASSET_PATHS = {
 export function applyPublicAssetCssUrls(): void {
   if (typeof document === 'undefined') return
   const root = document.documentElement.style
-  root.setProperty('--arc-wood-surface-image', publicAssetCssUrl(DESK_ASSET_PATHS.wood))
+  root.setProperty('--arc-wood-surface-image', publicAssetCssUrl(DESK_ASSET_PATHS.woodSurface))
+  root.setProperty('--arc-schedule-setup-wood', publicAssetCssUrl(DESK_ASSET_PATHS.scheduleSetupWood))
   root.setProperty('--arc-desk-tray-texture', publicAssetCssUrl(DESK_ASSET_PATHS.blueTray))
   root.setProperty('--arc-desk-planner-tab-mustard', publicAssetCssUrl(DESK_ASSET_PATHS.plannerTabMustard))
 }
