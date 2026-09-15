@@ -1,5 +1,7 @@
 # Arc Branch Deletion Manifest — 2026-09-06
 
+> **SUPERSEDED:** This manifest is retained as historical evidence only. Current branch authority and pruning instructions live in `docs/BRANCH_PRUNE_MANIFEST_2026-09-15.md`. Do not use this file to decide which branches are active.
+
 Classification baseline: protected `develop @ d49ed01e82736e8152204aad3c11bb24aa788ed7`. This manifest revision changes documentation only; it does not alter runtime product code.
 
 Delete only branches in **SAFE DELETE NOW**. Do not delete anything in **KEEP** or **REVIEW / DONOR**. If a SAFE branch has gained commits after this manifest, stop and re-audit it before deletion.
