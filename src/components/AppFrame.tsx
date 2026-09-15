@@ -828,6 +828,7 @@ export function AppFrame() {
               deskEnabled && globalCaptureEnabled ? (
                 <DeskQuickCaptureSticky>
                   <GlobalCaptureAffordance
+                    variant="sticky"
                     disabled={workspaceBusy}
                     units={workspace.unitWorkspace}
                     defaultUnitId={workspace.planContext?.unitId ?? null}

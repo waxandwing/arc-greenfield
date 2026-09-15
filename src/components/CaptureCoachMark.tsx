@@ -22,7 +22,7 @@ export function CaptureCoachMark({ onDismiss }: Props) {
     >
       <p className="section-label">Capture</p>
       <strong id="capture-coach-title">Jot a thought without leaving your view.</strong>
-      <p>Use <span className="capture-coach-target">+ Capture</span> anytime. Workspace stays optional.</p>
+      <p>Type on <span className="capture-coach-target">Quick capture</span> anytime — it lands in IDEAS. Workspace stays optional.</p>
       <button type="button" className="quiet-button" onClick={onDismiss}>Got it</button>
     </div>
   )

@@ -283,9 +283,30 @@ try {
     await page.locator('.arc-desk-green-drawer-art [data-desk-post-it], .arc-desk-tray-dock [data-desk-post-it]').count() === 0,
     'Post-its must not live inside IDEAS tray chrome.',
   )
-  const captureTrigger = page.getByTestId('global-capture-trigger')
-  assert(await captureTrigger.count() === 1, 'Desk must expose one quick capture trigger.')
-  assert(await captureTrigger.isVisible(), 'global-capture-trigger must be visible on the upper-right sticky.')
+  assert(await page.getByTestId('global-capture-trigger').count() === 0, 'Desk Quick Capture must not show a + Capture button.')
+  const quickCaptureNote = page.getByTestId('arc-desk-quick-capture-note')
+  const quickCaptureGrip = page.getByTestId('arc-desk-quick-capture-grip')
+  assert(await quickCaptureNote.count() === 1, 'Quick Capture must expose a writable note textarea.')
+  assert(await quickCaptureNote.isVisible(), 'Quick Capture note must be visible for type-first jotting.')
+  assert(await quickCaptureGrip.count() === 1, 'Quick Capture must expose a drag grip separate from the note.')
+  const captureHint = (await page.getByTestId('arc-desk-quick-capture-hint').innerText()).toLowerCase()
+  assert(captureHint.includes('ideas'), 'Quick Capture must say captures land in IDEAS.')
+  await quickCaptureNote.click()
+  assert(await quickCaptureSticky.getAttribute('data-dragging') === 'false', 'Click-to-edit on Quick Capture must not start a drag.')
+  await quickCaptureNote.fill('Kelly mustard jot for IDEAS')
+  assert(await quickCaptureSticky.getAttribute('data-dragging') === 'false', 'Typing on Quick Capture must not start a drag.')
+  await quickCaptureNote.press('Enter')
+  assert(await page.getByTestId('arc-desk-quick-capture-notice').innerText() === 'Saved to IDEAS', 'Enter must confirm save destination as IDEAS.')
+  assert(await quickCaptureNote.inputValue() === '', 'Quick Capture note must clear after Enter saves.')
+  // Ensure IDEAS is open so the new capture card is visible (reload leaves the drawer collapsed).
+  const ideasExtended = await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')
+  if (ideasExtended !== 'true') {
+    await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  }
+  assert(
+    await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Kelly mustard jot for IDEAS' }).count() === 1,
+    'Typed Quick Capture must land in IDEAS / tray.',
+  )
   assert(await page.locator('[data-testid="planner-shell-bar"] .arc-wordmark').count() === 0, 'Desk must not duplicate planner shell chrome under PlanStateHeader.')
   assert(await page.locator('.plan-state-header').count() === 1, 'Desk keeps a single plan-state editorial header.')
   await page.evaluate(() => {

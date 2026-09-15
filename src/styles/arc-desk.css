@@ -619,36 +619,61 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-capture-sticky-title {
-  margin: 0 0 10px;
+  margin: 0 0 4px;
+  padding: 0 2px;
   font: 400 15px/1.05 'Instrument Serif', var(--font-display), Georgia, serif;
   letter-spacing: 0.01em;
   text-transform: none;
   color: color-mix(in srgb, var(--ink) 82%, #8a6418);
   text-shadow: 0 1px 0 rgba(255, 248, 220, 0.35);
+  pointer-events: none;
 }
 
 .arc-desk-capture-sticky-well {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  gap: 4px;
 }
 
-.arc-desk-capture-sticky .arc-capture-trigger {
-  width: 100%;
-  min-height: 40px;
-  border-radius: 2px;
-  border: 0;
-  border-bottom: 1px solid color-mix(in srgb, #8a6418 28%, transparent);
-  background: transparent;
-  color: color-mix(in srgb, var(--ink) 72%, #8a6418);
-  font: 500 13px/1.25 'Instrument Serif', var(--font-display), Georgia, serif;
-  letter-spacing: 0.01em;
-  box-shadow: none;
+.arc-desk-capture-sticky-form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  gap: 4px;
 }
 
-.arc-desk-capture-sticky .arc-capture-trigger:hover:not(:disabled) {
-  background: color-mix(in srgb, #fff8dc 35%, transparent);
-  border-bottom-color: color-mix(in srgb, #8a6418 48%, transparent);
-  color: var(--ink);
+.arc-desk-capture-sticky-note {
+  flex: 1 1 auto;
+  min-height: 3.5rem;
+  padding: 2px 4px 4px;
+  font: 500 14px/1.35 'Instrument Serif', var(--font-display), Georgia, serif;
+  color: color-mix(in srgb, var(--ink) 88%, #6a4e10);
+  caret-color: color-mix(in srgb, var(--ink) 90%, #8a6418);
+}
+
+.arc-desk-capture-sticky-note:focus-visible {
+  outline: 2px solid color-mix(in srgb, #8a6418 42%, transparent);
+  outline-offset: -2px;
+}
+
+.arc-desk-capture-sticky-hint {
+  margin: 0;
+  padding: 0 2px;
+  font: 600 10px/1.25 var(--font-label, system-ui, sans-serif);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 48%, #8a6418);
+  pointer-events: none;
+}
+
+.arc-desk-capture-sticky-notice {
+  margin: 0;
+  padding: 0 2px;
+  font: 600 11px/1.2 'Instrument Serif', var(--font-display), Georgia, serif;
+  color: color-mix(in srgb, var(--ink) 72%, #4a6b3a);
 }
 
 .arc-desk-notes-object {
@@ -1119,14 +1144,38 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-post-it.arc-desk-capture-sticky {
+  display: flex;
+  flex-direction: column;
   width: 15.9%;
   aspect-ratio: auto;
-  min-height: 7.5rem;
-  padding: 12px 12px 14px;
+  min-height: 8.25rem;
+  padding: 0 12px 12px;
   border-radius: 2px 10px 3px 2px;
+  overflow: hidden;
   cursor: grab;
-  /* Slight curl + taped corner feel */
+  /* Paper grain + lift wins over plain accent mustard fill */
+  background:
+    radial-gradient(120% 80% at 12% 8%, rgba(255, 252, 235, 0.72), transparent 52%),
+    radial-gradient(90% 70% at 88% 92%, rgba(168, 120, 28, 0.18), transparent 55%),
+    repeating-linear-gradient(
+      118deg,
+      rgba(255, 250, 230, 0.14) 0 1px,
+      transparent 1px 3px
+    ),
+    linear-gradient(158deg, #f7e89a 0%, #efd056 42%, #e0b83a 78%, #d4a82e 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 248, 220, 0.55),
+    0 10px 18px -12px rgba(33, 29, 23, 0.45),
+    0 22px 36px -22px rgba(33, 29, 23, 0.38),
+    inset 0 1px 0 rgba(255, 253, 245, 0.7),
+    inset 0 -10px 18px -16px rgba(120, 78, 12, 0.22);
+  /* Slight curl + taped corner feel — keeps mustard Quick Capture distinct from accent stickies */
   clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.arc-desk-post-it.arc-desk-capture-sticky > .arc-desk-post-it-grip {
+  flex: 0 0 14px;
+  margin: 0 -4px 2px;
 }
 
 .arc-desk-post-it.arc-desk-capture-sticky::before {
