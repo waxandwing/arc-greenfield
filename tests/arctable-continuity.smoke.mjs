@@ -112,6 +112,28 @@ try {
   assert(await headerMark.evaluate((img) => img.complete && img.naturalWidth > 0), 'Teacher Monitor header mark asset must load via publicAssetUrl.')
   const headerMarkSrc = await headerMark.getAttribute('src')
   assert(headerMarkSrc?.includes('assets/arctable/logo-icon-framed-arc-primary-512.png'), 'Header mark must use the AT-001 framed ArcTable asset.')
+  assert(await page.getByTestId('arctable-settings').count() === 1, 'Teacher Monitor must expose a Settings control.')
+  const viewportFit = await page.evaluate(() => {
+    const main = document.querySelector('.arctable--teacher')
+    const board = document.querySelector('.arctable-board')
+    if (!main || !board) return { ok: false, reason: 'missing-nodes' }
+    const mainBox = main.getBoundingClientRect()
+    const boardBox = board.getBoundingClientRect()
+    const pageScrollable = document.documentElement.scrollHeight > window.innerHeight + 2
+    const liveChip = getComputedStyle(document.querySelector('.arctable-live-chip'))
+    const pineFill = liveChip.backgroundColor === 'rgb(31, 75, 58)'
+    return {
+      ok: mainBox.height <= window.innerHeight + 1 && boardBox.top >= 0 && boardBox.bottom <= window.innerHeight + 2 && !pageScrollable && !pineFill,
+      mainHeight: mainBox.height,
+      viewport: window.innerHeight,
+      boardTop: boardBox.top,
+      boardBottom: boardBox.bottom,
+      pageScrollable,
+      pineFill,
+      liveChipBg: liveChip.backgroundColor,
+    }
+  })
+  assert(viewportFit.ok, `Teacher Monitor must fit one desktop viewport without pine-fill chrome (${JSON.stringify(viewportFit)}).`)
   const timerFit = await page.locator('.arctable-timer-display').evaluate((el) => {
     const digits = el.querySelector('.arctable-timer-digits')
     if (!digits) return { ok: false, reason: 'missing-digits' }
@@ -189,9 +211,19 @@ try {
   assert(await page.locator('.arctable-pass--inactive').filter({ hasText: 'Hall pass' }).filter({ hasText: 'unassigned' }).count() === 1, 'Returning a pass must clear live ownership.')
   await page.getByRole('button', { name: 'Activate Hall pass' }).click()
   await capture(page, '09-pass-tools.png')
+  await page.locator('.arctable-board').click({ position: { x: 24, y: 24 } })
+  assert(await page.locator('.arctable-pass-panel').count() === 0, 'Pass tools must dismiss on outside click.')
+  await page.getByRole('button', { name: 'Pass tools' }).click()
+  await page.getByRole('button', { name: 'Activate Hall pass' }).click()
   await page.getByRole('button', { name: 'Plan View', exact: true }).click()
   await page.getByRole('button', { name: /Return to ArcTable/ }).click()
   assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))).passes.passes.some((pass) => pass.id === 'hall-pass' && pass.status === 'active'), 'Active pass state must survive Plan View.')
+
+  await page.getByTestId('arctable-settings').click()
+  assert(await page.locator('#b01-settings-surface').count() === 1, 'Settings from Teacher Monitor must open desk Settings furniture.')
+  assert(await page.getByRole('button', { name: /Return to ArcTable/ }).count() === 1, 'Opening Settings must land on Plan View with live return available.')
+  await page.getByRole('button', { name: /Return to ArcTable/ }).click()
+  assert(await page.getByRole('main').getAttribute('class').then((value) => value?.includes('arctable--teacher')), 'Return from Settings must restore Teacher Monitor.')
 
   await page.keyboard.press('Escape')
   await page.getByRole('button', { name: 'Media', exact: true }).click()
