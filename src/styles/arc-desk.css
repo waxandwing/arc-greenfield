@@ -118,11 +118,17 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock {
   position: absolute;
-  left: 36%;
-  top: 4.5%;
-  width: 24%;
-  height: 26%;
-  z-index: 5;
+  left: 33%;
+  top: 0;
+  width: 28%;
+  height: min(52%, 420px);
+  z-index: 12;
+  pointer-events: none;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-green-drawer-well,
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-folders-tab {
+  pointer-events: auto;
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
@@ -236,6 +242,21 @@ html:has(.arc-shell--desk) body {
   box-shadow: none;
 }
 
+/* Physical tabs on desk surface so TRAY stays above the green folders drawer (z-index 12). */
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-physical-tabs--desk-elevated {
+  left: calc(17.2% + 18px);
+  top: 26%;
+  max-width: calc(65.6% - 24px);
+  z-index: 30;
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-planner-physical-tabs--desk-elevated {
+  left: calc(14% + 18px);
+  top: 22%;
+  max-width: calc(72% - 24px);
+}
+
 .arc-planner-physical-tabs .arc-index-tab {
   min-width: 52px;
   min-height: 30px;
@@ -302,6 +323,89 @@ html:has(.arc-shell--desk) body {
   transition: flex-basis 220ms var(--ease-out-soft, ease), opacity 220ms ease;
 }
 
+.arc-desk-green-folders-drawer {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  filter: drop-shadow(0 22px 40px -18px rgba(15, 35, 48, 0.55));
+  transition: transform 340ms var(--ease-out-soft, cubic-bezier(0.22, 1, 0.36, 1));
+  transform: translateY(calc(-100% + 3.4rem));
+  transform-origin: top center;
+}
+
+.arc-desk-green-folders-drawer[data-extended='true'] {
+  transform: translateY(10%);
+}
+
+.arc-desk-green-drawer-shell {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+}
+
+.arc-desk-green-drawer-art {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background:
+    var(--arc-desk-green-folders-drawer, var(--arc-desk-tray-texture, url('/assets/desk/green-folders-drawer.svg')))
+    center top / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+.arc-desk-green-drawer-well {
+  position: absolute;
+  left: 9%;
+  right: 9%;
+  top: 14%;
+  bottom: 14%;
+  overflow: auto;
+  padding: 6px 4px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--shell-frame-green) 42%, rgba(8, 28, 22, 0.88));
+  box-shadow: inset 0 10px 24px -14px rgba(0, 0, 0, 0.55);
+  opacity: 1;
+  transition: opacity 220ms ease;
+}
+
+.arc-desk-green-folders-drawer[data-extended='false'] .arc-desk-green-drawer-well {
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.arc-desk-folders-tab {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  min-width: 7.5rem;
+  min-height: 2.35rem;
+  padding: 8px 16px 10px;
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 55%, black);
+  border-radius: 10px 10px 12px 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--shell-frame-green) 88%, white), var(--shell-frame-green));
+  color: #f7f3ea;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+  box-shadow: 0 10px 22px -12px rgba(15, 35, 48, 0.65);
+  z-index: 2;
+}
+
+.arc-desk-folders-tab:hover {
+  filter: brightness(1.06);
+}
+
+.arc-desk-folders-tab:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 2px;
+}
+
+/* Legacy blue molded tray rim — kept for non-desk contexts if referenced elsewhere */
 .arc-desk-tray-rim {
   height: 100%;
   min-height: 0;
@@ -309,7 +413,7 @@ html:has(.arc-shell--desk) body {
   border-radius: 14px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.06)),
-    var(--arc-desk-tray-texture, url('/assets/desk/blue-molded-tray.png')) center / cover no-repeat;
+    var(--arc-desk-tray-texture, url('/assets/desk/green-folders-drawer.svg')) center / cover no-repeat;
   box-shadow: 0 20px 44px -24px rgba(33, 29, 23, 0.58);
   filter: drop-shadow(0 8px 16px -10px rgba(15, 35, 48, 0.35));
 }
@@ -320,8 +424,8 @@ html:has(.arc-shell--desk) body {
   overflow: auto;
   padding: 6px 4px 8px;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--accent-blue-deep) 18%, transparent);
-  box-shadow: inset 0 8px 22px -12px rgba(15, 35, 48, 0.65);
+  background: color-mix(in srgb, var(--shell-frame-green) 22%, transparent);
+  box-shadow: inset 0 8px 22px -12px rgba(8, 28, 22, 0.65);
 }
 
 .b01-tray-content {
@@ -473,7 +577,7 @@ html:has(.arc-shell--desk) body {
 }
 
 .b01-tray-surface {
-  border-top-color: var(--accent-blue-deep);
+  border-top-color: var(--shell-frame-green);
 }
 
 .home-desk-preferences {

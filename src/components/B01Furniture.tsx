@@ -12,6 +12,7 @@ import {
 import type { MscSizePreset, PlannerSizePreset, TraySizePreset } from '../navigation/deskLayout'
 import '../styles/b01-furniture.css'
 import '../styles/b01-fridge-content.css'
+import { DeskGreenFoldersDrawer } from './DeskGreenFoldersDrawer'
 
 type DrawerName = 'settings' | 'workspace' | 'tasks'
 
@@ -266,8 +267,13 @@ export function B01Furniture({
   const workspacePanelLabel = deskEnabled ? 'Tray' : 'Workspace'
   const layoutGridActive =
     deskEnabled && Boolean(deskLayout) && (deskEditMode || !deskLayoutUsesDefault(deskLayout))
-  /** Physical tray on wood; full TRAY drawer reuses the same panel — never both. */
+  /** Physical folders drawer on wood; full TRAY drawer reuses the same panel — never both. */
   const showDeskTrayDock = Boolean(deskTrayDock) && !workspaceIsOpen
+
+  function renderDeskTrayDock() {
+    if (!showDeskTrayDock) return null
+    return <DeskGreenFoldersDrawer>{deskTrayDock}</DeskGreenFoldersDrawer>
+  }
 
   function renderIndexTabs(className: string) {
     if (!indexNav) return null
@@ -329,7 +335,8 @@ export function B01Furniture({
 
   const plannerBlock = (
     <div className="arc-planner-object">
-      {deskEnabled ? renderIndexTabs('arc-index-tabs arc-planner-physical-tabs') : null}
+      {deskEnabled && layoutGridActive ? renderIndexTabs('arc-index-tabs arc-planner-physical-tabs') : null}
+      {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
       <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
         {spreadChrome}
         {deskEditToolbar}
@@ -361,14 +368,7 @@ export function B01Furniture({
               {layoutGridActive ? (
                 <>
                   {wrapDeskObject('planner', 'Planner', plannerBlock)}
-                  {wrapDeskObject('tray', 'Tray', showDeskTrayDock ? (
-                    <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
-                      <div className="arc-desk-tray-rim">
-                        <p className="b01-furniture-kicker">Tray</p>
-                        <div className="arc-desk-tray-well">{deskTrayDock}</div>
-                      </div>
-                    </aside>
-                  ) : null)}
+                  {wrapDeskObject('tray', 'Tray', renderDeskTrayDock())}
                   {wrapDeskObject('msc', 'Must Should Could', deskPriorityDock ? (
                     <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
                       {deskPriorityDock}
@@ -384,14 +384,7 @@ export function B01Furniture({
               ) : (
                 <>
                   {plannerBlock}
-                  {showDeskTrayDock ? (
-                    <aside className="arc-desk-tray-dock" aria-label="Tray" data-testid="arc-desk-tray-dock">
-                      <div className="arc-desk-tray-rim">
-                        <p className="b01-furniture-kicker">Tray</p>
-                        <div className="arc-desk-tray-well">{deskTrayDock}</div>
-                      </div>
-                    </aside>
-                  ) : null}
+                  {renderDeskTrayDock()}
                   {deskPriorityDock ? (
                     <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
                       {deskPriorityDock}
@@ -406,6 +399,9 @@ export function B01Furniture({
                 </>
               )}
               {deskQuickCapture ? deskQuickCapture : null}
+              {!layoutGridActive && indexNav
+                ? renderIndexTabs('arc-index-tabs arc-planner-physical-tabs arc-planner-physical-tabs--desk-elevated')
+                : null}
             </div>
           </div>
         </div>

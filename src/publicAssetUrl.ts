@@ -17,7 +17,9 @@ const DESK_ASSET_PATHS = {
   woodSurface: 'assets/arc/icarus/texture-wood.png',
   /** Schedule setup / onboarding calendar-on-wood only — not main desk authority. */
   scheduleSetupWood: 'assets/desk/light-wood-desk.png',
+  /** Legacy molded tray — superseded on live desk by green folders drawer SVG. */
   blueTray: 'assets/desk/blue-molded-tray.png',
+  greenFoldersDrawer: 'assets/desk/green-folders-drawer.svg',
   plannerTabMustard: 'assets/desk/planner-tab-mustard.png',
 } as const
 
@@ -27,6 +29,7 @@ export function applyPublicAssetCssUrls(): void {
   const root = document.documentElement.style
   root.setProperty('--arc-wood-surface-image', publicAssetCssUrl(DESK_ASSET_PATHS.woodSurface))
   root.setProperty('--arc-schedule-setup-wood', publicAssetCssUrl(DESK_ASSET_PATHS.scheduleSetupWood))
-  root.setProperty('--arc-desk-tray-texture', publicAssetCssUrl(DESK_ASSET_PATHS.blueTray))
+  root.setProperty('--arc-desk-tray-texture', publicAssetCssUrl(DESK_ASSET_PATHS.greenFoldersDrawer))
+  root.setProperty('--arc-desk-green-folders-drawer', publicAssetCssUrl(DESK_ASSET_PATHS.greenFoldersDrawer))
   root.setProperty('--arc-desk-planner-tab-mustard', publicAssetCssUrl(DESK_ASSET_PATHS.plannerTabMustard))
 }
