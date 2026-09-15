@@ -1,7 +1,8 @@
 import { mkdirSync } from 'node:fs'
 import { chromium } from 'playwright'
 
-const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
+const rawBase = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
+const baseUrl = rawBase.includes('skipEntry') ? rawBase : `${rawBase.replace(/\/$/, '')}/?skipEntry=1`
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
