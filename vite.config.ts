@@ -1,25 +1,16 @@
-import { execSync } from 'node:child_process'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 
+declare const process: {
+  env: Record<string, string | undefined>
+}
+
 function gitSha(): string {
-  const fromEnv = process.env.VITE_ARC_GIT_SHA?.trim()
-  if (fromEnv) return fromEnv
-  try {
-    return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
-  } catch {
-    return 'unknown'
-  }
+  return process.env.VITE_ARC_GIT_SHA?.trim() || 'unknown'
 }
 
 function gitBranch(): string {
-  const fromEnv = process.env.VITE_ARC_GIT_BRANCH?.trim()
-  if (fromEnv) return fromEnv
-  try {
-    return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim()
-  } catch {
-    return ''
-  }
+  return process.env.VITE_ARC_GIT_BRANCH?.trim() || ''
 }
 
 function deskPreviewBuildActive(): boolean {
