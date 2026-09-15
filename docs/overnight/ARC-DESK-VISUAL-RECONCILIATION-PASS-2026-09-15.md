@@ -50,4 +50,26 @@ See `docs/overnight/evidence/arc-desk-pass/` after smoke run at this SHA.
 
 ## Handback
 
-See commit message and ArcBuild handback block in agent output.
+**SHA:** `91fc486` (after push: `git rev-parse HEAD` on `origin/main`)
+
+### Tests (2026-09-15)
+
+| Command | Result |
+|---------|--------|
+| `npm run test:contracts` | PASS |
+| `npm run test:arc-desk-pass` | PASS |
+| `npm run test:arc-desk-mark` | PASS |
+| `npm run test:desk-slices` | PASS (`?deskSlices=1`) |
+| `npm run test:edit-workspace` | **FAIL** — Pin layout persistence (investigate separately) |
+| `npm run test:plan-year` | **FAIL** — Month→Year anchor (pre-existing smoke) |
+| `npm run build` | typecheck `@types/node` env issue in CI VM (bundle builds via `preview:desk`) |
+
+### Evidence
+
+`docs/overnight/evidence/arc-desk-pass/` — refreshed by `test:arc-desk-pass` run.
+
+### Kelly preview
+
+`npm run kelly:desk` → http://127.0.0.1:4173/?demo=1&demoReset=1
+
+Pages: https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1 (after deploy)
