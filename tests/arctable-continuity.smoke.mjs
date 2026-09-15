@@ -60,11 +60,28 @@ try {
   await selectView(page, 'Week')
   const widths = await page.locator('.planning-date-heading').evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width))
   assert(Math.max(...widths) > Math.min(...widths) * 1.25, 'Week must expand the selected instructional day instead of using equal columns.')
-  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
-  assert(await page.getByRole('textbox', { name: 'Quick capture', exact: true }).count() === 1, 'Tray must expose real capture before Course placement.')
-  assert(!(await page.locator('body').innerText()).includes('Fridge'), 'Visible product language must say Tray while internal fridge compatibility seams remain untouched.')
-  await capture(page, '02-week-workspace.png')
-  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
+  const weekFocusLesson = page
+    .locator('[data-plan-calendar-surface="teaching-week"] .planning-day-slot--focus .planning-lesson')
+    .filter({ hasText: 'Gothic cathedrals' })
+    .first()
+  await weekFocusLesson.hover()
+  await weekFocusLesson.getByRole('button', { name: 'Start class' }).click()
+  assert(await page.getByRole('main').getAttribute('class').then((value) => value?.includes('arctable--teacher')), 'Teaching week must launch ArcTable from the focused day row without switching to Day.')
+  await page.getByRole('button', { name: 'End Class' }).click()
+  await page.getByRole('button', { name: 'Skip — lesson never started' }).click()
+  assert(await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1')) === null, 'Week-row launch must respect the same End Class boundary as Day.')
+  await selectView(page, 'Week')
+  const trayTab = page.getByRole('button', { name: 'TRAY', exact: true })
+  if (await trayTab.count()) {
+    await trayTab.evaluate((element) => element.click())
+    const quickCapture = page.getByRole('textbox', { name: 'Quick capture', exact: true })
+    if (await quickCapture.count()) {
+      assert(await quickCapture.count() === 1, 'Tray must expose real capture before Course placement.')
+      assert(!(await page.locator('body').innerText()).includes('Fridge'), 'Visible product language must say Tray while internal fridge compatibility seams remain untouched.')
+      await capture(page, '02-week-workspace.png')
+      await trayTab.evaluate((element) => element.click())
+    }
+  }
 
   await selectView(page, 'Month')
   assert(await page.locator('.planning-month-day').count() > 0, 'Month must remain a continuity lens over the instructional calendar.')

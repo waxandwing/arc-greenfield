@@ -536,15 +536,6 @@ export function AppFrame() {
     }
   }
 
-  if (arcTable.live && arcTable.surface === 'teacher') {
-    return <ArcTableTeacherMonitor live={arcTable.live} onOpenPlan={arcTable.showPlan} onShowTeacher={arcTable.showTeacher} onShowStudent={arcTable.showStudent} onUpdate={arcTable.update} onEnd={endClass} />
-  }
-
-  if (arcTable.live && arcTable.surface === 'student') {
-    return <ArcTableStudentSurface live={arcTable.live} onOpenPlan={arcTable.showPlan} onShowTeacher={arcTable.showTeacher} onShowStudent={arcTable.showStudent} onUpdate={arcTable.update} onEnd={endClass} />
-  }
-
-
   const trayPanelProps = {
     captures: workspace.captureWorkspace,
     lessons: workspace.lessonWorkspace?.lessons ?? [],
@@ -631,6 +622,14 @@ export function AppFrame() {
     workspace.calendar,
     workspace.viewWasPersisted,
   ])
+
+  if (arcTable.live && arcTable.surface === 'teacher') {
+    return <ArcTableTeacherMonitor live={arcTable.live} onOpenPlan={arcTable.showPlan} onShowTeacher={arcTable.showTeacher} onShowStudent={arcTable.showStudent} onUpdate={arcTable.update} onEnd={endClass} />
+  }
+
+  if (arcTable.live && arcTable.surface === 'student') {
+    return <ArcTableStudentSurface live={arcTable.live} onOpenPlan={arcTable.showPlan} onShowTeacher={arcTable.showTeacher} onShowStudent={arcTable.showStudent} onUpdate={arcTable.update} onEnd={endClass} />
+  }
 
   const settingsContent = showPlanFurniture ? (
     <SettingsFurnitureContent

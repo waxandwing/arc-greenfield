@@ -52,6 +52,7 @@
 - **Google Drive Ruthless Design Audit sheet:** Agents can **read** gate docs via MCP (`docs/overnight/AUDIT-RULES-FROM-DRIVE.md` ids). **Kelly still owns** writing PASS/FAIL rows into the live Drive audit tracker each pass (MCP does not replace the approval workbook).
 - **Rainbow title mark:** Export or node id for the Teaching week header icon beside “Teaching week” (req #18 FAIL).
 - **Period times on comp:** Confirm P4/P5 times for 2D/3D rows if they differ from demo `P4 • 9:05–10:00` / `P5 • 10:05–11:00`.
+- **ArcTable × icarus merge:** See **QUESTIONS FOR KELLY** in `docs/overnight/ARCTABLE-ICARUS-PLANNER-MERGE.md` (Teaching Mode transport, demo paid-live, week-row start scope, `/table` QA route, NOW/NEXT/hold, Drive GREENPP assets).
 
 ## Queue status snapshot (coordinator)
 
