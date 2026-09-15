@@ -2,11 +2,11 @@
 
 > **If you only read one thing**
 >
-> The **Arc wood desk** (Teaching week mock) lives on branch **`cursor/arc-production-integration`**, not **`main`**. Open the repo folder you cloned in Cursor, run the copy-paste block in [Local preview (copy-paste)](#local-preview-copy-paste), then open **`http://127.0.0.1:4173/?demo=1&demoReset=1`**. You should see **wood**, title **Teaching week**, kicker **SEPTEMBER 7 - 11 • WEEK 4**, and a tiny bottom-right **footer stamp** like **`desk-v2 · cursor/arc-production-integration · e32b8b7`**. If you see cream everywhere with **CALENDAR** / **Month** and **no** `desk-v2` stamp, you are on the wrong **branch** or wrong **project folder** — fix that before judging the desk.
+> The **Arc wood desk** (Teaching week mock) lives on branch **`cursor/arc-production-integration`**, not **`main`**. Open the repo folder you cloned in Cursor, run the copy-paste block in [Local preview (copy-paste)](#local-preview-copy-paste), then open **`http://127.0.0.1:4173/?demo=1&demoReset=1`**. You should see **wood**, title **Teaching week**, kicker **SEPTEMBER 7 - 11 • WEEK 4**, and a tiny bottom-right **footer stamp** like **`desk-v2 · cursor/arc-production-integration · <sha>`**. If you see cream everywhere with **CALENDAR** / **Month** and **no** `desk-v2` stamp, you are on the wrong **branch** or wrong **project folder** — fix that before judging the desk.
 
 **Last updated:** 2026-09-15  
 **Repo:** [waxandwing/arc-greenfield](https://github.com/waxandwing/arc-greenfield)  
-**Mac cheat sheet:** [docs/WORK-FROM-GITHUB-LOCALLY.md](../WORK-FROM-GITHUB-LOCALLY.md)
+**Mac cheat sheet:** [`docs/WORK-FROM-GITHUB-LOCALLY.md`](../WORK-FROM-GITHUB-LOCALLY.md)
 
 ---
 
@@ -16,74 +16,8 @@
 |------|----------------|
 | **Branch** | A named line of work in Git. Desk work = **`cursor/arc-production-integration`**. **`main`** = older plan shell only — **not** where the desk is built. |
 | **Project folder** | The folder you **opened in Cursor** (File → Open Folder). It must be the clone that contains **`package.json`** (usually named **`arc-greenfield`**). Running git/npm from your home folder or a different clone = wrong place. |
-| **Preview** | A built copy of the app running in the browser (local port **4173** or GitHub Pages). |
+| **Preview** | A built copy of the app running in the browser (local port **4173**, Cloud Agent preview link, or GitHub Pages). |
 | **Footer stamp** | Small text bottom-right: **`desk-v2 · <branch> · <short git sha>`** — proves you are on the integration desk build, not legacy cream UI. |
-
----
-
-## Work on your Mac from GitHub (not cloud)
-
-### Cloud vs local (one paragraph)
-
-A **cloud agent** runs in Cursor’s remote environment: the code lives on a VM, and you watch progress in the browser. **Local** means the same GitHub repo is **cloned onto your Mac**, you open that folder in **Cursor desktop**, and Terminal commands (`git`, `npm run preview:desk`) run on **your** machine. Both can push to GitHub, but only the local folder is “your” desk preview unless you deliberately start a cloud run. For daily review and pairing with an agent on **your** code, use local.
-
-### One-time setup on your Mac
-
-1. **Git** — If `git --version` works in Terminal, you are fine. Otherwise install Xcode Command Line Tools (`xcode-select --install`) or Git from [git-scm.com](https://git-scm.com/).
-2. **Node.js** — Install current LTS from [https://nodejs.org](https://nodejs.org) (includes `npm`). You need this for `npm install` and `npm run preview:desk`.
-3. **Cursor desktop** — Install from [https://cursor.com](https://cursor.com) and sign in with the same account you use for agents.
-
-### Clone the repo (first time)
-
-In Terminal:
-
-```bash
-git clone https://github.com/waxandwing/arc-greenfield.git
-cd arc-greenfield
-```
-
-- **`git clone …`** downloads a copy of the repository from GitHub into a new folder named `arc-greenfield`.
-- **`cd arc-greenfield`** means “go into that folder” so the next commands run **inside** the project (where `package.json` lives). If you skip `cd`, `git` and `npm` will fail or touch the wrong place.
-
-### Open the project in Cursor (not “New cloud project”)
-
-1. Launch **Cursor** (desktop app).
-2. **File → Open Folder…**
-3. Choose the **`arc-greenfield`** folder you cloned (the one that contains `package.json`).
-
-You should see the repo tree in the sidebar. That is your **local workspace**.
-
-### Always use the integration branch before preview
-
-```bash
-git fetch origin
-git checkout cursor/arc-production-integration
-git pull origin cursor/arc-production-integration
-npm install
-```
-
-Do **not** run `npm run preview:desk` from `main` — you will get the old plan shell without a useful `desk-v2` stamp.
-
-### Daily loop (Kelly)
-
-1. Open Terminal, **`cd`** to your `arc-greenfield` folder.
-2. **`git pull origin cursor/arc-production-integration`** (get latest desk work).
-3. **`npm install`** only if `package-lock.json` changed or an agent told you to.
-4. **`npm run preview:desk`**
-5. Browser: **`http://127.0.0.1:4173/?demo=1&demoReset=1`**
-6. Confirm footer: **`desk-v2 · cursor/arc-production-integration · <sha>`** matches `git rev-parse --short HEAD`.
-
-Stop preview: **Ctrl+C** in the Terminal tab, or `npm run preview:desk:stop` if port 4173 is stuck.
-
-### Cursor Agent: attach to **local** repo vs cloud-only
-
-| You want… | Do this |
-|-----------|---------|
-| Agent edits **files on your Mac** | Open the cloned **`arc-greenfield`** folder in Cursor desktop → open **Agent / Chat** with that folder as the workspace. Ask it to run `npm run preview:desk` in **your** Terminal. |
-| Agent works overnight without your Mac on | Start a **cloud agent** from Cursor (e.g. linked to the GitHub repo). When it finishes, **`git pull`** on your Mac to pick up its commits on `cursor/arc-production-integration`. |
-| Avoid | Starting a cloud **New Project** that is **not** tied to `waxandwing/arc-greenfield`, or previewing from a random folder — you will not see desk-v2. |
-
-**Rule of thumb:** If the Cursor window title / path is your Mac’s `arc-greenfield` clone, the agent is local. If the run lives at `cursor.com/agents/…` with a remote VM, it is cloud — still fine, but Kelly’s preview should come from **your** pull + `preview:desk`.
 
 ---
 
@@ -114,15 +48,20 @@ That target is written in **`docs/overnight/MASTER-DESK-VISUAL-GOAL.md`**. Agent
 
 ### A) Cursor Cloud Agent preview URL
 
-When Kelly (or an agent) runs a **Cursor Cloud Agent** on this repo **on the integration branch**, the agent run page on Cursor shows a **Preview** link to the built app (often **`127.0.0.1:4173`** on the agent VM, surfaced as a clickable preview).
+When Kelly (or an agent) runs a **Cursor Cloud Agent** on this repo **on the integration branch**, the run page on Cursor (`cursor.com/agents/…`) shows a **Preview** link to the built app (often port **4173** on the agent VM).
 
-- Use demo URL: **`?demo=1&demoReset=1`** on that preview so the Teaching week seed loads.
+- Append **`?demo=1&demoReset=1`** so the Teaching week seed loads.
 - Check the same **footer stamp** as local (`desk-v2 · … · <sha>`).
-- Cloud agents should **commit on `cursor/arc-production-integration`** only; they do not need Kelly to open a PR unless she asks.
+- Cloud agents **commit on `cursor/arc-production-integration`** only; **no PR** unless Kelly asks.
 
 ### B) Local Cursor + terminal (Kelly’s laptop)
 
-See **[Work on your Mac from GitHub (not cloud)](#work-on-your-mac-from-github-not-cloud)** above, then [Local preview (copy-paste)](#local-preview-copy-paste). More detail: **`docs/LOCAL-PREVIEW.md`** and **`docs/WORK-FROM-GITHUB-LOCALLY.md`**.
+1. In Cursor: **File → Open Folder** → pick your **`arc-greenfield`** clone (**project folder** = that folder — not “New cloud project” unless you intend a remote-only run).
+2. Open the integrated terminal (it should start **inside** that folder — you should see `package.json` if you list files).
+3. Follow [Local preview (copy-paste)](#local-preview-copy-paste) below.
+4. More detail: **`docs/LOCAL-PREVIEW.md`** and **`docs/WORK-FROM-GITHUB-LOCALLY.md`**.
+
+**Cloud vs local (one line):** A cloud agent edits on a remote VM; your **Mac clone** is what you use for day-to-day preview after **`git pull`**.
 
 ### C) GitHub Pages (no local server)
 
@@ -176,9 +115,10 @@ You have the **correct** desk build when **all** of these are true:
 
 ### For Kelly
 
-- **Preferred:** clone **arc-greenfield** on your Mac ([Mac section](#work-on-your-mac-from-github-not-cloud)), open that folder in Cursor desktop, pull **`cursor/arc-production-integration`**, run **`npm run preview:desk`**. Repo already exists on GitHub — no Create repo step.
-- Cloud agents: repo **waxandwing/arc-greenfield**, branch **`cursor/arc-production-integration`**, **no PR** unless you want one.
+- In Cursor, pick repo **`waxandwing/arc-greenfield`** (Create / repo pill — not a random empty project).
+- Tell agents: **work on branch `cursor/arc-production-integration`**, pull before preview, **no PR** unless you want one.
 - Ignore **`main`** for desk visual review — it will look “stuck” on the old shell.
+- After a **cloud agent** finishes, on your Mac: **`git pull origin cursor/arc-production-integration`** then **`npm run preview:desk`**.
 
 ### For Cloud Agents (every pass)
 
@@ -201,7 +141,7 @@ You have the **correct** desk build when **all** of these are true:
 
 ## 6. What’s DONE vs NEXT
 
-Snapshot from the queue @ integration tip (~`e32b8b7` / recent audit @ `3067c83` lineage):
+Snapshot from the queue (audit lineage @ `3067c83`; pull integration for latest tip):
 
 ### Done (recent)
 
@@ -210,7 +150,6 @@ Snapshot from the queue @ integration tip (~`e32b8b7` / recent audit @ `3067c83`
 - **ArcTable slice 1** — Start class / fixture → live from Teaching week (week row + desk mark; hooks order fix)
 - **Today ←/→** cluster on planner header; Kelly demo row labels (**P1 • 8:05–9:00**, etc.)
 - Structural smokes green on stamped **`desk-v2`** preview builds
-- **Kelly local handoff** — Mac-from-GitHub section + **`WORK-FROM-GITHUB-LOCALLY.md`**
 
 ### In progress / next
 
@@ -241,7 +180,7 @@ Short list (details in queue + ArcTable merge doc):
 - GitHub branch: `https://github.com/waxandwing/arc-greenfield/tree/cursor/arc-production-integration`
 - Pages desk URL: `https://waxandwing.github.io/arc-greenfield/?demo=1&demoReset=1`
 - Local preview guide: **`docs/LOCAL-PREVIEW.md`**
-- Mac cheat sheet: **`docs/WORK-FROM-GITHUB-LOCALLY.md`**
+- Mac clone + Cursor open folder: **`docs/WORK-FROM-GITHUB-LOCALLY.md`**
 
 ---
 
