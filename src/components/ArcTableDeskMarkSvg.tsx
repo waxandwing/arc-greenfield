@@ -6,6 +6,7 @@ import {
   ARC_TABLE_MARK_ASSET,
   ARC_TABLE_MARK_VIEWBOX,
 } from '../planning/arcTableDeskMark'
+import { publicAssetUrl } from '../publicAssetUrl'
 import { deskTargetToAction, resolveDeskActionLabel, type ArcTableDeskTarget } from '../planning/arcTableDeskActions'
 
 type Props = {
@@ -29,7 +30,7 @@ export function ArcTableDeskMarkSvg({ size, interactive, liveActive, hovered, on
       aria-label={interactive ? 'ArcTable desk mark' : 'ArcTable mark'}
     >
       <image
-        href={ARC_TABLE_MARK_ASSET}
+        href={publicAssetUrl(ARC_TABLE_MARK_ASSET)}
         width={ARC_TABLE_MARK_VIEWBOX}
         height={ARC_TABLE_MARK_VIEWBOX}
         pointerEvents="none"

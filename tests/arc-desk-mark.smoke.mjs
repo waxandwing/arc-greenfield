@@ -54,6 +54,21 @@ async function shot(page, name) {
   await page.screenshot({ path: `${evidenceDir}${name}`, fullPage: true })
 }
 
+/** Desk planner objects can sit above the modal in hit-test order; DOM click still closes. */
+async function dismissArcTablePreview(page) {
+  await page.evaluate(() => {
+    const layer = document.querySelector('.arc-desk-arctable-preview-layer')
+    if (!layer) return
+    for (const button of layer.querySelectorAll('button')) {
+      if (button.textContent?.trim() === 'Close') {
+        button.click()
+        return
+      }
+    }
+  })
+  await page.locator('.arc-desk-arctable-preview-layer').waitFor({ state: 'hidden' })
+}
+
 const browser = await chromium.launch({ headless: true })
 try {
   const context = await browser.newContext({
@@ -71,6 +86,16 @@ try {
   assert(await page.getByTestId('arc-desk-arctable-anchor').isVisible(), 'ArcTable mark anchor must render on desk.')
   assert(await page.getByTestId('arc-desk-arctable').isVisible(), 'ArcTable desk fixture must render.')
   assert(await page.locator('.arc-desk-mark-svg image').count() === 1, 'Desk fixture must reference canonical AT-001 SVG asset.')
+  const markHref = await page.locator('.arc-desk-mark-svg image').getAttribute('href')
+  assert(
+    markHref?.includes('assets/arctable/logo-icon-framed-arc-primary-512.png'),
+    'Desk mark must use logo-icon-framed-arc-primary-512.png under public assets.',
+  )
+  const markAssetOk = await page.evaluate(async (url) => {
+    const res = await fetch(url)
+    return res.ok
+  }, markHref)
+  assert(markAssetOk, 'ArcTable desk mark raster must load (base-aware URL).')
   await shot(page, '01-desk-mark-idle.png')
 
   const fixture = page.getByTestId('arc-desk-arctable')
@@ -83,15 +108,13 @@ try {
   assert(await page.getByRole('heading', { name: 'Start or resume today’s class' }).isVisible(), 'Free preview must open contextual Start class dialog.')
   await shot(page, '03-explore-arctable-preview.png')
 
-  await page.getByRole('button', { name: 'Close', exact: true }).click()
-  await page.locator('.arc-desk-arctable-preview-layer').waitFor({ state: 'hidden' })
+  await dismissArcTablePreview(page)
   await page.getByRole('button', { name: 'Timer & cleanup', exact: true }).focus()
   await page.keyboard.press('Enter')
   assert(await page.getByRole('heading', { name: 'Preview classroom timer' }).isVisible(), 'Free timer quadrant must show contextual preview.')
   await shot(page, '04-timer-preview.png')
 
-  await page.getByRole('button', { name: 'Close', exact: true }).click()
-  await page.locator('.arc-desk-arctable-preview-layer').waitFor({ state: 'hidden' })
+  await dismissArcTablePreview(page)
   await page.getByRole('button', { name: 'Open ArcTable', exact: true }).focus()
   await page.keyboard.press('Enter')
   assert(await page.getByRole('heading', { name: 'Open ArcTable from your desk' }).isVisible(), 'Center cream must open ArcTable home preview when not entitled.')
