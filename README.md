@@ -4,6 +4,8 @@ Calendar-first teacher planning for plans that change.
 
 This repository is the implementation source for Arc. Product and UX authority live in the canonical Google Drive Product Spec. Visual authority lives in the canonical Wax & Wing Brand System. GitHub issues translate those authorities into implementation work.
 
+**Arc wood desk (Kelly):** The Teaching week desk is on branch `cursor/arc-production-integration`, not `main`. Start here: [`docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md`](https://github.com/waxandwing/arc-greenfield/blob/cursor/arc-production-integration/docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md) on that branch (preview steps, project folder vs wrong branch).
+
 ## Branch authority
 
 - `main` — protected release branch. Do not develop directly here.
