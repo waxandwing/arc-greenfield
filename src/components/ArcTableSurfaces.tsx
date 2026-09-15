@@ -150,7 +150,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
         </div>
       </header>
 
-      <div className="arctable-teacher-layout">
+      <div className="arctable-teacher-layout" data-testid="arctable-teacher-layout">
         <section className="arctable-board" aria-labelledby="arctable-lesson-title">
           <div className="arctable-progress" aria-label={`Phase ${live.phase} of ${live.phaseCount}`}><span style={{ width: `${(live.phase / live.phaseCount) * 100}%` }} /></div>
           <div className="arctable-board-stack">
@@ -163,12 +163,21 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
             )}
           </div>
           <div className="arctable-board-footer">
-            <MediaSurface media={live.media} onOpenMedia={() => setTool('media')} onPreviewStudent={onShowStudent} />
             <div className="arctable-student-facts">
               <span>Voice {live.voiceLevel}</span><span>{live.materials || 'No materials listed'}</span>
               {cleanupActive ? <strong>{live.cleanupTimer.status === 'completed' ? 'Cleanup complete' : `Cleanup · ${formatDuration(cleanupRemaining)}`}</strong> : <span>Cleanup later</span>}
             </div>
           </div>
+        </section>
+
+        <section className="arctable-stage" aria-label="Center stage" data-testid="arctable-stage">
+          <p className="arctable-kicker">Center stage</p>
+          <MediaSurface media={live.media} onOpenMedia={() => setTool('media')} onPreviewStudent={onShowStudent} />
+          {live.people.projected && selectedPerson ? (
+            <p className="arctable-stage-person" role="status">{selectedPerson.name}, you’re up.</p>
+          ) : (
+            <p className="arctable-stage-hint">Projection for the room — media, artwork, or a selected student.</p>
+          )}
         </section>
 
         <aside className="arctable-controls" aria-label="Teacher controls">

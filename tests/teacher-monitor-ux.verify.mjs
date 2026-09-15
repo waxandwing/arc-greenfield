@@ -54,19 +54,38 @@ await page.waitForSelector('.arctable--teacher')
 
 const checks = await page.evaluate(() => {
   const main = document.querySelector('.arctable--teacher')
+  const layout = document.querySelector('[data-testid="arctable-teacher-layout"]')
   const board = document.querySelector('.arctable-board')
+  const stage = document.querySelector('[data-testid="arctable-stage"]')
+  const controls = document.querySelector('aside.arctable-controls')
   const chip = document.querySelector('.arctable-live-chip')
   const settings = document.querySelector('[data-testid="arctable-settings"]')
   const mark = document.querySelector('[data-testid="arctable-header-mark"]')
   const timer = document.querySelector('.arctable-timer-display .arctable-timer-digits')
+  const materials = document.querySelector('.arctable-control-field')
+  const voice = document.querySelectorAll('.arctable-control-field')[1]
   const mainBox = main.getBoundingClientRect()
   const boardBox = board.getBoundingClientRect()
+  const stageBox = stage.getBoundingClientRect()
+  const controlsBox = controls.getBoundingClientRect()
+  const materialsBox = materials.getBoundingClientRect()
+  const voiceBox = voice.getBoundingClientRect()
   const chipBg = getComputedStyle(chip).backgroundColor
+  const columnCount = getComputedStyle(layout).gridTemplateColumns.trim().split(/\s+/).filter(Boolean).length
   return {
     mainHeight: mainBox.height,
     viewport: window.innerHeight,
     boardTop: boardBox.top,
     boardBottom: boardBox.bottom,
+    stageLeft: stageBox.left,
+    boardRight: boardBox.right,
+    controlsLeft: controlsBox.left,
+    stageRight: stageBox.right,
+    controlsWidth: controlsBox.width,
+    columnCount,
+    materialsBottom: materialsBox.bottom,
+    voiceTop: voiceBox.top,
+    labelGap: voiceBox.top - materialsBox.bottom,
     pageScrollable: document.documentElement.scrollHeight > window.innerHeight + 2,
     chipBg,
     pineFill: chipBg === 'rgb(31, 75, 58)',
@@ -75,6 +94,7 @@ const checks = await page.evaluate(() => {
     markLoaded: mark?.complete && mark.naturalWidth > 0,
     timerLabel: timer?.textContent || '',
     mediaCta: document.querySelector('.arctable-media-empty-actions button')?.textContent || '',
+    stageHasMedia: Boolean(stage.querySelector('.arctable-media')),
   }
 })
 
@@ -89,6 +109,12 @@ assert(checks.hasSettings, 'missing settings')
 assert(checks.markLoaded && checks.markSrc.includes('assets/arctable/logo-icon-framed-arc-primary-512.png'), `bad mark ${checks.markSrc}`)
 assert(checks.timerLabel === '10:00', `timer honesty failed: ${checks.timerLabel}`)
 assert(checks.mediaCta.toLowerCase().includes('project'), `missing media CTA: ${checks.mediaCta}`)
+assert(checks.columnCount === 3, `expected 3 columns, got ${checks.columnCount}: ${JSON.stringify(checks)}`)
+assert(checks.stageHasMedia, 'center stage missing media surface')
+assert(checks.boardRight <= checks.stageLeft + 2, `board/stage overlap: ${JSON.stringify(checks)}`)
+assert(checks.stageRight <= checks.controlsLeft + 2, `stage/controls overlap: ${JSON.stringify(checks)}`)
+assert(checks.controlsWidth >= 280, `controls rail too narrow: ${JSON.stringify(checks)}`)
+assert(checks.labelGap >= 0, `Materials/Voice labels overlapping: ${JSON.stringify(checks)}`)
 
 await page.getByRole('button', { name: 'Pass tools' }).click()
 assert(await page.locator('.arctable-pass-panel').count() === 1, 'pass panel open')
