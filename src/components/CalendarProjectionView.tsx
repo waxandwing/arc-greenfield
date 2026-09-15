@@ -31,7 +31,7 @@ type Props = {
   planningContext?: PlanningContext | null
   planContext?: PlanNavigationContext | null
   showWeekends?: boolean
-  onStartClass?: (sectionId: string, lessonId: string) => void
+  onStartClass?: (sectionId: string, lessonId: string, liveDate?: ISODate) => void
   onSelectDate?: (date: ISODate, view: CalendarView) => void
   onSelectYearUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
   onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
@@ -101,6 +101,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           onSetLessonImportant={onSetLessonImportant}
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
+          onStartClass={onStartClass}
           termContext={<TermContext quarters={projection.quarters} semesters={projection.semesters} />}
         />
       )
@@ -224,7 +225,7 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   planningContext?: PlanningContext | null
   planContext?: PlanNavigationContext | null
   termContext?: ReactNode
-  onStartClass?: (sectionId: string, lessonId: string) => void
+  onStartClass?: (sectionId: string, lessonId: string, liveDate?: ISODate) => void
   onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
   onSelectLesson?: (lesson: DayContinuityLesson) => void
   onRetreatPlanFocus?: () => void
@@ -292,7 +293,7 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   )
 }
 
-function PlanningWeekStrip({ title, days, focusDate, planningContext, planContext, termContext, onSelectDate, onReturnToPlanningPeriod, planningPeriodReturnPending, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection }: {
+function PlanningWeekStrip({ title, days, focusDate, planningContext, planContext, termContext, onSelectDate, onReturnToPlanningPeriod, planningPeriodReturnPending, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection, onStartClass }: {
   title: string
   days: ProjectedDay[]
   focusDate: ISODate
@@ -305,6 +306,7 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onBeginPlanLessonMove?: Props['onBeginPlanLessonMove']
   onOpenRecoveryForSection?: Props['onOpenRecoveryForSection']
+  onStartClass?: Props['onStartClass']
 }) {
   return (
     <section
@@ -334,6 +336,7 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
               onBeginPlanLessonMove={onBeginPlanLessonMove}
               onOpenRecoveryForSection={onOpenRecoveryForSection}
               onSetLessonImportant={onSetLessonImportant}
+              onStartClass={onStartClass}
               lessonImportantById={(lessonId) => planningContext.lessons.lessons.find((lesson) => lesson.id === lessonId)?.important === true}
             />
           </div>

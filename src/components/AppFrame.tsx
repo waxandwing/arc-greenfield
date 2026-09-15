@@ -415,17 +415,19 @@ export function AppFrame() {
     setFridgeUndo(null)
   }
 
-  function startClass(sectionId: string, lessonId: string) {
-    if (!workspace.calendar || !workspace.anchorDate || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+  function startClass(sectionId: string, lessonId: string, liveDate?: ISODate) {
+    if (!workspace.calendar || !workspace.planningWorkspace || !workspace.unitWorkspace || !workspace.lessonWorkspace) return
+    const sessionDate = liveDate ?? workspace.anchorDate
+    if (!sessionDate) return
     try {
       const day = projectDayContinuity({
-        date: workspace.anchorDate,
+        date: sessionDate,
         planning: workspace.planningWorkspace,
         units: workspace.unitWorkspace,
         lessons: workspace.lessonWorkspace,
         overrides: workspace.shiftState?.overrides ?? [],
       })
-      arcTable.start(projectArcTableSession({ day, sectionId, lessonId, calendar: workspace.calendar, liveDate: workspace.anchorDate }))
+      arcTable.start(projectArcTableSession({ day, sectionId, lessonId, calendar: workspace.calendar, liveDate: sessionDate }))
     } catch (error) {
       workspace.setStorageNotice(error instanceof Error ? error.message : String(error))
     }

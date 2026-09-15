@@ -26,6 +26,7 @@ Reference frame: **1440×1024** (`.arc-desk-tabletop` logical size). All slices 
 | `planner-frame-top-accent` | `.arc-calendar-spread--desk` | 3 | `.b01-calendar-owner` (Teaching week grid) |
 | `planner-frame-left-accent` | `.arc-calendar-spread--desk` | 3 | same |
 | `start-class-frame` | `ArcTableDeskFixture` | 0 | AT mark + script (canonical SVG mark unchanged) |
+| `planner-edge-tab-*` | `arc-planner-physical-tabs--desk-edge` | 45–46 | Live `button.arc-index-tab` labels (DAY/WEEK/MONTH/YEAR) |
 | `planner-edge-tab-*` | `.arc-planner-physical-tabs--desk-edge` | 45–46 | Live DAY/WEEK/MONTH/YEAR buttons (`interactive-chrome`; click → view nav) |
 
 ## Calendar enlarge (desk planner)
