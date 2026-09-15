@@ -365,3 +365,70 @@
   .arctable--teacher .arctable-tool-row{grid-template-columns:repeat(3,1fr)}
   .arctable--teacher .arctable-tool-row button{justify-content:center}
 }
+
+/* Student projected view: lesson-parts strip along the top of the stage */
+.arctable-student-parts{
+  grid-column:1 / -1;
+  align-self:start;
+  margin:0 0 8px;
+  padding:0 0 14px;
+  border-bottom:1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+.arctable-student-parts ol{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px 18px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+.arctable-student-parts button{
+  display:inline-flex;
+  align-items:baseline;
+  gap:10px;
+  min-height:44px;
+  padding:8px 2px 6px;
+  border:0;
+  border-bottom:2px solid transparent;
+  border-radius:0;
+  background:transparent;
+  color:color-mix(in srgb, var(--ink) 62%, transparent);
+  font:750 13px/1.2 var(--font-label), var(--font-ui);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.arctable-student-parts button:hover{
+  color:var(--ink);
+}
+.arctable-student-parts button.is-current{
+  color:var(--ink);
+  border-bottom-color:#1f4b3a;
+}
+.arctable-student-parts-index{
+  font:400 18px/1 'Instrument Serif', serif;
+  letter-spacing:0;
+  text-transform:none;
+  opacity:.78;
+}
+.arctable-student-parts button.is-current .arctable-student-parts-index{
+  opacity:1;
+  color:#1f4b3a;
+}
+.arctable-student-parts-label{
+  max-width:18ch;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.arctable--student .arctable-student-stage{
+  align-content:start;
+  align-items:start;
+  padding-top:28px;
+  gap:28px 50px;
+}
+@media(max-width:900px){
+  .arctable-student-parts{padding-bottom:10px}
+  .arctable-student-parts ol{gap:8px 12px}
+  .arctable-student-parts-label{max-width:14ch}
+}
