@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 /**
- * Re-crop desk chrome PNG slices from Kelly Teaching week authority comp (zip 1.png).
+ * LAST RESORT: re-crop desk chrome PNG slices from Kelly Teaching week authority comp (zip 1.png).
+ * Only run when Kelly has not supplied discrete per-layer PNG/SVG exports — see
+ * docs/overnight/TEACHING-WEEK-ASSETS-HONESTY.md and uploads/desk-incoming/README.txt.
+ *
+ * Runtime default uses source files (green-folders-drawer.svg, CSS tabs, AT-001 mark).
+ * Comp crops are opt-in via VITE_ARC_DESK_SLICES=true or ?deskSlices=1.
+ *
  * Source: docs/overnight/evidence/kelly-teaching-week-authority.png (1366×768)
  */
 import { spawnSync } from 'node:child_process'

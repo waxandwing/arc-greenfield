@@ -12,7 +12,7 @@ Kelly desk chrome uses **committed raster slices** from Figma file `CfWcuQPY4ljY
 | Runtime URL helpers | `src/desk/deskSliceRuntime.ts` |
 | Re-export script | `scripts/export-desk-figma-slices.mjs` |
 
-Disable slices locally: `VITE_ARC_DESK_SLICES=false` (falls back to SVG/CSS chrome).
+Comp-crop slices are **opt-in**: `VITE_ARC_DESK_SLICES=true` at build or `?deskSlices=1` in the URL. Default desk preview uses committed SVG/CSS source chrome (`green-folders-drawer.svg`, planner tab CSS, `AT-001_table-mark.svg`).
 
 ## Manifest mapping
 

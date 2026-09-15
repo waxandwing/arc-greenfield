@@ -28,7 +28,11 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
       data-desk-slices={slicesEnabled ? 'true' : 'false'}
     >
       <div className="arc-desk-green-drawer-shell">
-        <div className="arc-desk-green-drawer-art" aria-hidden="true">
+        <div
+          className="arc-desk-green-drawer-art"
+          aria-hidden="true"
+          data-testid={slicesEnabled ? undefined : 'desk-source-ideas-drawer'}
+        >
           {slicesEnabled ? (
             <DeskChromeSlice sliceId="ideas-drawer-chrome" testId="desk-slice-ideas-drawer" />
           ) : (

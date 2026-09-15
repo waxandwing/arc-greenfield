@@ -1,8 +1,26 @@
 import { publicAssetUrl } from '../publicAssetUrl'
 import { deskSliceById, type DeskSliceId } from '../navigation/deskSliceManifestData'
 
+/**
+ * Comp-crop rasters under `assets/desk/slices/` — opt-in only.
+ * Default desk preview uses committed SVG/PNG source files (green drawer, CSS tabs, ArcTable mark).
+ * Enable crops: `VITE_ARC_DESK_SLICES=true` at build time or `?deskSlices=1` in the URL.
+ */
 export function deskSliceUsesEnabled(): boolean {
-  return import.meta.env.VITE_ARC_DESK_SLICES !== 'false'
+  if (typeof window !== 'undefined') {
+    const flag = new URLSearchParams(window.location.search).get('deskSlices')
+    if (flag === '1') return true
+    if (flag === '0') return false
+  }
+  return import.meta.env.VITE_ARC_DESK_SLICES === 'true'
+}
+
+/** Week title cluster mark — vector source unless comp-crop slice mode is on. */
+export function deskPlannerTitleMarkUrl(): string {
+  if (deskSliceUsesEnabled()) {
+    return publicAssetUrl('assets/desk/planner-rainbow-mark.png')
+  }
+  return publicAssetUrl('assets/arctable/AT-001_table-mark.svg')
 }
 
 export function deskSliceAssetUrl(id: DeskSliceId): string | null {

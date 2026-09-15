@@ -5,7 +5,11 @@
     "heroNodeId": "37:11052",
     "cropReferenceNodeId": "37:11053",
     "referenceFrame": { "width": 1440, "height": 1024 },
-    "evidenceDir": "docs/overnight/evidence/figma-desk-6-3194/"
+    "evidenceDir": "docs/overnight/evidence/figma-desk-6-3194/",
+    "runtimeDefault": "committed-svg-png-source-files",
+    "compCropOptIn": "VITE_ARC_DESK_SLICES=true or ?deskSlices=1",
+    "teachingWeekAuthorityCropScript": "scripts/export-desk-teaching-week-slices.mjs",
+    "honestyDoc": "docs/overnight/TEACHING-WEEK-ASSETS-HONESTY.md"
   },
   "slices": [
     {

@@ -23,8 +23,8 @@ export function DeskTodosFolder({ children }: Props) {
         </>
       ) : (
         <>
-          <div className="arc-desk-todos-folder-sheet" aria-hidden="true" />
-          <p className="arc-desk-todos-folder-tab" aria-hidden="true">
+          <div className="arc-desk-todos-folder-sheet" aria-hidden="true" data-testid="desk-source-todos-body" />
+          <p className="arc-desk-todos-folder-tab" aria-hidden="true" data-testid="desk-source-todos-tab">
             TO-DOS
           </p>
         </>

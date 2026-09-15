@@ -23,3 +23,7 @@ Example line for the list below:
 Files in this folder (update this list when you add assets):
 
   kelly-desk-v3-preview-repair-2026-08-03.png — CURRENT APP DISPLAY (broken baseline, not visual target); evidence copy at docs/overnight/evidence/kelly-current-display-2026-08-03.png — see docs/overnight/KELLY-CURRENT-VS-TARGET.md
+
+Teaching week zip (Teaching_week__1__01fd.zip) — extracted to teaching-week-1/:
+  Only 1.png (full comp) + 2.png (blank). The app uses REAL files from public/assets/desk/ — not crops from 1.png — unless a developer turns on comp-crop mode.
+  Please add a separate export pack here: one PNG or SVG per layer (IDEAS drawer, TO-DOS folder, planner tabs, frame accents, title mark). See docs/overnight/TEACHING-WEEK-ASSETS-HONESTY.md.

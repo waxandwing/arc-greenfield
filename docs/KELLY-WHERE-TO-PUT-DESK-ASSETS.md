@@ -103,7 +103,7 @@ If files are already in the correct `public/assets/…` folder, say:
 
 - `src/navigation/deskSliceManifestData.ts` and `src/desk/deskSliceRuntime.ts` — code that points the app at slice PNGs  
 - `scripts/export-desk-figma-slices.mjs` — re-export from Figma evidence  
-- Turning slices on/off via `VITE_ARC_DESK_SLICES` in local env (developer only)
+- Comp-crop slices are **off by default**. Developers enable with `VITE_ARC_DESK_SLICES=true` or `?deskSlices=1` (see `TEACHING-WEEK-ASSETS-HONESTY.md`)
 
 ---
 

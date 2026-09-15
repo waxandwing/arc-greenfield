@@ -19,7 +19,7 @@ for (const slice of manifest.slices) {
 const browser = await chromium.launch({ headless: true })
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
-  await page.goto(`${baseUrl}?demo=1&demoReset=1`, { waitUntil: 'networkidle' })
+  await page.goto(`${baseUrl}?demo=1&demoReset=1&deskSlices=1`, { waitUntil: 'networkidle' })
   await page.getByTestId('arc-desk-tabletop').waitFor({ state: 'visible', timeout: 30000 })
 
   await page.getByTestId('desk-slice-ideas-drawer').waitFor({ state: 'attached' })

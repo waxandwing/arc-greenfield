@@ -1,5 +1,5 @@
 import type { ComponentProps, RefObject } from 'react'
-import { publicAssetUrl } from '../publicAssetUrl'
+import { deskPlannerTitleMarkUrl, deskSliceUsesEnabled } from '../desk/deskSliceRuntime'
 import { PlanStateHeader } from './PlanStateHeader'
 
 type PlanStateProps = ComponentProps<typeof PlanStateHeader>
@@ -31,6 +31,7 @@ export function DeskPlannerHeadRow({
   }
 
   const showRainbowMark = planState.view === 'Week'
+  const titleMarkUrl = deskPlannerTitleMarkUrl()
 
   return (
     <div className="desk-planner-head-row" data-testid="desk-planner-head-row">
@@ -38,10 +39,11 @@ export function DeskPlannerHeadRow({
         {showRainbowMark ? (
           <img
             className="desk-planner-rainbow-mark"
-            src={publicAssetUrl('assets/desk/planner-rainbow-mark.png')}
+            src={titleMarkUrl}
             alt=""
             aria-hidden="true"
             data-testid="desk-planner-rainbow-mark"
+            data-desk-mark-source={deskSliceUsesEnabled() ? 'comp-crop' : 'vector'}
             decoding="async"
           />
         ) : null}

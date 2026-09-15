@@ -11,4 +11,6 @@ Committed authority copy: `docs/overnight/evidence/kelly-teaching-week-authority
 
 Hero mirror: `public/assets/desk/figma/kelly-teaching-week-hero.png`.
 
-Slice re-export: `node scripts/export-desk-teaching-week-slices.mjs` → `public/assets/desk/slices/*.png` + `public/assets/desk/planner-rainbow-mark.png`.
+**Runtime default:** committed source files (`green-folders-drawer.svg`, icarus wood, CSS chrome) — **not** crops from `1.png`. See `docs/overnight/TEACHING-WEEK-ASSETS-HONESTY.md`.
+
+Last-resort slice re-export (only if no discrete layer files): `node scripts/export-desk-teaching-week-slices.mjs` → `public/assets/desk/slices/*.png` + `planner-rainbow-mark.png` (opt-in via `?deskSlices=1`).
