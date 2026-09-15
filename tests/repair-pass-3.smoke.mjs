@@ -81,7 +81,7 @@ try {
   assert(await page.locator('.arc-header').count() === 0, 'Full-width app header must be removed.')
   const logo = page.locator('[data-testid="arc-mark-logo"]')
   assert(await logo.count() === 1, 'Canonical Arc mark must render inside planner shell.')
-  assert((await logo.getAttribute('src'))?.includes('/assets/arc/arc-mark.png'), 'Logo must use canonical arc-mark.png asset.')
+  assert((await logo.getAttribute('src'))?.includes('/assets/arc/arc-mark-stacked.png'), 'Logo must use high-res arc-mark-stacked.png asset.')
   const filter = await logo.evaluate((img) => getComputedStyle(img).filter)
   assert(!filter.includes('invert'), 'Canonical mark must not use inverted white substitute.')
 

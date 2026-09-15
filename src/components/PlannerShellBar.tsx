@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { publicAssetUrl } from '../publicAssetUrl'
 
-const ARC_MARK_ASSET = 'assets/arc/arc-mark.png'
+/** High-res stacked mark for planner chrome (not the 70×59 arc-mark.png). */
+const ARC_MARK_ASSET = 'assets/arc/arc-mark-stacked.png'
 
 type Props = {
   onHome: () => void
