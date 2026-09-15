@@ -116,7 +116,7 @@ try {
   assert((await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() === returnTabLabel, 'Pin it down must return to the same planner view.')
 
   await page.evaluate(() => {
-    localStorage.setItem('arc.desk-layout.v1', JSON.stringify({
+    const payload = JSON.stringify({
       schemaVersion: 1,
       customized: true,
       placements: [
@@ -126,7 +126,9 @@ try {
         { object: 'arctable', zone: 'side-upper' },
         { object: 'notes', zone: 'notes-rail' },
       ],
-    }))
+    })
+    localStorage.setItem('arc.workspace-layout.v1', payload)
+    localStorage.setItem('arc.desk-layout.v1', payload)
   })
   await page.reload({ waitUntil: 'networkidle' })
   assert(await page.locator('[data-layout-grid="true"]').count() === 1, 'Saved desk layout must hydrate on load.')

@@ -7,6 +7,10 @@ const baseUrl = process.env.ARC_BASE_URL ?? 'http://127.0.0.1:4173'
 const evidenceDir = new URL('../docs/overnight/evidence/arc-desk-figma-pass/', import.meta.url).pathname
 mkdirSync(evidenceDir, { recursive: true })
 
+function assert(condition, message) {
+  if (!condition) throw new Error(message)
+}
+
 const deskPrefsJson = JSON.stringify({
   showTray: true,
   showPriorityPad: true,
