@@ -124,7 +124,7 @@ http://127.0.0.1:4317/?demo=1&demoReset=1
 | `npm run preview:desk` | `build:bundle` → Vite preview @ 127.0.0.1:4173 (stamped `desk-v2`) |
 | `npm run preview:desk:stop` | Stop whatever is listening on port 4173 (Mac/Linux `lsof`) |
 | `npm run start:desk` | Same as `preview:desk` |
-| `npm run dev:desk` | Vite dev @ 127.0.0.1:4317 |
+| `npm run dev:desk` | Vite dev @ 127.0.0.1:4317 with same desk preview env as `preview:desk` (hot reload; use `?demo=1&demoReset=1`) |
 
 `npm run preview` (no `:desk`) still works but does not pin host/port or desk build stamp; prefer `preview:desk` for desk verification.
 

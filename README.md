@@ -152,7 +152,7 @@ npm install
 npm run preview:desk
 ```
 
-Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. See [docs/LOCAL-PREVIEW.md](docs/LOCAL-PREVIEW.md) for dev server, smokes, and aliases (`dev:desk`, `start:desk`).
+Open `http://127.0.0.1:4173/?demo=1&demoReset=1`. Still seeing cream **CALENDAR** chrome? [docs/overnight/KELLY-STILL-SEEING-OLD-CALENDAR.md](docs/overnight/KELLY-STILL-SEEING-OLD-CALENDAR.md). See [docs/LOCAL-PREVIEW.md](docs/LOCAL-PREVIEW.md) for dev server, smokes, and aliases (`dev:desk`, `start:desk`).
 
 **Work on your Mac (not cloud VM):** bookmark [docs/WORK-FROM-GITHUB-LOCALLY.md](docs/WORK-FROM-GITHUB-LOCALLY.md) and the full handoff [docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md](docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md).
 
