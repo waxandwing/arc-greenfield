@@ -1,6 +1,6 @@
 # Agent work queue — desk visual
 
-**Updated:** ArcBuild audit loop on `main`  
+**Updated:** 2026-09-15 — ArcBuild visual audit vs Teaching week (**RED**)  
 **North star:** `docs/overnight/MASTER-DESK-VISUAL-GOAL.md`  
 **Audit ↔ build loop:** `docs/overnight/ARC-BUILD-AUDIT-LOOP.md` (ArcBuild audit agent requirements → implementation handback SHA)
 
@@ -12,7 +12,16 @@
 | 2 | **Implementation agent** | Apply changes on `main`, run smokes, **push**, post **handback packet** |
 | 3 | **ArcBuild audit agent** | Re-audit @ new SHA; repeat until PASS or Kelly blockers |
 
-**Current production tip for audits:** `origin/main` @ **`1149408`** (2026-09-15; ArcBuild asset check [Check GitHub PNG assets](bc-dcc61efa-b9cd-5551-b578-dd95b296a369)).
+### 2026-09-15 — ArcBuild visual audit vs Teaching week (**RED**)
+
+- **Doc:** `docs/overnight/ARC-BUILD-VISUAL-AUDIT-VS-TEACHING-WEEK-2026-09-15.md`
+- **Live:** Pages capture @ `f6ce4df` (Kelly screenshot) vs authority `kelly-teaching-week-authority.png`
+- **Verdict:** **RED** — SaaS modal desk, not Teaching week furniture
+- **Top P0:** missing Teaching week title/rainbow/kicker; TO-DOS as three cards (not denim folder); IDEAS pill (not drawer); single-course week grid; planner modal + wrong edge-tab rail
+- **Next owner:** **Implementation agent** on `main` — audit-only this pass; do **not** mark visual DONE
+- **Repo tip when audit filed:** `1d68617` (a11y-only since live Pages SHA; visual gaps unchanged)
+
+**Current production tip for audits:** `origin/main` @ **`1d68617`** (re-pin after implementation handback). Prior asset-check tip `1149408` superseded for visual work.
 
 | Asset state | Status |
 |-------------|--------|
