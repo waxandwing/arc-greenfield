@@ -1080,6 +1080,8 @@ html:has(.arc-shell--desk) body {
   border-radius: 4px 10px 8px 5px;
   overflow: hidden;
   box-sizing: border-box;
+  /* Keep lesson corner control positioned against the sticky face. */
+  isolation: isolate;
 }
 
 /* Top paper strip stays a dedicated grip hit-target; side/bottom padding is also draggable via the post-it. */
@@ -1139,6 +1141,69 @@ html:has(.arc-shell--desk) body {
     0 10px 22px -14px rgba(33, 29, 23, 0.55),
     inset 0 1px 0 rgba(255, 253, 248, 0.55),
     0 0 0 1.5px color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+/* Lesson identity: light ink marking + bottom-corner dot (unit + class grouping). */
+.arc-desk-post-it--lesson {
+  box-shadow:
+    0 10px 22px -14px rgba(33, 29, 23, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.55),
+    inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 18%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.arc-desk-post-it--linked.arc-desk-post-it--lesson {
+  box-shadow:
+    0 10px 22px -14px rgba(33, 29, 23, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.55),
+    inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 18%, transparent),
+    0 0 0 1.5px color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+.arc-desk-post-it-lesson-mark {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  z-index: 3;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.arc-desk-post-it-lesson-mark::after {
+  content: '';
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.arc-desk-post-it:hover .arc-desk-post-it-lesson-mark::after,
+.arc-desk-post-it-lesson-mark:focus-visible::after {
+  opacity: 0.85;
+}
+
+.arc-desk-post-it-lesson-mark.is-lesson::after {
+  opacity: 1;
+  border-color: transparent;
+  background: color-mix(in srgb, var(--ink) 78%, #4a3b32);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.arc-desk-post-it-lesson-mark:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent-blue-deep) 45%, transparent);
+  outline-offset: 1px;
 }
 
 .arc-desk-post-it-link-prompt {

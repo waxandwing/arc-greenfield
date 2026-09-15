@@ -15,6 +15,13 @@ import {
   type DeskPostItLinkWorkspace,
   type DeskPostItRect,
 } from '../planning/deskPostItLinks'
+import {
+  isDeskPostItLesson,
+  loadDeskPostItLessons,
+  saveDeskPostItLessons,
+  setDeskPostItLesson,
+  type DeskPostItLessonMarks,
+} from '../planning/deskPostItLessons'
 
 const NOTE_STORAGE_KEY = 'arc.desk-postit-notes.v1'
 const POSITION_STORAGE_KEY = 'arc.desk-postit-positions.v1'
@@ -132,8 +139,10 @@ function rectFromNode(node: Element | null): DeskPostItRect | null {
 type AccentPostItProps = AccentSpec & {
   position: DeskPostItPosition
   stackId: string | null
+  lesson: boolean
   onPositionChange: (position: DeskPostItPosition) => void
   onDragEnd: (info: DeskPostItDragEndInfo) => void
+  onLessonChange: (lesson: boolean) => void
 }
 
 function DeskAccentPostIt({
@@ -145,8 +154,10 @@ function DeskAccentPostIt({
   label,
   position,
   stackId,
+  lesson,
   onPositionChange,
   onDragEnd,
+  onLessonChange,
 }: AccentPostItProps) {
   const [text, setText] = useState(() => readStoredNote(postItId))
 
@@ -171,6 +182,7 @@ function DeskAccentPostIt({
       testId={testId}
       aria-label={label}
       stackId={stackId}
+      lesson={lesson}
     >
       {/* Top paper grip + side/bottom padding margins: drag there; click the bordered note to type. */}
       <div className="arc-desk-post-it-grip" aria-hidden="true" data-testid={`${testId}-grip`} />
@@ -185,6 +197,15 @@ function DeskAccentPostIt({
         placeholder="Write…"
         aria-label={`${label} note`}
       />
+      <button
+        type="button"
+        className={`arc-desk-post-it-lesson-mark${lesson ? ' is-lesson' : ''}`}
+        data-testid={`${testId}-lesson-mark`}
+        aria-pressed={lesson}
+        aria-label={lesson ? `Clear lesson mark on ${label}` : `Mark ${label} as lesson`}
+        title={lesson ? 'Lesson — click to clear' : 'Mark as lesson'}
+        onClick={() => onLessonChange(!lesson)}
+      />
     </DeskPostIt>
   )
 }
@@ -194,6 +215,7 @@ function DeskAccentPostIt({
  * Siblings of the IDEAS tray under arc-desk-surface so landscape tray chrome can change independently.
  * Writable + localStorage note text; drag from the paper margin / grip so click-to-edit does not start a drag.
  * Significant overlap after drag offers Link / Keep separate so layered accents can move as a stack.
+ * Lesson marks (corner dot + light marking) let teachers flag a sticky as the lesson when grouping unit + class.
  */
 export function DeskAccentPostIts() {
   const [positions, setPositions] = useState<Record<string, DeskPostItPosition>>(() => {
@@ -205,6 +227,7 @@ export function DeskAccentPostIts() {
     return next
   })
   const [links, setLinks] = useState<DeskPostItLinkWorkspace>(() => loadDeskPostItLinks())
+  const [lessons, setLessons] = useState<DeskPostItLessonMarks>(() => loadDeskPostItLessons())
   const [prompt, setPrompt] = useState<LinkPrompt | null>(null)
   const dismissedPairsRef = useRef(new Set<string>())
   const positionsRef = useRef(positions)
@@ -219,6 +242,10 @@ export function DeskAccentPostIts() {
   useEffect(() => {
     saveDeskPostItLinks(links)
   }, [links])
+
+  useEffect(() => {
+    saveDeskPostItLessons(lessons)
+  }, [lessons])
 
   const moveLinkedGroup = useCallback((draggedId: string, nextPosition: DeskPostItPosition) => {
     setPositions((prev) => {
@@ -279,6 +306,10 @@ export function DeskAccentPostIts() {
     setPrompt(null)
   }, [prompt])
 
+  const toggleLesson = useCallback((postItId: string, lesson: boolean) => {
+    setLessons((prev) => setDeskPostItLesson(prev, postItId, lesson))
+  }, [])
+
   const promptMeta = useMemo(() => {
     if (!prompt) return ''
     return ACCENTS
@@ -291,14 +322,17 @@ export function DeskAccentPostIts() {
     <>
       {ACCENTS.map((accent) => {
         const stack = deskPostItStackForMember(links, accent.postItId)
+        const lesson = isDeskPostItLesson(lessons, accent.postItId)
         return (
           <DeskAccentPostIt
             key={accent.postItId}
             {...accent}
             position={positions[accent.postItId]}
             stackId={stack?.stackId ?? null}
+            lesson={lesson}
             onPositionChange={(next) => moveLinkedGroup(accent.postItId, next)}
             onDragEnd={onDragEnd}
+            onLessonChange={(next) => toggleLesson(accent.postItId, next)}
           />
         )
       })}

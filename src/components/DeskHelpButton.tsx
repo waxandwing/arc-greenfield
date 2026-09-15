@@ -47,6 +47,10 @@ export function DeskHelpButton() {
             <li>
               <strong>start class</strong> opens ArcTable for the next period.
             </li>
+            <li>
+              Click the bottom corner of a sticky to mark it as a <strong>lesson</strong> (corner
+              dot). Link overlapping stickies to group a unit and class around that lesson.
+            </li>
           </ul>
           <button type="button" className="arc-desk-help-close" onClick={close}>
             Close

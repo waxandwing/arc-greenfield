@@ -30,6 +30,8 @@ type Props = {
   testId?: string
   dragEnabled?: boolean
   stackId?: string | null
+  /** When true, show lesson corner-dot + light marking for unit/class grouping. */
+  lesson?: boolean
   children?: ReactNode
   'aria-label'?: string
 }
@@ -99,6 +101,7 @@ export function DeskPostIt({
   testId,
   dragEnabled = true,
   stackId = null,
+  lesson = false,
   children,
   'aria-label': ariaLabel = 'Desk post-it',
 }: Props) {
@@ -250,13 +253,14 @@ export function DeskPostIt({
   return (
     <div
       ref={nodeRef}
-      className={`arc-desk-post-it arc-desk-post-it--${tone}${dragging ? ' arc-desk-post-it--dragging' : ''}${stackId ? ' arc-desk-post-it--linked' : ''}${className ? ` ${className}` : ''}`}
+      className={`arc-desk-post-it arc-desk-post-it--${tone}${dragging ? ' arc-desk-post-it--dragging' : ''}${stackId ? ' arc-desk-post-it--linked' : ''}${lesson ? ' arc-desk-post-it--lesson' : ''}${className ? ` ${className}` : ''}`}
       data-testid={testId ?? `arc-desk-post-it-${postItId}`}
       data-desk-post-it={postItId}
       data-desk-post-it-tone={tone}
       data-desk-post-it-stack={stackId ?? undefined}
+      data-desk-post-it-lesson={lesson ? 'true' : undefined}
       data-dragging={dragging ? 'true' : 'false'}
-      aria-label={ariaLabel}
+      aria-label={lesson ? `${ariaLabel} (lesson)` : ariaLabel}
       style={{
         left: `${position.leftPct}%`,
         top: `${position.topPct}%`,

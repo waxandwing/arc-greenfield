@@ -313,6 +313,19 @@ try {
   assert(afterLinkMove[0] && afterLinkMove[1], 'Linked accents need boxes after move-together check.')
   assert(Math.abs((afterLinkMove[0].x - beforeLinkMove[0].x) - (afterLinkMove[1].x - beforeLinkMove[1].x)) < 8, 'Linked accents must translate together on X.')
   assert(Math.abs((afterLinkMove[0].y - beforeLinkMove[0].y) - (afterLinkMove[1].y - beforeLinkMove[1].y)) < 8, 'Linked accents must translate together on Y.')
+  const pinkLessonMark = page.getByTestId('arc-desk-post-it-accent-pink-lesson-mark')
+  assert(await pinkLessonMark.count() === 1, 'Pink accent must expose a lesson-mark control in the bottom corner.')
+  assert(await pinkAccent.getAttribute('data-desk-post-it-lesson') !== 'true', 'Pink accent must start unmarked as lesson.')
+  await pinkLessonMark.click()
+  assert(await pinkAccent.getAttribute('data-desk-post-it-lesson') === 'true', 'Lesson mark click must consider the sticky a lesson.')
+  assert(await pinkAccent.evaluate((node) => node.classList.contains('arc-desk-post-it--lesson')), 'Lesson sticky must carry light marking class.')
+  assert(await pinkLessonMark.getAttribute('aria-pressed') === 'true', 'Lesson mark control must reflect pressed state.')
+  const persistedLessons = await page.evaluate(() => localStorage.getItem('arc.desk-postit-lessons.v1'))
+  assert(Boolean(persistedLessons && persistedLessons.includes('accent-pink')), 'Lesson marks must persist in localStorage.')
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
+  assert(await page.getByTestId('arc-desk-post-it-accent-pink').getAttribute('data-desk-post-it-lesson') === 'true', 'Lesson mark must reload from localStorage.')
+  assert(await page.getByTestId('arc-desk-post-it-accent-pink').getAttribute('data-desk-post-it-stack'), 'Linked stack must survive reload alongside lesson mark.')
   assert(
     await page.locator('.arc-desk-surface > [data-desk-post-it]').count() >= 4,
     'Post-its must be direct arc-desk-surface children (not nested in IDEAS tray raster).',
