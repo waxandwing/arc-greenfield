@@ -31,6 +31,7 @@ export function DeskPlannerHeadRow({
   }
 
   const showRainbowMark = planState.view === 'Week'
+  const weekKicker = planState.view === 'Week' ? planState.weekRange : null
   const titleMarkUrl = deskPlannerTitleMarkUrl()
 
   return (
@@ -41,72 +42,40 @@ export function DeskPlannerHeadRow({
             className="desk-planner-rainbow-mark"
             src={titleMarkUrl}
             alt=""
-            width={120}
-            height={96}
+            width={72}
+            height={58}
             aria-hidden="true"
             data-testid="desk-planner-rainbow-mark"
             data-desk-mark-source={deskCommittedRasterChromeEnabled() ? 'committed-png' : 'vector'}
             decoding="async"
           />
         ) : null}
-        <PlanStateHeader {...planState} />
+        <div className="desk-planner-head-title-copy">
+          {weekKicker ? (
+            <p className="plan-state-secondary desk-planner-week-kicker" data-testid="desk-planner-week-kicker">
+              {weekKicker}
+            </p>
+          ) : null}
+          <PlanStateHeader
+            {...planState}
+            weekRange={planState.view === 'Week' ? null : planState.weekRange}
+          />
+        </div>
       </div>
       <div className="desk-planner-head-tools" role="group" aria-label="Planner tools">
         <label className="desk-planner-search-field">
           <span className="sr-only">Search plan</span>
-          <input
-            type="search"
-            className="desk-planner-search"
-            data-testid="desk-planner-search"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(event) => onSearchQueryChange?.(event.target.value)}
-          />
+          <input type="search" className="desk-planner-search" data-testid="desk-planner-search" placeholder="" aria-label="Search plan" value={searchQuery} onChange={(event) => onSearchQueryChange?.(event.target.value)} />
         </label>
-        <div
-          className="desk-planner-today-cluster period-controls"
-          role="group"
-          aria-label="Today navigation"
-        >
-          <button
-            type="button"
-            className="quiet-button period-button desk-planner-today-nav"
-            data-testid="desk-planner-today-prev"
-            disabled
-            aria-label="Previous day"
-          >
-            ←
-          </button>
-          <button
-            type="button"
-            className="quiet-button today-button desk-planner-today"
-            data-testid="desk-planner-today"
-            disabled={todayDisabled}
-            onClick={onToday}
-          >
-            Today
-          </button>
-          <button
-            type="button"
-            className="quiet-button period-button desk-planner-today-nav"
-            data-testid="desk-planner-today-next"
-            disabled
-            aria-label="Next day"
-          >
-            →
-          </button>
+        <div className="desk-planner-today-cluster period-controls" role="group" aria-label="Today navigation">
+          <button type="button" className="quiet-button period-button desk-planner-today-nav" data-testid="desk-planner-today-prev" disabled aria-label="Previous day">←</button>
+          <button type="button" className="quiet-button today-button desk-planner-today" data-testid="desk-planner-today" disabled={todayDisabled} onClick={onToday}>Today</button>
+          <button type="button" className="quiet-button period-button desk-planner-today-nav" data-testid="desk-planner-today-next" disabled aria-label="Next day">→</button>
         </div>
         {onEnlargeCalendar ? (
-          <button
-            ref={enlargeTriggerRef as RefObject<HTMLButtonElement> | undefined}
-            type="button"
-            className="quiet-button desk-planner-enlarge"
-            data-testid="calendar-enlarge"
-            aria-expanded={calendarEnlarged}
-            aria-haspopup="dialog"
-            onClick={onEnlargeCalendar}
-          >
-            Enlarge
+          <button ref={enlargeTriggerRef as RefObject<HTMLButtonElement> | undefined} type="button" className="quiet-button desk-planner-enlarge" data-testid="calendar-enlarge" aria-expanded={calendarEnlarged} aria-haspopup="dialog" aria-label="Enlarge calendar" title="Enlarge" onClick={onEnlargeCalendar}>
+            <span className="desk-planner-enlarge-glyph" aria-hidden="true">⤢</span>
+            <span className="desk-planner-enlarge-label">Enlarge</span>
           </button>
         ) : null}
       </div>
