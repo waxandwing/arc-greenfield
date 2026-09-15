@@ -97,7 +97,7 @@ function PlanningDeskNotesStrip({
       <DeskNotesObject strip>
         <div
           className="planning-desk-notes-row"
-          style={gridTemplate(days, focusDate)}
+          style={gridTemplate(days)}
           role="row"
           aria-label="Desk notes by day"
         >
