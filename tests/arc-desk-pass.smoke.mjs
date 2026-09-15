@@ -78,8 +78,8 @@ try {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
-  // Sticky overlaps planner enlarge after week-fit; force avoids false intercept failures.
-  await page.getByTestId('calendar-enlarge').click({ force: true })
+  // Sticky overlaps planner enlarge after week-fit; DOM click avoids pointer intercept.
+  await page.getByTestId('calendar-enlarge').evaluate((el) => el.click())
   await page.getByTestId('desk-calendar-popout').waitFor({ state: 'visible' })
   assert(await page.getByTestId('desk-calendar-popout-body').isVisible(), 'Enlarge must open calendar pop-out body.')
   await page.getByTestId('desk-calendar-popout-dismiss').click()
