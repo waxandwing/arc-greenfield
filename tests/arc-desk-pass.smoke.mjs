@@ -345,6 +345,23 @@ try {
   await quickCaptureNote.press('Enter')
   assert(await page.getByTestId('arc-desk-quick-capture-notice').innerText() === 'Saved to IDEAS', 'Enter must confirm save destination as IDEAS.')
   assert(await quickCaptureNote.inputValue() === '', 'Quick Capture note must clear after Enter saves.')
+
+  // Prefix commands: u=unit, l=lesson, i=idea, n=note — Enter spawns a fresh sticky/magnet.
+  await quickCaptureNote.fill('u mesopotamia')
+  await quickCaptureNote.press('Enter')
+  assert(await page.getByTestId('arc-desk-quick-capture-notice').innerText() === 'Saved as unit', 'u prefix must save as unit.')
+  assert(await quickCaptureNote.inputValue() === '', 'QC must clear after u-prefix Enter.')
+  assert(await page.locator('.arc-desk-post-it--magnet').count() >= 1, 'u prefix must spawn a unit magnet on the wood.')
+  await quickCaptureNote.fill('n bring clay')
+  await quickCaptureNote.press('Enter')
+  assert(await page.getByTestId('arc-desk-quick-capture-notice').innerText() === 'Saved as note', 'n prefix must save as note.')
+  assert(await page.locator('[data-desk-post-it^="spawn-"]').count() >= 1, 'Subsequent Enter must leave spawned sticky/magnet on wood.')
+
+  // Drop targets: Planning Tray lanes + calendar date cells advertise post-it drops.
+  assert(await page.locator('[data-desk-postit-drop="priority"][data-priority="must"]').count() >= 1, 'MUST lane must be a post-it drop target.')
+  assert(await page.locator('[data-desk-postit-drop="priority"][data-priority="should"]').count() >= 1, 'SHOULD lane must be a post-it drop target.')
+  assert(await page.locator('[data-desk-postit-drop="priority"][data-priority="could"]').count() >= 1, 'COULD lane must be a post-it drop target.')
+
   // Ensure IDEAS is open so the new capture card is visible (reload leaves the drawer collapsed).
   const ideasExtended = await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')
   if (ideasExtended !== 'true') {

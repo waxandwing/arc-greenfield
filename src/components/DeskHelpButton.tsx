@@ -43,7 +43,14 @@ export function DeskHelpButton() {
               Click <strong>IDEAS</strong> to slide the tray down over the calendar. TO-DOS and sticky
               notes stay on the wood.
             </li>
-            <li>Drag magnets and post-its on the desk — they land in IDEAS.</li>
+            <li>
+              Post-its can sit anywhere on the wood. Drop them onto a <strong>date</strong> or
+              <strong> MUST / SHOULD / COULD</strong> to assign them.
+            </li>
+            <li>
+              Quick Capture prefixes: <strong>u</strong> unit, <strong>l</strong> lesson,
+              <strong> i</strong> idea, <strong>n</strong> note — Enter saves and spawns a fresh sticky or magnet.
+            </li>
             <li>
               Use <strong>Clean up</strong> to gather loose post-its back into the IDEAS drawer.
             </li>

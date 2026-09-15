@@ -228,6 +228,8 @@ export function CalendarDayNoteDropTarget({
       className="calendar-day-note-drop"
       data-drag-target="DATE"
       data-plan-drop-date={date}
+      data-desk-postit-drop="date"
+      data-desk-postit-date={date}
       onDragOver={(event) => {
         const acceptsNote = event.dataTransfer.types.includes('application/x-arc-day-note-id')
         const acceptsCapture = hasTrayCaptureDrag(event.dataTransfer)
