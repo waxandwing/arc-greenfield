@@ -23,6 +23,10 @@ memory.set('arc.view-preferences.v1', JSON.stringify(DEFAULT_VIEW_PREFERENCES))
 assert(JSON.stringify(normalizeDeskPreferences(null)) === JSON.stringify(DEFAULT_DESK_PREFERENCES), 'Desk prefs must default safely.')
 assert(DEFAULT_DESK_PREFERENCES.homeDeskPlannerView === 'Week', 'Desk calendar default must be Teaching week (Week view).')
 assert(resolveHomeDeskPlannerView({ ...DEFAULT_VIEW_PREFERENCES, desk: { ...DEFAULT_DESK_PREFERENCES, homeDeskPlannerView: 'Week' } }) === 'Week', 'Home desk planner view must resolve from desk prefs.')
+assert(
+  resolveHomeDeskPlannerView({ ...DEFAULT_VIEW_PREFERENCES, desk: { ...DEFAULT_DESK_PREFERENCES, homeDeskPlannerView: 'bogus' as 'Week' } }) === 'Week',
+  'Invalid desk home view must fall back to Teaching week (Week), not Month.',
+)
 
 const seededMonth = seedDeskFromViewPreferences({ ...DEFAULT_VIEW_PREFERENCES, home: { mode: 'fixed', view: 'Month' } })
 assert(seededMonth.desk.homeDeskPlannerView === 'Week', 'Legacy Month home must seed desk to Teaching week calendar.')

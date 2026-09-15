@@ -77,6 +77,8 @@ import { DeskNotesObject } from './DeskNotesObject'
 import { ProgressiveSetupPrompt } from './ProgressiveSetupPrompt'
 import { assessSetupCapabilities, loadOnboardingDraft, minimumPlanningSetupEstablished, saveOnboardingDraft, type OnboardingDraft } from '../planning'
 import { readDeskPreviewSeededSession, shouldForceDeskShell } from '../demo/deskPreviewGate'
+import { buildKellyDeskDemoBundle } from '../demo/kellyDeskDemo'
+import { GAUNTLET_DEMO_CALENDAR_ID } from '../demo/gauntletDemo'
 import { deskPreviewBuildEnabled } from '../buildInfo'
 
 export function AppFrame() {
@@ -91,6 +93,8 @@ export function AppFrame() {
   const [workspaceOpenToken] = useState(0)
   const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
   const deskYearLandingNormalized = useRef(false)
+  const deskMonthHomeNormalized = useRef(false)
+  const deskMonthPrefsMigrated = useRef(false)
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
   const [workspaceLayout, setWorkspaceLayout] = useState<WorkspaceLayoutState>(loadWorkspaceLayout)
@@ -253,6 +257,21 @@ export function AppFrame() {
     : stageTitleFor(workspaceMode.mode, workspace.activeView)
   const showPlanFurniture = Boolean(workspace.calendar && workspaceMode.mode === 'calendar' && !onboardingActive)
   const globalCaptureEnabled = Boolean(workspace.calendar && !onboardingActive)
+
+  useEffect(() => {
+    if (!forceDeskShell || deskMonthPrefsMigrated.current) return
+    if (viewPreferences.desk.homeDeskPlannerView !== 'Month') return
+    deskMonthPrefsMigrated.current = true
+    updateViewPreferences({
+      ...viewPreferences,
+      desk: { ...viewPreferences.desk, homeDeskPlannerView: 'Week' },
+    })
+  }, [forceDeskShell, viewPreferences.desk.homeDeskPlannerView])
+
+  const kellyDemoWeekAnchor =
+    workspace.calendar?.id === GAUNTLET_DEMO_CALENDAR_ID
+      ? buildKellyDeskDemoBundle().planContext.anchorDate
+      : null
   const captureAnchor = captureAnchorFromPlan({
     anchorDate: workspace.anchorDate,
     activeView: workspace.activeView,
@@ -314,8 +333,10 @@ export function AppFrame() {
 
   useEffect(() => {
     if (!workspace.calendar || !workspace.anchorDate) return
-    if (workspace.viewWasPersisted) return
     const preferred = resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability)
+    const monthDriftOnDesk =
+      showPlanFurniture && preferred === 'Week' && workspace.activeView === 'Month'
+    if (workspace.viewWasPersisted && !monthDriftOnDesk) return
     workspace.setActiveView(preferred)
     // Home preference is intentionally applied only when the restored workspace becomes available
     // and the teacher did not already persist an explicit Plan view.
@@ -349,7 +370,11 @@ export function AppFrame() {
       updateOnboarding({ ...onboardingDraft, dismissed: true })
       if (minimumPlanningSetupEstablished(setupCapabilities)) {
         setWorkspaceOverlayOpen(false)
-        workspace.setActiveView('Day')
+        if (showPlanFurniture && workspaceMode.mode === 'calendar') {
+          workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
+        } else {
+          workspace.setActiveView('Day')
+        }
       }
       return
     }
@@ -607,9 +632,9 @@ export function AppFrame() {
   useEffect(() => {
     if (deskYearLandingNormalized.current) return
     if (!deskEnabled || !workspace.calendar || !workspace.anchorDate) return
+    if (workspace.activeView !== 'Year Map') return
     const demoDeskLanding = forceDeskShell && readDeskPreviewSeededSession(deskPreviewBuild)
     if (!demoDeskLanding && workspace.viewWasPersisted) return
-    if (workspace.activeView !== 'Year Map') return
     deskYearLandingNormalized.current = true
     workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
   }, [
@@ -621,6 +646,21 @@ export function AppFrame() {
     workspace.anchorDate,
     workspace.calendar,
     workspace.viewWasPersisted,
+  ])
+
+  useEffect(() => {
+    if (deskMonthHomeNormalized.current) return
+    if (!deskEnabled || !workspace.calendar || !workspace.anchorDate) return
+    if (workspace.activeView !== 'Month' || !forceDeskShell) return
+    deskMonthHomeNormalized.current = true
+    workspace.setActiveView('Week', kellyDemoWeekAnchor ?? workspace.anchorDate ?? undefined)
+  }, [
+    deskEnabled,
+    forceDeskShell,
+    kellyDemoWeekAnchor,
+    workspace.activeView,
+    workspace.anchorDate,
+    workspace.calendar,
   ])
 
   if (arcTable.live && arcTable.surface === 'teacher') {
@@ -984,7 +1024,9 @@ function resolveAvailableHomeDeskView(
   availabilityFor: (view: CalendarView) => { available: boolean },
 ): CalendarView {
   const preferred = resolveHomeDeskPlannerView(preferences)
-  return availabilityFor(preferred).available ? preferred : DEFAULT_HOME_VIEW
+  if (availabilityFor(preferred).available) return preferred
+  if (availabilityFor('Week').available) return 'Week'
+  return DEFAULT_HOME_VIEW
 }
 
 function stageTitleFor(mode: ReturnType<typeof useWorkspaceMode>['mode'], activeView: string) {

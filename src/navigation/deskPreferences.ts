@@ -55,7 +55,7 @@ export function mergeDeskPreferences(preferences: ViewPreferences, desk: Partial
 
 export function resolveHomeDeskPlannerView(preferences: DeskAwareViewPreferences): HomeDeskPlannerView {
   const view = preferences.desk.homeDeskPlannerView
-  return isHomeDeskPlannerView(view) ? view : 'Month'
+  return isHomeDeskPlannerView(view) ? view : DEFAULT_DESK_PREFERENCES.homeDeskPlannerView
 }
 
 const DESK_STORAGE_KEY = 'arc.desk-preferences.v1'

@@ -6,7 +6,7 @@
 
 | Asset | Path |
 |-------|------|
-| Kelly first comp (Teaching week) | `/home/ubuntu/.cursor/projects/workspace/assets/f5602c3b-2ac0-4b74-a4ad-2f359a219b9a.png` |
+| Kelly Teaching week comp (pixel truth) | `docs/overnight/evidence/kelly-teaching-week-authority.png` (zip `1.png`, 1366×768) |
 | Figma Codex hero export | `docs/overnight/evidence/figma-desk-6-3194/01-codex-image-37-11052.png` |
 | Runtime reference frame | Figma `37:11052` @ 1440×1024 tabletop (`public/assets/desk/figma/desk-hero-37-11052.png`) |
 

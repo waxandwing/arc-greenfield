@@ -1262,6 +1262,22 @@ html:has(.arc-shell--desk) body {
   font-size: 11px;
 }
 
+.b01-furniture-composition--desk .desk-planner-head-title-cluster {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.b01-furniture-composition--desk .desk-planner-rainbow-mark {
+  width: clamp(28px, 3.2vw, 40px);
+  height: auto;
+  flex: 0 0 auto;
+  margin-top: 0.35em;
+  object-fit: contain;
+  pointer-events: none;
+}
+
 .b01-furniture-composition--desk .desk-planner-head-row .plan-state-primary {
   font-family: 'Instrument Serif', var(--font-display), serif;
   font-size: clamp(1.65rem, 2.8vw, 2.15rem);

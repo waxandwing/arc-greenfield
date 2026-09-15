@@ -1,34 +1,23 @@
-# Kelly desk: current display vs visual target
+# Kelly desk: what you see vs what we owe
 
-**For Kelly and agents — read this before using any full-desk PNG.**
+Plain English side-by-side. **Do not** use the left screenshot as a pixel-pass or design target.
 
-## Visual target (north star)
+| What Kelly sees today (broken) | What we owe (north star) |
+| --- | --- |
+| **File:** `docs/overnight/evidence/kelly-current-display-2026-08-03.png` | **File:** `docs/overnight/evidence/kelly-teaching-week-authority.png` (Kelly zip `1.png`, 1366×768) |
+| Wood desk + IDEAS + TO-DOS furniture (layout mostly there) | Same wood + IDEAS + TO-DOS furniture |
+| Planner stuck on **MONTH** tab | **WEEK** tab active on planner edge |
+| Title reads **“This Month”** (often clipped as **“Th Mo”**) | Title **Teaching week** |
+| Kicker / month label **AUGUST** | Kicker **SEPTEMBER 7 - 11 • WEEK 4** |
+| Month grid (Sun–Fri dates in August) | Mon–Fri **week grid** with AP / 2D / 3D rows and Mesopotamia unit bar |
+| Caused by **old browser storage** keeping Month view + August anchor, or opening preview **without** `?demo=1&demoReset=1` | **`npm run preview:desk`** then **`?demo=1&demoReset=1`** — or plain reload after fix; app normalizes Month → Teaching week on desk |
 
-**Teaching week** mock: wood tabletop, IDEAS drawer, TO-DOS folder, planner title **Teaching week**, kicker **SEPTEMBER 7 - 11 • WEEK 4**, **WEEK** tab active, week grid (AP / 2D / 3D).
+## For agents
 
-| Role | Path |
-|------|------|
-| Kelly Teaching week comp (pixel truth) | `/home/ubuntu/.cursor/projects/workspace/assets/f5602c3b-2ac0-4b74-a4ad-2f359a219b9a.png` |
-| Figma hero export | `docs/overnight/evidence/figma-desk-6-3194/01-codex-image-37-11052.png` |
-| Committed hero frame | `public/assets/desk/figma/desk-hero-37-11052.png` |
-
-Full spec: `docs/overnight/MASTER-DESK-VISUAL-GOAL.md` and `docs/overnight/DESK-PIXEL-REQUIREMENTS.md`.
-
-## Current broken display (baseline only — not the target)
-
-Kelly confirmed the **desk v3 preview-repair** screenshot (**2026-08-03**) shows how the app **looks today**, including wrong month-home layout and other drift. **Do not** wire this file as authority comp, Figma hero, or default `DESK_KELLY_REF`.
-
-| Copy | Path |
-|------|------|
-| Evidence (git) | `docs/overnight/evidence/kelly-current-display-2026-08-03.png` |
-| Incoming drop | `uploads/desk-incoming/kelly-desk-v3-preview-repair-2026-08-03.png` |
-
-Use these only to document **current state** or diff “where we are” vs Teaching week — never as the design north star.
-
-## Pixel pass default
-
-`npm run test:desk-pixel-pass` compares preview to the **Teaching week** Kelly comp (override with `DESK_KELLY_REF` if needed). It must **not** default to the v3 current-display PNG.
+- **Target spec:** `docs/overnight/MASTER-DESK-VISUAL-GOAL.md`, `docs/overnight/DESK-PIXEL-REQUIREMENTS.md`
+- **Pixel pass default:** `docs/overnight/evidence/kelly-teaching-week-authority.png`, not the current-display PNG
+- **Baseline only:** `uploads/desk-incoming/kelly-desk-v3-preview-repair-2026-08-03.png` (same image as evidence file)
 
 ## What went wrong (2026-09-15)
 
-Agent run **bc-3a15e226** (commit `c29f613`) copied the v3 screenshot into `public/assets/desk/figma/` and treated it as authority. That was reverted on main: file moved to evidence, docs and `scripts/desk-pixel-pass.mjs` restored to Teaching week.
+Agent **bc-3a15e226** (commit `c29f613`) mislabeled the v3 preview-repair screenshot as the “authority comp” and pointed `desk-pixel-pass` at it. That was corrected on main: image moved to evidence, docs and pixel ref restored to Teaching week.

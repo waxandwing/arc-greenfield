@@ -91,8 +91,9 @@ export function maybeApplyDemoSeed(
         clearDeskPreviewSeededSession(sessionStorage)
       }
     }
-    writeDemoBundle(storage, options?.deskPreview === true)
-    if (options?.deskPreview === true && typeof sessionStorage !== 'undefined') {
+    const kellyTeachingWeek = options?.deskPreview === true || request.force
+    writeDemoBundle(storage, kellyTeachingWeek)
+    if (kellyTeachingWeek && typeof sessionStorage !== 'undefined') {
       markDeskPreviewSeededSession(true, sessionStorage)
     }
   }

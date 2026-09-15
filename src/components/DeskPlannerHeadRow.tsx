@@ -1,4 +1,5 @@
 import type { ComponentProps, RefObject } from 'react'
+import { publicAssetUrl } from '../publicAssetUrl'
 import { PlanStateHeader } from './PlanStateHeader'
 
 type PlanStateProps = ComponentProps<typeof PlanStateHeader>
@@ -29,9 +30,23 @@ export function DeskPlannerHeadRow({
     return <PlanStateHeader {...planState} />
   }
 
+  const showRainbowMark = planState.view === 'Week'
+
   return (
     <div className="desk-planner-head-row" data-testid="desk-planner-head-row">
-      <PlanStateHeader {...planState} />
+      <div className="desk-planner-head-title-cluster">
+        {showRainbowMark ? (
+          <img
+            className="desk-planner-rainbow-mark"
+            src={publicAssetUrl('assets/desk/planner-rainbow-mark.png')}
+            alt=""
+            aria-hidden="true"
+            data-testid="desk-planner-rainbow-mark"
+            decoding="async"
+          />
+        ) : null}
+        <PlanStateHeader {...planState} />
+      </div>
       <div className="desk-planner-head-tools" role="group" aria-label="Planner tools">
         <label className="desk-planner-search-field">
           <span className="sr-only">Search plan</span>

@@ -13,8 +13,8 @@ export function buildKellyDeskDemoBundle(): GauntletDemoBundle {
   ]
   const sections = [
     { id: 'section-p1', courseId: 'course-apah', calendarId, name: 'P1 • 8:05–9:00' },
-    { id: 'section-p2', courseId: 'course-2d', calendarId, name: 'P4 • 9:05–10:00' },
-    { id: 'section-p5', courseId: 'course-3d', calendarId, name: 'P5 • 10:05–11:00' },
+    { id: 'section-p2', courseId: 'course-2d', calendarId, name: 'P2 • 10:00–10:55' },
+    { id: 'section-p5', courseId: 'course-3d', calendarId, name: 'P5 • 12:35–1:30' },
   ]
 
   const unitTitle = 'UNIT 2.1 Ancient Mesopotamia'

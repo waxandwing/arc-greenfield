@@ -29,7 +29,7 @@
 | 15 | Title “Teaching week” (Instrument Serif) | `.plan-state-primary`, `arc-fonts.css` | PASS |
 | 16 | Kicker `SEPTEMBER 7 - 11 • WEEK 4` | `formatKellyDeskWeekSecondary`, `deskWeekRangeLabel` | PASS |
 | 17 | Search + Today pill (header right) | `desk-planner-search`, `desk-planner-today` | PASS |
-| 18 | Rainbow/arch mark beside title | Kelly comp | FAIL |
+| 18 | Rainbow/arch mark beside title | `desk-planner-rainbow-mark`, Kelly crop | PARTIAL |
 | 19 | `< Today >` chevron pill styling | `.desk-planner-today-cluster`, `desk-planner-today` | PARTIAL (chevron cluster; chevrons not wired) |
 | **Week grid** |
 | 20 | MON–FRI day numbers header row | `PlanningWeekDayView`, desk date CSS | PARTIAL |
