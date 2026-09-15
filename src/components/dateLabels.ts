@@ -4,8 +4,16 @@ export function formatWeekday(date: ISODate): string {
   return dateFormatter({ weekday: 'short' }).format(toUTCDate(date))
 }
 
+export function formatKellyDeskWeekday(date: ISODate): string {
+  return formatWeekday(date).replace(/\./g, '').toUpperCase()
+}
+
 export function formatShortDate(date: ISODate): string {
   return dateFormatter({ month: 'short', day: 'numeric' }).format(toUTCDate(date))
+}
+
+export function formatKellyDeskDayNumber(date: ISODate): string {
+  return String(toUTCDate(date).getUTCDate())
 }
 
 export function formatLongDate(date: ISODate): string {

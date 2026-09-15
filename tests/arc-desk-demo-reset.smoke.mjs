@@ -21,7 +21,7 @@ try {
 
   assert(await page.locator('.arc-shell--desk').count() === 1, 'Demo reset must mount the desk shell.')
   assert((await primaryTitle.textContent())?.trim() === 'Teaching week', 'Demo reset must land on Teaching week (Week view), not Month.')
-  const kicker = (await page.locator('.plan-state-secondary').first().textContent())?.trim()
+  const kicker = ((await page.getByTestId('desk-planner-week-kicker').count()) ? await page.getByTestId('desk-planner-week-kicker').textContent() : await page.locator('.plan-state-secondary').first().textContent())?.trim()
   assert(kicker === 'SEPTEMBER 7 - 11 • WEEK 4', `Kelly demo week kicker must match comp (got ${kicker ?? 'missing'}).`)
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(shellWood.includes('texture-wood'), 'Desk shell must use icarus texture-wood after demo reset.')
@@ -58,7 +58,7 @@ try {
   await page.goto(`${baseUrl}/`, { waitUntil: 'networkidle' })
   await page.getByTestId('desk-planner-head-row').locator('.plan-state-primary').waitFor({ timeout: 15000 })
   assert((await page.locator('.desk-planner-head-row .plan-state-primary').textContent())?.trim() === 'Teaching week')
-  const afterStale = (await page.locator('.plan-state-secondary').first().textContent())?.trim()
+  const afterStale = ((await page.getByTestId('desk-planner-week-kicker').count()) ? await page.getByTestId('desk-planner-week-kicker').textContent() : await page.locator('.plan-state-secondary').first().textContent())?.trim()
   assert(
     afterStale === 'SEPTEMBER 7 - 11 • WEEK 4',
     `Stale Month/August storage must normalize to Kelly demo week on desk (got ${afterStale ?? 'missing'}).`,
