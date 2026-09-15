@@ -119,15 +119,22 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
+/* Locked to planner left edge (planner left = 17.2%). Open = extend left; closed = tab only. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
   position: absolute;
-  left: 3.5%;
-  top: 22%;
+  left: calc(17.2% - 15.6%);
+  top: 26%;
   width: 15.6%;
-  height: 51%;
-  z-index: 3;
-  transform: rotate(-2.2deg);
-  transform-origin: 50% 20%;
+  height: 55%;
+  z-index: 8;
+  transform: none;
+  transform-origin: right center;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock .arc-desk-todos-folder-tab {
+  pointer-events: auto;
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-notes-dock {
@@ -168,9 +175,7 @@ html:has(.arc-shell--desk) body {
 }
 
 .b01-furniture-composition--desk.b01-furniture-composition--year-expanded
-  .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock,
-.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
-  .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
+  .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock {
   opacity: 0.92;
   transform: scale(0.88);
   transform-origin: top center;
@@ -178,7 +183,11 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk.b01-furniture-composition--year-expanded
   .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
-  transform: rotate(-2.2deg) scale(0.88);
+  opacity: 0.92;
+  left: calc(14% - 14%);
+  top: 22%;
+  width: 14%;
+  height: 58%;
 }
 
 .b01-furniture-composition--desk .arc-planner-object {
@@ -1157,7 +1166,7 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
-.arc-desk-todos-folder[data-desk-slices='true'] {
+.arc-desk-todos-folder[data-desk-slices='true'] .arc-desk-todos-folder-panel {
   background: transparent;
   box-shadow: none;
   padding: 18px 8px 8px 12px;
@@ -1283,6 +1292,20 @@ html:has(.arc-shell--desk) body {
   position: relative;
   height: 100%;
   min-height: 0;
+  width: 100%;
+  transition: transform 340ms var(--ease-out-soft, cubic-bezier(0.22, 1, 0.36, 1));
+  transform-origin: right center;
+  /* Closed: slide under planner so only the TO-DOS tab peeks on the planner left edge. */
+  transform: translateX(calc(100% - 2.35rem));
+}
+
+.arc-desk-todos-folder[data-extended='true'] {
+  transform: translateX(0);
+}
+
+.arc-desk-todos-folder-panel {
+  position: absolute;
+  inset: 0 0 0 1.7rem;
   padding: 22px 10px 10px 14px;
   border-radius: 4px 14px 14px 4px;
   background:
@@ -1291,7 +1314,16 @@ html:has(.arc-shell--desk) body {
   box-shadow:
     0 18px 36px -22px rgba(33, 29, 23, 0.55),
     inset 0 1px 0 rgba(255, 253, 248, 0.2);
-  transform: rotate(-2deg);
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 220ms ease;
+}
+
+.arc-desk-todos-folder[data-extended='true'] .arc-desk-todos-folder-panel {
+  opacity: 1;
+  pointer-events: auto;
+  overflow: auto;
 }
 
 .arc-desk-todos-folder-sheet {
@@ -1305,18 +1337,62 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-todos-folder-tab {
   position: absolute;
-  top: 18%;
-  left: -6px;
+  top: 28%;
+  right: 0;
+  left: auto;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  min-height: 7.5rem;
   margin: 0;
-  padding: 10px 6px;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  border-radius: 6px 0 0 6px;
+  padding: 12px 4px;
+  border: 0;
+  border-radius: 10px 0 0 10px;
   background: linear-gradient(180deg, #5a6f8a, #3d5168);
   color: #f7f3ea;
-  font: 800 8px/1 var(--font-label);
+  font: 800 9px/1 var(--font-label);
   letter-spacing: 0.16em;
+  cursor: pointer;
   box-shadow: 0 8px 16px -10px rgba(15, 35, 48, 0.55);
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.arc-desk-todos-folder-tab:hover {
+  filter: brightness(1.06);
+}
+
+.arc-desk-todos-folder-tab:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 2px;
+}
+
+.arc-desk-todos-folder-tab-fallback {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #5a6f8a, #3d5168);
+  pointer-events: none;
+}
+
+.arc-desk-todos-folder-tab-label {
+  position: relative;
+  z-index: 2;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
+
+.arc-desk-todos-folder-tab .arc-desk-chrome-slice {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  left: 0 !important;
+  top: 0 !important;
+  object-fit: cover !important;
+  z-index: 1 !important;
 }
 
 .arc-desk-todos-folder-body {
@@ -1661,7 +1737,7 @@ html:has(.arc-shell--desk) body {
   height: 100%;
 }
 
-.arc-desk-todos-folder[data-desk-slices='true'] {
+.arc-desk-todos-folder[data-desk-slices='true'] .arc-desk-todos-folder-panel {
   background: none;
   box-shadow: none;
   padding: 26px 12px 12px 18px;
@@ -1669,6 +1745,16 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-todos-folder[data-desk-slices='true'] .arc-desk-todos-folder-body {
   z-index: 3;
+}
+
+.arc-desk-todos-folder[data-desk-slices='true'] .arc-desk-todos-folder-panel > .arc-desk-chrome-slice {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .arc-desk-planner-frame-slices {
