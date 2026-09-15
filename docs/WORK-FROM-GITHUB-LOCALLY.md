@@ -1,5 +1,7 @@
 # Work from GitHub on your Mac (cheat sheet)
 
+**Kelly one command:** `npm run kelly:desk` then open `http://127.0.0.1:4173/?demo=1&demoReset=1` (preflight + frees port 4173 + fresh desk build).
+
 **Clone URL:** `https://github.com/waxandwing/arc-greenfield.git`  
 **Desk branch:** `cursor/arc-production-integration`  
 **Full handoff:** [docs/overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md](overnight/ARC-CURSOR-RESTRUCTURE-HANDOFF.md)
@@ -40,7 +42,7 @@ git fetch origin
 git checkout cursor/arc-production-integration
 git pull origin cursor/arc-production-integration
 npm install
-npm run preview:desk
+npm run kelly:desk
 ```
 
 Open: `http://127.0.0.1:4173/?demo=1&demoReset=1`
