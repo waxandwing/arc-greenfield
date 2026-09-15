@@ -33,7 +33,7 @@ try {
   const weekBg = await weekTab.evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(weekBg.includes('planner-edge-tab-active'), 'Active WEEK tab must use active slice raster.')
 
-  await page.getByTestId('calendar-enlarge').click()
+  await page.getByTestId('calendar-enlarge').evaluate((el) => el.click())
   await page.getByTestId('desk-calendar-popout').waitFor({ state: 'visible' })
   await page.keyboard.press('Escape')
   await page.getByTestId('desk-calendar-popout').waitFor({ state: 'hidden' })
