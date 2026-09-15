@@ -14,6 +14,7 @@
     "src/navigation/**/*.ts",
     "src/planning/**/*.ts",
     "src/demo/**/*.ts",
+    "src/app/**/*.ts",
     "tests/calendar.contract.ts"
   ]
 }

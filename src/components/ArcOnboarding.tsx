@@ -15,10 +15,15 @@ type Props = {
   onUseClasses: (input: PlanningWorkspaceInput, workspace: PlanningWorkspace) => boolean
   onLandInDay: () => void
   onOpenImport: () => void
+  onCancelSetup?: () => void
 }
 
 export function ArcOnboarding(props: Props) {
   const stage = resolveOnboardingStage(props.draft, props.capabilities)
+  function dismissSetup() {
+    props.onChangeDraft({ ...props.draft, dismissed: true })
+    props.onCancelSetup?.()
+  }
   if (stage === 'welcome') {
     return (
       <div className="onboarding-welcome-wrap"><section className="onboarding-welcome" aria-labelledby="onboarding-title">
@@ -37,23 +42,27 @@ export function ArcOnboarding(props: Props) {
     )
   }
   if (stage === 'calendar') {
-    return <div className="onboarding-stage"><OnboardingBack onClick={() => props.onChangeDraft({ ...props.draft, stage: 'welcome' })} /><CalendarSetup initialValue={props.draft.calendarDraft ?? props.calendarInput} onDraftChange={(calendarDraft) => props.onChangeDraft({ ...props.draft, calendarDraft })} onSchoolIdentitySelected={(candidate) => props.onChangeDraft({ ...props.draft, schoolNcesId: candidate.id })} onSave={(calendar, input) => { if (!props.onUseCalendar(calendar, input)) return; if (props.draft.intent === 'import') { props.onChangeDraft({ ...props.draft, stage: 'landed', dismissed: true, calendarDraft: undefined }); props.onOpenImport() } else props.onChangeDraft({ ...props.draft, stage: 'classes', calendarDraft: undefined }) }} /></div>
+    return <div className="onboarding-stage"><OnboardingBack onClick={() => props.onChangeDraft({ ...props.draft, stage: 'welcome' })} /><CalendarSetup initialValue={props.draft.calendarDraft ?? props.calendarInput} onDraftChange={(calendarDraft) => props.onChangeDraft({ ...props.draft, calendarDraft })} onSchoolIdentitySelected={(candidate) => props.onChangeDraft({ ...props.draft, schoolNcesId: candidate.id })} onSave={(calendar, input) => { if (!props.onUseCalendar(calendar, input)) return; if (props.draft.intent === 'import') { props.onChangeDraft({ ...props.draft, stage: 'landed', dismissed: true, calendarDraft: undefined }); props.onOpenImport() } else props.onChangeDraft({ ...props.draft, stage: 'classes', calendarDraft: undefined }) }} onCancel={props.calendar ? dismissSetup : undefined} /></div>
   }
   if (stage === 'classes' && props.calendar) {
-    return <div className="onboarding-stage"><OnboardingBack onClick={() => props.onChangeDraft({ ...props.draft, stage: 'calendar' })} /><ClassSetup calendarId={props.calendar.id} initialValue={props.draft.planningDraft ?? props.planningInput} onDraftChange={(planningDraft) => props.onChangeDraft({ ...props.draft, planningDraft })} onSave={(input, workspace) => { if (props.onUseClasses(input, workspace)) props.onChangeDraft({ ...props.draft, stage: 'day', planningDraft: input }) }} onCancel={() => props.onChangeDraft({ ...props.draft, dismissed: true })} /></div>
+    return <div className="onboarding-stage"><OnboardingBack onClick={() => props.onChangeDraft({ ...props.draft, stage: 'calendar' })} /><ClassSetup calendarId={props.calendar.id} initialValue={props.draft.planningDraft ?? props.planningInput} onDraftChange={(planningDraft) => props.onChangeDraft({ ...props.draft, planningDraft })} onSave={(input, workspace) => { if (props.onUseClasses(input, workspace)) props.onChangeDraft({ ...props.draft, stage: 'day', planningDraft: input }) }} onCancel={dismissSetup} /></div>
   }
   if (stage === 'day' && props.planningInput) {
-    return <div className="onboarding-stage"><OnboardingBack onClick={() => props.onChangeDraft({ ...props.draft, stage: 'classes' })} /><TeachingDaySetup initialValue={props.draft.planningDraft ?? props.planningInput} schoolNcesId={props.draft.schoolNcesId} calendarProvenance={props.calendarInput?.provenance} onDraftChange={(planningDraft) => props.onChangeDraft({ ...props.draft, planningDraft })} onSave={(input, workspace) => { if (props.onUseClasses(input, workspace)) { props.onLandInDay(); props.onChangeDraft({ ...props.draft, stage: 'landed', dismissed: true, planningDraft: undefined }) } }} onCancel={() => props.onChangeDraft({ ...props.draft, dismissed: true })} /></div>
+    return <div className="onboarding-stage"><OnboardingBack onClick={() => props.onChangeDraft({ ...props.draft, stage: 'classes' })} /><TeachingDaySetup initialValue={props.draft.planningDraft ?? props.planningInput} schoolNcesId={props.draft.schoolNcesId} calendarProvenance={props.calendarInput?.provenance} onDraftChange={(planningDraft) => props.onChangeDraft({ ...props.draft, planningDraft })} onSave={(input, workspace) => { if (props.onUseClasses(input, workspace)) { props.onLandInDay(); props.onChangeDraft({ ...props.draft, stage: 'landed', dismissed: true, planningDraft: undefined }) } }} onCancel={dismissSetup} /></div>
   }
   return null
 }
 
 export function resolveOnboardingStage(draft: OnboardingDraft, capabilities: SetupCapabilities): OnboardingDraft['stage'] {
   if (draft.stage === 'landed') return 'landed'
-  if (draft.stage === 'day') return 'day'
-  if (draft.stage === 'classes') return capabilities.calendarEstablished ? 'classes' : 'calendar'
+  if (draft.stage === 'welcome') return 'welcome'
   if (draft.stage === 'calendar') return 'calendar'
-  if (draft.stage === 'welcome' && !capabilities.calendarEstablished) return 'welcome'
+  if (draft.stage === 'classes') return capabilities.calendarEstablished ? 'classes' : 'calendar'
+  if (draft.stage === 'day') {
+    if (!capabilities.calendarEstablished) return 'calendar'
+    if (!capabilities.coursesEstablished || !capabilities.sectionsEstablished) return 'classes'
+    return 'day'
+  }
   if (!capabilities.calendarEstablished) return 'calendar'
   if (!capabilities.coursesEstablished || !capabilities.sectionsEstablished) return 'classes'
   if (!capabilities.dayOrderEstablished || !capabilities.planningPeriodEstablished) return 'day'

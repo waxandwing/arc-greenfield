@@ -10,6 +10,11 @@ import { useArcWorkspace } from '../app/useArcWorkspace'
 import { useTaskBar } from '../app/useTaskBar'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
+import {
+  isSetupWorkspaceMode,
+  type OnboardingSectionId,
+  type SetupSectionId,
+} from '../app/setupSections'
 import { useArcTableSession } from '../app/useArcTableSession'
 import { DEFAULT_HOME_VIEW, calendarViewLabel, type CalendarView } from '../navigation/calendarViews'
 import {
@@ -90,6 +95,7 @@ export function AppFrame() {
   const [onboardingDraft, setOnboardingDraft] = useState(loadOnboardingDraft)
   const [showCaptureCoachMark, setShowCaptureCoachMark] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
   const [workspaceOpenToken] = useState(0)
+  const [settingsOpenToken, setSettingsOpenToken] = useState(0)
   const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
   const deskYearLandingNormalized = useRef(false)
   const deskMonthHomeNormalized = useRef(false)
@@ -236,6 +242,19 @@ export function AppFrame() {
     workspaceMode.close()
   }
 
+  function returnToSettings() {
+    workspaceMode.close()
+    setSettingsOpenToken((token) => token + 1)
+  }
+
+  function openSetupSection(id: SetupSectionId) {
+    workspaceMode.open(id)
+  }
+
+  function openOnboardingSection(id: OnboardingSectionId) {
+    updateOnboarding({ ...onboardingDraft, stage: id })
+  }
+
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const unscheduledUnits = workspace.unitWorkspace?.units.filter((unit) => unit.placement === null) ?? []
   const setupCapabilities = assessSetupCapabilities({ calendar: workspace.calendar, planning: workspace.planningWorkspace, lessons: workspace.lessonWorkspace })
@@ -254,6 +273,32 @@ export function AppFrame() {
   const headerStageTitle = onboardingActive
     ? onboardingStageTitle(onboardingDraft, setupCapabilities)
     : stageTitleFor(workspaceMode.mode, workspace.activeView)
+  const setupNavActive = isSetupWorkspaceMode(workspaceMode.mode) ? workspaceMode.mode : null
+  const onboardingNavActive = onboardingActive
+    ? (resolveOnboardingStage(onboardingDraft, setupCapabilities) as OnboardingSectionId | 'landed')
+    : null
+  const setupDisabledIds = (() => {
+    const disabled = new Set<SetupSectionId>()
+    if (!workspace.hasClasses) {
+      disabled.add('teaching-day')
+      disabled.add('units')
+      disabled.add('lessons')
+      disabled.add('import')
+    } else if (!workspace.hasUnits) {
+      disabled.add('lessons')
+    }
+    return disabled
+  })()
+  const onboardingDisabledIds = (() => {
+    const disabled = new Set<OnboardingSectionId>()
+    if (!setupCapabilities.calendarEstablished) {
+      disabled.add('classes')
+      disabled.add('day')
+    } else if (!setupCapabilities.coursesEstablished || !setupCapabilities.sectionsEstablished) {
+      disabled.add('day')
+    }
+    return disabled
+  })()
   const showPlanFurniture = Boolean(workspace.calendar && workspaceMode.mode === 'calendar' && !onboardingActive)
   const globalCaptureEnabled = Boolean(workspace.calendar && !onboardingActive)
 
@@ -751,6 +796,7 @@ export function AppFrame() {
       onSetCaptureImportant={workspace.setCaptureImportant}
       onMoveCaptureToDate={workspace.moveCaptureToDate}
       onCloseMode={workspaceMode.mode === 'recovery' ? closeRecoveryMode : workspaceMode.close}
+      onReturnToSettings={returnToSettings}
       onOpenMode={workspaceMode.open}
       planMoveIntent={workspace.planMoveIntent}
       onBeginPlanLessonMove={workspace.beginPlanLessonMove}
@@ -897,6 +943,16 @@ export function AppFrame() {
                     onToday={workspace.goToday}
                     onOpenRecovery={() => openRecovery()}
                     onUndoShift={workspace.undoLastShift}
+                    setupNav={setupNavActive ? {
+                      activeId: setupNavActive,
+                      disabledIds: setupDisabledIds,
+                      onSelect: openSetupSection,
+                    } : null}
+                    onboardingNav={onboardingNavActive && onboardingNavActive !== 'landed' ? {
+                      activeId: onboardingNavActive,
+                      disabledIds: onboardingDisabledIds,
+                      onSelect: openOnboardingSection,
+                    } : null}
                   />
                   {workspace.storageNotice ? (
                     <p className="storage-notice" role="status">{workspace.storageNotice}</p>
@@ -908,7 +964,7 @@ export function AppFrame() {
             workspace={fridgeContent}
             tasks={taskContent}
             dismissSideDrawers={onboardingActive || workspaceMode.mode !== 'calendar'}
-            openRequest={workspaceOpenToken ? { name: 'workspace', token: workspaceOpenToken } : null}
+            openRequest={settingsOpenToken ? { name: 'settings', token: settingsOpenToken } : null}
             workspaceOpen={workspaceOverlayOpen}
             onWorkspaceOpenChange={openWorkspaceOverlay}
             tasksOpen={tasksOverlayOpen}
@@ -935,6 +991,7 @@ export function AppFrame() {
                   onUseClasses={workspace.useClasses}
                   onLandInDay={() => workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))}
                   onOpenImport={openImportFromOnboarding}
+                  onCancelSetup={returnToSettings}
                 />
               ) : (
                 <>
