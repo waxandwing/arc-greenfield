@@ -79,3 +79,7 @@
 - **Item E:** **YELLOW** — P0 structural/visual rules PASS except pixel (**RED ~60%**), rainbow header (**FAIL #18**), partial row/weekends chrome; full Gate 1 brand battery not run.
 - **Smokes:** `npm run test:arc-desk-pass` **PASS** on `desk-v2 · 3067c83` preview build.
 - **Next agent:** **B** planner header (rainbow + Today pill), then **C** course row rails.
+
+### Sync — 2026-09-15
+
+- **Origin `cursor/arc-production-integration` pushed to `9a869f1`** after local-only drift (remote tracking had lagged at `2d973c3`); Kelly can pull audit/slice/ArcTable merge docs + Week-row live launch (slice 1).
