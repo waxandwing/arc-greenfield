@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { createPortal } from 'react-dom'
 import {
   DeskPostIt,
   type DeskPostItDragEndInfo,
@@ -15,9 +16,11 @@ import {
   type DeskPostItLinkWorkspace,
   type DeskPostItRect,
 } from '../planning/deskPostItLinks'
+import { DESK_IDEAS_CLEAN_UP_EVENT } from '../desk/deskIdeasEvents'
 
 const NOTE_STORAGE_KEY = 'arc.desk-postit-notes.v1'
 const POSITION_STORAGE_KEY = 'arc.desk-postit-positions.v1'
+const DRAWER_STORAGE_KEY = 'arc.desk-postit-in-drawer.v1'
 
 type AccentSpec = {
   postItId: string
@@ -123,6 +126,54 @@ function writeAllStoredPositions(positions: Record<string, DeskPostItPosition>) 
   }
 }
 
+function readDrawerMembership(): Record<string, boolean> {
+  try {
+    const raw = sessionStorage.getItem(DRAWER_STORAGE_KEY)
+    if (!raw) return {}
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    const next: Record<string, boolean> = {}
+    for (const accent of ACCENTS) {
+      next[accent.postItId] = parsed[accent.postItId] === true
+    }
+    return next
+  } catch {
+    return {}
+  }
+}
+
+function writeDrawerMembership(membership: Record<string, boolean>) {
+  try {
+    sessionStorage.setItem(DRAWER_STORAGE_KEY, JSON.stringify(membership))
+  } catch {
+    /* ignore */
+  }
+}
+
+function defaultPositions(): Record<string, DeskPostItPosition> {
+  const next: Record<string, DeskPostItPosition> = {}
+  for (const accent of ACCENTS) {
+    next[accent.postItId] = { ...accent.defaultPosition }
+  }
+  return next
+}
+
+function allInDrawer(): Record<string, boolean> {
+  const next: Record<string, boolean> = {}
+  for (const accent of ACCENTS) next[accent.postItId] = true
+  return next
+}
+
+function positionFromSurfacePoint(clientX: number, clientY: number): DeskPostItPosition | null {
+  const surface = document.querySelector('.arc-desk-surface')
+  if (!surface) return null
+  const box = surface.getBoundingClientRect()
+  if (box.width <= 0 || box.height <= 0) return null
+  return {
+    leftPct: clamp(((clientX - box.left) / box.width) * 100 - 4, 0, 92),
+    topPct: clamp(((clientY - box.top) / box.height) * 100 - 4, 0, 88),
+  }
+}
+
 function rectFromNode(node: Element | null): DeskPostItRect | null {
   if (!node) return null
   const box = node.getBoundingClientRect()
@@ -132,6 +183,7 @@ function rectFromNode(node: Element | null): DeskPostItRect | null {
 type AccentPostItProps = AccentSpec & {
   position: DeskPostItPosition
   stackId: string | null
+  inDrawer: boolean
   onPositionChange: (position: DeskPostItPosition) => void
   onDragEnd: (info: DeskPostItDragEndInfo) => void
 }
@@ -145,6 +197,7 @@ function DeskAccentPostIt({
   label,
   position,
   stackId,
+  inDrawer,
   onPositionChange,
   onDragEnd,
 }: AccentPostItProps) {
@@ -166,8 +219,8 @@ function DeskAccentPostIt({
       position={position}
       onPositionChange={onPositionChange}
       onDragEnd={onDragEnd}
-      tiltDeg={tiltDeg}
-      className="arc-desk-post-it--accent"
+      tiltDeg={inDrawer ? 0 : tiltDeg}
+      className={`arc-desk-post-it--accent${inDrawer ? ' arc-desk-post-it--in-drawer' : ''}`}
       testId={testId}
       aria-label={label}
       stackId={stackId}
@@ -194,6 +247,7 @@ function DeskAccentPostIt({
  * Siblings of the IDEAS tray under arc-desk-surface so landscape tray chrome can change independently.
  * Writable + localStorage note text; drag from the paper margin / grip so click-to-edit does not start a drag.
  * Significant overlap after drag offers Link / Keep separate so layered accents can move as a stack.
+ * Clean up gathers loose stickies back into the IDEAS drawer well (portal); drag out returns them to the wood.
  */
 export function DeskAccentPostIts() {
   const [positions, setPositions] = useState<Record<string, DeskPostItPosition>>(() => {
@@ -204,6 +258,8 @@ export function DeskAccentPostIts() {
     }
     return next
   })
+  const [inDrawer, setInDrawer] = useState<Record<string, boolean>>(() => readDrawerMembership())
+  const [drawerSlot, setDrawerSlot] = useState<Element | null>(null)
   const [links, setLinks] = useState<DeskPostItLinkWorkspace>(() => loadDeskPostItLinks())
   const [prompt, setPrompt] = useState<LinkPrompt | null>(null)
   const dismissedPairsRef = useRef(new Set<string>())
@@ -211,14 +267,39 @@ export function DeskAccentPostIts() {
   positionsRef.current = positions
   const linksRef = useRef(links)
   linksRef.current = links
+  const inDrawerRef = useRef(inDrawer)
+  inDrawerRef.current = inDrawer
 
   useEffect(() => {
     writeAllStoredPositions(positions)
   }, [positions])
 
   useEffect(() => {
+    writeDrawerMembership(inDrawer)
+  }, [inDrawer])
+
+  useEffect(() => {
     saveDeskPostItLinks(links)
   }, [links])
+
+  useEffect(() => {
+    function syncSlot() {
+      setDrawerSlot(document.querySelector('[data-testid="arc-desk-ideas-accent-slot"]'))
+    }
+    syncSlot()
+    const timer = window.setInterval(syncSlot, 500)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    function onCleanUp() {
+      setPositions(defaultPositions())
+      setInDrawer(allInDrawer())
+      setPrompt(null)
+    }
+    window.addEventListener(DESK_IDEAS_CLEAN_UP_EVENT, onCleanUp)
+    return () => window.removeEventListener(DESK_IDEAS_CLEAN_UP_EVENT, onCleanUp)
+  }, [])
 
   const moveLinkedGroup = useCallback((draggedId: string, nextPosition: DeskPostItPosition) => {
     setPositions((prev) => {
@@ -244,10 +325,48 @@ export function DeskAccentPostIts() {
     })
   }, [])
 
+  const pullFromDrawer = useCallback((postItId: string, drop: DeskPostItPosition) => {
+    setInDrawer((prev) => {
+      const stack = deskPostItStackForMember(linksRef.current, postItId)
+      const next = { ...prev }
+      if (stack) {
+        for (const memberId of stack.memberIds) next[memberId] = false
+      } else {
+        next[postItId] = false
+      }
+      return next
+    })
+    setPositions((prev) => {
+      const stack = deskPostItStackForMember(linksRef.current, postItId)
+      if (!stack) return { ...prev, [postItId]: drop }
+      const updated = { ...prev }
+      let index = 0
+      for (const memberId of stack.memberIds) {
+        updated[memberId] = {
+          leftPct: clamp(drop.leftPct + index * 2.2, 0, 92),
+          topPct: clamp(drop.topPct + index * 1.6, 0, 88),
+        }
+        index += 1
+      }
+      return updated
+    })
+  }, [])
+
   const onDragEnd = useCallback((info: DeskPostItDragEndInfo) => {
     if (!info.didMove) return
+
+    if (inDrawerRef.current[info.postItId]) {
+      const drop =
+        positionFromSurfacePoint(info.rect.left + info.rect.width / 2, info.rect.top + info.rect.height / 2)
+        ?? info.position
+      pullFromDrawer(info.postItId, drop)
+      setPrompt(null)
+      return
+    }
+
     const rects: Record<string, DeskPostItRect> = {}
     for (const accent of ACCENTS) {
+      if (inDrawerRef.current[accent.postItId]) continue
       const node = document.querySelector(`[data-desk-post-it="${accent.postItId}"]`)
       const rect = accent.postItId === info.postItId
         ? { left: info.rect.left, top: info.rect.top, width: info.rect.width, height: info.rect.height }
@@ -263,7 +382,7 @@ export function DeskAccentPostIts() {
     if (dismissedPairsRef.current.has(key)) return
     const anchor = positionsRef.current[info.postItId] ?? info.position
     setPrompt({ a: info.postItId, b: overlapId, anchor })
-  }, [])
+  }, [pullFromDrawer])
 
   const confirmLink = useCallback(() => {
     if (!prompt) return
@@ -287,21 +406,30 @@ export function DeskAccentPostIts() {
       .join(' + ')
   }, [prompt])
 
+  const deskAccents = ACCENTS.filter((accent) => !inDrawer[accent.postItId])
+  const drawerAccents = ACCENTS.filter((accent) => inDrawer[accent.postItId])
+
+  function renderAccent(accent: AccentSpec, drawerMode: boolean) {
+    const stack = deskPostItStackForMember(links, accent.postItId)
+    return (
+      <DeskAccentPostIt
+        key={accent.postItId}
+        {...accent}
+        position={positions[accent.postItId]}
+        stackId={stack?.stackId ?? null}
+        inDrawer={drawerMode}
+        onPositionChange={(next) => moveLinkedGroup(accent.postItId, next)}
+        onDragEnd={onDragEnd}
+      />
+    )
+  }
+
   return (
     <>
-      {ACCENTS.map((accent) => {
-        const stack = deskPostItStackForMember(links, accent.postItId)
-        return (
-          <DeskAccentPostIt
-            key={accent.postItId}
-            {...accent}
-            position={positions[accent.postItId]}
-            stackId={stack?.stackId ?? null}
-            onPositionChange={(next) => moveLinkedGroup(accent.postItId, next)}
-            onDragEnd={onDragEnd}
-          />
-        )
-      })}
+      {deskAccents.map((accent) => renderAccent(accent, false))}
+      {drawerSlot && drawerAccents.length > 0
+        ? createPortal(drawerAccents.map((accent) => renderAccent(accent, true)), drawerSlot)
+        : null}
       {prompt ? (
         <div
           className="arc-desk-post-it-link-prompt"

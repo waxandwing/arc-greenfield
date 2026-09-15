@@ -45,6 +45,9 @@ export function DeskHelpButton() {
             </li>
             <li>Drag magnets and post-its on the desk — they land in IDEAS.</li>
             <li>
+              Use <strong>Clean up</strong> to gather loose post-its back into the IDEAS drawer.
+            </li>
+            <li>
               <strong>start class</strong> opens ArcTable for the next period.
             </li>
           </ul>

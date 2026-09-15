@@ -133,7 +133,8 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-green-drawer-well,
-.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-folders-tab {
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-folders-tab,
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-clean-up {
   pointer-events: auto;
 }
 
@@ -193,9 +194,22 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk.b01-furniture-composition--year-expanded
   .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock {
-  opacity: 0.92;
-  transform: scale(0.88);
+  /* Keep IDEAS present on Year — do not override transform (that would kill the closed tab peek). */
+  opacity: 1;
+  left: 21%;
+  width: 56%;
+}
+
+/* Year: combine scale with the closed/open translateY so the slim IDEAS tab still peeks. */
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-green-folders-drawer {
+  transform: translateY(calc(-100% + 2.7rem)) scale(0.92);
   transform-origin: top center;
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-green-folders-drawer[data-extended='true'] {
+  transform: translateY(0) scale(0.92);
 }
 
 .b01-furniture-composition--desk.b01-furniture-composition--year-expanded
@@ -581,6 +595,91 @@ html:has(.arc-shell--desk) body {
   z-index: 2;
 }
 
+
+.arc-desk-clean-up {
+  min-height: 2rem;
+  padding: 6px 12px;
+  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 28%, var(--line-subtle));
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--field-elevated) 94%, transparent), color-mix(in srgb, var(--field-elevated) 90%, transparent)),
+    var(--plan-surface-paper-texture);
+  background-size: auto, 240px;
+  background-blend-mode: normal, soft-light;
+  color: color-mix(in srgb, var(--ink) 88%, var(--shell-frame-green));
+  font: 750 11px/1 var(--font-label);
+  letter-spacing: 0.08em;
+  text-transform: none;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.85);
+  pointer-events: auto;
+}
+
+.arc-desk-clean-up:hover {
+  border-color: color-mix(in srgb, var(--shell-frame-green) 48%, var(--mustard));
+  background-color: color-mix(in srgb, var(--field-elevated) 88%, var(--mustard-soft));
+}
+
+.arc-desk-clean-up:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 2px;
+}
+
+/* Peeks beside the IDEAS tab when the drawer is collapsed. */
+.arc-desk-clean-up--tab-side {
+  position: absolute;
+  left: calc(50% + 4.15rem);
+  bottom: 0.2rem;
+  z-index: 3;
+  min-height: 2.1rem;
+  padding: 6px 10px;
+  border-radius: 8px 8px 10px 10px;
+  white-space: nowrap;
+}
+
+.arc-desk-green-folders-drawer[data-extended='true'] .arc-desk-clean-up--tab-side {
+  /* Prefer the in-well Clean up when the tray is open */
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.arc-desk-ideas-well-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 8px;
+}
+
+.arc-desk-ideas-accent-slot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 0;
+  margin: 0 0 10px;
+}
+
+.arc-desk-ideas-accent-slot:empty {
+  display: none;
+  margin: 0;
+}
+
+.arc-desk-post-it.arc-desk-post-it--in-drawer {
+  position: relative;
+  left: auto !important;
+  top: auto !important;
+  width: 78px;
+  min-width: 78px;
+  max-width: 88px;
+  z-index: 1;
+  transform: none !important;
+}
+
+.arc-desk-ideas-empty {
+  margin: 0;
+  padding: 8px 4px;
+  color: color-mix(in srgb, #f7f3ea 78%, transparent);
+  font: 500 13px/1.35 var(--font-display);
+}
 .arc-desk-folders-tab:hover {
   filter: brightness(1.06);
 }
