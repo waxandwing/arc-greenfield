@@ -20,7 +20,7 @@ import {
   type ArcTableTeachingOutcome,
 } from '../planning'
 import { consumeArcTableDeskLaunch } from '../planning/arcTableDeskLaunch'
-import { ARC_TABLE_MARK_ASSET } from '../planning/arcTableDeskMark'
+import { ARC_TABLE_HEADER_DARK_ASSET, ARC_TABLE_MARK_ASSET } from '../planning/arcTableDeskMark'
 import { publicAssetUrl } from '../publicAssetUrl'
 import '../styles/arctable.css'
 
@@ -253,17 +253,14 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onUpdate }: Shared
   return (
     <main className={`arctable arctable--student${cleanupActive ? ' is-cleanup' : ''}`}>
       <header className="arctable-student-header">
-        <div className="arctable-header-brand arctable-header-brand--on-dark">
-          <img
-            className="arctable-header-mark"
-            src={publicAssetUrl(ARC_TABLE_MARK_ASSET)}
-            alt=""
-            width={44}
-            height={44}
-            data-testid="arctable-student-header-mark"
-          />
-          <span>ArcTable</span>
-        </div>
+        <img
+          className="arctable-header-wordmark"
+          src={publicAssetUrl(ARC_TABLE_HEADER_DARK_ASSET)}
+          alt="ArcTable"
+          width={170}
+          height={46}
+          data-testid="arctable-student-header-mark"
+        />
         <div><strong>Projected view</strong><span>{live.session.sectionName} · {live.session.courseTitle}</span></div>
         <time>{formatClock(now)}</time>
       </header>
