@@ -378,7 +378,13 @@ html:has(.arc-shell--desk) body {
   max-width: none;
   width: 100%;
   flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
   overflow: auto;
+}
+
+.b01-furniture-composition--desk .b01-calendar-owner > .calendar-canvas:has(> .planning-week) {
+  overflow: hidden;
 }
 
 .b01-furniture-composition--desk .planning-row-label {
@@ -1544,12 +1550,15 @@ html:has(.arc-shell--desk) body {
 }
 
 .b01-furniture-composition--desk .planning-week .planning-grid {
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .b01-furniture-composition--desk .desk-planner-head-row + .desk-calendar-popout-placeholder,
 .b01-furniture-composition--desk .desk-planner-head-row ~ * .planning-week {
   min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
+  max-height: 100%;
 }
 
 .desk-planner-head-row {
@@ -1833,40 +1842,126 @@ html:has(.arc-shell--desk) body {
 }
 
 .b01-furniture-composition--desk .planning-week {
+  display: flex;
+  flex-direction: column;
   padding-inline: 4px 8px;
   min-width: 0;
+  min-height: 0;
   max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .b01-furniture-composition--desk .planning-week .planning-scroll-frame {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
   max-width: 100%;
-  overflow-x: auto;
+  height: 100%;
+  overflow: hidden;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) {
-  gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   min-width: 0;
+  min-height: 0;
   width: 100%;
   max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) > .planning-date-header,
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) > .planning-desk-notes-strip {
+  flex: 0 0 auto;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course {
-  border-radius: 8px;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
+  min-height: 0;
+  padding: 4px 0 4px 6px;
+  border-radius: 8px;
+  border-top-width: 2px;
+  overflow: hidden;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading {
+  flex: 0 0 auto;
   min-width: 0;
+  padding-right: 4px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading h2 {
+  font-size: clamp(15px, 1.35vw, 18px);
+  line-height: 1.1;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading span {
+  font-size: 11px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-unit-stack,
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-section-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-unit-span {
   border-radius: 6px;
-  min-height: 28px;
+  min-height: 0;
+  margin: 1px 3px;
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-section-row {
+  min-height: 0;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-section-row > .planning-row-label,
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-day-slot {
+  padding: 4px 6px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-day-slot {
+  gap: 3px;
+  align-content: start;
+  overflow: hidden;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-lesson {
   border-radius: 999px;
   font-size: 11px;
+  padding: 3px 8px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-header {
+  padding-bottom: 2px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-heading {
+  padding: 2px 2px 4px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-weekday {
+  font-size: 11px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-day {
+  font-size: 13px;
 }
 
 .b01-furniture-composition--desk .planner-shell-bar {
