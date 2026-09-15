@@ -82,7 +82,7 @@ export function DeskPlannerHeadRow({
             ref={enlargeTriggerRef as RefObject<HTMLButtonElement> | undefined}
             type="button"
             className="quiet-button desk-planner-enlarge"
-            data-testid="desk-calendar-enlarge-trigger"
+            data-testid="calendar-enlarge"
             aria-expanded={calendarEnlarged}
             aria-haspopup="dialog"
             onClick={onEnlargeCalendar}

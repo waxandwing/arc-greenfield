@@ -78,7 +78,7 @@ try {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
-  await page.getByTestId('desk-calendar-enlarge-trigger').click()
+  await page.getByTestId('calendar-enlarge').click()
   await page.getByTestId('desk-calendar-popout').waitFor({ state: 'visible' })
   assert(await page.getByTestId('desk-calendar-popout-body').isVisible(), 'Enlarge must open calendar pop-out body.')
   await page.getByTestId('desk-calendar-popout-dismiss').click()
