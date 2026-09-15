@@ -34,8 +34,13 @@
 
 .calendar-setup-confirm-months {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--space-5);
+  align-content: start;
+  max-height: min(56vh, 720px);
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-gutter: stable;
 }
 
 .calendar-setup-confirm-month {

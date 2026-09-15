@@ -40,9 +40,7 @@ export function CalendarSetupConfirmPreview({ input, sourceBackedEdit = false }:
 
   const calendar = hydrateSchoolCalendar(input)
   const instructionalCount = instructionalDaysBetween(calendar, input.firstDay, input.lastDay).length
-  const firstMonth = input.firstDay.slice(0, 7)
-  const lastMonth = input.lastDay.slice(0, 7)
-  const monthKeys = firstMonth === lastMonth ? [firstMonth] : [firstMonth, lastMonth]
+  const monthKeys = monthKeysInSchoolYear(input.firstDay, input.lastDay)
 
   return (
     <section className="calendar-setup-confirm-preview" aria-label="Calendar confirmation preview">
@@ -69,6 +67,26 @@ export function CalendarSetupConfirmPreview({ input, sourceBackedEdit = false }:
       </div>
     </section>
   )
+}
+
+/** Contiguous YYYY-MM keys from the school year's first day through last day. */
+function monthKeysInSchoolYear(firstDay: ISODate, lastDay: ISODate): string[] {
+  const keys: string[] = []
+  let year = Number(firstDay.slice(0, 4))
+  let month = Number(firstDay.slice(5, 7))
+  const endYear = Number(lastDay.slice(0, 4))
+  const endMonth = Number(lastDay.slice(5, 7))
+
+  while (year < endYear || (year === endYear && month <= endMonth)) {
+    keys.push(`${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}`)
+    month += 1
+    if (month > 12) {
+      month = 1
+      year += 1
+    }
+  }
+
+  return keys
 }
 
 function SetupMonthMiniGrid({
