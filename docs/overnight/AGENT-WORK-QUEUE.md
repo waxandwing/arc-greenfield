@@ -1,7 +1,18 @@
-# Agent work queue — desk visual (integration branch)
+# Agent work queue — desk visual
 
-**Updated:** coordinator pass on `cursor/arc-production-integration`  
-**North star:** `docs/overnight/MASTER-DESK-VISUAL-GOAL.md`
+**Updated:** ArcBuild audit loop on `main`  
+**North star:** `docs/overnight/MASTER-DESK-VISUAL-GOAL.md`  
+**Audit ↔ build loop:** `docs/overnight/ARC-BUILD-AUDIT-LOOP.md` (ArcBuild audit agent requirements → implementation handback SHA)
+
+## ArcBuild audit lane (Kelly routing)
+
+| Step | Owner | Action |
+|------|--------|--------|
+| 1 | **ArcBuild audit agent** | Audit iteration @ `main` SHA; send **requirements** (see loop doc) |
+| 2 | **Implementation agent** | Apply changes on `main`, run smokes, **push**, post **handback packet** |
+| 3 | **ArcBuild audit agent** | Re-audit @ new SHA; repeat until PASS or Kelly blockers |
+
+**Current production tip for audits:** `git rev-parse HEAD` on `origin/main` after each push.
 
 ## Do not settle
 
