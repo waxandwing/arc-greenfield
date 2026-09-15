@@ -94,7 +94,6 @@ export function AppFrame() {
   const [fridgeUndo, setFridgeUndo] = useState<FridgeRoundTripReceipt | null>(null)
   const [onboardingDraft, setOnboardingDraft] = useState(loadOnboardingDraft)
   const [showCaptureCoachMark, setShowCaptureCoachMark] = useState(() => !onboardingDraft.firstCapturePromptDismissed)
-  const [workspaceOpenToken] = useState(0)
   const [settingsOpenToken, setSettingsOpenToken] = useState(0)
   const [workspaceOverlayOpen, setWorkspaceOverlayOpen] = useState(false)
   const deskYearLandingNormalized = useRef(false)
