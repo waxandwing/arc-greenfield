@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ARC_TABLE_MAX_COUNTDOWN_SECONDS,
   addArcTablePassDefinition,
@@ -43,6 +43,8 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
   const [mediaError, setMediaError] = useState<string | null>(null)
   const [passLabel, setPassLabel] = useState('')
   const [passPeople, setPassPeople] = useState<Record<string, string>>({})
+  const toolPanelRef = useRef<HTMLElement>(null)
+  const toolRowRef = useRef<HTMLDivElement>(null)
   const now = useClock()
   const classElapsed = elapsedLiveMinutes(live, now)
   const timerRemaining = countdownRemaining(live.timer, now)
@@ -52,10 +54,22 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
   const activeMedia = live.media.items.find((item) => item.id === live.media.activeId) ?? null
   useSettleCountdowns(live, now, onUpdate)
   useEffect(() => {
+    if (!tool) return
     const closeTool = (event: KeyboardEvent) => { if (event.key === 'Escape') setTool(null) }
     window.addEventListener('keydown', closeTool)
     return () => window.removeEventListener('keydown', closeTool)
-  }, [])
+  }, [tool])
+  useEffect(() => {
+    if (!tool) return
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target as Node
+      if (toolPanelRef.current?.contains(target)) return
+      if (toolRowRef.current?.contains(target)) return
+      setTool(null)
+    }
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
+  }, [tool])
 
   useEffect(() => {
     const launch = consumeArcTableDeskLaunch()
@@ -144,13 +158,13 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
           <label className="arctable-control-field"><strong>Voice expectation</strong><select value={live.voiceLevel} onChange={(event) => onUpdate({ voiceLevel: Number(event.target.value) as 1 | 2 | 3 })}><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option></select></label>
           <button type="button" className="arctable-control-row" onClick={() => onUpdate({ boardLocked: !live.boardLocked })}><strong>Board</strong><span>{live.boardLocked ? 'Locked' : 'Editable'}</span></button>
           <button type="button" className="arctable-control-row" onClick={onShowStudent}><strong>Student preview</strong><span>Open projected view</span></button>
-          <div className="arctable-tool-row">
+          <div className="arctable-tool-row" ref={toolRowRef}>
             <button type="button" aria-expanded={tool === 'people'} onClick={() => setTool(tool === 'people' ? null : 'people')}>People picker</button>
             <button type="button" aria-expanded={tool === 'passes'} onClick={() => setTool(tool === 'passes' ? null : 'passes')}>Pass tools</button>
             <button type="button" aria-expanded={tool === 'media'} onClick={() => setTool(tool === 'media' ? null : 'media')}>Media</button>
           </div>
           {tool === 'people' ? (
-            <section className="arctable-tool-panel arctable-people-panel" aria-labelledby="people-picker-heading">
+            <section ref={toolPanelRef} className="arctable-tool-panel arctable-people-panel" aria-labelledby="people-picker-heading">
               <h2 id="people-picker-heading">People · {live.session.sectionName}</h2>
               <form onSubmit={addPerson}><label><span>Student name</span><input value={personName} onChange={(event) => setPersonName(event.target.value)} /></label><button type="submit">Add</button></form>
               {live.people.roster.length === 0 ? <p>No roster yet. Names added here are saved for this Section’s future classes.</p> : <p>{live.people.roster.length} students saved for {live.session.sectionName}.</p>}
@@ -161,14 +175,14 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
             </section>
           ) : null}
           {tool === 'passes' ? (
-            <section className="arctable-tool-panel arctable-pass-panel" aria-labelledby="pass-tools-heading">
+            <section ref={toolPanelRef} className="arctable-tool-panel arctable-pass-panel" aria-labelledby="pass-tools-heading">
               <h2 id="pass-tools-heading">Passes · {live.session.sectionName}</h2>
               <form onSubmit={addPass}><label><span>Pass type</span><input value={passLabel} placeholder="Restroom, Office…" onChange={(event) => setPassLabel(event.target.value)} /></label><button type="submit">Add pass type</button></form>
               {live.passes.passes.map((pass) => { const owner = live.people.roster.find((person) => person.id === pass.personId); const personId = passPeople[pass.id] || ''; return <div className={`arctable-pass arctable-pass--${pass.status}`} key={pass.id}><div><strong>{pass.label}</strong><span>{pass.status}{owner ? ` · ${owner.name}` : ' · unassigned'}</span></div><label><span>Person · optional</span><select aria-label={`${pass.label} person`} value={personId} onChange={(event) => setPassPeople((current) => ({ ...current, [pass.id]: event.target.value }))}><option value="">Generic pass</option>{live.people.roster.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label><div><button type="button" aria-label={`Request ${pass.label}`} onClick={() => onUpdate({ passes: setArcTablePassStatus(live.passes, pass.id, 'requested', personId || null) })}>Request</button><button type="button" aria-label={`Activate ${pass.label}`} onClick={() => onUpdate({ passes: setArcTablePassStatus(live.passes, pass.id, 'active', personId || pass.personId) })}>Activate</button><button type="button" aria-label={`Return ${pass.label}`} onClick={() => onUpdate({ passes: setArcTablePassStatus(live.passes, pass.id, 'inactive') })}>Return</button></div></div> })}
             </section>
           ) : null}
           {tool === 'media' ? (
-            <section className="arctable-tool-panel arctable-media-panel" aria-labelledby="media-tools-heading">
+            <section ref={toolPanelRef} className="arctable-tool-panel arctable-media-panel" aria-labelledby="media-tools-heading">
               <h2 id="media-tools-heading">Media · {live.session.sectionName}</h2>
               <form onSubmit={addMedia}><label><span>Title</span><input value={mediaTitle} onChange={(event) => setMediaTitle(event.target.value)} /></label><label><span>Source URL or path</span><input value={mediaSource} onChange={(event) => setMediaSource(event.target.value)} /></label><label><span>Type</span><select value={mediaKind} onChange={(event) => setMediaKind(event.target.value as 'image' | 'slides')}><option value="image">Artwork / image</option><option value="slides">Presentation / slides</option></select></label><button type="submit">Add media</button></form>
               {mediaError ? <p role="alert" className="arctable-tool-error">{mediaError}</p> : null}
