@@ -2,9 +2,9 @@
 
 **Source authority:** Kelly comp PNG (`Teaching week IDEAS/TO-DOS`), Figma desk export, prior audit at `50a51b3`.
 
-**Honest pixel gate (1696×1254, scale-normalized):** see `docs/overnight/evidence/desk-pixel-pass/round-3-REPORT.md` (latest) — **~60% RGB diff vs Kelly** (SSIM ~0.24). Structural smoke checks can pass while pixels differ.
+**Honest pixel gate (1696×1254, scale-normalized):** see `docs/overnight/evidence/desk-pixel-pass/round-4-REPORT.md` (latest) — **~60.08% RGB diff vs Kelly** (SSIM ~0.20). Structural smoke checks can pass while pixels differ.
 
-**Queue alignment:** `docs/overnight/AGENT-WORK-QUEUE.md` — slice wiring **A1** in progress; header **B** next; pixel loop **F** blocked on assets.
+**Queue alignment:** `docs/overnight/AGENT-WORK-QUEUE.md` — slice stack **A DONE**; header **B** + course rows **C** in progress; pixel loop **F** blocked until B/C.
 
 | # | Requirement | File / selector / testid | Status |
 |---|-------------|---------------------------|--------|
@@ -18,12 +18,12 @@
 | 6 | Collapsed default (stones visible, not TRAY copy) | `defaultExtended={false}`, `data-extended="false"` | PASS |
 | 7 | IDEAS tab label (not FOLDERS) | `.arc-desk-ideas-tab`, `green-folders-drawer.svg` | PASS |
 | 8 | Four circular stone tokens (mustard, terracotta, blue, forest) | `.arc-desk-green-drawer-token--*` | PASS |
-| 9 | SVG drawer art matches comp depth | `ideas-drawer-chrome.png` slice + SVG fallback | IN PROGRESS (A) |
+| 9 | SVG drawer art matches comp depth | `ideas-drawer-chrome.png` slice + SVG fallback | PARTIAL (A shipped) |
 | **TO-DOS folder** |
-| 10 | Denim vertical folder left of planner | `DeskTodosFolder`, slice `todos-folder-*` | IN PROGRESS (A) |
+| 10 | Denim vertical folder left of planner | `DeskTodosFolder`, slice `todos-folder-*` | PARTIAL (A shipped) |
 | 11 | Vertical TO-DOS tab on folder edge | `.arc-desk-todos-folder-tab` | PASS |
 | 12 | MUST DO / SHOULD DO / COULD DO labels | `DeskPriorityPad` `folderChrome`, `.desk-priority-pad--folder` | PASS |
-| 13 | Denim texture vs Kelly photographic fold | `todos-folder-body.png` when slices on | IN PROGRESS (A) |
+| 13 | Denim texture vs Kelly photographic fold | `todos-folder-body.png` when slices on | PARTIAL (A shipped) |
 | **Planner spread** |
 | 14 | Cream paper + green frame border | `.arc-calendar-spread--desk` | PASS |
 | 15 | Title “Teaching week” (Instrument Serif) | `.plan-state-primary`, `arc-fonts.css` | PASS |

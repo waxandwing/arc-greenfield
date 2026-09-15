@@ -44,7 +44,7 @@
 |---------|----------|
 | Global ~60% RGB diff | A2 slices, B header art, C row chrome, viewport scale normalization |
 | Denim still gradient when slices off | A TO-DOS slices default on in preview |
-| Vertical tabs no Figma slice yet | A2 export from hero PNG |
+| Vertical tab crop alignment vs comp | Fine-tune `arc-planner-physical-tabs--desk-edge` + crop script |
 | Drive audit | Kelly/manual upload after each agent pass |
 
 ## QUESTIONS FOR KELLY
@@ -58,3 +58,16 @@
 - **Done this pass:** A (full slice stack), D calendar pop-out, coordinator docs, integration tip commit.
 - **Next agent:** B planner header, then C course row rails.
 - **Blocked:** F pixel target until B/C land and pixel pass re-run.
+
+### 2026-09-15 — Drive ruthless audit on integration
+
+- **Merged:** `e9947cc` (from `cursor/vertical-slices-desk-audit-b637`) onto `cursor/arc-production-integration` via fast-forward.
+- **Verdict:** **YELLOW** — structural/integration continuity OK; not Drive-GREEN overall (`docs/overnight/DESK-RUTHLESS-AUDIT-PASS-2026-09-15.md`).
+- **Open RED:** Kelly pixel gate ~60% RGB diff; repo IA ruthless (title stack / notes chrome); full Gate 1 battery not run this pass.
+
+### 2026-09-15 — Do not settle pass (bc subagent)
+
+- **Docs:** “Do not settle” in MASTER + QUEUE; **QUESTIONS FOR KELLY** (Drive path, rainbow mark, period times).
+- **Visual:** Today ←/→ cluster (`DeskPlannerHeadRow`); Kelly demo `P1 • 8:05–9:00` row labels + desk typography; edge tab `right: 0` (Drive audit fine-tune).
+- **Pixel:** `round-4` evidence — Kelly **60.08%** diff (not &lt;15%; continue B/C slices).
+- **Leader merge:** `bc-e88a74c1` tip not accessible from this environment; worked from integration tip `72a7ee7` → `e9947cc` lineage.

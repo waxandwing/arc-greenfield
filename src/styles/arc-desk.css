@@ -248,7 +248,7 @@ html:has(.arc-shell--desk) body {
 .arc-planner-physical-tabs--desk-edge {
   position: absolute;
   left: auto;
-  right: -2px;
+  right: 0;
   top: 12%;
   bottom: 10%;
   transform: none;
