@@ -1,82 +1,59 @@
 # Kelly desk asset incorporation pass
 
-**Drop-folder steps (drag, add, commit, push):** see `uploads/desk-incoming/README.txt`.
+**Date:** 2026-09-15  
+**Git:** `94a35d6` (main, up to date with origin)  
+**Agent task:** Incorporate files from `uploads/desk-incoming/` per `docs/KELLY-WHERE-TO-PUT-DESK-ASSETS.md`.
 
-**Run:** 2026-09-15 (Cloud Agent, after Kelly reported files in `uploads/desk-incoming`)  
-**Branch checked:** `main` @ `94a35d64684474db8d04d9e4301c3ea706355c9f` (before this doc commit)  
-**Prior agent:** bc-0b3c8b5b likely ran when the drop folder had no assets yet.
+## 1. Incoming drop folder inventory
 
----
+Path: `uploads/desk-incoming/`
 
-## Incoming folder inventory (repo)
+| File | Size | Type |
+|------|------|------|
+| `.gitkeep` | 0 B | placeholder |
+| `README.txt` | 688 B | text (Kelly instructions; lists **no files yet**) |
 
-| Path | Size |
-|------|------|
-| `uploads/desk-incoming/README.txt` | 688 B |
-| `uploads/desk-incoming/.gitkeep` | 0 B |
+**No PNG, SVG, or other image assets** were present in the drop folder or elsewhere under `uploads/`.
 
-**Asset files (PNG, SVG, JPG, WebP, etc.):** **0**
+Searched workspace for alternate Kelly drops (recent untracked images, `agent-tools/`, etc.): **nothing new to incorporate** beyond what is already committed under `public/assets/`.
 
-`git status uploads/` — clean; nothing untracked under `uploads/`.
+## 2. Actions taken
 
----
+| Action | Result |
+|--------|--------|
+| Move/copy from `uploads/desk-incoming/` | **Skipped** — no image files |
+| Update `public/assets/desk/slices/manifest.json` | **No change** — no new slices |
+| Update `src/navigation/deskSliceManifestData.ts` | **No change** |
+| CSS / component wiring | **No change** |
 
-## Incorporated this pass?
+Existing desk art in repo (already wired; reference for Kelly):
 
-**No.** There were no image files in the repo to move into `public/assets/…` or wire through manifest/slices.
+- **Top-level desk:** `light-wood-desk.png`, `blue-molded-tray.png`, `planner-tab-mustard.png`, `green-folders-drawer.svg`
+- **Figma hero ref:** `public/assets/desk/figma/desk-hero-37-11052.png`
+- **Slices (11 PNGs + manifest):** ids match `manifest.json` / `deskSliceManifestData.ts` (drawer chrome, todos folder, planner frame accents, start-class frame, planner edge tabs)
 
-Existing desk slices in `public/assets/desk/slices/` are unchanged from prior work on `main` (manifest + runtime already present).
+## 3. Tests
 
----
+| Script | Result |
+|--------|--------|
+| `npm run test:contracts` | **Passed** |
+| `npm run test:desk-slices` | **Passed** (preview on `127.0.0.1:4173`) |
+| `npm run test:arc-desk-pass` | **Passed** |
 
-## Kelly: your files are probably only on your Mac
+## 4. Still needs Kelly / Figma
 
-If you copied PNGs/SVGs into `uploads/desk-incoming` on your laptop, Git does **not** upload them until you **commit and push**. The cloud agent only sees what is on GitHub.
+When you add files, update `uploads/desk-incoming/README.txt` with one line per file (filename + purpose), then re-run incorporation.
 
-### Option A — Terminal (recommended)
+| Need | Notes |
+|------|--------|
+| **New slice PNGs** | Name with hyphens; say which desk piece (e.g. replace `todos-folder-tab.png`). Agent updates manifest + TS if placement changes. |
+| **Full-desk / hero exports** | → `public/assets/desk/figma/`; hero node ref `37:11052`, crop ref `37:11053` (Figma file `CfWcuQPY4ljYXondICj2ZX`). |
+| **Wood / tray / drawer / tab strip** | → `public/assets/desk/` (not slices unless cropped chrome). |
+| **Figma node ids for new chrome** | Required for scripted re-export via `scripts/export-desk-figma-slices.mjs` and evidence under `docs/overnight/evidence/figma-desk-6-3194/`. |
+| **Pixel gaps (unchanged)** | See `docs/overnight/DESK-PIXEL-REQUIREMENTS.md` — viewport scale, week grid typography, Quick Capture sticky, IDEAS drawer LINE tokens. |
 
-From your Arc repo folder on your Mac:
+## 5. Next step for Kelly
 
-```bash
-cd /path/to/arc-greenfield
-git checkout main
-git pull origin main
-```
-
-Copy your desk files into `uploads/desk-incoming/`. Edit `uploads/desk-incoming/README.txt` and list each filename with one line saying what it is.
-
-Then:
-
-```bash
-git add uploads/desk-incoming/
-git status
-git commit -m "Add Kelly desk assets to incoming drop folder"
-git push origin main
-```
-
-After push, ask Cursor:
-
-> Incorporate the desk assets in `uploads/desk-incoming`.
-
-### Option B — Cursor UI
-
-1. Open this repo in Cursor and make sure you are on **main** (pull latest).
-2. Drag your files into `uploads/desk-incoming/` in the file tree.
-3. Update `uploads/desk-incoming/README.txt` with the file list.
-4. Source Control → stage `uploads/desk-incoming/` → commit → **Push**.
-
----
-
-## After assets are on GitHub
-
-An agent will sort files per `docs/KELLY-WHERE-TO-PUT-DESK-ASSETS.md`, update slices/manifest/CSS if needed, and push to `main`.
-
-**You preview the desk with:**
-
-```bash
-npm run kelly:desk
-```
-
-Then open: `http://127.0.0.1:4173/?demo=1&demoReset=1`
-
-Check the bottom-right footer stamp (`desk-v2 · main · <sha>`) matches the latest commit after you pull.
+1. Copy exports into `uploads/desk-incoming/`.
+2. Edit `README.txt` — list each file and what it replaces or adds.
+3. Ask: *Incorporate the desk assets in uploads/desk-incoming.*
