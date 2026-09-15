@@ -1,7 +1,7 @@
 # ArcBuild handback — Teaching week visual audit
 
 - **Branch:** main
-- **SHA:** see `git rev-parse origin/main` after push (landed via `0d72c17` + follow-ups)
+- **SHA:** `4969108` (visual core `0d72c17`; smoke `243fa46`; handback tip)
 - **Pushed:** yes — `origin/main`
 - **Audit addressed:** `docs/overnight/ARC-BUILD-VISUAL-AUDIT-VS-TEACHING-WEEK-2026-09-15.md`
 
