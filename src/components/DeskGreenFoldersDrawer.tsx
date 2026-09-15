@@ -1,5 +1,5 @@
 import { useCallback, useId, useState, type ReactNode } from 'react'
-import { deskSliceUsesEnabled } from '../desk/deskSliceRuntime'
+import { deskCommittedRasterChromeEnabled } from '../desk/deskSliceRuntime'
 import { DeskChromeSlice } from './DeskChromeSlice'
 
 type Props = {
@@ -17,7 +17,8 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     setExtended((current) => !current)
   }, [])
 
-  const slicesEnabled = deskSliceUsesEnabled()
+  // Textured PNG chrome by default (same gate as TO-DOS / edge tabs); SVG only when raster off.
+  const slicesEnabled = deskCommittedRasterChromeEnabled()
 
   return (
     <aside
