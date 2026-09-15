@@ -169,12 +169,9 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-capture-sticky {
-  position: absolute;
-  right: 4.5%;
-  top: 4%;
   width: 15.9%;
-  height: 20.3%;
-  /* Post-its stay above IDEAS when drawer enlarges */
+  min-height: 20.3%;
+  /* Post-its stay above landscape IDEAS when drawer enlarges */
   z-index: 14;
 }
 
@@ -582,13 +579,11 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-capture-sticky {
-  padding: 10px 10px 12px;
-  border-radius: 4px 14px 12px 8px;
+  /* Visual pad + capture well; position/drag owned by DeskPostIt on arc-desk-surface. */
   background: linear-gradient(165deg, #f5e083 0%, #e8c84a 48%, #d9b63a 100%);
   box-shadow:
     0 14px 32px -18px rgba(33, 29, 23, 0.52),
     inset 0 1px 0 rgba(255, 253, 248, 0.55);
-  transform: rotate(1.4deg);
 }
 
 .arc-desk-capture-sticky-title {
@@ -919,12 +914,59 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-surface[data-layout-grid='true'] > .arc-desk-capture-sticky {
-  position: absolute;
-  right: 4.5%;
-  top: 4%;
   width: 15.9%;
-  height: 20.3%;
+  min-height: 20.3%;
   z-index: 7;
+}
+
+/* Live desk post-its — never bake these into IDEAS tray SVG/PNG chrome. */
+.arc-desk-post-it {
+  position: absolute;
+  z-index: 14;
+  width: 4.6%;
+  aspect-ratio: 1 / 0.92;
+  min-width: 36px;
+  border-radius: 3px 8px 6px 4px;
+  box-shadow:
+    0 10px 22px -14px rgba(33, 29, 23, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.55);
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.arc-desk-post-it--dragging {
+  cursor: grabbing;
+  z-index: 16;
+  box-shadow:
+    0 18px 34px -16px rgba(33, 29, 23, 0.62),
+    inset 0 1px 0 rgba(255, 253, 248, 0.6);
+}
+
+.arc-desk-post-it--mustard {
+  background: linear-gradient(165deg, #f5e083 0%, #e8c84a 48%, #d9b63a 100%);
+}
+
+.arc-desk-post-it--pink {
+  background: linear-gradient(165deg, #f6d0d4 0%, #e8a8b0 55%, #d48992 100%);
+}
+
+.arc-desk-post-it--blue {
+  background: linear-gradient(165deg, #e4eef7 0%, #c5d7e8 52%, #9eb8c7 100%);
+}
+
+.arc-desk-post-it--cream {
+  background: linear-gradient(165deg, #fff9ef 0%, #f3e6cf 55%, #e6d4b4 100%);
+}
+
+.arc-desk-post-it.arc-desk-capture-sticky {
+  width: 15.9%;
+  aspect-ratio: auto;
+  min-height: 7.5rem;
+  padding: 10px 10px 12px;
+  border-radius: 4px 14px 12px 8px;
+  cursor: grab;
 }
 
 .arc-desk-object-slot {

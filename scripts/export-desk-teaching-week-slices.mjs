@@ -42,6 +42,7 @@ def crop_norm(left, top, width, height, name, pad=0):
     im.crop((x0, y0, x1, y1)).save(OUT / name, optimize=True)
 
 # Norm regions tuned to Teaching week zip comp (1366×768)
+# ideas-drawer-chrome: green panel chrome ONLY — never crop yellow/pink/blue post-its into this PNG.
 crop_norm(0.355 * REF_W, 0, 0.29 * REF_W, 0.145 * REF_H, 'ideas-drawer-chrome.png', pad=2)
 crop_norm(0.038 * REF_W, 0.175 * REF_H, 0.115 * REF_W, 0.535 * REF_H, 'todos-folder-body.png')
 crop_norm(0.008 * REF_W, 0.335 * REF_H, 0.038 * REF_W, 0.245 * REF_H, 'todos-folder-tab.png')

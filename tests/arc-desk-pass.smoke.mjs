@@ -112,6 +112,34 @@ try {
   assert(await page.getByTestId('desk-slice-ideas-drawer').count() === 1, 'IDEAS drawer must use ideas-drawer-chrome.png by default.')
   assert(await page.getByTestId('desk-source-ideas-drawer').count() === 0, 'SVG IDEAS fallback must be off when committed rasters are default.')
   assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-desk-slices')) === 'true', 'IDEAS dock must opt into committed raster chrome.')
+  const drawerSvg = await page.evaluate(async () => {
+    const response = await fetch(new URL('assets/desk/green-folders-drawer.svg', window.location.href).href)
+    return response.text()
+  })
+  assert(!/#f5e6a8|#f0c4c8|#dce8f4/.test(drawerSvg), 'IDEAS drawer SVG must not bake yellow/pink/blue sticky fills — post-its are live React objects.')
+  assert(!/decorative sticky/i.test(drawerSvg), 'IDEAS drawer SVG must not include decorative sticky markup.')
+  const drawerPngHasStickyFills = await page.evaluate(async () => {
+    const response = await fetch(new URL('assets/desk/green-folders-drawer.png', window.location.href).href)
+    const blob = await response.blob()
+    const bitmap = await createImageBitmap(blob)
+    const canvas = document.createElement('canvas')
+    canvas.width = bitmap.width
+    canvas.height = bitmap.height
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(bitmap, 0, 0)
+    const { data, width, height } = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
+    let sticky = 0
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3]
+      if (a < 40) continue
+      const yellow = r >= 190 && g >= 160 && b <= 150 && (r - b) >= 50 && (g - b) >= 25
+      const pink = r >= 185 && 120 <= g && g <= 200 && 130 <= b && b <= 210 && (r - g) >= 20 && Math.abs(r - b) <= 70
+      const blue = b >= 165 && g >= 145 && r <= 190 && (b - r) >= 18 && g >= r - 5
+      if (yellow || pink || blue) sticky += 1
+    }
+    return sticky > 40
+  })
+  assert(!drawerPngHasStickyFills, 'Landscape IDEAS PNG must not bake yellow/pink/blue sticky fills — post-its are live React objects.')
   assert(await page.getByTestId('desk-slice-todos-body').count() === 1, 'TO-DOS folder must use committed slice PNG assets by default.')
   assert(await page.getByTestId('desk-source-todos-body').count() === 0, 'CSS TO-DOS fallback must be off when committed rasters are default.')
   assert(await page.getByTestId('desk-slice-todos-tab').count() === 1, 'TO-DOS side tab slice must render on denim folder edge.')
@@ -143,6 +171,18 @@ try {
   const quickCaptureSticky = page.getByTestId('arc-desk-quick-capture')
   assert(await quickCaptureSticky.count() === 1, 'Desk must render DeskQuickCaptureSticky on the wood.')
   assert(await quickCaptureSticky.isVisible(), 'Quick jot sticky must be visible (not CSS-hidden for pixel fidelity).')
+  assert(await quickCaptureSticky.getAttribute('data-desk-post-it') === 'quick-capture', 'Quick capture must be a live DeskPostIt desk object, not tray chrome.')
+  assert(await page.getByTestId('arc-desk-post-it-accent-mustard').isVisible(), 'Mustard accent post-it must be an independent desk object.')
+  assert(await page.getByTestId('arc-desk-post-it-accent-pink').isVisible(), 'Pink accent post-it must be an independent desk object.')
+  assert(await page.getByTestId('arc-desk-post-it-accent-blue').isVisible(), 'Blue accent post-it must be an independent desk object.')
+  assert(
+    await page.locator('.arc-desk-surface > [data-desk-post-it]').count() >= 4,
+    'Post-its must be direct arc-desk-surface children (not nested in IDEAS tray raster).',
+  )
+  assert(
+    await page.locator('.arc-desk-green-drawer-art [data-desk-post-it], .arc-desk-tray-dock [data-desk-post-it]').count() === 0,
+    'Post-its must not live inside IDEAS tray chrome.',
+  )
   const captureTrigger = page.getByTestId('global-capture-trigger')
   assert(await captureTrigger.count() === 1, 'Desk must expose one quick capture trigger.')
   assert(await captureTrigger.isVisible(), 'global-capture-trigger must be visible on the upper-right sticky.')

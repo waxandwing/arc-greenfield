@@ -38,6 +38,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
             <DeskChromeSlice sliceId="ideas-drawer-chrome" testId="desk-slice-ideas-drawer" />
           ) : (
             <>
+              {/* Circular stone accents only — post-its are live DeskPostIt siblings on the desk surface. */}
               <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--mustard" />
               <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--terracotta" />
               <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--blue" />

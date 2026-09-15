@@ -36,6 +36,7 @@ def crop_norm(left, top, width, height, name, pad=0):
     x1, y1 = min(sw, x1), min(sh, y1)
     im.crop((x0, y0, x1, y1)).save(OUT / name, optimize=True)
 
+# ideas-drawer-chrome: green panel chrome ONLY — post-its are live DeskPostIt React objects, not crops.
 crop_norm(0.33*REF_W, 0, 0.28*REF_W, 420, 'ideas-drawer-chrome.png', pad=2)
 crop_norm(0.035*REF_W, 0.22*REF_H, 0.156*REF_W, 0.51*REF_H, 'todos-folder-body.png')
 crop_norm(0.01*REF_W, 0.38*REF_H, 0.04*REF_W, 0.22*REF_H, 'todos-folder-tab.png')
