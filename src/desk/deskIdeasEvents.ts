@@ -8,9 +8,8 @@ export function requestDeskIdeasOpen() {
   window.dispatchEvent(new CustomEvent(DESK_IDEAS_OPEN_EVENT))
 }
 
-/** Gather loose desk post-its back into the IDEAS drawer and open it. */
+/** Gather loose desk post-its back into the IDEAS tray. Does not open the tray. */
 export function requestDeskIdeasCleanUp() {
   if (typeof window === 'undefined') return
   window.dispatchEvent(new CustomEvent(DESK_IDEAS_CLEAN_UP_EVENT))
-  requestDeskIdeasOpen()
 }
