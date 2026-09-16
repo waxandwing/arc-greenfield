@@ -554,8 +554,8 @@ try {
     const grip = traySticky.getByTestId(`arc-desk-post-it-accent-${tone}-grip`)
     const start = await grip.boundingBox()
     assert(start, `${tone} in-drawer grip must be draggable.`)
-    const dropX = surfaceBox.x + surfaceBox.width * (tone === 'mustard' ? 0.72 : 0.82)
-    const dropY = surfaceBox.y + surfaceBox.height * 0.58
+    const dropX = surfaceBox.x + surfaceBox.width * (tone === 'mustard' ? 0.86 : 0.92)
+    const dropY = surfaceBox.y + surfaceBox.height * 0.78
     await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
     await page.mouse.down()
     await page.mouse.move(dropX, dropY, { steps: 24 })
@@ -595,7 +595,7 @@ try {
   assert(pinkReturnedStart, 'Returned pink must be draggable out again.')
   await page.mouse.move(pinkReturnedStart.x + pinkReturnedStart.width / 2, pinkReturnedStart.y + pinkReturnedStart.height / 2)
   await page.mouse.down()
-  await page.mouse.move(surfaceBox.x + surfaceBox.width * 0.8, surfaceBox.y + surfaceBox.height * 0.62, { steps: 14 })
+  await page.mouse.move(surfaceBox.x + surfaceBox.width * 0.9, surfaceBox.y + surfaceBox.height * 0.8, { steps: 14 })
   await page.mouse.up()
   assert(await page.locator('.arc-desk-surface > [data-desk-post-it="accent-pink"]').count() === 1, 'Pink must leave IDEAS again onto the exterior desk.')
 

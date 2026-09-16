@@ -32,8 +32,8 @@ try {
     const grip = traySticky.getByTestId(`arc-desk-post-it-accent-${tone}-grip`)
     const start = await grip.boundingBox()
     assert(start, `${tone} grip`)
-    const dropX = surfaceBox.x + surfaceBox.width * (tone === 'mustard' ? 0.72 : 0.82)
-    const dropY = surfaceBox.y + surfaceBox.height * 0.58
+    const dropX = surfaceBox.x + surfaceBox.width * (tone === 'mustard' ? 0.86 : 0.92)
+    const dropY = surfaceBox.y + surfaceBox.height * 0.78
     await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
     await page.mouse.down()
     await page.mouse.move(dropX, dropY, { steps: 24 })

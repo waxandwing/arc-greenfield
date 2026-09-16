@@ -126,10 +126,10 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='true'] {
   /* Physical pull-out: a bit larger, still tray-aspect so planner stays readable.
-     Keep above wood post-its (z14) so park grip / Clean up lip stay hittable. */
+     Above wood post-its (z17) so park grip / Clean up lip stay hittable. */
   height: min(36%, 300px);
   max-width: min(58%, 780px);
-  z-index: 16;
+  z-index: 18;
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-green-drawer-well,
@@ -1405,14 +1405,10 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
-/* Open IDEAS sits above wood stickies so park grip / Clean up stay hittable. */
-.arc-desk-surface:not([data-layout-grid='true']):has(> .arc-desk-tray-dock[data-extended='true']) > .arc-desk-post-it {
-  z-index: 14;
-}
 
 .arc-desk-post-it--dragging {
   cursor: grabbing;
-  z-index: 16;
+  z-index: 20;
   box-shadow:
     0 18px 34px -16px rgba(33, 29, 23, 0.62),
     inset 0 1px 0 rgba(255, 253, 248, 0.6);
