@@ -156,6 +156,7 @@ export function B01Furniture({
 }: Props) {
   const [open, setOpen] = useState<Record<DrawerName, boolean>>({ settings: false, workspace: false, tasks: false })
   const settingsButton = useRef<HTMLButtonElement>(null)
+  const settingsSurface = useRef<HTMLDivElement>(null)
   const workspaceButton = useRef<HTMLButtonElement>(null)
   const workspaceIsOpen = workspaceOpen ?? open.workspace
   const tasksIsOpen = tasksOpen ?? open.tasks
@@ -233,6 +234,22 @@ export function B01Furniture({
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [open, workspaceIsOpen, tasksIsOpen, onWorkspaceOpenChange, onTasksOpenChange])
+
+  // Click desk / outside the settings sheet to dismiss (same as Close). Keep the SETTINGS
+  // edge/index tab out of the hit test so its toggle click is not swallowed by a close+reopen.
+  useEffect(() => {
+    if (!open.settings) return
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target as Node | null
+      if (!target) return
+      if (settingsSurface.current?.contains(target)) return
+      if (settingsButton.current?.contains(target)) return
+      setOpen((current) => ({ ...current, settings: false }))
+      requestAnimationFrame(() => settingsButton.current?.focus())
+    }
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
+  }, [open.settings])
 
   useEffect(() => {
     if (tasksOpen === undefined) return
@@ -573,7 +590,12 @@ export function B01Furniture({
 
         <div className="b01-side-panels">
           <aside className="b01-tool-owner b01-settings-owner" data-state={open.settings ? 'open' : 'closed'} aria-label="Settings furniture">
-            <div id="b01-settings-surface" className="b01-furniture-surface b01-settings-surface" inert={!open.settings ? true : undefined}>
+            <div
+              id="b01-settings-surface"
+              ref={settingsSurface}
+              className="b01-furniture-surface b01-settings-surface"
+              inert={!open.settings ? true : undefined}
+            >
               <div className="b01-surface-heading"><p className="b01-furniture-kicker">Settings</p><button type="button" onClick={() => close('settings')} aria-label="Close Settings">Close</button></div>
               {settings}
             </div>
