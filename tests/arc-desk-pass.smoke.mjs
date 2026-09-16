@@ -172,9 +172,24 @@ try {
   })
   assert(closedIdeasPeek.peekPx <= 56, `Closed IDEAS must be a slim tab peek (peek=${closedIdeasPeek.peekPx}px), not a large dim panel.`)
   assert(closedIdeasPeek.artVisibility === 'visible', 'Closed IDEAS must keep ideas-tray.png chrome so the baked IDEAS pull-tab peeks.')
-  assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Clean up lip must sit on the IDEAS tray top chrome on every desk view.')
+  assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Clean up lip must sit on the IDEAS tray lower-right chrome on every desk view.')
   assert(await page.locator('[data-testid="arc-desk-clean-up"]').count() === 1, 'Clean up must be a single affordance (no duplicate pills).')
   assert(await page.getByTestId('arc-desk-clean-up').evaluate((el) => el.classList.contains('arc-desk-clean-up--lip')), 'Clean up must be the stamped lip control, not a planning pill.')
+  const cleanUpLipBox = await page.getByTestId('arc-desk-clean-up').evaluate((el) => {
+    const style = getComputedStyle(el)
+    return {
+      left: style.left,
+      right: style.right,
+      top: style.top,
+      bottom: style.bottom,
+      boxShadow: style.boxShadow,
+      parentIsTray: Boolean(el.closest('[data-testid="arc-desk-tray-dock"]')),
+    }
+  })
+  assert(cleanUpLipBox.parentIsTray, 'Clean up must live on the IDEAS tray so park/drag keeps it attached.')
+  assert(cleanUpLipBox.left === 'auto' || Number.parseFloat(cleanUpLipBox.right) >= 0, 'Clean up must sit on the right side of the tray lip.')
+  assert(!/inset/.test(cleanUpLipBox.boxShadow), 'Clean up lip must not keep the underline stamp.')
+  assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-tray-park-top')) === '0', 'IDEAS tray must default parked at the top edge.')
   const woodMarkSrc = await page.getByTestId('arc-desk-wood-wordmark').getAttribute('src')
   assert(woodMarkSrc?.includes('arc-mark-stacked.png'), 'Wood wordmark must use Kelly original Arc stacked mark.')
   const woodMarkFilter = await page.getByTestId('arc-desk-wood-wordmark').evaluate((img) => getComputedStyle(img).filter)

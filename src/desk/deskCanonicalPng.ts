@@ -6,6 +6,8 @@ export const DESK_CANONICAL_PNG = {
   todosTabAlt: 'assets/desk/canonical/todos-tab-alt.png',
   ideasTray: 'assets/desk/canonical/ideas-tray.png',
   settingsTab: 'assets/desk/canonical/settings-tab.png',
+  postitBlue: 'assets/desk/canonical/postit-blue.png',
+  postitCream: 'assets/desk/canonical/postit-cream.png',
 } as const
 
 export function deskCanonicalPngUrl(key: keyof typeof DESK_CANONICAL_PNG): string {
