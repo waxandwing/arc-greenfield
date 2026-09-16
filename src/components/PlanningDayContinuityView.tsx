@@ -211,11 +211,11 @@ function LessonFocus({
   }
 
   return (
-    <ArcImportantObject important={source.important === true} className="lesson-focus-shell">
-    <section className="lesson-focus" aria-label={`${source.title} lesson focus`} data-lesson-focus={source.id}>
+    <section className="lesson-focus" aria-label={`${source.title} lesson focus`} data-lesson-focus={source.id} data-important={source.important === true ? 'true' : 'false'}>
       {onReturnToPlanningPeriod ? <button type="button" className="plan-back-link" onClick={onReturnToPlanningPeriod}>Back to Planning period</button> : null}
       {onRetreat && !onReturnToPlanningPeriod ? <button type="button" className="plan-back-link" onClick={onRetreat}>Back to class</button> : null}
       <header className="lesson-focus-heading">
+        {source.important === true ? <p className="lesson-focus-important-label" role="status">IMPORTANT</p> : null}
         <p className="day-continuity-lesson-meta lesson-focus-context">
           <span>{section.sectionName} · {courseTitle}</span>
           <span>{projected.unitTitle}</span>
@@ -247,7 +247,6 @@ function LessonFocus({
         ) : null}
       </div>
     </section>
-    </ArcImportantObject>
   )
 }
 

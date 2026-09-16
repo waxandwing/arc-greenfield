@@ -297,6 +297,14 @@ button.day-continuity-lesson-title-open:focus-visible{
   background: linear-gradient(110deg, var(--mustard-soft), rgba(255, 253, 248, .54) 34%, transparent 74%);
 }
 
+.lesson-focus-important-label {
+  margin: 0 0 8px;
+  color: var(--terracotta);
+  font: 800 12px/1.2 var(--font-ui);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .lesson-focus-heading h2 {
   max-width: 19ch;
   margin: 6px 0 12px;
