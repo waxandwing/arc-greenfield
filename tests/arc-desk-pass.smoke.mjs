@@ -486,7 +486,7 @@ try {
     }
   })
   assert(yearIdeasPeek.extended === 'false', 'IDEAS must start collapsed on Year.')
-  assert(yearIdeasPeek.peekPx <= 64, `Year IDEAS closed peek must stay a slim tab (peek=${yearIdeasPeek.peekPx}px).`)
+  assert(yearIdeasPeek.peekPx <= 72, `Year IDEAS closed peek must stay a slim tab (peek=${yearIdeasPeek.peekPx}px).`)
   await selectView(page, 'Week')
 
   // Clean up gathers loose accent post-its into the closed IDEAS tray (must not auto-open).

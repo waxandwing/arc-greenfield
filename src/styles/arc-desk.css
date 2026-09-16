@@ -138,11 +138,10 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
-/* Closed: only the IDEAS pull-tab is interactive — well/Clean up must not steal wood post-it hits. */
+/* Closed: hide the off-screen well from hit-testing; tab + Clean up lip stay in the peek strip. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='false'] .arc-desk-green-drawer-well,
-.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='false'] .arc-desk-clean-up,
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='false'] .arc-desk-ideas-tray-park-grip {
-  pointer-events: none;
+  pointer-events: none !important;
 }
 
 /* Locked to planner left edge (planner left = 13.5%). Open = extend left; closed = tab only. */
@@ -228,7 +227,7 @@ html:has(.arc-shell--desk) body {
 /* Year: combine scale with the closed/open translateY so the slim IDEAS tab still peeks. */
 .b01-furniture-composition--desk.b01-furniture-composition--year-expanded
   .arc-desk-green-folders-drawer {
-  transform: translateY(calc(-100% + 2.7rem)) scale(0.92);
+  transform: translateY(calc(-100% + 2.35rem)) scale(0.92);
   transform-origin: top center;
 }
 
