@@ -148,6 +148,11 @@
   background: linear-gradient(90deg, rgba(201, 104, 69, 0.14), transparent 48%);
 }
 
+.planning-grid:not(.planning-grid--day) .planning-course--minimized {
+  min-height: 0;
+  padding-bottom: var(--space-2);
+}
+
 .planning-grid:not(.planning-grid--day) .planning-course[data-course-id='course-apah'] {
   background: linear-gradient(90deg, var(--course-apah-band), transparent 42%);
 }
