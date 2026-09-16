@@ -20,8 +20,8 @@ import { DeskTodosFolder } from './DeskTodosFolder'
 import {
   deskCommittedRasterChromeEnabled,
   deskPlannerEdgeTabAssetUrl,
+  deskSettingsTabUrl,
 } from '../desk/deskSliceRuntime'
-import { deskCanonicalPngUrl } from '../desk/deskCanonicalPng'
 import { DeskPlannerFrameSlices } from './DeskPlannerFrameSlices'
 
 type DrawerName = 'settings' | 'workspace' | 'tasks'
@@ -395,26 +395,47 @@ export function B01Furniture({
             </button>
           )
         })}
-        <button
-          ref={settingsButton}
-          type="button"
-          className={`arc-index-tab arc-index-tab--settings${edgeTabSlices ? ' arc-index-tab--desk-slice' : ''}${open.settings && edgeTabSlices ? ' arc-index-tab--desk-slice-active' : ''}`}
-          data-testid="arc-planner-settings-edge-tab"
-          data-desk-slice-tab="settings"
-          data-desk-kelly-asset="settings-tab"
-          aria-expanded={open.settings}
-          aria-controls="b01-settings-surface"
-          aria-current={open.settings ? 'page' : undefined}
-          title="Settings"
-          style={{ backgroundImage: `url(${deskCanonicalPngUrl('settingsTab')})` }}
-          onClick={() => toggle('settings')}
-        >
-          <span className="arc-index-tab-face" aria-hidden="true">
-            {EDGE_TAB_ICONS.SETTINGS}
-          </span>
-          <span className="arc-index-tab-label">SETTINGS</span>
-        </button>
       </nav>
+    )
+  }
+
+  /** Copper SETTINGS index tab — grips the planner/journal LEFT edge (not wood utility strip). */
+  function renderPlannerSettingsLeftTab() {
+    if (!indexNav || !deskEnabled) return null
+    const physical = deskCommittedRasterChromeEnabled()
+    return (
+      <button
+        ref={settingsButton}
+        type="button"
+        className={`arc-index-tab arc-index-tab--settings${physical ? ' arc-index-tab--settings-physical' : ''}`}
+        data-testid="arc-desk-settings-tab"
+        data-planner-settings-edge="true"
+        data-desk-kelly-asset="settings-tab"
+        aria-expanded={open.settings}
+        aria-controls="b01-settings-surface"
+        aria-current={open.settings ? 'page' : undefined}
+        aria-label="SETTINGS"
+        title="Settings"
+        onClick={() => toggle('settings')}
+      >
+        {physical ? (
+          <>
+            <img
+              className="arc-settings-tab-face"
+              src={deskSettingsTabUrl()}
+              alt=""
+              width={46}
+              height={73}
+              aria-hidden="true"
+              decoding="async"
+              data-testid="arc-desk-settings-tab-face"
+            />
+            <span className="arc-settings-tab-label">SETTINGS</span>
+          </>
+        ) : (
+          'SETTINGS'
+        )}
+      </button>
     )
   }
 
@@ -512,6 +533,7 @@ export function B01Furniture({
       {deskEnabled
         ? renderPlannerViewTabs(plannerEdgeTabsClass)
         : null}
+      {deskEnabled ? renderPlannerSettingsLeftTab() : null}
       {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
       <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
         {deskEnabled ? <DeskPlannerFrameSlices /> : null}

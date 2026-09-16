@@ -109,7 +109,7 @@ async function main() {
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
   await page.evaluate(() => {
-    document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')?.click()
+    document.querySelector('[data-testid="arc-desk-settings-tab"]')?.click()
   })
   await page.getByRole('button', { name: 'Edit Workspace', exact: true }).click()
   await page.locator('[data-settings-open="false"]').waitFor()

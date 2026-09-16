@@ -356,9 +356,9 @@ html:has(.arc-shell--desk) body {
   max-width: none;
 }
 
-/* SETTINGS physical edge tab — opens main Settings furniture. Kelly USE SVG still BLOCKED. */
+/* SETTINGS left-of-journal — not in the right-edge DAY/WEEK stack. */
 .arc-planner-physical-tabs--desk-edge .arc-index-tab--settings {
-  margin-top: 8px;
+  display: none;
 }
 .arc-planner-physical-tabs--desk-edge .arc-index-tab--settings[aria-current='page'] {
   color: color-mix(in srgb, var(--ink) 92%, #2a4a66);
@@ -2052,7 +2052,7 @@ html:has(.arc-shell--desk) body {
 }
 
 /* Desk utilities: PLANNING/TRAY stay DOM-reachable for smokes (visually off-screen).
-   SETTINGS is a physical planner edge tab (see .arc-planner-physical-tabs--desk-edge). */
+   SETTINGS grips the planner/journal left edge — not this wood utility strip. */
 .b01-furniture-composition--desk .arc-desk-utility-tabs {
   position: absolute;
   left: 2.4%;
@@ -2082,50 +2082,70 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
-/* Kelly copper SETTINGS physical tab — replace CSS pill when raster chrome is on. */
-.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical {
+/* Kelly copper SETTINGS — physical index tab gripping the planner/journal LEFT edge.
+   Original settings-tab.png art only; no filters/effects. Not a wood utility-strip control. */
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical {
+  position: absolute;
+  /* Ear protrudes onto wood; body overlaps green rim / cream plate. */
+  left: -26px;
+  top: 54%;
+  transform: translateY(-50%);
+  z-index: 48;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
+  width: auto;
   min-width: 44px;
   min-height: 72px;
   padding: 0;
+  margin: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
   color: color-mix(in srgb, #3a2418 88%, #8a4a28);
+  cursor: pointer;
+  pointer-events: auto;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
 }
 
-.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical .arc-settings-tab-face {
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical .arc-settings-tab-face {
   display: block;
-  width: clamp(36px, 3.6vw, 52px);
+  width: clamp(40px, 3.8vw, 48px);
   height: auto;
   object-fit: contain;
   pointer-events: none;
-  filter: drop-shadow(0 10px 18px -12px rgba(33, 29, 23, 0.55));
+  filter: none;
 }
 
-.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical .arc-settings-tab-label {
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical .arc-settings-tab-label {
   font-family: 'League Spartan', var(--font-label), sans-serif;
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.16em;
   line-height: 1;
   color: color-mix(in srgb, #2c1a12 90%, #9a5a32);
-  text-shadow: 0 1px 0 rgba(255, 248, 235, 0.35);
+  text-shadow: none;
 }
 
-.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical[aria-current='page'] {
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical[aria-current='page'] {
   opacity: 1;
-  filter: brightness(1.04);
 }
 
-.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical:focus-visible {
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical:focus-visible {
   outline: 3px solid var(--mustard);
   outline-offset: 3px;
+}
+
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings:not(.arc-index-tab--settings-physical) {
+  position: absolute;
+  left: -8px;
+  top: 54%;
+  transform: translateY(-50%);
+  z-index: 48;
 }
 
 .b01-furniture-composition--desk .arc-desk-arctable--start-class-mark {
@@ -2461,11 +2481,9 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .arc-desk-todos-folder .desk-priority-pad {
   pointer-events: auto;
 }
+/* SETTINGS left-edge face uses <img.arc-settings-tab-face>, not background-image tickets. */
 .arc-planner-physical-tabs--desk-edge .arc-index-tab--settings[data-desk-kelly-asset='settings-tab'] {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  color: #1a2a36;
+  display: none;
 }
 
 
