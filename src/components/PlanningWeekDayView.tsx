@@ -467,8 +467,9 @@ function LessonProgressiveActions({
 }
 
 function gridTemplate(days: ProjectedDay[]): { gridTemplateColumns: string } {
-  // Equal day columns — focus is visual only (no width expand on hover/scroll-over or selection).
-  const columns = days.map(() => 'minmax(0,1fr)')
+  // Equal day columns with a readable floor so titles/actions stay horizontal.
+  // Focus is visual only (no width expand on hover/scroll-over or selection).
+  const columns = days.map(() => 'minmax(8.5rem,1fr)')
   return { gridTemplateColumns: `minmax(4.25rem,0.72fr) ${columns.join(' ')}` }
 }
 

@@ -196,7 +196,9 @@
   color: var(--ink);
   font-size: 16px;
   line-height: 1.35;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
+  writing-mode: horizontal-tb;
 }
 
 button.day-continuity-lesson-title-open{
