@@ -915,7 +915,7 @@ export function AppFrame() {
             deskArcTableFixture={
               deskEnabled && activeDeskPreferences.desk.showArcTable ? (
                 <ArcTableDeskFixture
-                  markSize={104}
+                  markSize={100}
                   liveActive={Boolean(arcTable.live)}
                   contextLine={deskArcTableContextLine()}
                   interactionsDisabled={deskEditActive}

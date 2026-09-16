@@ -169,15 +169,15 @@ html:has(.arc-shell--desk) body {
   z-index: 2;
 }
 
-/* Lower ArcTable / start-class mark — visible brand lockup on wood (~104px), tucked so the
+/* Lower ArcTable / start-class mark — visible brand lockup on wood (~100px), tucked so the
    planner (~89.5% right edge) keeps desk space; clear of SETTINGS, edge tabs, and help (?).
    Canonical start-class-mark.png — no glow / wood-burn filters. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor {
   position: absolute;
-  right: 3.0%;
-  bottom: 3.6%;
+  right: 2.0%;
+  bottom: 3.4%;
   width: auto;
-  max-width: 104px;
+  max-width: 100px;
   aspect-ratio: auto;
   z-index: 18;
   left: auto;
@@ -2081,8 +2081,8 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor .arc-desk-mark-svg,
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor .arc-desk-start-class-mark {
-  width: clamp(90px, 7.4vw, 104px);
-  max-width: 104px;
+  width: clamp(88px, 7vw, 100px);
+  max-width: 100px;
   height: auto;
   filter: none;
   mix-blend-mode: normal;
@@ -2293,7 +2293,7 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .arc-desk-start-class-mark {
   display: block;
-  width: clamp(90px, 7.4vw, 104px);
+  width: clamp(88px, 7vw, 100px);
   height: auto;
   object-fit: contain;
   /* Kelly: original ArcTable / start-class mark — no glow, wood-burn, or blend filters. */
@@ -2936,7 +2936,7 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-arctable-mark-wrap {
   width: 100%;
-  max-width: 104px;
+  max-width: 100px;
   filter: none;
 }
 
@@ -2958,7 +2958,7 @@ html:has(.arc-shell--desk) body {
   display: block;
   width: 100%;
   height: auto;
-  max-width: 104px;
+  max-width: 100px;
 }
 
 .arc-desk-mark-quadrant,
