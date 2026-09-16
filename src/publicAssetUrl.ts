@@ -19,8 +19,8 @@ const DESK_ASSET_PATHS = {
   scheduleSetupWood: 'assets/desk/light-wood-desk.png',
   /** Legacy molded tray — superseded on live desk by green folders drawer PNG. */
   blueTray: 'assets/desk/blue-molded-tray.png',
-  /** Landscape textured IDEAS drawer (preferred over tall SVG fallback). */
-  greenFoldersDrawer: 'assets/desk/green-folders-drawer.png',
+  /** Landscape IDEAS drawer — Kelly ingest PNG when present; legacy green folders fallback. */
+  greenFoldersDrawer: 'assets/desk/canonical/ideas-tray.png',
   plannerTabMustard: 'assets/desk/planner-tab-mustard.png',
 } as const
 

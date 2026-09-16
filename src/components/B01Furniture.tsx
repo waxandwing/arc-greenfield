@@ -21,6 +21,7 @@ import {
   deskCommittedRasterChromeEnabled,
   deskPlannerEdgeTabAssetUrl,
 } from '../desk/deskSliceRuntime'
+import { deskCanonicalPngUrl } from '../desk/deskCanonicalPng'
 import { DeskPlannerFrameSlices } from './DeskPlannerFrameSlices'
 
 type DrawerName = 'settings' | 'workspace' | 'tasks'
@@ -380,10 +381,12 @@ export function B01Furniture({
           className={`arc-index-tab arc-index-tab--settings${edgeTabSlices ? ' arc-index-tab--desk-slice' : ''}${open.settings && edgeTabSlices ? ' arc-index-tab--desk-slice-active' : ''}`}
           data-testid="arc-planner-settings-edge-tab"
           data-desk-slice-tab="settings"
+          data-desk-kelly-asset="settings-tab"
           aria-expanded={open.settings}
           aria-controls="b01-settings-surface"
           aria-current={open.settings ? 'page' : undefined}
           title="Settings"
+          style={{ backgroundImage: `url(${deskCanonicalPngUrl('settingsTab')})` }}
           onClick={() => toggle('settings')}
         >
           <span className="arc-index-tab-face" aria-hidden="true">

@@ -217,6 +217,9 @@ try {
   assert(await page.getByTestId('desk-slice-todos-tab').count() === 1, 'TO-DOS side tab slice must render on denim folder edge.')
   assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-extended')) === 'true', 'TO-DOS denim folder stays visible.')
   assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render inside denim TO-DOS folder.')
+  assert(await page.getByTestId('desk-source-todos-tab').getAttribute('data-desk-kelly-asset') === 'todos-tab', 'TO-DOS tab must use Kelly canonical todos-tab.png.')
+  const padHit = await page.getByTestId('desk-priority-pad').evaluate((el) => getComputedStyle(el).pointerEvents)
+  assert(padHit === 'auto', `TO-DOS pad must accept pointer events (got ${padHit}).`)
   // MUST / SHOULD / COULD must accept add + complete (pointer-events on folder body).
   const mustAdd = page.getByTestId('desk-priority-add-must')
   assert(await mustAdd.isVisible(), 'MUST lane add input must be interactive.')

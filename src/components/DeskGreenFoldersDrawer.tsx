@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useId, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { deskCanonicalPngUrl } from '../desk/deskCanonicalPng'
 import { deskCommittedRasterChromeEnabled } from '../desk/deskSliceRuntime'
 import { DESK_IDEAS_OPEN_EVENT, requestDeskIdeasCleanUp } from '../desk/deskIdeasEvents'
-import { DeskChromeSlice } from './DeskChromeSlice'
 
 type Props = {
   children: ReactNode
@@ -63,19 +63,17 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
         <div
           className="arc-desk-green-drawer-art"
           aria-hidden="true"
-          data-testid={slicesEnabled ? undefined : 'desk-source-ideas-drawer'}
+          data-testid="desk-source-ideas-drawer"
+          data-desk-kelly-asset="ideas-tray"
         >
-          {slicesEnabled ? (
-            <DeskChromeSlice sliceId="ideas-drawer-chrome" testId="desk-slice-ideas-drawer" />
-          ) : (
-            <>
-              {/* Circular stone accents only — post-its are live DeskPostIt siblings on the desk surface. */}
-              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--mustard" />
-              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--terracotta" />
-              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--blue" />
-              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--forest" />
-            </>
-          )}
+          {/* Prefer Kelly ingested ideas-tray.png over slice crop / legacy green folders. */}
+          <img
+            className="arc-desk-ideas-tray-art"
+            src={deskCanonicalPngUrl('ideasTray')}
+            alt=""
+            decoding="async"
+            data-testid="desk-slice-ideas-drawer"
+          />
         </div>
         <div
           id={panelId}
