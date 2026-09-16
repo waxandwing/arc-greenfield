@@ -129,10 +129,16 @@ export function dedupePreferNces(candidates: OfficialSourceCandidate[]): Officia
 }
 
 function identityKey(candidate: OfficialSourceCandidate): string {
-  const name = candidate.schoolName.trim().toLowerCase()
-  const locality = (candidate.locality ?? '').trim().toLowerCase()
+  const name = candidate.schoolName.trim().toLowerCase().replace(/\s+/g, ' ')
+  const locality = (candidate.locality ?? '')
+    .toLowerCase()
+    .replace(/\d{5}(-\d{4})?/g, ' ')
+    .replace(/\busa\b/g, ' ')
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
   // Keep distinct provider rows when locality differs; collapse obvious duplicates.
-  return `${name}|${locality.replace(/\d{5}(-\d{4})?/g, '').replace(/\s+/g, ' ')}`
+  return `${name}|${locality}`
 }
 
 function isValidationFailure(result: OfficialSourceSearchResult): boolean {
