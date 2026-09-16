@@ -229,11 +229,34 @@ try {
   assert(!drawerPngHasStickyFills, 'Landscape IDEAS PNG must not bake yellow/pink/blue sticky fills — post-its are live React objects.')
   assert(await page.getByTestId('desk-slice-todos-body').count() === 1, 'TO-DOS folder must use committed slice PNG assets by default.')
   assert(await page.getByTestId('desk-source-todos-body').count() === 0, 'CSS TO-DOS fallback must be off when committed rasters are default.')
-  assert(await page.getByTestId('desk-slice-todos-tab').count() === 1, 'TO-DOS side tab slice must render on denim folder edge.')
-  assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-extended')) === 'true', 'TO-DOS denim folder stays visible.')
-  assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render inside denim TO-DOS folder.')
+  assert(await page.getByTestId('desk-slice-todos-tab').count() === 1, 'TO-DOS Kelly plate (todos-tab.png) must render as the folder surface.')
+  assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-extended')) === 'true', 'TO-DOS folder stays visible.')
+  assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-todos-plate')) === 'kelly-todos-tab', 'TO-DOS plate authority must be Kelly todos-tab.png.')
+  assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render on top of the Kelly TODOs plate.')
   assert(await page.getByTestId('desk-slice-todos-tab').getAttribute('data-desk-kelly-asset') === 'todos-tab', 'TO-DOS tab must use Kelly canonical todos-tab.png.')
   assert((await page.getByTestId('desk-slice-todos-tab').getAttribute('src') || '').includes('todos-tab.png'), 'TO-DOS tab src must be canonical todos-tab.png.')
+  const todosLayering = await page.evaluate(() => {
+    const plate = document.querySelector('[data-testid="desk-slice-todos-tab"]')
+    const body = document.querySelector('[data-testid="arc-desk-todos-folder-body"]')
+    const folder = document.querySelector('[data-testid="arc-desk-todos-folder"]')
+    if (!(plate instanceof HTMLElement) || !(body instanceof HTMLElement) || !(folder instanceof HTMLElement)) {
+      return { ok: false, reason: 'missing nodes' }
+    }
+    const plateZ = Number.parseInt(getComputedStyle(plate).zIndex, 10)
+    const bodyZ = Number.parseInt(getComputedStyle(body).zIndex, 10)
+    const bg = getComputedStyle(folder).backgroundImage
+    const label = document.querySelector('[data-testid="desk-priority-lane-must"] h3')
+    const labelVisible = label instanceof HTMLElement && getComputedStyle(label).visibility !== 'hidden'
+      && getComputedStyle(label).clip === 'auto'
+    return {
+      ok: Number.isFinite(plateZ) && Number.isFinite(bodyZ) && bodyZ > plateZ && bg === 'none' && labelVisible,
+      plateZ,
+      bodyZ,
+      bg,
+      labelVisible,
+    }
+  })
+  assert(todosLayering.ok, `Kelly plate must sit behind live MSC lanes without denim chrome (got ${JSON.stringify(todosLayering)}).`)
   const padHit = await page.getByTestId('desk-priority-pad').evaluate((el) => getComputedStyle(el).pointerEvents)
   assert(padHit === 'auto', `TO-DOS pad must accept pointer events (got ${padHit}).`)
   // MUST / SHOULD / COULD must accept add + complete (pointer-events on folder body).
@@ -246,6 +269,12 @@ try {
   const mustComplete = page.getByTestId('desk-priority-lane-must').locator('input[type="checkbox"]').last()
   await mustComplete.check()
   assert(await page.getByTestId('desk-priority-lane-must').locator('[data-completed="true"]').count() >= 1, 'MUST tasks must be completable.')
+  // Rename must keep working on the plate surface.
+  await mustTask.dblclick()
+  const mustEdit = page.getByTestId(/desk-priority-edit-/).last()
+  await mustEdit.fill('Kelly must renamed')
+  await mustEdit.press('Enter')
+  assert(await page.getByTestId('desk-priority-lane-must').getByRole('button', { name: /Edit task Kelly must renamed/ }).count() === 1, 'MUST tasks must be renameable on the Kelly plate.')
   // Accent post-its sit near the top edge; DOM click avoids pointer intercept on the slim tab.
   await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
   assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in IDEAS/tray dock when extended.')

@@ -5,7 +5,11 @@ import { DeskChromeSlice } from './DeskChromeSlice'
 
 type Props = { children: ReactNode }
 
-/** Physical TO-DOS folder left of planner — Kelly silver `todos-tab.png` is the left-ear tab; lane titles live in DeskPriorityPad. */
+/**
+ * Physical TO-DOS folder left of planner.
+ * Kelly `todos-tab.png` is the full light-blue folder plate (body + left ear);
+ * MUST / SHOULD / COULD lane chrome sits on top of that plate.
+ */
 export function DeskTodosFolder({ children }: Props) {
   const slicesEnabled = deskCommittedRasterChromeEnabled()
   const todosTabSrc = deskCanonicalPngUrl('todosTab')
@@ -17,9 +21,15 @@ export function DeskTodosFolder({ children }: Props) {
       data-extended="true"
       data-todos-tab-authority="canonical-todos-tab"
       data-kelly-todos-tab="canonical-png"
+      data-todos-plate="kelly-todos-tab"
     >
       {slicesEnabled ? (
-        <DeskChromeSlice sliceId="todos-folder-body" testId="desk-slice-todos-body" />
+        /* Slice kept attached for smokes; visually suppressed — baked MSC labels fight live lanes. */
+        <DeskChromeSlice
+          sliceId="todos-folder-body"
+          testId="desk-slice-todos-body"
+          className="arc-desk-todos-folder-body-slice--suppressed"
+        />
       ) : (
         <div className="arc-desk-todos-folder-sheet" aria-hidden="true" data-testid="desk-source-todos-body" />
       )}
