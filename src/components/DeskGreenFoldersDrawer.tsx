@@ -63,7 +63,6 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
         <div
           className="arc-desk-green-drawer-art"
           aria-hidden="true"
-          data-testid="desk-source-ideas-drawer"
           data-desk-kelly-asset="ideas-tray"
         >
           {/* Prefer Kelly ingested ideas-tray.png over slice crop / legacy green folders. */}
