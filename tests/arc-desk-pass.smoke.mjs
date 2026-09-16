@@ -541,6 +541,26 @@ try {
   assert(await settingsTab.isVisible(), 'SETTINGS must protrude from the planner as a physical edge tab.')
   assert(await settingsTab.evaluate((el) => el.classList.contains('arc-index-tab--settings-physical')), 'SETTINGS must use the physical copper tab face.')
   assert(await page.getByTestId('arc-desk-settings-tab-face').count() === 1, 'SETTINGS face must be Kelly settings-tab.png.')
+  const settingsClosedStack = await page.evaluate(() => {
+    const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
+    const planner = document.querySelector('.arc-planner-object')
+    const face = document.querySelector('[data-testid="arc-desk-settings-tab-face"]')
+    if (!(settings instanceof HTMLElement) || !(planner instanceof HTMLElement) || !(face instanceof HTMLElement)) {
+      return { ok: false, reason: 'missing nodes' }
+    }
+    const sZ = Number.parseInt(getComputedStyle(settings).zIndex, 10)
+    const pZ = Number.parseInt(getComputedStyle(planner).zIndex, 10)
+    const faceW = face.getBoundingClientRect().width
+    const expanded = settings.getAttribute('aria-expanded')
+    return {
+      ok: expanded === 'false' && Number.isFinite(sZ) && Number.isFinite(pZ) && sZ < pZ && faceW >= 52,
+      sZ,
+      pZ,
+      faceW: Math.round(faceW),
+      expanded,
+    }
+  })
+  assert(settingsClosedStack.ok, `Closed SETTINGS must tuck under planner (z) and read larger (got ${JSON.stringify(settingsClosedStack)}).`)
   const settingsPlacement = await page.evaluate(() => {
     const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
     const planner = document.querySelector('.arc-planner-object')
@@ -594,6 +614,15 @@ try {
     settings?.click()
   })
   assert(await page.locator('.b01-settings-owner[data-state="open"]').count() === 1, 'SETTINGS edge tab must land on main Settings furniture.')
+  const settingsOpenStack = await page.evaluate(() => {
+    const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
+    const planner = document.querySelector('.arc-planner-object')
+    if (!(settings instanceof HTMLElement) || !(planner instanceof HTMLElement)) return { ok: false }
+    const sZ = Number.parseInt(getComputedStyle(settings).zIndex, 10)
+    const pZ = Number.parseInt(getComputedStyle(planner).zIndex, 10)
+    return { ok: settings.getAttribute('aria-expanded') === 'true' && sZ > pZ, sZ, pZ }
+  })
+  assert(settingsOpenStack.ok, `Open SETTINGS must come forward of planner (got ${JSON.stringify(settingsOpenStack)}).`)
   const editWorkspace = page.getByRole('button', { name: 'Edit Workspace', exact: true })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   assert(await page.getByRole('heading', { name: 'Desk setup' }).isVisible(), 'Settings must expose Desk setup IA.')

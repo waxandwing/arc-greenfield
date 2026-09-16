@@ -466,8 +466,8 @@ export function B01Furniture({
               className="arc-settings-tab-face"
               src={deskSettingsTabUrl()}
               alt=""
-              width={46}
-              height={73}
+              width={64}
+              height={109}
               aria-hidden="true"
               decoding="async"
               data-testid="arc-desk-settings-tab-face"

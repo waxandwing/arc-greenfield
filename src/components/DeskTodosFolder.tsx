@@ -5,7 +5,7 @@ import { DeskChromeSlice } from './DeskChromeSlice'
 
 type Props = { children: ReactNode }
 
-/** Physical TO-DOS folder left of planner — Kelly silver `todos-tab.png` is the tab authority. */
+/** Physical TO-DOS folder left of planner — Kelly silver `todos-tab.png` is the left-ear tab; lane titles live in DeskPriorityPad. */
 export function DeskTodosFolder({ children }: Props) {
   const slicesEnabled = deskCommittedRasterChromeEnabled()
   const todosTabSrc = deskCanonicalPngUrl('todosTab')
