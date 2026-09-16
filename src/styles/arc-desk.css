@@ -1864,10 +1864,37 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .arc-desk-wood-wordmark-slot {
   position: absolute;
-  left: 2.2%;
+  /* Closer to the left wood edge (was 2.2% / ~186px viewport inset on typical desk). */
+  left: 0.7%;
   top: 3.2%;
   z-index: 20;
   pointer-events: auto;
+  will-change: transform;
+}
+
+/* Slide in from off-left when the desk settles in non-fullscreen layout. */
+.b01-furniture-composition--desk:not(.b01-furniture-composition--year-expanded):not([data-calendar-enlarged='true'])
+  .arc-desk-wood-wordmark-slot {
+  animation: arc-desk-wood-wordmark-slide-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Year / enlarged calendar: hold resting place — no slide loop while layout is busy. */
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded .arc-desk-wood-wordmark-slot,
+.b01-furniture-composition--desk[data-calendar-enlarged='true'] .arc-desk-wood-wordmark-slot {
+  animation: none;
+  transform: none;
+  opacity: 1;
+}
+
+@keyframes arc-desk-wood-wordmark-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(-100% - 1.25rem));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Original Arc mark on wood — no wood-burn / pyrography filters. */
@@ -3193,6 +3220,12 @@ html:has(.arc-shell--desk) body {
   .arc-desk-mark-center:hover,
   .arc-desk-mark-center:focus-visible {
     transform: none;
+  }
+
+  .b01-furniture-composition--desk .arc-desk-wood-wordmark-slot {
+    animation: none;
+    transform: none;
+    opacity: 1;
   }
 }
 

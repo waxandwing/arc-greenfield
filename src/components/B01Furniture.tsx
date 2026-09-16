@@ -52,6 +52,8 @@ type Props = {
   spreadChrome?: ReactNode
   deskEnabled?: boolean
   yearExpanded?: boolean
+  /** Enlarged / pop-out calendar — suppress wood wordmark slide-in. */
+  calendarEnlarged?: boolean
   deskTrayDock?: ReactNode
   deskPriorityDock?: ReactNode
   deskNotesDock?: ReactNode
@@ -139,6 +141,7 @@ export function B01Furniture({
   spreadChrome = null,
   deskEnabled = false,
   yearExpanded = false,
+  calendarEnlarged = false,
   deskTrayDock = null,
   deskPriorityDock = null,
   deskNotesDock = null,
@@ -529,6 +532,7 @@ export function B01Furniture({
       data-desk-enabled={deskEnabled ? 'true' : 'false'}
       data-desk-edit-mode={deskEditMode ? 'true' : 'false'}
       data-year-expanded={yearExpanded ? 'true' : 'false'}
+      data-calendar-enlarged={calendarEnlarged ? 'true' : 'false'}
     >
       {deskEnabled ? (
         <div className="arc-desk-viewport" data-testid="arc-desk-viewport">
