@@ -1328,8 +1328,9 @@ html:has(.arc-shell--desk) body {
   color: var(--ink, #2c2e2e);
   outline: none;
   box-sizing: border-box;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: pre-wrap;
   cursor: text;
   user-select: text;
   touch-action: auto;

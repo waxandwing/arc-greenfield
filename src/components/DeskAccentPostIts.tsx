@@ -355,7 +355,7 @@ function DeskAccentPostIt({
             value={text}
             onChange={onChange}
             onKeyDown={onKeyDown}
-            rows={2}
+            rows={1}
             spellCheck
             placeholder="Write…"
             aria-label={`${label} text`}

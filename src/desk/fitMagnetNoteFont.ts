@@ -1,6 +1,6 @@
 /** Min/max hand-lettering size on an 88px unit magnet face. */
 export const MAGNET_NOTE_MIN_PX = 9
-export const MAGNET_NOTE_MAX_PX = 26
+export const MAGNET_NOTE_MAX_PX = 30
 
 /**
  * Binary-search the largest integer size in [min, max] that still fits.
@@ -47,11 +47,11 @@ export function fitMagnetNoteFont(
 
   // Reset before measuring so prior padding/line-height don't poison the search.
   el.style.paddingTop = '0px'
-  el.style.lineHeight = '1.12'
+  el.style.lineHeight = '1.1'
 
   if (!el.value.trim()) {
     // Placeholder / empty: readable mid size, vertically centered.
-    const emptySize = Math.min(maxPx, Math.max(minPx, 14))
+    const emptySize = Math.min(maxPx, Math.max(minPx, 15))
     el.style.fontSize = `${emptySize}px`
     if (el.clientHeight > 0) {
       el.style.lineHeight = `${el.clientHeight}px`
@@ -61,21 +61,23 @@ export function fitMagnetNoteFont(
 
   const size = chooseFittingSize(minPx, maxPx, (px) => {
     el.style.fontSize = `${px}px`
+    el.style.lineHeight = '1.1'
     // Force layout so scroll metrics match the candidate size.
     void el.offsetHeight
     return magnetNoteFits(el)
   })
 
   el.style.fontSize = `${size}px`
+  el.style.lineHeight = '1.1'
   void el.offsetHeight
 
-  // Single visual line → stretch line-height to vertically center in the face.
-  const singleLine = el.scrollHeight <= size * 1.12 * 1.65
-  if (singleLine && el.clientHeight > 0) {
+  // One visual line (no wrap): stretch line-height to vertically center in the face.
+  const wrapped = el.scrollHeight > size * 1.1 * 1.35
+  if (!wrapped && el.clientHeight > 0) {
     el.style.lineHeight = `${el.clientHeight}px`
     void el.offsetHeight
     if (!magnetNoteFits(el)) {
-      el.style.lineHeight = '1.12'
+      el.style.lineHeight = '1.1'
     }
   }
 
