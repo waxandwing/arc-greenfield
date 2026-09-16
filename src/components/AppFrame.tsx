@@ -890,7 +890,6 @@ export function AppFrame() {
           <B01Furniture
             deskEnabled={deskEnabled}
             yearExpanded={yearExpanded}
-            calendarEnlarged={deskCalendarPopOutOpen}
             deskTrayDock={deskTrayCompact}
             deskPriorityDock={deskPriorityPad}
             deskNotesDock={null}
@@ -916,7 +915,7 @@ export function AppFrame() {
             deskArcTableFixture={
               deskEnabled && activeDeskPreferences.desk.showArcTable ? (
                 <ArcTableDeskFixture
-                  markSize={132}
+                  markSize={88}
                   liveActive={Boolean(arcTable.live)}
                   contextLine={deskArcTableContextLine()}
                   interactionsDisabled={deskEditActive}
