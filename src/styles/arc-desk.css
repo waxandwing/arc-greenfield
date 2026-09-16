@@ -105,8 +105,8 @@ html:has(.arc-shell--desk) body {
   position: absolute;
   /* Landscape pull-out matched to Kelly ideas-tray.png (807×381) — height drives width. */
   left: 21%;
-  /* Default 0 = flush top; teachers can drag lower and persist via --arc-desk-tray-park-top. */
-  top: var(--arc-desk-tray-park-top, 0%);
+  /* Park % from surface top, minus viewport letterbox so default park sits flush with the view panel. */
+  top: calc(var(--arc-desk-tray-park-top, 0%) - var(--arc-desk-ideas-viewport-flush, 0px));
   height: min(30%, 250px);
   width: auto;
   aspect-ratio: 807 / 381;
@@ -125,9 +125,11 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='true'] {
-  /* Physical pull-out: a bit larger, still tray-aspect so planner stays readable */
+  /* Physical pull-out: a bit larger, still tray-aspect so planner stays readable.
+     Keep above wood post-its (z14) so park grip / Clean up lip stay hittable. */
   height: min(36%, 300px);
   max-width: min(58%, 780px);
+  z-index: 16;
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-green-drawer-well,
@@ -514,7 +516,21 @@ html:has(.arc-shell--desk) body {
   filter: none;
 }
 
-.arc-desk-green-folders-drawer[data-extended='false'] .arc-desk-green-drawer-art {
+.arc-desk-green-folders-drawer[data-extended='false'] 
+/* Narrow top chrome strip for vertical park when the well covers the tray face. */
+.arc-desk-ideas-tray-park-grip {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 0;
+  height: 12%;
+  z-index: 4;
+  cursor: ns-resize;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.arc-desk-green-drawer-art {
   /* Kelly ideas-tray.png: keep chrome visible so the baked IDEAS pull-tab peeks */
   opacity: 1;
   visibility: visible;
@@ -2808,10 +2824,33 @@ html:has(.arc-shell--desk) body {
   overflow: hidden;
 }
 
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course--minimized {
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
+}
+
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading {
   flex: 0 0 auto;
   min-width: 0;
   padding-right: 4px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-toggle {
+  width: 100%;
+  gap: 0.4rem;
+  padding: 0.1rem 0.2rem 0.1rem 0;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-chevron {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--ink) 55%, var(--soft-charcoal));
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-minimize-hint {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  padding: 0.08rem 0.35rem;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading h2 {
@@ -2821,6 +2860,19 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading span {
   font-size: 11px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-body[hidden] {
+  display: none;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-unit-stack,
