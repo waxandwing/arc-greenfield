@@ -26,6 +26,13 @@ Aggressive second hunt confirmed **no** Kelly labeled SVG binaries. Searched:
 
 Do **not** invent replacements from screenshot crops, CSS gradients, tiny generated magnet SVGs, or previously wired approximations and claim Kelly labeled authority.
 
+## Planning Period desk audit (2026-09-16) — still BLOCKED
+
+Kelly selected `.arc-desk-surface` on Planning Period and asked to find correct assets. Third hunt (uploads / Drive / Gmail / branches / zips / worktrees) again found **zero** of the 22 labeled SVG binaries.
+
+**No P0 wires shipped** for this view (rule: do not CSS-fake). Object → asset map + blocking filenames: `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md` § Planning Period view.
+
+Planning Period blockers: `TODO tab (use).svg`, `tray image (use).svg`, `Settings tab (USE).svg`, `calendar selected tab view.svg`, `unselected calendar states.svg`, `Wood Background Light.svg`, `calendar background.svg`.
 ## Binary handoff status
 
 **BLOCKED — binaries not in repo.** Branch `asset-reconciliation-labeled-svgs` ships only this README (filename → canonical map). P0 wires 1–9 remain stubs until the 22 originals land in `uploads/desk-incoming/`.

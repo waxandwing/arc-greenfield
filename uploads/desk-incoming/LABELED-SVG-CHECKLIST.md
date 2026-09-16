@@ -1,11 +1,35 @@
 # Kelly labeled SVG drop checklist (P0)
 
-**Status (2026-09-16 re-hunt):** binaries **NOT FOUND**. Do not invent stand-ins.
+**Status (2026-09-16 Planning Period audit):** binaries **NOT FOUND**. Do not invent stand-ins. No CSS fakes shipped for this view.
 
 Drop the originals into this folder (`uploads/desk-incoming/`), preserving exact filenames (including `(USE)` / `(use)`). A single `.zip` is fine.
 
 After drop + push to `main`, ask Cursor: **“Incorporate Kelly labeled SVGs from uploads/desk-incoming”**.
 
+## Planning Period view — object → asset map (Kelly `.arc-desk-surface` select)
+
+Screenshot audit of Planning Period desk furniture. **Correct source = Kelly labeled SVG only.** Interim live controllers listed for diagnosis — they are **not** approved replacements.
+
+| Visible desk object (screenshot) | Wrong live controller now | Correct labeled source | Canonical target | Status |
+|----------------------------------|---------------------------|------------------------|------------------|--------|
+| Wood desk surface (`.arc-desk-surface`) | `assets/arc/icarus/texture-wood.png` | `Wood Background Light.svg` | `wood-background-light.svg` | **MISSING** |
+| Left MUST/SHOULD/COULD tray (photographic cardboard/denim strip) | `slices/todos-folder-body.png` + `todos-folder-tab.png` | `TODO tab (use).svg` (+ `TODOS tab.svg` ref) | `todos-tab.svg` | **MISSING** |
+| IDEAS green pill / drawer | `green-folders-drawer.svg` / `.png` | `tray image (use).svg` (+ `Ideas Tray Vector.svg` ref) | `ideas-tray.svg` | **MISSING** |
+| SETTINGS pill / tab | CSS / non-USE tab chrome | `Settings tab (USE).svg` | `settings-tab.svg` | **MISSING** |
+| Edge tabs DAY/WEEK/MONTH/YEAR (PNG crops) | `slices/planner-edge-tab-*.png` | `calendar selected tab view.svg` + `unselected calendar states.svg` | `calendar-tab-selected.svg` / `calendar-tab-unselected.svg` | **MISSING** |
+| Planning period planner paper / buckets (NOW · NEEDS ATTENTION · NEXT PLANNED chrome) | CSS cream paper interim | `calendar background.svg` | `calendar-background.svg` | **MISSING** |
+
+**Blocking this view (drop these first):**
+
+1. `TODO tab (use).svg`
+2. `tray image (use).svg`
+3. `Settings tab (USE).svg`
+4. `calendar selected tab view.svg`
+5. `unselected calendar states.svg`
+6. `Wood Background Light.svg`
+7. `calendar background.svg`
+
+Until those seven land in this folder, agents must **not** wire or CSS-fake Planning Period furniture.
 ## Expected source filenames (22)
 
 | # | Exact source filename | Canonical rename target | P0 wire |

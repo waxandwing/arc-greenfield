@@ -39,14 +39,23 @@ Re-hunt 2026-09-16 confirmed the 22 labeled source SVGs are still missing from:
   git (incl. asset-reconciliation-labeled-svgs), Drive (only 2 unrelated legacy SVGs),
   Gmail, uploads/, public/assets/, /tmp artifacts, LFS, and Skin Lab zips.
 
-Exact expected filenames are listed in LABELED-SVG-CHECKLIST.md. Highest priority (USE):
+Planning Period audit (same day): Kelly selected .arc-desk-surface — photographic
+TO-DOS strip, IDEAS green pill, SETTINGS, edge-tab PNG crops, wood, planner buckets
+all still blocked. See LABELED-SVG-CHECKLIST.md § Planning Period view. No wires /
+CSS fakes until binaries land.
 
-  - Settings tab (USE).svg
+Exact expected filenames are listed in LABELED-SVG-CHECKLIST.md. Highest priority (USE)
+for Planning Period:
+
   - TODO tab (use).svg
   - tray image (use).svg
+  - Settings tab (USE).svg
+  - calendar selected tab view.svg / unselected calendar states.svg
   - Wood Background Light.svg
   - calendar background.svg
-  - calendar selected tab view.svg / unselected calendar states.svg
+
+Also needed for full P0 pack:
+
   - start class arctable logo.svg
   - blue/green/yellow/red magnet SVGs
   - to left of date on calendar rainbow icon.svg
