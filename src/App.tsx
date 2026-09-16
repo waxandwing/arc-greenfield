@@ -1,11 +1,46 @@
 import { useState } from 'react'
 import { AppFrame } from './components/AppFrame'
 import { DeskBuildStamp } from './components/DeskBuildStamp'
+import { GoldHandoffAuthority } from './components/GoldHandoffAuthority'
+import { GoldMasterGallery } from './components/GoldMasterGallery'
+import { GoldMasterIndex } from './components/GoldMasterIndex'
+import { GoldMasterShiftPreview, GoldMasterWeekEdit } from './components/GoldMasterStates'
 import { IcarusEntryFlow } from './entry/IcarusEntryFlow'
 import { isEntryComplete } from './entry/entryAccess'
 
+function goldMasterView() {
+  const params = new URLSearchParams(window.location.search)
+  return params.get('gold')
+}
+
+function goldMasterRequested() {
+  const params = new URLSearchParams(window.location.search)
+  return params.has('gold') || params.get('gallery') === 'gold-master'
+}
+
 export default function App() {
   const [entryComplete, setEntryComplete] = useState(() => isEntryComplete())
+  const params = new URLSearchParams(window.location.search)
+
+  if (params.get('gallery') === 'gold-handoff' || params.has('handoff')) {
+    return <GoldHandoffAuthority />
+  }
+
+  if (params.get('gallery') === 'gold-master') {
+    return <GoldMasterIndex />
+  }
+
+  if (goldMasterView() === 'week-edit') {
+    return <GoldMasterWeekEdit />
+  }
+
+  if (goldMasterView() === 'shift') {
+    return <GoldMasterShiftPreview />
+  }
+
+  if (goldMasterRequested()) {
+    return <GoldMasterGallery />
+  }
 
   if (!entryComplete) {
     return <IcarusEntryFlow onComplete={() => setEntryComplete(true)} />

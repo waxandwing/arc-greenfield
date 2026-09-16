@@ -1,0 +1,77 @@
+/* Gold Master rigor pass: containment, readable truncation, and in-frame scrolling. */
+.gm-app{height:100vh;min-height:0;overflow:hidden}
+.gm-header{box-sizing:border-box;min-width:0}
+.gm-shell{height:calc(100vh - 74px);min-height:0;overflow:hidden}
+.gm-rail{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+.gm-content-grid{height:100%;min-height:0;min-width:0;overflow:hidden}
+.gm-main{box-sizing:border-box;height:100%;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding-bottom:48px}
+.gm-sidepad{box-sizing:border-box;height:100%;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable}
+.gm-week{min-width:0}
+.gm-week-row>*{min-width:0}
+.gm-lesson,.gm-neutral,.gm-lunch,.gm-day-card,.gm-detail,.gm-sidepad section,.gm-unit-grid>section,.gm-thinking-grid>section,.gm-connections article,.gm-unitbar,.gm-month-day,.gm-year section,.gm-phone{box-sizing:border-box;min-width:0;max-width:100%}
+.gm-lesson strong,.gm-lesson span,.gm-lesson-course,.gm-neutral,.gm-lunch,.gm-day-card h2,.gm-day-card p,.gm-detail h2,.gm-detail p,.gm-sidepad label span,.gm-sidepad label small,.gm-unitbar strong,.gm-unitbar span,.gm-connections h2,.gm-connections p,.gm-month-day span,.gm-sequence,.gm-idea,.gm-task-lane,.gm-note{overflow-wrap:anywhere;word-break:normal}
+.gm-lesson strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gm-lesson span,.gm-lesson-course{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gm-week .gm-lesson>span{display:none}
+.gm-month-day span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-right:0}
+.gm-detail{overflow:hidden}
+.gm-detail>div{min-width:0}
+.gm-detail-tabs{min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;white-space:nowrap}
+.gm-detail-tabs::-webkit-scrollbar{display:none}
+.gm-detail-actions{min-width:max-content}
+.gm-sidepad label{min-width:0}
+.gm-sidepad label>span{min-width:0}
+.gm-header-actions{min-width:0}
+.gm-header-actions button{white-space:nowrap}
+.gm-header-actions .gm-search{min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gm-datebar{min-width:0;flex-wrap:wrap}
+.gm-datebar h1{min-width:0;overflow-wrap:anywhere}
+.gm-scribble{max-width:260px;text-align:center}
+.gm-quarter-track{min-width:0;overflow-x:auto;overflow-y:hidden;padding-bottom:4px;scrollbar-gutter:stable}
+.gm-unitbar{flex:0 0 min(310px,38vw)}
+.gm-year{min-width:0}
+.gm-mini{min-width:0}
+.gm-live-content,.gm-phone-row,.gm-thinking-grid,.gm-unit-grid,.gm-connections{min-width:0}
+.gm-live-content>*{min-width:0}
+.gm-drawing{max-width:100%;overflow:hidden}
+.gm-phone{overflow:hidden}
+.gm-phone *{max-width:100%}
+.gm-app .gm-qa-nav{display:none!important}
+.gm-inline-create,.gm-shift-panel{box-sizing:border-box;max-width:100%;min-width:0;overflow:hidden}
+
+/* Main planner remains the dominant object while utility surfaces stay independently scrollable. */
+.gm-view-week .gm-main,.gm-view-day .gm-main,.gm-view-month .gm-main,.gm-view-quarter .gm-main,.gm-view-year .gm-main{scroll-behavior:smooth}
+
+/* Prevent accidental page-level horizontal escape at common laptop widths. */
+@media (max-width:1320px){
+  .gm-header{grid-template-columns:150px minmax(300px,360px) minmax(0,1fr);gap:10px;padding-inline:14px}
+  .gm-header-actions{gap:5px}
+  .gm-header-actions button{padding:8px 10px}
+  .gm-header-actions .gm-search{max-width:220px}
+  .gm-shell{grid-template-columns:165px minmax(0,1fr)}
+  .gm-content-grid{grid-template-columns:minmax(0,1fr) 240px}
+  .gm-sidepad{padding-right:10px}
+}
+
+@media (max-width:1100px){
+  .gm-header{grid-template-columns:130px 1fr auto}
+  .gm-view-tabs button{padding:9px 13px}
+  .gm-header-actions .gm-search{display:none}
+  .gm-header-actions button:not(.gm-new):not(.gm-avatar){padding-inline:9px}
+  .gm-content-grid{grid-template-columns:minmax(0,1fr)}
+  .gm-sidepad{display:none}
+  .gm-week{grid-template-columns:64px repeat(5,minmax(108px,1fr))}
+}
+
+@media (max-width:860px){
+  .gm-app{height:auto;min-height:100vh;overflow:auto}
+  .gm-header{position:sticky;height:auto;min-height:64px;grid-template-columns:auto 1fr;padding-block:8px}
+  .gm-view-tabs{grid-column:1/-1;order:3;overflow-x:auto;justify-content:flex-start}
+  .gm-header-actions{justify-self:end}
+  .gm-shell{height:auto;min-height:calc(100vh - 64px);grid-template-columns:1fr;overflow:visible}
+  .gm-rail{display:none}
+  .gm-content-grid{height:auto;overflow:visible}
+  .gm-main{height:auto;overflow:visible;padding-inline:12px}
+  .gm-week{min-width:720px}
+  .gm-main:has(.gm-week){overflow-x:auto}
+}
