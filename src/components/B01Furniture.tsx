@@ -606,6 +606,7 @@ export function B01Furniture({
               className={`arc-desk-surface${deskEditMode ? ' arc-desk-surface--edit' : ''}`}
               data-layout-grid={layoutGridActive ? 'true' : 'false'}
               data-furniture-locked={deskEditMode ? 'false' : 'true'}
+              data-desk-postit-drop="desk-park"
             >
               <DeskHelpButton />
               {deskEnabled ? renderPlannerSettingsLeftTab() : null}
