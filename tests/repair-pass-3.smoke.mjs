@@ -177,7 +177,9 @@ try {
 
   await page.getByRole('button', { name: 'Add planning' }).click()
   await page.getByRole('button', { name: 'Use this teaching day' }).click()
-  await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).waitFor()
+  await page.getByRole('navigation', { name: 'Planner index' }).waitFor({ timeout: 5000 })
+  assert(await page.getByTestId('global-capture-trigger').count() === 0, '+ Capture must stay hidden after onboarding lands on desk.')
+  assert(await page.getByTestId('arc-desk-quick-capture-note').isVisible(), 'Desk Quick Capture sticky must be available after onboarding.')
   await shot(page, '09-onboarding-land-day.png')
 
   await page.evaluate(({ storage }) => {
