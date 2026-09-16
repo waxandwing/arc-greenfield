@@ -11,7 +11,9 @@ import { useTaskBar } from '../app/useTaskBar'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import {
+  isRetiredSetupWorkspaceMode,
   isSetupWorkspaceMode,
+  SETUP_FALLBACK_SECTION,
   type OnboardingSectionId,
   type SetupSectionId,
 } from '../app/setupSections'
@@ -106,6 +108,8 @@ export function AppFrame() {
   const deskYearLandingNormalized = useRef(false)
   const deskMonthHomeNormalized = useRef(false)
   const deskMonthPrefsMigrated = useRef(false)
+  /** Settings / fridge / edit Lesson may open Units or Lessons; bare setup landings redirect away. */
+  const allowUnitLessonLibraryRef = useRef(false)
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
   const [lessonSetupFocusId, setLessonSetupFocusId] = useState<string | null>(null)
@@ -250,6 +254,11 @@ export function AppFrame() {
     workspaceMode.close()
   }
 
+  function openUnitLessonLibrary(mode: 'units' | 'lessons') {
+    allowUnitLessonLibraryRef.current = true
+    workspaceMode.open(mode)
+  }
+
   function returnToSettings() {
     setLessonSetupFocusId(null)
     workspaceMode.close()
@@ -258,7 +267,7 @@ export function AppFrame() {
 
   function openLessonForEdit(lessonId: string) {
     setLessonSetupFocusId(lessonId)
-    workspaceMode.open('lessons')
+    openUnitLessonLibrary('lessons')
   }
 
   function showUnscheduledInIdeas(lessonId: string) {
@@ -277,6 +286,16 @@ export function AppFrame() {
   function openOnboardingSection(id: OnboardingSectionId) {
     updateOnboarding({ ...onboardingDraft, stage: id })
   }
+
+  useEffect(() => {
+    if (isRetiredSetupWorkspaceMode(workspaceMode.mode)) {
+      if (!allowUnitLessonLibraryRef.current) {
+        workspaceMode.open(SETUP_FALLBACK_SECTION)
+      }
+      return
+    }
+    allowUnitLessonLibraryRef.current = false
+  }, [workspaceMode.mode])
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const unscheduledUnits = workspace.unitWorkspace?.units.filter((unit) => unit.placement === null) ?? []
@@ -304,11 +323,7 @@ export function AppFrame() {
     const disabled = new Set<SetupSectionId>()
     if (!workspace.hasClasses) {
       disabled.add('teaching-day')
-      disabled.add('units')
-      disabled.add('lessons')
       disabled.add('import')
-    } else if (!workspace.hasUnits) {
-      disabled.add('lessons')
     }
     return disabled
   })()
@@ -685,7 +700,7 @@ export function AppFrame() {
     onScheduleLesson: scheduleLessonFromFridge,
     onUnplaceLesson: sendLessonBackToFridge,
     onUndo: undoLastFridgeMove,
-    onOpenUnits: () => workspaceMode.open('units'),
+    onOpenUnits: () => openUnitLessonLibrary('units'),
     onOpenImport: () => workspaceMode.open('import'),
     onCombineCaptures: combineCaptures,
     onRemoveCaptureFromStack: removeCaptureFromStack,
@@ -827,10 +842,10 @@ export function AppFrame() {
       onOpenClasses={() => workspaceMode.open('classes')}
       onOpenTeachingDay={() => workspaceMode.open('teaching-day')}
       onOpenImport={() => workspaceMode.open('import')}
-      onOpenUnits={() => workspaceMode.open('units')}
+      onOpenUnits={() => openUnitLessonLibrary('units')}
       onOpenLessons={() => {
         setLessonSetupFocusId(null)
-        workspaceMode.open('lessons')
+        openUnitLessonLibrary('lessons')
       }}
       onOpenTaskBar={() => setTasksOverlayOpen(true)}
       onEditWorkspace={enterEditWorkspaceMode}
