@@ -156,44 +156,9 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
     if (passes !== live.passes) setPassLabel('')
   }
 
-  function beginBoardAuthoring(focus: 'directions' | 'materials' = 'directions') {
-    const patch: Partial<Omit<ArcTableLiveState, 'version' | 'session' | 'startedAt'>> = {}
-    if (live.boardLocked) patch.boardLocked = false
-    if (Object.keys(patch).length) onUpdate(patch)
-    setDraftDirections(live.directions.join('\n'))
-    setBoardAuthoring(true)
-    setEditingMaterials(focus === 'materials')
-    window.setTimeout(() => {
-      if (focus === 'materials') materialsFieldRef.current?.focus()
-      else directionsFieldRef.current?.focus()
-    }, 0)
-  }
-
-  function commitDirections(raw = draftDirections) {
-    const directions = raw.split('\n').map((line) => line.trim()).filter(Boolean)
-    onUpdate({ directions })
-    setDraftDirections(directions.join('\n'))
-  }
-
-  function finishBoardAuthoring() {
-    commitDirections()
-    setBoardAuthoring(false)
-    setEditingMaterials(false)
-  }
-
-  function addDirectionLine() {
-    beginBoardAuthoring('directions')
-    setDraftDirections((current) => {
-      const next = current.trim().length ? `${current.trimEnd()}\n` : ''
-      window.setTimeout(() => directionsFieldRef.current?.focus(), 0)
-      return next
-    })
-  }
-
   const timerDisplaySeconds = live.timer.status === 'idle' && timerRemaining === 0 && live.timer.durationSeconds > 0
     ? live.timer.durationSeconds
     : timerRemaining
-  const phaseFlow = live.session.phases.map((label) => label.trim()).filter(Boolean)
 
   return (
     <main className="arctable arctable--teacher">
