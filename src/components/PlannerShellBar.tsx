@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import { publicAssetUrl } from '../publicAssetUrl'
 
-/** High-res stacked mark for planner chrome (not the 70×59 arc-mark.png). */
-const ARC_MARK_ASSET = 'assets/arc/arc-mark-stacked.png'
+/** Canonical Arc mark already in repo (colored a/r/c + quadrant). */
+const ARC_MARK_ASSET = 'assets/arc/arc-mark.png'
 
 /** Product slogan — README / brand lockup line beside the mark. */
 export const ARC_WORDMARK_SLOGAN = 'for plans that change'

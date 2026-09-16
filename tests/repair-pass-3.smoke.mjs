@@ -88,13 +88,14 @@ try {
 
   const logo = page.locator('[data-testid="arc-mark-logo"]')
   assert(await logo.count() === 1, 'Canonical Arc mark must render inside planner shell.')
-  assert((await logo.getAttribute('src'))?.includes('/assets/arc/arc-mark-stacked.png'), 'Logo must use high-res arc-mark-stacked.png asset.')
+  assert((await logo.getAttribute('src'))?.includes('/assets/arc/arc-mark.png'), 'Logo must use original arc-mark.png asset.')
   // Pages base path: src may be `/arc-greenfield/assets/...` or `/assets/...`
-  assert((await logo.getAttribute('src'))?.endsWith('/assets/arc/arc-mark-stacked.png'), 'Logo src must stay base-aware for GitHub Pages.')
+  assert((await logo.getAttribute('src'))?.endsWith('/assets/arc/arc-mark.png'), 'Logo src must stay base-aware for GitHub Pages.')
+  assert(!(await logo.getAttribute('src'))?.includes('arc-mark-stacked'), 'Planner mark must not use stacked substitute.')
   const filter = await logo.evaluate((img) => getComputedStyle(img).filter)
   assert(!filter.includes('invert'), 'Canonical mark must not use inverted white substitute.')
   const logoBox = await logo.boundingBox()
-  assert(logoBox && logoBox.width >= 44 && logoBox.height >= 44, 'Planner mark must render larger than the prior 32×32 chrome.')
+  assert(logoBox && logoBox.width >= 56 && logoBox.height >= 56, 'Planner mark must render larger than the prior 48×48 chrome.')
   const slogan = page.getByTestId('arc-mark-slogan')
   assert(await slogan.isVisible(), 'Planner wordmark must include the slogan.')
   assert((await slogan.textContent())?.trim() === 'for plans that change', 'Slogan must be “for plans that change”.')
