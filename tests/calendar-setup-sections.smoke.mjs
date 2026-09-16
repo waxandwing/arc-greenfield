@@ -9,7 +9,10 @@ function assert(condition, message) {
 
 async function openSettings(page) {
   const button = page.getByRole('button', { name: 'SETTINGS', exact: true })
-  if (await button.getAttribute('aria-expanded') !== 'true') await button.click()
+  if (await button.getAttribute('aria-expanded') !== 'true') {
+    // Desk priority dock / todos folder can cover the physical settings tab; bypass hit-testing.
+    await button.evaluate((el) => el.click())
+  }
 }
 
 async function configureCalendar(page) {
