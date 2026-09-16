@@ -173,7 +173,7 @@ function SetupMonthMiniGrid({
   )
 }
 
-function dayToneClass(kind: SchoolCalendar['days'][string]['kind']): string {
+function dayToneClass(kind: SchoolCalendar['days'][ISODate]['kind']): string {
   if (isPlannableDayKind(kind)) return ' is-school-day'
   if (kind === 'break' || kind === 'holiday') return ' is-break-day'
   if (kind === 'no-school') return ' is-weekend-day'

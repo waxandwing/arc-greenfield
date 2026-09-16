@@ -344,11 +344,11 @@ export function B01Furniture({
   }, [openRequest?.token])
 
   const sidePanel = open.settings ? 'settings' : workspaceIsOpen ? 'workspace' : tasksIsOpen ? 'tasks' : 'none'
-  const workspaceTabLabel = deskEnabled ? 'TRAY' : 'WORKSPACE'
-  const workspacePanelLabel = deskEnabled ? 'Tray' : 'Workspace'
+  const workspaceTabLabel = deskEnabled ? 'IDEAS' : 'WORKSPACE'
+  const workspacePanelLabel = deskEnabled ? 'IDEAS' : 'Workspace'
   const layoutGridActive =
     deskEnabled && Boolean(deskLayout) && (deskEditMode || !deskLayoutUsesDefault(deskLayout!))
-  /** IDEAS green drawer stays on every desk calendar view; TRAY utility panel reuses content when open — never both. */
+  /** IDEAS green drawer stays on every desk calendar view; enlarged IDEAS panel reuses content when open — never both. */
   const showDeskTrayDock = deskEnabled && !workspaceIsOpen
 
   function renderDeskTrayDock() {
@@ -533,6 +533,7 @@ export function B01Furniture({
       {deskEnabled
         ? renderPlannerViewTabs(plannerEdgeTabsClass)
         : null}
+      {deskEnabled ? renderPlannerSettingsLeftTab() : null}
       {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
       <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
         {deskEnabled ? <DeskPlannerFrameSlices /> : null}
@@ -566,7 +567,6 @@ export function B01Furniture({
               data-furniture-locked={deskEditMode ? 'false' : 'true'}
             >
               <DeskHelpButton />
-              {deskEnabled ? renderPlannerSettingsLeftTab() : null}
               {deskEditMode ? <div className="arc-desk-zone-grid" aria-hidden="true" /> : null}
               {layoutGridActive ? (
                 <>

@@ -124,7 +124,7 @@ try {
   assert(await page.locator('.planning-period-heading').count() === 0, 'Planning lens must not duplicate headings.')
   await shot(page, '05-planning-clean.png')
 
-  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
+  await page.getByRole('button', { name: 'IDEAS', exact: true }).click()
   assert(await page.locator('.b01-furniture-composition').getAttribute('data-workspace-open') === 'true', 'Tray overlay open.')
   await shot(page, '06-workspace-open.png')
   await page.getByRole('button', { name: 'Close Tray', exact: true }).click()

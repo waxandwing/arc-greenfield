@@ -947,3 +947,45 @@
   .arctable-student-decor{display:none}
   .arctable-student-facts-row{grid-template-columns:1fr}
 }
+
+/* Board click-to-add authoring */
+.arctable-board-empty-add,
+.arctable-board-add-more{
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  margin-top:18px;
+  padding:0;
+  border:0;
+  border-bottom:1px solid color-mix(in srgb, var(--ink) 28%, transparent);
+  border-radius:0;
+  background:transparent;
+  color:var(--soft-charcoal);
+  font:400 22px/1.3 'Instrument Serif',serif;
+  cursor:pointer;
+  text-align:left;
+}
+.arctable-board-empty-add:disabled{
+  cursor:default;
+  border-bottom:0;
+  opacity:.85;
+}
+.arctable-board-compose{
+  display:grid;
+  gap:10px;
+  max-width:640px;
+  margin-top:22px;
+}
+.arctable-board-compose input{
+  min-height:48px;
+  padding:10px 0;
+  border:0;
+  border-bottom:2px solid color-mix(in srgb, var(--ink) 35%, transparent);
+  border-radius:0;
+  background:transparent;
+  font:400 24px/1.3 'Instrument Serif',serif;
+  color:var(--ink);
+}
+.arctable-board-compose-actions{display:flex;flex-wrap:wrap;gap:10px}
+.arctable-board.is-editable{cursor:text}
+.arctable-board.is-locked{cursor:default}

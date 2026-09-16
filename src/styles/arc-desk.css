@@ -169,25 +169,20 @@ html:has(.arc-shell--desk) body {
   z-index: 2;
 }
 
-/* Lower ArcTable / start-class mark — visible brand lockup on wood (~104px), tucked so the
-   planner (~89.5% right edge) keeps desk space; clear of SETTINGS, edge tabs, and help (?).
-   Canonical start-class-mark.png — no glow / wood-burn filters. */
+/* Modest corner lockup — clear of planner right edge (~89.5%) so calendar keeps space. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor {
   position: absolute;
-  right: 2.6%;
-  bottom: 3.9%;
-  width: auto;
-  max-width: 104px;
+  right: 2.2%;
+  bottom: 3.4%;
+  width: 6.6%;
+  max-width: 88px;
   aspect-ratio: auto;
-  z-index: 18;
+  z-index: 6;
   left: auto;
   pointer-events: none;
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
-  filter: none;
-  mix-blend-mode: normal;
-  opacity: 1;
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-capture-sticky {
@@ -1970,12 +1965,9 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor .arc-desk-mark-svg,
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor .arc-desk-start-class-mark {
-  width: clamp(90px, 7.4vw, 104px);
-  max-width: 104px;
+  width: 100%;
+  max-width: 88px;
   height: auto;
-  filter: none;
-  mix-blend-mode: normal;
-  opacity: 1;
 }
 
 .arc-desk-arctable-context {
@@ -1984,12 +1976,12 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-arctable-script {
   margin: 0;
-  max-width: 14rem;
+  max-width: 8.5rem;
   font-family: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', var(--font-display), serif;
   font-style: italic;
   font-weight: 600;
-  font-size: clamp(1.05rem, 1.35vw, 1.35rem);
-  line-height: 1.2;
+  font-size: clamp(0.82rem, 1.05vw, 1.02rem);
+  line-height: 1.15;
   letter-spacing: 0.01em;
   text-transform: lowercase;
   text-align: center;
@@ -2059,7 +2051,7 @@ html:has(.arc-shell--desk) body {
   opacity: 1;
 }
 
-/* Desk utilities: PLANNING/TRAY stay DOM-reachable for smokes (visually off-screen).
+/* Desk utilities: PLANNING/IDEAS stay DOM-reachable for smokes (visually off-screen).
    SETTINGS grips the planner/journal left edge — not this wood utility strip. */
 .b01-furniture-composition--desk .arc-desk-utility-tabs {
   position: absolute;
@@ -2091,16 +2083,14 @@ html:has(.arc-shell--desk) body {
 }
 
 /* Kelly copper SETTINGS — physical index tab gripping the planner/journal LEFT edge.
-   Sibling of planner on the desk surface (z above TO-DOS) so the ear stays clickable.
-   Original settings-tab.png art only; no filters/effects. */
-.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical {
+   Original settings-tab.png art only; no filters/effects. Not a wood utility-strip control. */
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical {
   position: absolute;
-  /* Planner left is 13.5%; ear hangs onto wood, body overlaps green rim. */
-  left: calc(13.5% - 26px);
-  /* Mid-lower on the journal (planner top 16% + ~54% of 74% height). */
-  top: calc(16% + 0.54 * 74%);
+  /* Ear protrudes onto wood; body overlaps green rim / cream plate. */
+  left: -26px;
+  top: 54%;
   transform: translateY(-50%);
-  z-index: 20;
+  z-index: 48;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -2122,7 +2112,7 @@ html:has(.arc-shell--desk) body {
   text-orientation: mixed;
 }
 
-.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical .arc-settings-tab-face {
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical .arc-settings-tab-face {
   display: block;
   width: clamp(40px, 3.8vw, 48px);
   height: auto;
@@ -2131,7 +2121,7 @@ html:has(.arc-shell--desk) body {
   filter: none;
 }
 
-.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical .arc-settings-tab-label {
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical .arc-settings-tab-label {
   font-family: 'League Spartan', var(--font-label), sans-serif;
   font-size: 8px;
   font-weight: 800;
@@ -2141,29 +2131,21 @@ html:has(.arc-shell--desk) body {
   text-shadow: none;
 }
 
-.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical[aria-current='page'] {
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical[aria-current='page'] {
   opacity: 1;
 }
 
-.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical:focus-visible {
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical:focus-visible {
   outline: 3px solid var(--mustard);
   outline-offset: 3px;
 }
 
-.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings:not(.arc-index-tab--settings-physical) {
+.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings:not(.arc-index-tab--settings-physical) {
   position: absolute;
-  left: calc(13.5% - 8px);
-  top: calc(16% + 0.54 * 74%);
+  left: -8px;
+  top: 54%;
   transform: translateY(-50%);
-  z-index: 20;
-}
-
-.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
-  .arc-desk-surface > .arc-index-tab--settings-physical,
-.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
-  .arc-desk-surface > .arc-index-tab--settings:not(.arc-index-tab--settings-physical) {
-  left: calc(12% - 26px);
-  top: calc(10% + 0.54 * 78%);
+  z-index: 48;
 }
 
 .b01-furniture-composition--desk .arc-desk-arctable--start-class-mark {
@@ -2180,13 +2162,10 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .arc-desk-start-class-mark {
   display: block;
-  width: clamp(90px, 7.4vw, 104px);
+  width: clamp(52px, 5.4vw, 78px);
   height: auto;
   object-fit: contain;
-  /* Kelly: original ArcTable / start-class mark — no glow, wood-burn, or blend filters. */
-  filter: none;
-  mix-blend-mode: normal;
-  opacity: 1;
+  filter: drop-shadow(0 8px 16px -12px rgba(33, 29, 23, 0.42));
   pointer-events: none;
 }
 
@@ -2818,8 +2797,8 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-arctable-mark-wrap {
   width: 100%;
-  max-width: 104px;
-  filter: none;
+  max-width: 88px;
+  filter: drop-shadow(0 10px 18px -14px rgba(33, 29, 23, 0.45));
 }
 
 .arc-desk-arctable-single {
@@ -2840,7 +2819,7 @@ html:has(.arc-shell--desk) body {
   display: block;
   width: 100%;
   height: auto;
-  max-width: 104px;
+  max-width: 88px;
 }
 
 .arc-desk-mark-quadrant,
@@ -3492,12 +3471,11 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .arc-desk-arctable-script { order:-1; }
 .b01-furniture-composition--desk .arc-planner-object { filter: drop-shadow(0 16px 34px -24px rgba(33, 29, 23, 0.4)); }
 
-/* Quiet desk help — paper note on wood (not native dialog chrome).
-   Keep ? help left of the tucked lower ArcTable / start-class mark (~104px). */
+/* Quiet desk help — paper note on wood (not native dialog chrome). */
 .arc-desk-help {
   position: absolute;
-  right: 15.2%;
-  bottom: 4.6%;
+  right: 15.5%;
+  bottom: 4.2%;
   top: auto;
   z-index: 21;
   pointer-events: auto;
@@ -3642,4 +3620,15 @@ html:has(.arc-shell--desk) body {
   .arc-desk-help-dialog-inner {
     padding: 0.95rem 1rem 1rem;
   }
+}
+
+.planning-lesson--openable{cursor:pointer}
+.planning-lesson-start-hint{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  color:var(--soft-charcoal);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.02em;
 }

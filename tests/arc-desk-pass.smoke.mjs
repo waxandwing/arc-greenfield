@@ -579,7 +579,7 @@ try {
     settings?.click()
   })
   assert(await page.locator('.b01-settings-owner[data-state="open"]').count() === 1, 'SETTINGS edge tab must land on main Settings furniture.')
-  const editWorkspace = page.getByRole('button', { name: 'Edit Workspace', exact: true })
+  const editWorkspace = page.getByRole('button', { name: 'Arrange desk', exact: true })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   assert(await page.getByRole('heading', { name: 'Desk setup' }).isVisible(), 'Settings must expose Desk setup IA.')
   const deskNotesToggle = page.getByRole('checkbox', { name: /Desk notes strip/i })
@@ -648,14 +648,14 @@ try {
   })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   await editWorkspace.click()
-  assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Edit Workspace must enter arrangement mode on the real desk.')
+  assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Arrange desk must enter arrangement mode on the real desk.')
   assert(await page.locator('[data-desk-edit-mode="true"]').count() === 1, 'Desk edit mode flag must be set.')
   assert(await page.getByTestId('arc-desk-arctable').getAttribute('data-interactions-disabled') === 'true', 'ArcTable quadrant clicks must disable while editing desk layout.')
   await shot(page, 'desk-edit-mode.png')
 
-  await page.getByRole('button', { name: 'Pin it down', exact: true }).click()
+  await page.getByRole('button', { name: 'Done arranging', exact: true }).click()
   await page.waitForFunction(() => document.querySelector('[data-desk-edit-mode="true"]') === null, null, { timeout: 8000 })
-  assert((await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() === returnTabLabel, 'Pin it down must return to the same planner view.')
+  assert((await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() === returnTabLabel, 'Done arranging must return to the same planner view.')
 
   await page.evaluate(() => {
     const payload = JSON.stringify({

@@ -39,14 +39,11 @@ export function SettingsFurnitureContent({
 }: Props) {
   return (
     <div className="b01-settings-content">
-      <section className="b01-settings-group" aria-labelledby="settings-school-year">
-        <h2 id="settings-school-year">My school year</h2>
+      <section className="b01-settings-group" aria-labelledby="settings-school-classes">
+        <h2 id="settings-school-classes">School & classes</h2>
         <button type="button" className="b01-settings-action" onClick={onOpenCalendarSetup}>Calendar dates</button>
         <button type="button" className="b01-settings-action" onClick={onOpenTerms}>{hasTerms ? 'Term boundaries' : 'Set term boundaries'}</button>
-      </section>
-
-      <section className="b01-settings-group" aria-labelledby="settings-teaching-day">
-        <h2 id="settings-teaching-day">My teaching day</h2>
+        <button type="button" className="b01-settings-action" onClick={onOpenClasses}>{hasClasses ? 'Courses & sections' : 'Set courses & sections'}</button>
         {hasClasses ? (
           <button type="button" className="b01-settings-action" onClick={onOpenTeachingDay}>Teaching day & planning</button>
         ) : (
@@ -55,19 +52,14 @@ export function SettingsFurnitureContent({
         {onOpenTaskBar ? <button type="button" className="b01-settings-action" onClick={onOpenTaskBar}>Task bar</button> : null}
       </section>
 
-      <section className="b01-settings-group" aria-labelledby="settings-courses">
-        <h2 id="settings-courses">My courses</h2>
-        <button type="button" className="b01-settings-action" onClick={onOpenClasses}>{hasClasses ? 'Courses & sections' : 'Set courses & sections'}</button>
-        {hasClasses && <button type="button" className="b01-settings-action" onClick={onOpenUnits}>{hasUnits ? 'Unit library' : 'Add units'}</button>}
-        {hasUnits && <button type="button" className="b01-settings-action" onClick={onOpenLessons}>{hasLessons ? 'Lesson library' : 'Add lessons'}</button>}
-      </section>
-
       <section className="b01-settings-group" aria-labelledby="settings-planning">
         <h2 id="settings-planning">Planning</h2>
         <CalendarViewPreferences
           preferences={preferences}
           onChange={(next) => onChangePreferences({ ...next, desk: preferences.desk })}
         />
+        {hasClasses ? <button type="button" className="b01-settings-action" onClick={onOpenUnits}>{hasUnits ? 'Unit library' : 'Add units'}</button> : null}
+        {hasUnits ? <button type="button" className="b01-settings-action" onClick={onOpenLessons}>{hasLessons ? 'Lesson library' : 'Add lessons'}</button> : null}
       </section>
 
       <DeskSetupSettings
@@ -76,18 +68,8 @@ export function SettingsFurnitureContent({
         onEditWorkspace={onEditWorkspace}
       />
 
-      <section className="b01-settings-group" aria-labelledby="settings-arctable">
-        <h2 id="settings-arctable">ArcTable</h2>
-        <p className="b01-settings-muted">ArcTable stays on your desk during live class. Show or hide the desk fixture under Desk setup.</p>
-      </section>
-
-      <section className="b01-settings-group" aria-labelledby="settings-accessibility">
-        <h2 id="settings-accessibility">Accessibility & display</h2>
-        <p className="b01-settings-muted">Weekend visibility lives under Desk setup. Day notes follow your planner edits in Month and Day views.</p>
-      </section>
-
       <section className="b01-settings-group" aria-labelledby="settings-data">
-        <h2 id="settings-data">Data / import / reuse</h2>
+        <h2 id="settings-data">Data & reuse</h2>
         {hasClasses ? (
           <button type="button" className="b01-settings-action" onClick={onOpenImport}>Import curriculum</button>
         ) : (

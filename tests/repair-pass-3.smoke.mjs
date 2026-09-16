@@ -142,7 +142,7 @@ try {
   assert(saved, 'Desk Quick Capture must persist text.')
   await shot(page, '06-capture-success.png')
 
-  await page.getByRole('button', { name: 'TRAY', exact: true }).evaluate((el) => el.click())
+  await page.getByRole('button', { name: 'IDEAS', exact: true }).evaluate((el) => el.click())
   await shot(page, '07-workspace-captures-first.png')
   await page.getByRole('button', { name: 'Close Tray' }).evaluate((el) => el.click())
 

@@ -115,7 +115,7 @@ try {
   await page.getByRole('button', { name: 'PLANNING', exact: true }).click()
   await shot(page, '07-planning-period.png')
 
-  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
+  await page.getByRole('button', { name: 'IDEAS', exact: true }).click()
   await shot(page, '08-workspace.png')
   await page.getByRole('button', { name: 'Close Tray', exact: true }).click()
 
