@@ -32,7 +32,9 @@ try {
   for (const view of views) {
     await page.goto(`${baseUrl}/?gold=${view}`, { waitUntil: 'networkidle' })
     assert(await page.locator('.gm-app').count() === 1, `${view}: gold master shell did not render`)
-    assert(await page.locator('.gm-qa-nav').count() === 1, `${view}: QA route navigator missing`)
+    const qaNav = page.locator('.gm-qa-nav')
+    assert(await qaNav.count() === 1, `${view}: QA navigator node missing from fixture`)
+    assert(!(await qaNav.isVisible()), `${view}: internal QA navigation leaked into product UI`)
     assert(await page.locator(`.gm-view-${view}`).count() === 1, `${view}: expected view class missing`)
     await page.screenshot({ path: `${evidenceDir}${view}.png`, fullPage: true })
   }
