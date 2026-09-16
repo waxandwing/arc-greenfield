@@ -249,25 +249,45 @@ try {
   // Accent post-its sit near the top edge; DOM click avoids pointer intercept on the slim tab.
   await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
   assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in IDEAS/tray dock when extended.')
+  await page.waitForFunction(() => {
+    const el = document.querySelector('[data-testid="arc-desk-tray-dock"]')
+    const viewport = document.querySelector('.arc-desk-viewport')
+    if (!el || !viewport || el.getAttribute('data-extended') !== 'true') return false
+    const t = getComputedStyle(el).transform
+    if (!(t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)')) return false
+    const offset = el.getBoundingClientRect().top - viewport.getBoundingClientRect().top
+    return offset >= -2 && offset <= 14
+  }, undefined, { timeout: 3000 })
   const ideasOpen = await page.getByTestId('arc-desk-tray-dock').evaluate((el) => {
     const surface = el.closest('.arc-desk-surface')
+    const viewport = document.querySelector('.arc-desk-viewport')
     const rect = el.getBoundingClientRect()
     const surfaceTop = surface ? surface.getBoundingClientRect().top : 0
+    const viewportTop = viewport ? viewport.getBoundingClientRect().top : 0
     const transform = getComputedStyle(el).transform
     return {
       transform,
       offsetFromSurfaceTop: rect.top - surfaceTop,
+      offsetFromViewportTop: rect.top - viewportTop,
+      parkTop: el.getAttribute('data-tray-park-top'),
       extended: el.getAttribute('data-extended'),
       width: rect.width,
       height: rect.height,
     }
   })
   assert(ideasOpen.extended === 'true', 'IDEAS dock must be extended after tab click.')
-  assert(ideasOpen.offsetFromSurfaceTop <= 4, `IDEAS drawer must stay locked to top of desk when open (offset=${ideasOpen.offsetFromSurfaceTop}).`)
+  assert(ideasOpen.parkTop === '0' || ideasOpen.parkTop === '0.0', `Default IDEAS park must be top (got park=${ideasOpen.parkTop}).`)
+  assert(
+    ideasOpen.offsetFromViewportTop >= -2 && ideasOpen.offsetFromViewportTop <= 14,
+    `IDEAS drawer must sit flush with the desk view panel top when open (viewportOffset=${ideasOpen.offsetFromViewportTop}).`,
+  )
   assert(ideasOpen.width > ideasOpen.height, 'Open IDEAS drawer must remain landscape (wider than tall).')
   assert(await page.getByTestId('desk-slice-todos-tab').isVisible(), 'TO-DOS tab art must remain visible while IDEAS is open.')
   assert(await page.getByTestId('arc-desk-todos-folder').isVisible(), 'TO-DOS denim folder must remain visible while IDEAS is open.')
   assert(await page.getByTestId('arc-desk-quick-capture').isVisible(), 'Quick capture post-it must remain visible while IDEAS is open.')
+  // Collapse IDEAS so wood accent post-its are not under the open drawer well.
+  await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  await page.waitForFunction(() => document.querySelector('[data-testid="arc-desk-tray-dock"]')?.getAttribute('data-extended') === 'false', null, { timeout: 3000 })
   assert(await page.locator('.arc-index-tabs').count() === 1, 'Desk must expose a single planner view tab strip (utilities are separate).')
   assert(await page.locator('.b01-index-rail > .arc-index-tabs').count() === 0, 'Side index rail must stay empty on desk.')
   const quickCaptureSticky = page.getByTestId('arc-desk-quick-capture')
