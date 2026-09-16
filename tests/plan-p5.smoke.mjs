@@ -107,11 +107,24 @@ try {
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
 
   assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Teaching Day did not keep the anchor date.')
+  const indexNav = page.getByRole('navigation', { name: 'Planner index' })
+  const dayTab = indexNav.getByRole('button', { name: 'DAY', exact: true })
+  assert(await dayTab.getAttribute('aria-current') === 'page', 'DAY edge tab must be selected on Teaching Day.')
   await shot(page, '01-planning-period.png')
 
   await page.getByRole('button', { name: 'Period 5, planning time' }).click()
   assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'class', 'Planning period did not deepen like Class Focus.')
   assert(await page.getByRole('heading', { level: 1, name: 'Planning period' }).isVisible(), 'Planning period lens did not render.')
+  assert(await dayTab.getAttribute('aria-current') === 'page', 'DAY edge tab must stay selected during Planning period (day-scoped).')
+  assert(await dayTab.evaluate((el) => el.classList.contains('arc-index-tab--desk-slice-active') || !el.classList.contains('arc-index-tab--desk-slice')), 'DAY must keep active desk-slice class when slice chrome is on.')
+  const dayBg = await dayTab.evaluate((el) => getComputedStyle(el).backgroundImage)
+  if (dayBg && dayBg !== 'none') {
+    assert(dayBg.includes('planner-edge-tab-active'), `DAY must use active tab artwork during Planning period, got: ${dayBg}`)
+    assert(!dayBg.includes('planner-edge-tab-day-inactive'), 'DAY must not use inactive crop during Planning period.')
+  }
+  const planningTab = page.getByRole('button', { name: 'PLANNING', exact: true })
+  assert(await planningTab.getAttribute('aria-current') !== 'page', 'PLANNING must not steal aria-current=page from DAY.')
+  assert(await planningTab.getAttribute('aria-pressed') === 'true', 'PLANNING depth should use aria-pressed while DAY stays current.')
   assert(await page.getByText('Across my preps', { exact: true }).isVisible(), 'Planning period did not show cross-prep context.')
   assert(await page.getByRole('heading', { name: 'Now', exact: true }).isVisible(), 'Planning period did not render NOW bucket.')
   assert(await page.getByRole('heading', { name: 'Needs attention', exact: true }).isVisible(), 'Planning period did not render NEEDS ATTENTION bucket.')
