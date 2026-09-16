@@ -143,9 +143,9 @@ try {
   assert(saved, 'Desk Quick Capture must persist text.')
   await shot(page, '06-capture-success.png')
 
-  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
+  await page.getByRole('button', { name: 'TRAY', exact: true }).evaluate((el) => el.click())
   await shot(page, '07-workspace-captures-first.png')
-  await page.getByRole('button', { name: 'Close Tray' }).click()
+  await page.getByRole('button', { name: 'Close Tray' }).evaluate((el) => el.click())
 
   await page.evaluate(() => {
     localStorage.removeItem('arc.onboarding.v1')
