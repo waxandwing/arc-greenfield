@@ -111,7 +111,7 @@ try {
   assert(await headerMark.count() === 1, 'Teacher Monitor must render the ArcTable AT-001 header mark.')
   assert(await headerMark.evaluate((img) => img.complete && img.naturalWidth > 0), 'Teacher Monitor header mark asset must load via publicAssetUrl.')
   const headerMarkSrc = await headerMark.getAttribute('src')
-  assert(headerMarkSrc?.includes('assets/arctable/logo-icon-framed-arc-primary-512.png'), 'Header mark must use the AT-001 framed ArcTable asset.')
+  assert(headerMarkSrc?.includes('assets/arctable/arctable-quadrant-mark.png'), 'Header mark must use Kelly ArcTable quadrant mark.')
   assert(await page.getByTestId('arctable-settings').count() === 1, 'Teacher Monitor must expose a Settings control.')
   const viewportFit = await page.evaluate(() => {
     const main = document.querySelector('.arctable--teacher')

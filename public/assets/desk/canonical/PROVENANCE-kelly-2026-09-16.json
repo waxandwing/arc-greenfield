@@ -1,0 +1,77 @@
+{
+  "ingestedAt": "2026-09-16T00:33:36.142603+00:00",
+  "source": "Kelly chat upload (empty message), session 2026-09-16 \u2014 four PNG source art files",
+  "originalUploads": {
+    "ca0fc363-c36b-4824-9a29-653f72bda375.png": "ArcTable four-quadrant star/table mark",
+    "39ad9767-2c35-497d-b216-27da4b1e02b3.png": "Original Arc stacked mark (a/r/c + red pie)",
+    "d5a8305e-39cd-4e8e-b18c-e56a84b92720.png": "Slate-blue speckled circular magnet/plate",
+    "42d947d9-b977-4faf-aeff-4499b3713674.png": "Pale blue tilted post-it paper"
+  },
+  "processing": "Cropped transparent letterbox to content bbox (+2px pad). Did not invent other labeled SVGs.",
+  "outputs": [
+    {
+      "path": "public/assets/desk/canonical/arctable-mark.png",
+      "sha256": "8dfe49f69f2f588aa24544e17397a33ea31b95d088381d84d869db7851168f00",
+      "size": [
+        492,
+        491
+      ]
+    },
+    {
+      "path": "public/assets/arctable/arctable-quadrant-mark.png",
+      "sha256": "8dfe49f69f2f588aa24544e17397a33ea31b95d088381d84d869db7851168f00",
+      "size": [
+        492,
+        491
+      ]
+    },
+    {
+      "path": "public/assets/desk/canonical/arc-upper-left-logo.png",
+      "sha256": "d1c976d54c15fe4c98bdd4052d7963bda8e94c17e37978b1740735909146710f",
+      "size": [
+        374,
+        392
+      ]
+    },
+    {
+      "path": "public/assets/arc/arc-mark-stacked.png",
+      "sha256": "d1c976d54c15fe4c98bdd4052d7963bda8e94c17e37978b1740735909146710f",
+      "size": [
+        374,
+        392
+      ]
+    },
+    {
+      "path": "public/assets/arc/arc-mark-stacked-kelly-2026-09-16.png",
+      "sha256": "d1c976d54c15fe4c98bdd4052d7963bda8e94c17e37978b1740735909146710f",
+      "size": [
+        374,
+        392
+      ]
+    },
+    {
+      "path": "public/assets/desk/canonical/magnet-blue.png",
+      "sha256": "734258aa93f95bf9f60368fc01aeb4bede8c145939fcac19bff13a69ac209cc8",
+      "size": [
+        469,
+        472
+      ]
+    },
+    {
+      "path": "public/assets/desk/magnets/magnet-blue.png",
+      "sha256": "734258aa93f95bf9f60368fc01aeb4bede8c145939fcac19bff13a69ac209cc8",
+      "size": [
+        469,
+        472
+      ]
+    },
+    {
+      "path": "public/assets/desk/canonical/postit-blue.png",
+      "sha256": "6fb82894e9c170610ef344634ed06614b649fb5865ecfac24b28e959f601f787",
+      "size": [
+        561,
+        526
+      ]
+    }
+  ]
+}

@@ -86,8 +86,8 @@ try {
   assert(await page.locator('.arc-desk-mark-svg image').count() === 1, 'Desk fixture must reference canonical AT-001 SVG asset.')
   const markHref = await page.locator('.arc-desk-mark-svg image').getAttribute('href')
   assert(
-    markHref?.includes('assets/arctable/logo-icon-framed-arc-primary-512.png'),
-    'Desk mark must use logo-icon-framed-arc-primary-512.png under public assets.',
+    markHref?.includes('assets/arctable/arctable-quadrant-mark.png'),
+    'Desk mark must use Kelly ArcTable quadrant mark under public assets.',
   )
   const markAssetOk = await page.evaluate(async (url) => {
     const res = await fetch(url)

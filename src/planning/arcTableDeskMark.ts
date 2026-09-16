@@ -1,9 +1,15 @@
 /** AT-001 table mark geometry + quadrant → ArcTable concept mapping (brief). */
 
-/** Canonical ArcTable logo raster (Kelly); matches AT-001 quadrant colors. Inline SVG used on desk for hit targets. */
-export const ARC_TABLE_MARK_ASSET = '/assets/arctable/logo-icon-framed-arc-primary-512.png'
+/**
+ * Canonical ArcTable logo raster (Kelly 2026-09-16 upload).
+ * Same four-quadrant / cream-star geometry as AT-001, with sticker outline.
+ * AT-001 SVG remains the hit-target geometry reference.
+ */
+export const ARC_TABLE_MARK_ASSET = '/assets/arctable/arctable-quadrant-mark.png'
 export const ARC_TABLE_MARK_LOGO_ALIAS = '/assets/arctable/arctable-logo-primary.png'
 export const ARC_TABLE_MARK_ASSET_SVG = '/assets/arctable/AT-001_table-mark.svg'
+/** Same Kelly quadrant PNG until a distinct Start Class labeled SVG lands. */
+export const ARC_TABLE_START_CLASS_MARK_ASSET = '/assets/desk/canonical/start-class-mark.png'
 /** Horizontal mark + TABLE lockup for dark student / projected headers. */
 export const ARC_TABLE_HEADER_DARK_ASSET = '/assets/arctable/header-compact-dark.png'
 

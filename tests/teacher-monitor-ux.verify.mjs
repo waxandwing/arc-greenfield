@@ -106,7 +106,7 @@ assert(checks.boardTop >= 0 && checks.boardBottom <= checks.viewport + 2, `board
 assert(!checks.pageScrollable, `page scrollable: ${JSON.stringify(checks)}`)
 assert(!checks.pineFill, `pine fill still present: ${JSON.stringify(checks)}`)
 assert(checks.hasSettings, 'missing settings')
-assert(checks.markLoaded && checks.markSrc.includes('assets/arctable/logo-icon-framed-arc-primary-512.png'), `bad mark ${checks.markSrc}`)
+assert(checks.markLoaded && checks.markSrc.includes('assets/arctable/arctable-quadrant-mark.png'), `bad mark ${checks.markSrc}`)
 assert(checks.timerLabel === '10:00', `timer honesty failed: ${checks.timerLabel}`)
 assert(checks.mediaCta.toLowerCase().includes('project'), `missing media CTA: ${checks.mediaCta}`)
 assert(checks.columnCount === 3, `expected 3 columns, got ${checks.columnCount}: ${JSON.stringify(checks)}`)

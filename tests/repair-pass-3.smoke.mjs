@@ -88,10 +88,9 @@ try {
 
   const logo = page.locator('[data-testid="arc-mark-logo"]')
   assert(await logo.count() === 1, 'Canonical Arc mark must render inside planner shell.')
-  assert((await logo.getAttribute('src'))?.includes('/assets/arc/arc-mark.png'), 'Logo must use original arc-mark.png asset.')
+  assert((await logo.getAttribute('src'))?.includes('/assets/arc/arc-mark-stacked.png'), 'Logo must use Kelly original Arc stacked mark.')
   // Pages base path: src may be `/arc-greenfield/assets/...` or `/assets/...`
-  assert((await logo.getAttribute('src'))?.endsWith('/assets/arc/arc-mark.png'), 'Logo src must stay base-aware for GitHub Pages.')
-  assert(!(await logo.getAttribute('src'))?.includes('arc-mark-stacked'), 'Planner mark must not use stacked substitute.')
+  assert((await logo.getAttribute('src'))?.endsWith('/assets/arc/arc-mark-stacked.png'), 'Logo src must stay base-aware for GitHub Pages.')
   const filter = await logo.evaluate((img) => getComputedStyle(img).filter)
   assert(!filter.includes('invert'), 'Canonical mark must not use inverted white substitute.')
   const logoBox = await logo.boundingBox()

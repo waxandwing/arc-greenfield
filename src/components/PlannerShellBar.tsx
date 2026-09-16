@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import { publicAssetUrl } from '../publicAssetUrl'
 
-/** Canonical Arc mark already in repo (colored a/r/c + quadrant). */
-const ARC_MARK_ASSET = 'assets/arc/arc-mark.png'
+/** Kelly original Arc stacked mark (a/r/c + red pie) — no wood-burn. */
+const ARC_MARK_ASSET = 'assets/arc/arc-mark-stacked.png'
 
 /** Product slogan — README / brand lockup line beside the mark. */
 export const ARC_WORDMARK_SLOGAN = 'for plans that change'

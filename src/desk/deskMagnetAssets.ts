@@ -2,9 +2,13 @@ import type { DeskPostItTone } from '../components/DeskPostIt'
 
 export type DeskMagnetColor = 'blue' | 'green' | 'mustard' | 'terracotta'
 
-/** Prefer Kelly labeled canonical magnets when present; else desk magnet discs. */
+/**
+ * Prefer Kelly source art when present.
+ * Blue/slate face: Kelly PNG upload 2026-09-16 (not the interim CSS disc SVG).
+ * Other colors still wait on labeled SVG binaries.
+ */
 const MAGNET_SRC: Record<DeskMagnetColor, string> = {
-  blue: '/assets/desk/canonical/magnet-blue.svg',
+  blue: '/assets/desk/canonical/magnet-blue.png',
   green: '/assets/desk/canonical/magnet-green.svg',
   mustard: '/assets/desk/canonical/magnet-mustard.svg',
   terracotta: '/assets/desk/canonical/magnet-terracotta.svg',
