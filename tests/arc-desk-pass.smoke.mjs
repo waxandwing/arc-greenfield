@@ -544,10 +544,13 @@ try {
   }
   // Drag mustard + pink accents out of IDEAS onto the exterior desk/planner surface.
   assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true', 'IDEAS must stay open to drag stickies out.')
+  await page.getByTestId('arc-desk-ideas-accent-slot').getByTestId('arc-desk-post-it-accent-mustard').waitFor({ state: 'visible', timeout: 5000 })
+  await page.waitForTimeout(250)
   const surfaceBox = await page.locator('.arc-desk-surface').boundingBox()
   assert(surfaceBox, 'Desk surface must expose a box for exterior drop.')
   for (const tone of ['mustard', 'pink']) {
     const traySticky = page.getByTestId('arc-desk-ideas-accent-slot').getByTestId(`arc-desk-post-it-accent-${tone}`)
+    await traySticky.waitFor({ state: 'visible', timeout: 5000 })
     const grip = traySticky.getByTestId(`arc-desk-post-it-accent-${tone}-grip`)
     const start = await grip.boundingBox()
     assert(start, `${tone} in-drawer grip must be draggable.`)
@@ -555,7 +558,7 @@ try {
     const dropY = surfaceBox.y + surfaceBox.height * 0.58
     await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
     await page.mouse.down()
-    await page.mouse.move(dropX, dropY, { steps: 20 })
+    await page.mouse.move(dropX, dropY, { steps: 24 })
     await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'attached', timeout: 3000 })
     assert(await page.locator('.arc-desk-surface.arc-desk-postit-drop-target--desk-park').count() === 1, `${tone} drag-out must highlight the exterior desk park target.`)
     await page.mouse.up()

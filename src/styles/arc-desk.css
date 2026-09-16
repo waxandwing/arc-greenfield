@@ -1392,10 +1392,6 @@ html:has(.arc-shell--desk) body {
   position: absolute;
   /* Above planner paper (16) and closed IDEAS chrome (15) so wood stickies stay draggable. */
   z-index: 17;
-
-.arc-desk-surface:not([data-layout-grid='true']):has(> .arc-desk-tray-dock[data-extended='true']) > .arc-desk-post-it {
-  z-index: 14;
-}
   width: 4.6%;
   aspect-ratio: 1 / 0.92;
   min-width: 36px;
@@ -1407,6 +1403,11 @@ html:has(.arc-shell--desk) body {
   cursor: grab;
   user-select: none;
   pointer-events: auto;
+}
+
+/* Open IDEAS sits above wood stickies so park grip / Clean up stay hittable. */
+.arc-desk-surface:not([data-layout-grid='true']):has(> .arc-desk-tray-dock[data-extended='true']) > .arc-desk-post-it {
+  z-index: 14;
 }
 
 .arc-desk-post-it--dragging {
