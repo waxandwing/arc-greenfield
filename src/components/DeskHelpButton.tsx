@@ -48,8 +48,11 @@ export function DeskHelpButton() {
               <strong> MUST / SHOULD / COULD</strong> to assign them.
             </li>
             <li>
-              Quick Capture prefixes: <strong>u</strong> unit, <strong>l</strong> lesson,
-              <strong> i</strong> idea, <strong>n</strong> note — Enter saves and spawns a fresh sticky or magnet.
+              Type on <strong>Quick capture</strong> and press Enter — it saves to IDEAS and leaves a sticky on the wood.
+            </li>
+            <li>
+              Optional power-user prefixes (after capture works): <strong>u</strong> unit, <strong>l</strong> lesson,
+              <strong> i</strong> idea, <strong>n</strong> note.
             </li>
             <li>
               Tap the bottom-corner dot on a sticky to mark it as a <strong>lesson</strong> when linking unit + class groups.
@@ -59,10 +62,6 @@ export function DeskHelpButton() {
             </li>
             <li>
               <strong>start class</strong> opens ArcTable for the next period.
-            </li>
-            <li>
-              Click the bottom corner of a sticky to mark it as a <strong>lesson</strong> (corner
-              dot). Link overlapping stickies to group a unit and class around that lesson.
             </li>
           </ul>
           <button type="button" className="arc-desk-help-close" onClick={close}>

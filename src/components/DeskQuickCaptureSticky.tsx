@@ -19,8 +19,7 @@ type Props = {
 /**
  * Upper-right mustard paper sticky — live desk object (not tray raster).
  * Inline type-first jot only (no capture modal/dialog).
- * Prefixes: u=unit, l=lesson, i=idea, n=note (e.g. `u mesopotamia`).
- * Enter saves to the matching destination; subsequent Enter gets a fresh sticky/magnet.
+ * Enter saves to IDEAS by default. Optional power-user prefixes (u/l/i/n) still parse when typed.
  */
 export function DeskQuickCaptureSticky({
   disabled = false,

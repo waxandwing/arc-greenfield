@@ -21,7 +21,7 @@ export function DeskEditToolbar({ selectedObject, sizes, onSizeChange, onDone, o
       </label>
     ) : selectedObject === 'tray' ? (
       <label className="desk-edit-size-control">
-        <span>Tray size</span>
+        <span>IDEAS size</span>
         <select value={sizes.tray} onChange={(event) => onSizeChange({ tray: event.target.value as TraySizePreset })}>
           <option value="standard">Standard</option>
           <option value="wide">Wide</option>
@@ -37,15 +37,31 @@ export function DeskEditToolbar({ selectedObject, sizes, onSizeChange, onDone, o
       </label>
     ) : null
 
+  const selectedLabel =
+    selectedObject === 'planner'
+      ? 'Planner'
+      : selectedObject === 'tray'
+        ? 'IDEAS'
+        : selectedObject === 'msc'
+          ? 'To-dos'
+          : selectedObject === 'arctable'
+            ? 'ArcTable'
+            : 'Notes'
+
   return (
-    <div className="desk-edit-toolbar" role="region" aria-label="Desk edit mode" data-testid="desk-edit-toolbar">
-      <p className="desk-edit-toolbar-label">
-        Desk edit mode — select objects, use arrow keys to move; planning drag is paused.
-      </p>
+    <div className="desk-edit-toolbar" role="region" aria-label="Arrange desk" data-testid="desk-edit-toolbar">
+      <div>
+        <p className="desk-edit-toolbar-label">
+          Arrange desk — select a piece, then move it. Planning drag is paused.
+        </p>
+        <p className="desk-edit-toolbar-hint" data-testid="desk-edit-move-hint">
+          {selectedLabel}: drag it, or use arrow keys.
+        </p>
+      </div>
       <div className="desk-edit-toolbar-actions">
         {sizeField}
-        <button type="button" className="quiet-button" onClick={onReset}>
-          {resetNeedsConfirm ? 'Confirm reset desk' : 'Reset desk'}
+        <button type="button" className="quiet-button" onClick={onReset} title="Restores default positions. Your lessons and notes stay.">
+          {resetNeedsConfirm ? 'Confirm reset desk layout' : 'Reset desk layout'}
         </button>
         <button type="button" className="b01-settings-action b01-settings-action--primary" onClick={onDone}>
           Done arranging
