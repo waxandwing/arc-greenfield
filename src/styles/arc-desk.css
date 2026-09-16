@@ -147,7 +147,9 @@ html:has(.arc-shell--desk) body {
   pointer-events: none;
 }
 
-.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock .arc-desk-todos-folder-tab {
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock .arc-desk-todos-folder-tab,
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock .arc-desk-todos-folder-body,
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock .desk-priority-pad {
   pointer-events: auto;
 }
 
@@ -339,6 +341,15 @@ html:has(.arc-shell--desk) body {
   overflow: visible;
   text-overflow: clip;
   max-width: none;
+}
+
+/* SETTINGS physical edge tab — opens main Settings furniture. Kelly USE SVG still BLOCKED. */
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings {
+  margin-top: 8px;
+}
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings[aria-current='page'] {
+  color: color-mix(in srgb, var(--ink) 92%, #2a4a66);
+  font-weight: 900;
 }
 
 .arc-planner-physical-tabs.arc-planner-physical-tabs--desk-edge .arc-index-tab[aria-current='page'] {
@@ -889,6 +900,10 @@ html:has(.arc-shell--desk) body {
 }
 
 .desk-priority-task {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
   padding: 6px 8px;
   border-radius: 6px;
   background: #fffef9;
@@ -904,6 +919,51 @@ html:has(.arc-shell--desk) body {
 
 .desk-priority-task--important {
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--terracotta) 70%, transparent);
+}
+
+.desk-priority-task--completed .desk-priority-task-text span {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+  color: rgba(44, 46, 46, 0.64);
+}
+
+.desk-priority-complete {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  cursor: pointer;
+}
+
+.desk-priority-complete input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: color-mix(in srgb, var(--shell-frame-green) 70%, #1a2a36);
+}
+
+.desk-priority-task-text {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: text;
+}
+
+.desk-priority-edit-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 28px;
+  padding: 2px 4px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, #1a2a36 28%, transparent);
+  background: transparent;
+  font: inherit;
+  color: inherit;
 }
 
 .desk-priority-add input {
@@ -1147,11 +1207,11 @@ html:has(.arc-shell--desk) body {
     inset 0 1px 0 rgba(255, 253, 248, 0.6);
 }
 
-.arc-desk-post-it--mustard {
+.arc-desk-post-it--mustard:not(.arc-desk-post-it--magnet) {
   background: linear-gradient(165deg, #f5e083 0%, #e8c84a 48%, #d9b63a 100%);
 }
 
-.arc-desk-post-it--pink {
+.arc-desk-post-it--pink:not(.arc-desk-post-it--magnet) {
   background: linear-gradient(165deg, #f6d0d4 0%, #e8a8b0 55%, #d48992 100%);
 }
 
@@ -1166,8 +1226,39 @@ html:has(.arc-shell--desk) body {
   box-shadow: none;
 }
 
+.arc-desk-post-it--cream:not(.arc-desk-post-it--magnet) {
+  /* Kelly postit-cream paper (tilted stack) — prefer over CSS gradient fill. */
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/postit-cream.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Kelly magnet faces — replace CSS gradient discs for unit magnets. */
+.arc-desk-post-it--magnet.arc-desk-post-it--mustard {
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/magnet-mustard.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: none;
+}
+
+.arc-desk-post-it--magnet.arc-desk-post-it--pink {
+  /* Pink tone maps to terracotta magnet (deskMagnetColorForTone). */
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/magnet-terracotta.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: none;
+}
+
 .arc-desk-post-it--magnet.arc-desk-post-it--blue {
-  /* Kelly slate-blue speckled magnet face. */
+  /* Kelly slate-blue speckled magnet face (batch 1). */
   background-color: transparent;
   background-image: url('/assets/desk/canonical/magnet-blue.png');
   background-repeat: no-repeat;
@@ -1176,8 +1267,14 @@ html:has(.arc-shell--desk) body {
   box-shadow: none;
 }
 
-.arc-desk-post-it--cream {
-  background: linear-gradient(165deg, #fff9ef 0%, #f3e6cf 55%, #e6d4b4 100%);
+.arc-desk-post-it--magnet.arc-desk-post-it--cream {
+  /* Cream units map to green magnet (batch 2). */
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/magnet-green.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: none;
 }
 
 /* Accent stickies — readable sticky size (~100–140px), writable note body.
@@ -1787,8 +1884,8 @@ html:has(.arc-shell--desk) body {
   opacity: 1;
 }
 
-/* Desk utilities: SETTINGS on wood bottom-left — never stacked under DAY/WEEK/MONTH/YEAR.
-   PLANNING/TRAY stay DOM-reachable for smokes; IDEAS drawer is the visible tray affordance. */
+/* Desk utilities: PLANNING/TRAY stay DOM-reachable for smokes (visually off-screen).
+   SETTINGS is a physical planner edge tab (see .arc-planner-physical-tabs--desk-edge). */
 .b01-furniture-composition--desk .arc-desk-utility-tabs {
   position: absolute;
   left: 2.4%;
@@ -1818,30 +1915,8 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings {
-  position: relative;
-  left: auto;
-  bottom: auto;
-  width: auto;
-  height: auto;
-  min-height: 36px;
-  padding: 8px 14px;
-  overflow: visible;
-  opacity: 1;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  border-radius: 8px;
-  color: var(--ink);
-  background: color-mix(in srgb, var(--field-elevated) 94%, transparent);
-  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 42%, var(--line-subtle));
-  box-shadow:
-    0 10px 22px -14px rgba(33, 29, 23, 0.5),
-    inset 0 1px 0 rgba(255, 253, 248, 0.65);
-}
-
 /* Kelly copper SETTINGS physical tab — replace CSS pill when raster chrome is on. */
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -1857,7 +1932,7 @@ html:has(.arc-shell--desk) body {
   color: color-mix(in srgb, #3a2418 88%, #8a4a28);
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical .arc-settings-tab-face {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical .arc-settings-tab-face {
   display: block;
   width: clamp(36px, 3.6vw, 52px);
   height: auto;
@@ -1866,7 +1941,7 @@ html:has(.arc-shell--desk) body {
   filter: drop-shadow(0 10px 18px -12px rgba(33, 29, 23, 0.55));
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical .arc-settings-tab-label {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical .arc-settings-tab-label {
   font-family: 'League Spartan', var(--font-label), sans-serif;
   font-size: 8px;
   font-weight: 800;
@@ -1876,12 +1951,12 @@ html:has(.arc-shell--desk) body {
   text-shadow: 0 1px 0 rgba(255, 248, 235, 0.35);
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical[aria-current='page'] {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical[aria-current='page'] {
   opacity: 1;
   filter: brightness(1.04);
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical:focus-visible {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical:focus-visible {
   outline: 3px solid var(--mustard);
   outline-offset: 3px;
 }
@@ -2985,6 +3060,35 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .desk-planner-head-title-copy { display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-width:0; }
 .b01-furniture-composition--desk .desk-planner-head-title-copy .plan-state-header { margin:0; padding:0; }
 .b01-furniture-composition--desk .desk-planner-head-title-copy .plan-state-header .plan-state-secondary { display:none; }
+/* Day class/lesson focus: keep unit · date visible so the title is not a lonely mode stamp. */
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='class'] .plan-state-header .plan-state-secondary,
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='lesson'] .plan-state-header .plan-state-secondary {
+  display: block;
+  margin: 2px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: color-mix(in srgb, var(--ink) 72%, var(--soft-charcoal));
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='class'] .plan-state-kicker,
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='lesson'] .plan-state-kicker {
+  margin: 0 0 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--ink) 70%, var(--soft-charcoal));
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 .b01-furniture-composition--desk .desk-planner-week-kicker { font-family:'League Spartan', var(--font-label), sans-serif; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:color-mix(in srgb, var(--ink) 78%, var(--soft-charcoal)); margin:0; }
 .b01-furniture-composition--desk .desk-planner-rainbow-mark { width:clamp(40px,4.2vw,56px); height:auto; flex:0 0 auto; object-fit:contain; pointer-events:none; }
 .b01-furniture-composition--desk .desk-planner-head-tools { gap:6px; padding-top:4px; opacity:0.82; }

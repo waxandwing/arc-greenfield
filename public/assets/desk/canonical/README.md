@@ -1,6 +1,6 @@
 # Arc desk labeled asset authority
 
-**STATUS: PARTIAL** — Kelly PNG batches landed 2026-09-16 (marks/magnet/post-it + tray/tab/calendar + **P0 wood LIVE** + todos-tab-alt); the 22 labeled SVG binaries are still missing.
+**STATUS: PARTIAL** — Kelly PNG batches landed 2026-09-16 (marks/magnets/post-its + tray/tab/calendar + **P0 wood LIVE** + todos-tab-alt + batch 3 mustard/terracotta/cream/side-open); the 22 labeled SVG binaries are still missing.
 
 Do **not** invent substitutes (crops, CSS gradients, generated magnets, re-traced SVGs) and claim Kelly labeled authority. Wire remaining roles only after files land in `uploads/desk-incoming/` and are copied here per the rename map below.
 
@@ -89,13 +89,38 @@ Provenance: `PROVENANCE-kelly-2026-09-16-batch2-tray-tab-magnet-paper.json`.
 
 Coordinate with batch 1 (`PROVENANCE-kelly-2026-09-16.json`) — do not overwrite those paths.
 
+## Kelly pass 2026-09-16 — IDEAS cleanup / MSC / SETTINGS edge tab
+
+- **IDEAS tray PNG** (`ideas-tray.png`): wired (batch 2 + IDEAS/TODOs ingest). Labeled SVG still outstanding.
+- **Clean up:** gathers loose accent post-its into the IDEAS tray **without** auto-opening the tray.
+- **MUST / SHOULD / COULD:** denim folder pad accepts add / rename / complete (pointer-events on folder body).
+- **SETTINGS:** physical **planner edge tab** (not wood utility). Copper `settings-tab.png` is the face authority; labeled SVG still outstanding.
+- **Do not invent** Kelly USE SVGs from crops or CSS gradients.
+## Kelly PNG ingest batch 3 (2026-09-16) — mustard / terracotta magnets + cream paper + side-open tray
+
+Agent `bc-eba92442` · branch `cursor/desk-magnet-tray-ingest-3e6e` · provenance `PROVENANCE-kelly-2026-09-16-batch3-magnets-tray.json`
+
+Coordinates with batches 1–2 — **does not overwrite** `ideas-tray.png`, `magnet-blue.png`, `magnet-green.png`, wood/settings/todos tabs.
+
+| Saved path | Source upload | Role | Wire |
+|---|---|---|---|
+| `magnet-mustard.png` (+ `desk/magnets/magnet-mustard.png`) | `68da76b9-…` | Mustard circular magnet disc | **WIRED** — mustard unit-magnet face (replaces CSS gradient) |
+| `magnet-terracotta.png` (+ `desk/magnets/magnet-terracotta.png`) | `9a3501e7-…` | Terracotta/red circular magnet disc | **WIRED** — pink→terracotta unit-magnet face (replaces CSS gradient) |
+| `postit-cream.png` | `e2399786-…` | Cream tilted paper/post-it stack (thick green base); candidate for `postit-stack` | **WIRED** — `.arc-desk-post-it--cream` paper face |
+| `ideas-tray-side-open.png` | `f237dbd9-…` | Orange-left-tab cream tray **with paper stacks** | **STAGED only** — see tray role note |
+
+### Tray role note (vs felt / primary IDEAS tray)
+
+- **Felt empty tray (batch 2 `ideas-tray.png` / `25dc87d8-…`)**: sage felt texture, empty well, bottom pull-tab — primary IDEAS body authority from that batch.
+- **This asset (`ideas-tray-side-open.png`)**: cream body, **orange vertical tab on the left**, two paper-stack mounds inside. Reads as a **side-open / filled alternate** (contents visible), not the empty felt drawer and **not** a TODOs tab (TODOs is silver metal when that PNG lands). Do not dual-wire over primary `ideas-tray.png`.
+
 ## Kelly PNG ingest — settings / start-class / rainbow / paper tray (2026-09-16)
 
 Agent `bc-f777bf61`. Provenance: `PROVENANCE-kelly-settings-start-rainbow-2026-09-16.json`.
 
 | Canonical PNG | Upload UUID | Role | Wire |
 |---|---|---|---|
-| `settings-tab.png` | `56d5f05f-…` | Copper brushed SETTINGS physical tab | **WIRED** — desk utility SETTINGS face |
+| `settings-tab.png` | `56d5f05f-…` | Copper brushed SETTINGS physical tab | **WIRED** — planner edge SETTINGS face (`arc-planner-settings-edge-tab`) |
 | `start-class-mark.png` | `406826ec-…` | Cursive “start class” + ArcTable quadrant | **WIRED** — ArcTable desk Start Class control (+ `public/assets/arctable/start-class-mark.png`) |
 | `calendar-date-rainbow.png` | `83aed162-…` | Teaching week header rainbow | **WIRED** — replaces interim `planner-rainbow-mark.png` |
 | `postit-stack-base.png` (+ alias `paper-tray.png`) | `da2d1234-…` | Cream paper tray / post-it stack base | **STAGED** — binary landed; tray-stack wire pending |
@@ -103,10 +128,9 @@ Agent `bc-f777bf61`. Provenance: `PROVENANCE-kelly-settings-start-rainbow-2026-0
 Processing: transparent letterbox cropped to content bbox (+2px pad). No recolor. `start-class-mark.png` includes cursive + quadrant and must **not** be replaced by the quadrant-only `arctable-mark` tile.
 
 
-
 ## Binary handoff status
 
-**PARTIAL** — batch 1 + batch 2 Kelly PNGs wired 2026-09-16; remaining labeled SVG binaries still missing.
+**PARTIAL** — batches 1–3 Kelly PNGs wired/staged 2026-09-16; remaining labeled SVG binaries still missing.
 
 | Canonical file | Original labeled source | Intended role | Authority | Wire status |
 |---|---|---|---|---|
@@ -130,9 +154,11 @@ Processing: transparent letterbox cropped to content bbox (+2px pad). No recolor
 | `today-highlight.svg` | `today highlighter icon.svg` | Today marker/highlighter | canonical | **BLOCKED** |
 | `start-class-mark.svg` | `start class arctable logo.svg` | Start Class desk control | canonical | **BLOCKED** (PNG lockup may exist separately) |
 | `magnet-green.svg` | `green icon magnet.svg` | green physical magnet | canonical | **BLOCKED** SVG — live PNG `magnet-green.png` |
-| `magnet-mustard.svg` | `magnet vector yellow.svg` | mustard physical magnet | canonical | **BLOCKED** |
-| `magnet-terracotta.svg` | `red icon magnet.svg` | terracotta/red physical magnet | canonical | **BLOCKED** |
-| `postit-stack.svg` | `Post it stack.svg` | stacked paper/Post-it object | canonical candidate | **BLOCKED** |
+| `magnet-mustard.png` | Kelly chat PNG `68da76b9-…` (SVG still absent) | mustard physical magnet | **Kelly PNG** | **WIRED** (batch 3) |
+| `magnet-terracotta.png` | Kelly chat PNG `9a3501e7-…` (SVG still absent) | terracotta/red physical magnet | **Kelly PNG** | **WIRED** (batch 3) |
+| `postit-cream.png` | Kelly chat PNG `e2399786-…` | cream tilted paper/stack; `postit-stack` candidate | **Kelly PNG** | **WIRED** (batch 3) |
+| `ideas-tray-side-open.png` | Kelly chat PNG `f237dbd9-…` | side-open/filled IDEAS alternate (orange tab + stacks) | **Kelly PNG** | **STAGED** — do not dual-wire |
+| `postit-stack.svg` | `Post it stack.svg` | stacked paper/Post-it object | canonical candidate | **BLOCKED** SVG — interim `postit-cream.png` |
 | `calendar-class-selected-marker.svg` | `selected class calendar icon vector.svg` | class-focus selection marker | canonical | **BLOCKED** |
 | `todos-tab-alt.svg` | `TODOS tab.svg` | alternate/legacy TO-DOS reference | reference only | still missing SVG; PNG covers reference |
 | `ideas-tray-vector-alt.svg` | `Ideas Tray Vector.svg` | simplified/alternate tray | reference only | **BLOCKED** |
@@ -165,6 +191,9 @@ Labeled SVG rows for `ideas-tray.svg` / `todos-tab.svg` remain the eventual vect
 - ArcTable / Start Class mark art: `assets/arctable/arctable-quadrant-mark.png` (Kelly PNG; AT-001 SVG for hits)
 - Blue magnet / blue post-it: canonical PNGs (batch 1)
 - Green magnet: `canonical/magnet-green.png` (batch 2)
+- Mustard / terracotta magnets: `canonical/magnet-mustard.png`, `magnet-terracotta.png` (batch 3)
+- Cream paper stickies: `canonical/postit-cream.png` (batch 3)
+- IDEAS side-open alternate: `canonical/ideas-tray-side-open.png` (batch 3, staged only)
 - IDEAS: `canonical/ideas-tray.png` (Kelly PNG authority; legacy `green-folders-drawer.*` retained on disk, unwired)
 - TO-DOS tab: `canonical/todos-tab.png` (Kelly silver brushed metal)
 - Planner plate: `canonical/calendar-background.png`
@@ -192,3 +221,4 @@ Labeled SVG rows for `ideas-tray.svg` / `todos-tab.svg` remain the eventual vect
 - Planning Period asset map (`bc-a47c451f`)
 - Post-it drops + u/l/i/n capture (`bc-61cb9db8`)
 - IDEAS cleanup (`bc-5a50eada`)
+- Parallel PNG ingest agents: only write your own filenames; merge README additively.

@@ -3,9 +3,8 @@ import type { DeskPostItTone } from '../components/DeskPostIt'
 export type DeskMagnetColor = 'blue' | 'green' | 'mustard' | 'terracotta'
 
 /**
- * Prefer Kelly source art when present.
- * Blue/slate + green faces: Kelly PNG upload session 2026-09-16 (not interim CSS disc SVGs).
- * Mustard/terracotta still wait on labeled SVG binaries (or later PNG drops).
+ * Prefer Kelly source art when present (PNG upload session 2026-09-16).
+ * Blue/green: batches 1–2. Mustard/terracotta: batch 3.
  * UnitMagnetBadge probes preferred then falls back — missing files do not flash broken.
  */
 const MAGNET_SRC: Record<DeskMagnetColor, string> = {
@@ -18,8 +17,8 @@ const MAGNET_SRC: Record<DeskMagnetColor, string> = {
 const MAGNET_FALLBACK: Record<DeskMagnetColor, string> = {
   blue: '/assets/desk/magnets/magnet-blue.svg',
   green: '/assets/desk/magnets/magnet-green.png',
-  mustard: '/assets/desk/magnets/magnet-mustard.svg',
-  terracotta: '/assets/desk/magnets/magnet-terracotta.svg',
+  mustard: '/assets/desk/magnets/magnet-mustard.png',
+  terracotta: '/assets/desk/magnets/magnet-terracotta.png',
 }
 
 /** Map sticky tone → physical magnet color (cream units use green). */

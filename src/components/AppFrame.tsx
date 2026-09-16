@@ -107,6 +107,7 @@ export function AppFrame() {
   const deskMonthPrefsMigrated = useRef(false)
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
+  const [lessonSetupFocusId, setLessonSetupFocusId] = useState<string | null>(null)
   const [workspaceLayout, setWorkspaceLayout] = useState<WorkspaceLayoutState>(loadWorkspaceLayout)
   const [stackWorkspace, setStackWorkspace] = useState<StackWorkspace | null>(null)
   const [deskEditSession, setDeskEditSession] = useState<{
@@ -248,8 +249,14 @@ export function AppFrame() {
   }
 
   function returnToSettings() {
+    setLessonSetupFocusId(null)
     workspaceMode.close()
     setSettingsOpenToken((token) => token + 1)
+  }
+
+  function openLessonForEdit(lessonId: string) {
+    setLessonSetupFocusId(lessonId)
+    workspaceMode.open('lessons')
   }
 
   function openSetupSection(id: SetupSectionId) {
@@ -678,7 +685,9 @@ export function AppFrame() {
       planningDragDisabled={deskEditActive}
       folderChrome={showPlanFurniture && workspaceMode.mode === 'calendar'}
       onAdd={taskBar.add}
+      onRename={taskBar.rename}
       onMove={taskBar.move}
+      onSetCompleted={taskBar.setCompleted}
       onPromoteCaptureText={promoteCaptureToPriorityLane}
     />
   ) : null
@@ -787,7 +796,10 @@ export function AppFrame() {
       onOpenTeachingDay={() => workspaceMode.open('teaching-day')}
       onOpenImport={() => workspaceMode.open('import')}
       onOpenUnits={() => workspaceMode.open('units')}
-      onOpenLessons={() => workspaceMode.open('lessons')}
+      onOpenLessons={() => {
+        setLessonSetupFocusId(null)
+        workspaceMode.open('lessons')
+      }}
       onOpenTaskBar={() => setTasksOverlayOpen(true)}
       onEditWorkspace={enterEditWorkspaceMode}
     />
@@ -864,6 +876,8 @@ export function AppFrame() {
       onConfirmPlanLessonMove={workspace.confirmPlanLessonMove}
       onOpenRecoveryForSection={(sectionId) => openRecovery(sectionId)}
       recoveryFocusSectionId={recoveryFocusSectionId}
+      onEditLesson={openLessonForEdit}
+      focusLessonId={lessonSetupFocusId}
     />
   )
 
