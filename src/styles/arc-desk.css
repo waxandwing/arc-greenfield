@@ -2655,8 +2655,8 @@ html:has(.arc-shell--desk) body {
   height: 100%;
   min-height: 0;
   pointer-events: auto;
-  /* Inset from plate ear so lane titles sit on the light-blue body, not under the tab. */
-  padding: 18px 12px 16px 20px;
+  /* Inset from plate ear + asset outline so lane titles sit on the light-blue body. */
+  padding: 18px 12px 16px 28px;
   overflow: visible;
 }
 /*
