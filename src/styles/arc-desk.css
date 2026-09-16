@@ -2090,14 +2090,16 @@ html:has(.arc-shell--desk) body {
 }
 
 /* Kelly copper SETTINGS — physical index tab gripping the planner/journal LEFT edge.
-   Original settings-tab.png art only; no filters/effects. Not a wood utility-strip control. */
-.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical {
+   Sibling of planner on the desk surface (z above TO-DOS) so the ear stays clickable.
+   Original settings-tab.png art only; no filters/effects. */
+.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical {
   position: absolute;
-  /* Ear protrudes onto wood; body overlaps green rim / cream plate. */
-  left: -26px;
-  top: 54%;
+  /* Planner left is 13.5%; ear hangs onto wood, body overlaps green rim. */
+  left: calc(13.5% - 26px);
+  /* Mid-lower on the journal (planner top 16% + ~54% of 74% height). */
+  top: calc(16% + 0.54 * 74%);
   transform: translateY(-50%);
-  z-index: 48;
+  z-index: 20;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -2119,7 +2121,7 @@ html:has(.arc-shell--desk) body {
   text-orientation: mixed;
 }
 
-.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical .arc-settings-tab-face {
+.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical .arc-settings-tab-face {
   display: block;
   width: clamp(40px, 3.8vw, 48px);
   height: auto;
@@ -2128,7 +2130,7 @@ html:has(.arc-shell--desk) body {
   filter: none;
 }
 
-.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical .arc-settings-tab-label {
+.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical .arc-settings-tab-label {
   font-family: 'League Spartan', var(--font-label), sans-serif;
   font-size: 8px;
   font-weight: 800;
@@ -2138,21 +2140,29 @@ html:has(.arc-shell--desk) body {
   text-shadow: none;
 }
 
-.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical[aria-current='page'] {
+.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical[aria-current='page'] {
   opacity: 1;
 }
 
-.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical:focus-visible {
+.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical:focus-visible {
   outline: 3px solid var(--mustard);
   outline-offset: 3px;
 }
 
-.b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings:not(.arc-index-tab--settings-physical) {
+.b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings:not(.arc-index-tab--settings-physical) {
   position: absolute;
-  left: -8px;
-  top: 54%;
+  left: calc(13.5% - 8px);
+  top: calc(16% + 0.54 * 74%);
   transform: translateY(-50%);
-  z-index: 48;
+  z-index: 20;
+}
+
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface > .arc-index-tab--settings-physical,
+.b01-furniture-composition--desk.b01-furniture-composition--year-expanded
+  .arc-desk-surface > .arc-index-tab--settings:not(.arc-index-tab--settings-physical) {
+  left: calc(12% - 26px);
+  top: calc(10% + 0.54 * 78%);
 }
 
 .b01-furniture-composition--desk .arc-desk-arctable--start-class-mark {

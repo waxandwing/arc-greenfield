@@ -533,7 +533,6 @@ export function B01Furniture({
       {deskEnabled
         ? renderPlannerViewTabs(plannerEdgeTabsClass)
         : null}
-      {deskEnabled ? renderPlannerSettingsLeftTab() : null}
       {!deskEnabled ? renderIndexTabs('arc-index-tabs') : null}
       <div className={`arc-calendar-spread${deskEnabled ? ' arc-calendar-spread--desk' : ''}`}>
         {deskEnabled ? <DeskPlannerFrameSlices /> : null}
@@ -567,6 +566,7 @@ export function B01Furniture({
               data-furniture-locked={deskEditMode ? 'false' : 'true'}
             >
               <DeskHelpButton />
+              {deskEnabled ? renderPlannerSettingsLeftTab() : null}
               {deskEditMode ? <div className="arc-desk-zone-grid" aria-hidden="true" /> : null}
               {layoutGridActive ? (
                 <>
