@@ -15,6 +15,7 @@ const contracts = [
   'tests/generated/src/calendar/officialCalendarDateAcquisition.contract.js',
   'tests/generated/src/calendar/officialCalendarExtractionAdapter.contract.js',
     'tests/generated/src/calendar/ncesSchoolIdentityProvider.contract.js',
+    'tests/generated/src/calendar/googleSchoolSearchProvider.contract.js',
     'tests/generated/src/calendar/localSchoolDirectory.contract.js',
     'tests/generated/src/calendar/schoolBellScheduleLookup.contract.js',
     'tests/generated/src/calendar/schoolSetupSuggestions.contract.js',

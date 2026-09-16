@@ -31,6 +31,15 @@ const runtimeErrors = trackRuntimeErrors(page)
 let responseMode = 'candidates'
 let interceptedSearches = 0
 
+// Soft-disable Google in this gate so NCES fixture counts stay deterministic.
+await page.route('**/api/google-schools?**', async (route) => {
+  await route.fulfill({
+    status: 404,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'unavailable', results: [] }),
+  })
+})
+
 await page.route('**/api/nces?**', async (route) => {
   interceptedSearches += 1
   const headers = { 'Content-Type': 'application/json' }
@@ -63,7 +72,7 @@ const renderedResultText = await renderedResults.textContent()
 const renderedCandidateCount = await renderedCandidates.count()
 assert(renderedCandidateCount === 2, `Multiple official candidates were not kept explicit. Rendered candidates=${renderedCandidateCount}; results=${renderedResultText}`)
 assert((renderedResultText ?? '').includes('2 school records found.'), `Candidate summary is incorrect: ${renderedResultText}`)
-assert((renderedResultText ?? '').includes('Choose the school yourself. Arc will not guess.'), 'Candidate chooser does not state the no-guess rule.')
+assert((renderedResultText ?? '').includes('Arc will not guess.'), 'Candidate chooser does not state the no-guess rule.')
 assert(await page.getByText('Source: NCES Common Core of Data — Public School Locations 2024–25').count() === 2, 'NCES source labeling is missing from candidates.')
 
 const firstChoice = page.getByRole('button', { name: 'Load this school' }).first()
@@ -83,7 +92,7 @@ responseMode = 'none'
 await page.getByRole('button', { name: 'Change school' }).click()
 await page.getByLabel('School name').fill('Definitely Missing School')
 await page.getByRole('button', { name: 'Load school' }).click()
-await page.getByText('No official NCES match yet.').waitFor({ state: 'visible' })
+await page.getByText('No school match yet.').waitFor({ state: 'visible' })
 assert(interceptedSearches === 2, 'Zero-result search did not use the deterministic NCES proxy fixture.')
 
 responseMode = 'error'

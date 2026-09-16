@@ -1,20 +1,18 @@
 import { FormEvent, useMemo, useState } from 'react'
 import {
   findLocalSchoolById,
-  isNcesReachabilityFailure,
-  searchLocalSchoolDirectory,
-  searchNcesPublicSchools,
+  searchSchoolIdentity,
   type CalendarHydrationInput,
   type OfficialSourceCandidate,
-  type OfficialSourceSearchResult,
   type SchoolCalendar,
+  type SchoolIdentitySearchOutcome,
 } from '../calendar'
 import { OfficialCalendarSourceInput } from './OfficialCalendarSourceInput'
 
 type SearchState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | (OfficialSourceSearchResult & { usedLocalFallback?: boolean })
+  | SchoolIdentitySearchOutcome
 
 type Props = {
   onUseCalendar: (calendar: SchoolCalendar, input: CalendarHydrationInput) => void
@@ -42,17 +40,8 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
     event.preventDefault()
     setSelected(null)
     setResult({ status: 'loading' })
-    const live = await searchNcesPublicSchools({ schoolName, districtName, city, state })
-    if (live.status === 'candidates' || live.status === 'none') {
-      setResult(live)
-      return
-    }
-    if (isNcesReachabilityFailure(live)) {
-      const local = searchLocalSchoolDirectory({ schoolName, districtName, city, state })
-      setResult({ ...local, usedLocalFallback: true })
-      return
-    }
-    setResult(live)
+    const next = await searchSchoolIdentity({ schoolName, districtName, city, state })
+    setResult(next)
   }
 
   function chooseSchool(candidate: OfficialSourceCandidate) {
@@ -67,7 +56,10 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
       <div className="school-identity-search-heading">
         <p className="section-label">Load school</p>
         <h3 id="school-identity-search-title">Find and load your school’s official identity.</h3>
-        <p>Arc looks up the U.S. Department of Education’s NCES directory first. On hosts without the live proxy, Arc falls back to a local school list so you can still finish setup.</p>
+        <p>
+          Arc searches Google Places for schools first, then the U.S. Department of Education’s NCES directory for an official record.
+          If the Google API key is missing, Arc uses a labeled demo list. On hosts without the live proxies, Arc falls back to a local school list so you can still finish setup.
+        </p>
       </div>
 
       {selected && !showSearchAgain ? (
@@ -130,7 +122,7 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
             <button type="submit" className="primary-button" disabled={result.status === 'loading'}>
               {result.status === 'loading' ? 'Loading school…' : 'Load school'}
             </button>
-            <p>Official directory identity only. Dates still require a separate school or district calendar source — or manual entry below.</p>
+            <p>School identity only. Dates still require a separate school or district calendar source — or manual entry below.</p>
           </div>
           {selected && (
             <button type="button" className="text-button" onClick={() => setShowSearchAgain(false)}>
@@ -149,7 +141,7 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
 
       {result.status === 'none' && (
         <div className="school-identity-message" role="status">
-          <strong>{result.usedLocalFallback ? 'No local directory match yet.' : 'No official NCES match yet.'}</strong>
+          <strong>{noneHeading(result)}</strong>
           <p>{result.message ?? 'Try the full school name or add a city, state, or district.'}</p>
         </div>
       )}
@@ -158,11 +150,7 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
         <div className="school-identity-results" aria-live="polite">
           <div className="school-identity-results-heading">
             <strong>{result.candidates.length === 1 ? 'One school record found.' : `${result.candidates.length} school records found.`}</strong>
-            <span>
-              {result.usedLocalFallback
-                ? 'Live NCES was unavailable — choose from Arc’s local directory. Arc will not guess.'
-                : 'Choose the school yourself. Arc will not guess.'}
-            </span>
+            <span>{candidateChooserNote(result)}</span>
           </div>
           <ul className="school-identity-candidate-list">
             {result.candidates.map((candidate) => {
@@ -206,6 +194,20 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
       )}
     </section>
   )
+}
+
+function noneHeading(result: SchoolIdentitySearchOutcome): string {
+  if (result.usedLocalFallback) return 'No local directory match yet.'
+  if (result.googleMode === 'demo') return 'No Google demo or NCES match yet.'
+  return 'No school match yet.'
+}
+
+function candidateChooserNote(result: SchoolIdentitySearchOutcome): string {
+  if (result.pathwayNote) return `${result.pathwayNote} Arc will not guess.`
+  if (result.usedLocalFallback) {
+    return 'Live Google/NCES lookup was unavailable — choose from Arc’s local directory. Arc will not guess.'
+  }
+  return 'Choose the school yourself. Arc will not guess.'
 }
 
 function cityFromLocality(locality?: string): string {

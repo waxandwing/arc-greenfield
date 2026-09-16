@@ -98,9 +98,15 @@ npm run build
 This runs canonical contracts, TypeScript checks, and the production bundle. Desk/interaction changes should also run the relevant focused smoke suites documented in `package.json` and the current handoff.
 
 
-## School load (NCES)
+## School load (Google + NCES)
 
-Calendar Setup always shows **Load school** before manual dates. Live lookup uses `/api/nces` (Vercel/server proxy to the NCES public-school layer). On static hosts such as GitHub Pages — or when the proxy is unreachable — Arc falls back to a small curated local school directory (`src/calendar/localSchoolDirectory.ts`) so teachers can still complete the identity step. Fallback results are labeled honestly; they never invent calendar dates.
+Calendar Setup always shows **Load school** before manual dates. Discovery order:
+
+1. **Google Places** via `/api/google-schools` (set `GOOGLE_PLACES_API_KEY` or `GOOGLE_MAPS_API_KEY`). Without a key, the proxy returns a labeled demo school list so setup never blocks.
+2. **NCES** via `/api/nces` (Vercel/server proxy to the NCES public-school layer) for an official U.S. Department of Education identity. Prefer an NCES row when both providers match — those ids power later class-times / bell-schedule prefill.
+3. **Local directory** (`src/calendar/localSchoolDirectory.ts`) when live proxies are unreachable (for example GitHub Pages).
+
+Fallback results are labeled honestly; they never invent calendar dates.
 
 ## Working rule
 
