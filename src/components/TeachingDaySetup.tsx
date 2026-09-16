@@ -5,6 +5,7 @@ import {
   type BellScheduleBlockProposal,
 } from '../calendar'
 import {
+  bellTimesFromSectionLabel,
   createTeachingDayBlock,
   hydratePlanningWorkspace,
   type PlanningWorkspace,
@@ -23,7 +24,13 @@ type Props = {
 }
 
 export function TeachingDaySetup({ initialValue, schoolNcesId, calendarProvenance, onSave, onCancel, onDraftChange }: Props) {
-  const [blocks, setBlocks] = useState<TeachingDayBlock[]>(() => initialValue.teachingDay?.blocks.map((block) => ({ ...block })) ?? initialValue.sections.map((section, index) => createTeachingDayBlock({ label: section.name, type: 'teaching', order: index + 1, sectionId: section.id })))
+  const [blocks, setBlocks] = useState<TeachingDayBlock[]>(() => initialValue.teachingDay?.blocks.map((block) => ({ ...block })) ?? initialValue.sections.map((section, index) => createTeachingDayBlock({
+    label: section.name,
+    type: 'teaching',
+    order: index + 1,
+    sectionId: section.id,
+    ...timesForSectionId(initialValue, section.id),
+  })))
   const [errors, setErrors] = useState<string[]>([])
   const [scheduleNotice, setScheduleNotice] = useState<string | null>(null)
   const [scheduleSource, setScheduleSource] = useState<{ label: string; locator: string } | null>(null)
@@ -55,13 +62,14 @@ export function TeachingDaySetup({ initialValue, schoolNcesId, calendarProvenanc
       const sectionId = proposal.type === 'teaching'
         ? sections[proposal.sectionIndex ?? index]?.id ?? sections[0]?.id ?? null
         : null
+      const fromClass = sectionId ? timesForSectionId(initialValue, sectionId) : {}
       return createTeachingDayBlock({
         label: proposal.label,
         type: proposal.type,
         order: index + 1,
         sectionId,
-        startTime: proposal.startTime,
-        endTime: proposal.endTime,
+        startTime: fromClass.startTime ?? proposal.startTime,
+        endTime: fromClass.endTime ?? proposal.endTime,
       })
     })
     setBlocks(next)
@@ -71,11 +79,13 @@ export function TeachingDaySetup({ initialValue, schoolNcesId, calendarProvenanc
 
   function addBlock(type: TeachingDayBlockType) {
     const order = blocks.length + 1
+    const sectionId = type === 'teaching' ? initialValue.sections[0]?.id ?? null : null
     setBlocks((current) => [...current, createTeachingDayBlock({
       label: type === 'planning' ? 'Planning' : type === 'non-teaching' ? 'Lunch / other' : `Block ${order}`,
       type,
       order,
-      sectionId: type === 'teaching' ? initialValue.sections[0]?.id ?? null : null,
+      sectionId,
+      ...(sectionId ? timesForSectionId(initialValue, sectionId) : {}),
     })])
   }
 
@@ -85,6 +95,19 @@ export function TeachingDaySetup({ initialValue, schoolNcesId, calendarProvenanc
       ...patch,
       sectionId: patch.type && patch.type !== 'teaching' ? null : patch.sectionId === undefined ? block.sectionId : patch.sectionId,
     } : block))
+  }
+
+  function selectClass(blockId: string, sectionId: string | null) {
+    if (!sectionId) {
+      updateBlock(blockId, { sectionId: null })
+      return
+    }
+    const fromClass = timesForSectionId(initialValue, sectionId)
+    if (fromClass.startTime && fromClass.endTime) {
+      updateBlock(blockId, { sectionId, startTime: fromClass.startTime, endTime: fromClass.endTime })
+      return
+    }
+    updateBlock(blockId, { sectionId })
   }
 
   function move(id: string, direction: -1 | 1) {
@@ -137,8 +160,18 @@ export function TeachingDaySetup({ initialValue, schoolNcesId, calendarProvenanc
             <div className="teaching-day-fields">
               <label><span>Block label</span><input value={block.label} onChange={(event) => updateBlock(block.id, { label: event.target.value })} /></label>
               <label><span>What happens here?</span><select value={block.type} onChange={(event) => updateBlock(block.id, { type: event.target.value as TeachingDayBlockType })}><option value="teaching">Teach a class</option><option value="planning">Planning</option><option value="non-teaching">Lunch / other</option></select></label>
-              {block.type === 'teaching' ? <label><span>Class</span><select value={block.sectionId ?? ''} onChange={(event) => updateBlock(block.id, { sectionId: event.target.value || null })}><option value="">Choose a class</option>{initialValue.sections.map((section) => { const course = initialValue.courses.find((candidate) => candidate.id === section.courseId); return <option key={section.id} value={section.id}>{section.name} · {course?.title}</option> })}</select></label> : null}
-              <div className="teaching-day-times"><label><span>Starts (optional)</span><input type="time" value={block.startTime ?? ''} onChange={(event) => updateBlock(block.id, { startTime: event.target.value || null })} /></label><label><span>Ends (optional)</span><input type="time" value={block.endTime ?? ''} onChange={(event) => updateBlock(block.id, { endTime: event.target.value || null })} /></label></div>
+              {block.type === 'teaching' ? <label><span>Class</span><select value={block.sectionId ?? ''} onChange={(event) => selectClass(block.id, event.target.value || null)}><option value="">Choose a class</option>{initialValue.sections.map((section) => { const course = initialValue.courses.find((candidate) => candidate.id === section.courseId); return <option key={section.id} value={section.id}>{section.name} · {course?.title}</option> })}</select></label> : null}
+              <div className="teaching-day-times">
+                <label>
+                  <span>Override starts</span>
+                  <input type="time" value={block.startTime ?? ''} onChange={(event) => updateBlock(block.id, { startTime: event.target.value || null })} aria-describedby={`teaching-day-time-help-${block.id}`} />
+                </label>
+                <label>
+                  <span>Override ends</span>
+                  <input type="time" value={block.endTime ?? ''} onChange={(event) => updateBlock(block.id, { endTime: event.target.value || null })} aria-describedby={`teaching-day-time-help-${block.id}`} />
+                </label>
+                <p className="teaching-day-time-help" id={`teaching-day-time-help-${block.id}`}>Optional — override this block’s times when they differ from the class period.</p>
+              </div>
             </div>
             <div className="teaching-day-controls"><button type="button" className="text-button" disabled={index === 0} onClick={() => move(block.id, -1)} aria-label={`Move ${block.label || 'block'} earlier`}>Earlier</button><button type="button" className="text-button" disabled={index === blocks.length - 1} onClick={() => move(block.id, 1)} aria-label={`Move ${block.label || 'block'} later`}>Later</button><button type="button" className="text-button" onClick={() => remove(block.id)}>Remove</button></div>
           </section>
@@ -148,4 +181,13 @@ export function TeachingDaySetup({ initialValue, schoolNcesId, calendarProvenanc
       <div className="setup-actions"><p>Only the order and block type are required. You can finish bell times later.</p><div className="setup-action-buttons"><button type="button" className="text-button" onClick={onCancel}>Cancel</button><button type="button" className="primary-button" onClick={submit}>Use this teaching day</button></div></div>
     </div>
   )
+}
+
+function timesForSectionId(
+  input: PlanningWorkspaceInput,
+  sectionId: string,
+): { startTime: string; endTime: string } | { startTime?: undefined; endTime?: undefined } {
+  const section = input.sections.find((candidate) => candidate.id === sectionId)
+  if (!section) return {}
+  return bellTimesFromSectionLabel(section.name) ?? {}
 }
