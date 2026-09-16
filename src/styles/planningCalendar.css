@@ -398,8 +398,22 @@ button.planning-unit-span--open:focus-visible{
 }
 
 .planning-lesson-actions{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
   margin-top:2px;
   gap:var(--space-2);
+  min-width:0;
+  writing-mode:horizontal-tb;
+}
+
+.planning-lesson-actions .text-button,
+.planning-lesson-actions .planning-lesson-more-toggle,
+.planning-lesson-actions .day-start-class{
+  flex:0 0 auto;
+  white-space:nowrap;
+  writing-mode:horizontal-tb;
+  text-decoration:none;
 }
 
 .planning-lesson-actions .planning-lesson-more-toggle{
@@ -428,6 +442,12 @@ button.planning-unit-span--open:focus-visible{
 
 .planning-lesson--skipped{
   background:rgba(74,73,69,.05);
+}
+
+/* Strikethrough only on lesson copy — not Move/More action chrome. */
+.planning-lesson--skipped .planning-lesson-title,
+.planning-lesson--skipped .planning-lesson-meta,
+.planning-lesson--skipped .planning-resume-note{
   text-decoration:line-through;
 }
 
@@ -440,18 +460,24 @@ button.planning-unit-span--open:focus-visible{
   align-items:flex-start;
   justify-content:space-between;
   gap:8px;
+  min-width:0;
+  width:100%;
 }
 
 .planning-lesson-title{
   min-width:0;
-  overflow-wrap:anywhere;
+  overflow-wrap:break-word;
+  word-break:normal;
+  white-space:normal;
+  writing-mode:horizontal-tb;
   font-size:16px;
   font-weight:700;
   line-height:1.25;
 }
 
 button.planning-lesson-title--open{
-  display:inline;
+  display:inline-block;
+  max-width:100%;
   margin:0;
   padding:0;
   border:0;
@@ -460,6 +486,8 @@ button.planning-lesson-title--open{
   font:inherit;
   text-align:left;
   cursor:pointer;
+  white-space:normal;
+  writing-mode:horizontal-tb;
 }
 
 button.planning-lesson-title--open:focus-visible{

@@ -52,7 +52,8 @@ export function ArcObjectMenu({
         openAt(event.clientX, event.clientY)
       }}
     >
-      {children}
+      {/* Body keeps title/meta stacking vertical so More cannot crush text into one char/line. */}
+      <div className="arc-object-menu-body">{children}</div>
       {showMoreButton ? (
         <button
           type="button"
