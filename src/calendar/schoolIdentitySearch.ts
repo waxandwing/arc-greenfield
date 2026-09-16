@@ -78,22 +78,26 @@ function mergeGoogleAndNces(
 
   if (ncesCandidates.length === 0 && googleCandidates.length === 0) {
     if (nces.status === 'none' || google.status === 'none') {
+      const noneMessage = nces.status === 'none'
+        ? (nces.message ?? 'No official school match yet.')
+        : (google.status === 'none' ? (google.message ?? 'No school match yet.') : 'No school match yet.')
       return {
         status: 'none',
         candidates: [],
-        message: nces.status === 'none'
-          ? (nces.message ?? 'No official school match yet.')
-          : (google.message ?? 'No school match yet.'),
+        message: noneMessage,
         providersUsed,
         googleMode: google.mode,
         pathwayNote: noteForEmpty(google.mode),
       }
     }
     // Both invalid/unreachable — let caller fall through to local.
+    const failureMessage = nces.status === 'invalid'
+      ? nces.message
+      : (google.status === 'invalid' ? google.message : 'School search failed.')
     return {
       status: 'invalid',
       candidates: [],
-      message: nces.status === 'invalid' ? nces.message : (google.message ?? 'School search failed.'),
+      message: failureMessage,
       providersUsed,
       googleMode: google.mode,
     }
