@@ -97,7 +97,7 @@ Coordinates with batches 1–2 — **does not overwrite** `ideas-tray.png`, `mag
 
 ## Binary handoff status
 
-**PARTIAL** — batch 1 + batch 2 Kelly PNGs wired 2026-09-16; remaining labeled SVG binaries still missing.
+**PARTIAL** — batches 1–3 Kelly PNGs wired/staged 2026-09-16; remaining labeled SVG binaries still missing.
 
 | Canonical file | Original labeled source | Intended role | Authority | Wire status |
 |---|---|---|---|---|
@@ -123,7 +123,9 @@ Coordinates with batches 1–2 — **does not overwrite** `ideas-tray.png`, `mag
 | `magnet-green.svg` | `green icon magnet.svg` | green physical magnet | canonical | **BLOCKED** SVG — live PNG `magnet-green.png` |
 | `magnet-mustard.png` | Kelly chat PNG `68da76b9-…` (SVG still absent) | mustard physical magnet | **Kelly PNG** | **WIRED** (batch 3) |
 | `magnet-terracotta.png` | Kelly chat PNG `9a3501e7-…` (SVG still absent) | terracotta/red physical magnet | **Kelly PNG** | **WIRED** (batch 3) |
-| `postit-stack.svg` | `Post it stack.svg` | stacked paper/Post-it object | canonical candidate | **BLOCKED** |
+| `postit-cream.png` | Kelly chat PNG `e2399786-…` | cream tilted paper/stack; `postit-stack` candidate | **Kelly PNG** | **WIRED** (batch 3) |
+| `ideas-tray-side-open.png` | Kelly chat PNG `f237dbd9-…` | side-open/filled IDEAS alternate (orange tab + stacks) | **Kelly PNG** | **STAGED** — do not dual-wire |
+| `postit-stack.svg` | `Post it stack.svg` | stacked paper/Post-it object | canonical candidate | **BLOCKED** SVG — interim `postit-cream.png` |
 | `calendar-class-selected-marker.svg` | `selected class calendar icon vector.svg` | class-focus selection marker | canonical | **BLOCKED** |
 | `todos-tab-alt.svg` | `TODOS tab.svg` | alternate/legacy TO-DOS reference | reference only | **BLOCKED** |
 | `ideas-tray-vector-alt.svg` | `Ideas Tray Vector.svg` | simplified/alternate tray | reference only | **BLOCKED** |
