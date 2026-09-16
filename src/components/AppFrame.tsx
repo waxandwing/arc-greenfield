@@ -968,7 +968,6 @@ export function AppFrame() {
                         <span>Return to ArcTable</span>
                       </button>
                     ) : null}
-                    {/* + Capture is desk-only (mustard sticky). Hide on login/setup shell. */}
                     capture={null}
                   />
                   <CalendarStageHeader
