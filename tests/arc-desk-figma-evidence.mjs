@@ -110,7 +110,7 @@ const refFallback = new URL('../docs/overnight/evidence/arc-desk-pass/01-desk-la
 const refOut = join(evidenceDir, '01-figma-reference.png')
 if (!existsSync(refOut)) {
   if (existsSync(refFallback)) copyFileSync(refFallback, refOut)
-  else copyFileSync(new URL('../public/assets/desk/light-wood-desk.png', import.meta.url).pathname, refOut)
+  else copyFileSync(new URL('../public/assets/desk/canonical/wood-background-light.png', import.meta.url).pathname, refOut)
 }
 
 const browser = await chromium.launch({ headless: true })

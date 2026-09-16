@@ -1,0 +1,31 @@
+{
+  "ingestedAt": "2026-09-16T00:32:15.201437+00:00",
+  "source": "Kelly chat upload 2026-09-16 \u2014 cream vertical folder/tab + light wood desk surface",
+  "originalUploads": {
+    "4856134a-eaf2-4ca5-a98b-9dd3f236c768.png": "Cream vertical folder/tab with right-side pull (TODOS tab alt / folder tab reference)",
+    "2d3129a3-e3b6-4516-aaf0-053a42b40a2d.png": "Light wood grain desk surface \u2014 singular desk wood authority"
+  },
+  "processing": "todos-tab-alt: crop transparent letterbox to content bbox (+2px). wood-background-light: full-frame PNG as-uploaded (no recolor, no filter). Wire cover not fill.",
+  "outputs": [
+    {
+      "path": "/workspace/public/assets/desk/canonical/todos-tab-alt.png",
+      "role": "reference-only TO-DOS / folder tab alt",
+      "size": [
+        246,
+        511
+      ],
+      "sha256": "345de1c4bbb629ea37100c05bda0c57d5b1cd3c6c2f6dddb467a9d6f1670a4c7",
+      "bytes": 2638
+    },
+    {
+      "path": "/workspace/public/assets/desk/canonical/wood-background-light.png",
+      "role": "P0 singular desk wood authority",
+      "size": [
+        1024,
+        575
+      ],
+      "sha256": "15b6654c02fd13e9a0f5df02c31cd1f3628e3deb96cf38a8db830c6a04b9d830",
+      "bytes": 793116
+    }
+  ]
+}

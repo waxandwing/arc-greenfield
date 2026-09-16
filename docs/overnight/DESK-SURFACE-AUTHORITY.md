@@ -1,14 +1,22 @@
 # Desk surface authority (Kelly)
 
-**Supersedes** any doc that wired `public/assets/desk/light-wood-desk.png` as the canonical full-viewport Arc Desk wood.
+**Singular wood authority (2026-09-16):** `public/assets/desk/canonical/wood-background-light.png`
+
+Supersedes competing surfaces:
+
+- `public/assets/arc/icarus/texture-wood.png` (legacy Icarus viewport)
+- `public/assets/desk/light-wood-desk.png` (legacy schedule-setup / composed frame)
 
 | Context | Asset | CSS token |
 |---------|--------|-----------|
-| **Full viewport / working frame** (`.arc-shell--desk`, `.arc-desk-tabletop`) | `public/assets/arc/icarus/texture-wood.png` | `--arc-wood-surface-image` |
-| **Schedule setup / onboarding** (calendar-on-wood alt) | `public/assets/desk/light-wood-desk.png` | `--arc-schedule-setup-wood` |
+| **Full viewport / working frame** (`.arc-shell--desk`) | `public/assets/desk/canonical/wood-background-light.png` | `--arc-wood-surface-image` |
+| **Schedule setup / onboarding** (calendar-on-wood) | same file | `--arc-schedule-setup-wood` |
 
-Wiring: `src/publicAssetUrl.ts` → `applyPublicAssetCssUrls()` (GitHub Pages base-aware). Defaults: `src/styles/tokens.css`.
+## Wire rules
 
-Compare `texture-wood.png` to Figma desk frame `6:3194` before further art swaps; the token path is production authority, not a pending candidate.
+- `background-size: cover` (never `fill` / `100% 100%` stretch)
+- No recolor filters, gradients, or blend washes over the wood grain
+- Wiring: `src/publicAssetUrl.ts` → `applyPublicAssetCssUrls()` (GitHub Pages base-aware). Defaults: `src/styles/tokens.css`
+- Provenance: `public/assets/desk/canonical/PROVENANCE-kelly-wood-todos-tab-2026-09-16.json`
 
-**Date:** 2026-09-15 · Branch: `cursor/arc-production-integration`
+**Date:** 2026-09-16 · Branch: `cursor/kelly-wood-todos-tab-e444`

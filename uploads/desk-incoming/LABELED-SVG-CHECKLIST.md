@@ -12,13 +12,25 @@ Also see `KELLY-DROP-22-LABELED-SVGS-HERE.txt` and `README.txt` in this folder.
 
 **Historical note:** Teaching week title / kicker / rainbow / three-course week were RED on 2026-09-15 and have since landed (see handback). They are **not** the current blocker. The current blocker is these **22 labeled SVG binaries**.
 
+
+## Kelly PNG interim (2026-09-16) — settings / start-class / rainbow
+
+While the SVG pack is still missing, these Kelly chat-upload PNGs are canonical + wired:
+
+| Canonical PNG | Replaces interim | Status |
+|---|---|---|
+| `settings-tab.png` | CSS SETTINGS pill | **WIRED** |
+| `start-class-mark.png` | `start-class-frame.png` / AT SVG + script | **WIRED** |
+| `calendar-date-rainbow.png` | `planner-rainbow-mark.*` | **WIRED** |
+| `postit-stack-base.png` / `paper-tray.png` | (none yet) | **STAGED** |
+
 ## Planning Period view — object → asset map (Kelly `.arc-desk-surface` select)
 
 Screenshot audit of Planning Period desk furniture. **Correct source = Kelly labeled SVG only.** Interim live controllers listed for diagnosis — they are **not** approved replacements.
 
 | Visible desk object (screenshot) | Wrong live controller now | Correct labeled source | Canonical target | Status |
 |----------------------------------|---------------------------|------------------------|------------------|--------|
-| Wood desk surface (`.arc-desk-surface`) | `assets/arc/icarus/texture-wood.png` | `Wood Background Light.svg` | `wood-background-light.svg` | **MISSING** |
+| Wood desk surface (`.arc-desk-surface`) | ~~`assets/arc/icarus/texture-wood.png`~~ → **LIVE** `canonical/wood-background-light.png` | `Wood Background Light.svg` (PNG chat stand-in landed) | `wood-background-light.png` | **LIVE** (SVG pack still optional) |
 | Left MUST/SHOULD/COULD tray (photographic cardboard/denim strip) | `slices/todos-folder-body.png` + `todos-folder-tab.png` | `TODO tab (use).svg` (+ `TODOS tab.svg` ref) | `todos-tab.svg` | **MISSING** |
 | IDEAS green pill / drawer | `green-folders-drawer.svg` / `.png` | `tray image (use).svg` (+ `Ideas Tray Vector.svg` ref) | `ideas-tray.svg` | **MISSING** |
 | SETTINGS pill / tab | CSS / non-USE tab chrome | `Settings tab (USE).svg` | `settings-tab.svg` | **MISSING** |
@@ -70,7 +82,7 @@ Copy sources → `public/assets/desk/canonical/` using the rename map. Update pr
 
 | Step | Wire target | Live controller to archive **after** visual evidence |
 |------|-------------|------------------------------------------------------|
-| 1 | Wood → `canonical/wood-background-light.svg` | Icarus `texture-wood.png` (+ keep `light-wood-desk.png` only if schedule-setup still needs it) |
+| 1 | Wood → `canonical/wood-background-light.png` (**LIVE** singular authority; cover; no recolor) | Archive Icarus `texture-wood.png` + `light-wood-desk.png` (do not re-wire) |
 | 2 | IDEAS tray → `ideas-tray.svg` | `green-folders-drawer.svg` / `.png` |
 | 3 | Settings + TO-DOS tabs → `settings-tab.svg`, `todos-tab.svg` | CSS / non-USE tab chrome; `todos-folder-tab.png` slice |
 | 4 | Calendar edge tabs → `calendar-tab-selected.svg` / `calendar-tab-unselected.svg` | `public/assets/desk/slices/planner-edge-tab-*.png` |

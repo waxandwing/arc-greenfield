@@ -24,7 +24,7 @@ try {
   const kicker = ((await page.getByTestId('desk-planner-week-kicker').count()) ? await page.getByTestId('desk-planner-week-kicker').textContent() : await page.locator('.plan-state-secondary').first().textContent())?.trim()
   assert(kicker === 'SEPTEMBER 7 - 11 • WEEK 4', `Kelly demo week kicker must match comp (got ${kicker ?? 'missing'}).`)
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
-  assert(shellWood.includes('texture-wood'), 'Desk shell must use icarus texture-wood after demo reset.')
+  assert(shellWood.includes('wood-background-light'), 'Desk shell must use Kelly wood-background-light after demo reset.')
   const planShellPattern = await page.locator('.arc-shell').first().evaluate((el) => getComputedStyle(el).backgroundImage.includes('pattern'))
   assert(!planShellPattern, 'Legacy cream plan shell pattern must not show after demo reset.')
 
