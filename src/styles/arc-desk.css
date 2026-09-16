@@ -1201,15 +1201,10 @@ html:has(.arc-shell--desk) body {
   position: relative;
 }
 .school-year-desk-legend-swatch--caught::after {
-  content: '×';
+  content: '';
   position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 900;
-  line-height: 1;
-  color: rgba(44, 46, 46, 0.75);
+  inset: 15%;
+  background: var(--arc-year-catch-marks, url('/assets/arc/marks/year-x-1.png')) center / contain no-repeat;
 }
 
 .school-year-desk-grid {
@@ -1288,13 +1283,24 @@ html:has(.arc-shell--desk) body {
 }
 .school-year-mini-day--caught .school-year-mini-day-x {
   position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-  font-weight: 900;
-  color: rgba(44, 46, 46, 0.78);
+  inset: 12%;
+  display: block;
+  background-image: var(--arc-year-catch-marks, url('/assets/arc/marks/year-x-1.png'));
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  font-size: 0;
+  color: transparent;
   pointer-events: none;
+}
+.school-year-mini-month:nth-child(4n + 2) .school-year-mini-day--caught .school-year-mini-day-x {
+  background-image: url('/assets/arc/marks/year-x-2.png');
+}
+.school-year-mini-month:nth-child(4n + 3) .school-year-mini-day--caught .school-year-mini-day-x {
+  background-image: url('/assets/arc/marks/year-x-3.png');
+}
+.school-year-mini-month:nth-child(4n + 4) .school-year-mini-day--caught .school-year-mini-day-x {
+  background-image: url('/assets/arc/marks/year-x-4.png');
 }
 .school-year-mini-day--caught:hover {
   filter: brightness(0.97);

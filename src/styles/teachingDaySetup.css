@@ -1,4 +1,22 @@
 .teaching-day-setup{max-width:980px;margin:0 auto;padding:var(--space-8)}
+.teaching-day-setup .calendar-setup-intro{
+  position:relative;
+  padding:18px 18px 18px 22px;
+  border-radius:12px;
+  background:
+    linear-gradient(105deg, color-mix(in srgb, var(--paper) 88%, transparent), color-mix(in srgb, var(--field-elevated) 72%, transparent)),
+    var(--arc-onboarding-day-art, url('/assets/arc/experiment/onboarding-tell-us-about-your-day-wide.webp')) right center / cover no-repeat;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent);
+  overflow:hidden;
+}
+.teaching-day-setup .calendar-setup-intro::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg, color-mix(in srgb, var(--paper) 92%, transparent) 0%, color-mix(in srgb, var(--paper) 78%, transparent) 52%, transparent 100%);
+  pointer-events:none;
+}
+.teaching-day-setup .calendar-setup-intro > *{position:relative;z-index:1}
 .teaching-day-list{display:grid;border-top:1px solid var(--line-strong)}
 .teaching-day-block{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:20px;padding:22px 0;border-bottom:1px solid var(--line-subtle)}
 .teaching-day-block--planning{background:linear-gradient(90deg,rgba(228,179,61,.12),transparent 68%)}
