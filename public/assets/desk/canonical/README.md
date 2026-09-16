@@ -6,23 +6,29 @@ These assets are staged for visual reconciliation. They do **not** automatically
 
 ## Recon pass landing (2026-09-15)
 
-- **SHA:** `9fd392f` on `main` / `cursor/arc-production-integration` (feature commits `4dea09d` + evidence).
+- **SHA:** `9fd392f` on `main` / `cursor/arc-production-integration` (feature commits `4dea09d` + evidence); stamped `580822b`.
 - **P0 asset wires:** all **BLOCKED** — Kelly labeled SVG binaries still absent (Drive/Gmail/`uploads/desk-incoming`/`asset-reconciliation-labeled-svgs` empty of the 22 files).
 - **Shipped without binaries:** Week-grid repair (MON/day headers, paper lesson objects, denser unit/course hierarchy, softer planner rim, `object-fit:contain` on todos slice).
 - **Smokes:** `test:arc-desk-pass` + `test:desk-slices` passed on preview stamped `desk-v2` / `4dea09d`.
 - **Evidence:** `docs/overnight/evidence/kelly-labeled-recon/` + arc-desk-pass smoke shots.
 
-## Binary handoff status (2026-09-15 recon pass)
+## Re-hunt (2026-09-16) — still NOT FOUND
 
-**BLOCKED — binaries not in repo.** Branch `asset-reconciliation-labeled-svgs` ships only this README (filename → canonical map). Exhaustive search found **no** Kelly labeled SVG binaries in:
+Aggressive second hunt confirmed **no** Kelly labeled SVG binaries. Searched:
 
-- `origin/asset-reconciliation-labeled-svgs`
-- `uploads/desk-incoming/`
-- Google Drive (only two unrelated legacy `.svg` files)
-- Gmail / Skin Lab zip listing path for these filenames
-- this Cloud Agent VM
+- Branches / history / LFS / large SVG blobs (incl. `origin/asset-reconciliation-labeled-svgs` — map-only)
+- `/workspace`, `uploads/`, `docs/`, `public/assets/`, `/tmp` agent trees, chat `assets/` PNGs only
+- Google Drive MCP: `mimeType = image/svg+xml` → only unrelated legacy `pincushioniaac2.svg` + `IMG_7683.svg` (2020); no Settings/TODO/tray/Wood Background Light matches; Skin Lab folder has PNG contact sheets + zip, not the 22 labeled names
+- Gmail attachment search (when available) — no matching SVG/zip handoff
+- Approved furniture zip `ARC_CANONICAL_ASSETS_v1_APPROVED.zip` — PNGs only (not the labeled SVG pack)
 
-Do **not** invent replacements from screenshot crops, CSS gradients, or previously wired approximations and claim Kelly labeled authority. Drop the 22 originals into `uploads/desk-incoming/` (preserve exact names incl. `(USE)`), then resume wiring.
+**Drop path for Kelly:** `uploads/desk-incoming/` — see `uploads/desk-incoming/README.txt` + `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md` (exact 22 names + P0 wiring stubs).
+
+Do **not** invent replacements from screenshot crops, CSS gradients, tiny generated magnet SVGs, or previously wired approximations and claim Kelly labeled authority.
+
+## Binary handoff status
+
+**BLOCKED — binaries not in repo.** Branch `asset-reconciliation-labeled-svgs` ships only this README (filename → canonical map). P0 wires 1–9 remain stubs until the 22 originals land in `uploads/desk-incoming/`.
 
 | Canonical file | Original labeled source | Intended role | Authority | Wire status |
 |---|---|---|---|---|

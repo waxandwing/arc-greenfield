@@ -86,6 +86,14 @@ The **`uploads/`** folder at the repo root is your **staging area**. It is meant
 
 ---
 
+## Labeled SVG pack (22 files) — required for P0 desk wires
+
+Agents cannot find these on Drive/Gmail/git. **Put them in `uploads/desk-incoming/`** (preserve exact names, including `(USE)`). Checklist: `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md`. Canonical rename map: `public/assets/desk/canonical/README.md`.
+
+Priority examples: `Settings tab (USE).svg`, `TODO tab (use).svg`, `tray image (use).svg`, `Wood Background Light.svg`, `calendar background.svg`, magnet / rainbow / today / start-class SVGs from the handoff.
+
+---
+
 ## How to ask Cursor to incorporate your files
 
 In a Cloud Agent or Cursor chat on this repo, say something like:
