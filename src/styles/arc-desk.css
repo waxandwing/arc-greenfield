@@ -105,8 +105,8 @@ html:has(.arc-shell--desk) body {
   position: absolute;
   /* Landscape pull-out matched to Kelly ideas-tray.png (807×381) — height drives width. */
   left: 21%;
-  /* Default 0 = flush top; teachers can drag lower and persist via --arc-desk-tray-park-top. */
-  top: var(--arc-desk-tray-park-top, 0%);
+  /* Park % from surface top, minus viewport letterbox so default park sits flush with the view panel. */
+  top: calc(var(--arc-desk-tray-park-top, 0%) - var(--arc-desk-ideas-viewport-flush, 0px));
   height: min(30%, 250px);
   width: auto;
   aspect-ratio: 807 / 381;
