@@ -445,11 +445,17 @@ export function AppFrame() {
   }
 
   function selectView(view: CalendarView) {
+    // Explicit tab/pop-out selection owns the view. One-shot desk landing
+    // normalizers must not remap the first YEAR/MONTH click back to Week.
+    deskYearLandingNormalized.current = true
+    deskMonthHomeNormalized.current = true
     workspace.setActiveView(view)
     updateViewPreferences({ ...recordLastUsedView(viewPreferences, view), desk: viewPreferences.desk })
   }
 
   function deepenTo(date: ISODate, view: CalendarView) {
+    deskYearLandingNormalized.current = true
+    deskMonthHomeNormalized.current = true
     workspace.setActiveView(view, date)
     updateViewPreferences({ ...recordLastUsedView(viewPreferences, view), desk: viewPreferences.desk })
   }
@@ -717,12 +723,21 @@ export function AppFrame() {
     setWorkspaceOverlayOpen(open)
   }
 
+  // Demo/seed can land the desk on Year Map; nudge once to home Week.
+  // Mark the one-shot done when desk is ready on any other view so a later
+  // intentional YEAR tab click is not remapped (Kelly: first click → Week).
   useEffect(() => {
     if (deskYearLandingNormalized.current) return
     if (!deskEnabled || !workspace.calendar || !workspace.anchorDate) return
-    if (workspace.activeView !== 'Year Map') return
+    if (workspace.activeView !== 'Year Map') {
+      deskYearLandingNormalized.current = true
+      return
+    }
     const demoDeskLanding = forceDeskShell && readDeskPreviewSeededSession(deskPreviewBuild)
-    if (!demoDeskLanding && workspace.viewWasPersisted) return
+    if (!demoDeskLanding && workspace.viewWasPersisted) {
+      deskYearLandingNormalized.current = true
+      return
+    }
     deskYearLandingNormalized.current = true
     workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
   }, [
@@ -736,10 +751,15 @@ export function AppFrame() {
     workspace.viewWasPersisted,
   ])
 
+  // forceDeskShell demo home is Teaching week; remap an accidental Month land once.
+  // Complete the one-shot when not on Month so intentional MONTH tab clicks stick.
   useEffect(() => {
     if (deskMonthHomeNormalized.current) return
     if (!deskEnabled || !workspace.calendar || !workspace.anchorDate) return
-    if (workspace.activeView !== 'Month' || !forceDeskShell) return
+    if (!forceDeskShell || workspace.activeView !== 'Month') {
+      deskMonthHomeNormalized.current = true
+      return
+    }
     deskMonthHomeNormalized.current = true
     workspace.setActiveView('Week', kellyDemoWeekAnchor ?? workspace.anchorDate ?? undefined)
   }, [
