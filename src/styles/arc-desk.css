@@ -1,23 +1,17 @@
 /* ARC Desk — physical tabletop composition (Figma ref 1696×1254, wood field 1440×1024). */
 
-/* Full-viewport wood via --arc-wood-surface-image (icarus/texture-wood.png); schedule setup uses --arc-schedule-setup-wood. */
+/* Full-viewport wood via --arc-wood-surface-image (canonical/wood-background-light.png). Cover only; no recolor filters. */
 .arc-shell.arc-shell--desk {
   height: 100dvh;
   min-height: 100dvh;
   overflow: hidden;
-  background-color: var(--arc-desk-wood-field);
-  background-image:
-    linear-gradient(
-      180deg,
-      var(--arc-desk-wood-highlight) 0%,
-      transparent 42%,
-      var(--arc-desk-wood-shadow-tint) 100%
-    ),
-    var(--arc-wood-surface-image);
+  background-color: var(--arc-wood-surface-base);
+  background-image: var(--arc-wood-surface-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-blend-mode: normal;
+  filter: none;
 }
 
 .arc-desk-viewport {

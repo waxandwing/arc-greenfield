@@ -1,15 +1,28 @@
 # Arc desk labeled asset authority
 
-**STATUS: PARTIAL** — four Kelly PNG source-art files landed 2026-09-16; the 22 labeled SVG binaries are still missing.
+**STATUS: PARTIAL** — Kelly PNG batches landed 2026-09-16 (marks/magnet/post-it + tray/tab/calendar + **P0 wood LIVE** + todos-tab-alt); the 22 labeled SVG binaries are still missing.
 
 Do **not** invent substitutes (crops, CSS gradients, generated magnets, re-traced SVGs) and claim Kelly labeled authority. Wire remaining roles only after files land in `uploads/desk-incoming/` and are copied here per the rename map below.
 
-Source: Kelly-labeled SVG handoff, 2026-09-15, plus **Kelly PNG chat upload 2026-09-16** (four files, empty message — ingested by asset-ingest agent). Filenames containing `(USE)` are the strongest source-of-truth signal for the SVG pack.
+Source: Kelly-labeled SVG handoff, 2026-09-15, plus **Kelly PNG chat upload 2026-09-16** (asset-ingest batches + wood/todos-tab agent). Filenames containing `(USE)` are the strongest source-of-truth signal for the SVG pack.
 
 **Kelly drop path:** `uploads/desk-incoming/`  
 → `KELLY-DROP-22-LABELED-SVGS-HERE.txt` · `LABELED-SVG-CHECKLIST.md` · `README.txt`
 
 **Presence check:** `npm run check:canonical-desk-svgs`
+
+## P0 wood LIVE (2026-09-16) — unblocks desk wood
+
+Kelly uploaded a **light wood grain desk surface PNG**. Landed and wired as the **singular desk wood authority**:
+
+| File | Role | Wire |
+|------|------|------|
+| `wood-background-light.png` | Light wood desk surface (Kelly chat upload `2d3129a3-…`) | **LIVE** — `--arc-wood-surface-image` + `--arc-schedule-setup-wood` |
+| `todos-tab-alt.png` | Cream vertical folder/tab with right-side pull (upload `4856134a-…`) | **Landed** — reference / folder-tab alt only (not the USE `todos-tab`) |
+
+**Wire rules:** `background-size: cover` only; **no** recolor filters / lighting washes. Replaces Icarus `texture-wood.png` and `light-wood-desk.png` as competing desk surfaces. See `docs/overnight/DESK-SURFACE-AUTHORITY.md` + `PROVENANCE-kelly-wood-todos-tab-2026-09-16.json`.
+
+Raw sources also kept under `uploads/desk-incoming/kelly-2026-09-16-*-source.png`.
 
 ## Kelly PNG ingest (2026-09-16) — PARTIAL LAND
 
@@ -30,7 +43,7 @@ Provenance: `PROVENANCE-kelly-2026-09-16.json`
 
 When remaining binaries land, wire in this order only:
 
-1. **Wood** → `wood-background-light.svg`
+1. **Wood** → `wood-background-light.png` ✅ **LIVE**
 2. **Tray** → `ideas-tray.svg` (`tray image (use).svg`)
 3. **Settings / TO-DOS tabs** → `settings-tab.svg`, `todos-tab.svg`
 4. **Calendar tabs** → `calendar-tab-selected.svg`, `calendar-tab-unselected.svg`
@@ -121,7 +134,7 @@ Processing: transparent letterbox cropped to content bbox (+2px pad). No recolor
 | `magnet-terracotta.svg` | `red icon magnet.svg` | terracotta/red physical magnet | canonical | **BLOCKED** |
 | `postit-stack.svg` | `Post it stack.svg` | stacked paper/Post-it object | canonical candidate | **BLOCKED** |
 | `calendar-class-selected-marker.svg` | `selected class calendar icon vector.svg` | class-focus selection marker | canonical | **BLOCKED** |
-| `todos-tab-alt.svg` | `TODOS tab.svg` | alternate/legacy TO-DOS reference | reference only | **BLOCKED** |
+| `todos-tab-alt.svg` | `TODOS tab.svg` | alternate/legacy TO-DOS reference | reference only | still missing SVG; PNG covers reference |
 | `ideas-tray-vector-alt.svg` | `Ideas Tray Vector.svg` | simplified/alternate tray | reference only | **BLOCKED** |
 
 
@@ -147,7 +160,7 @@ Labeled SVG rows for `ideas-tray.svg` / `todos-tab.svg` remain the eventual vect
 
 ## Live controllers still active (do not dual-wire)
 
-- Wood surface: `--arc-wood-surface-image` → `assets/arc/icarus/texture-wood.png`
+- **Wood (singular):** `--arc-wood-surface-image` + `--arc-schedule-setup-wood` → `canonical/wood-background-light.png` (cover; no recolor)
 - Arc mark on wood / planner: `assets/arc/arc-mark-stacked.png` (Kelly PNG; no pyrography)
 - ArcTable / Start Class mark art: `assets/arctable/arctable-quadrant-mark.png` (Kelly PNG; AT-001 SVG for hits)
 - Blue magnet / blue post-it: canonical PNGs (batch 1)
@@ -157,20 +170,21 @@ Labeled SVG rows for `ideas-tray.svg` / `todos-tab.svg` remain the eventual vect
 - Planner plate: `canonical/calendar-background.png`
 - Edge tabs: active → `canonical/calendar-tab.png`; inactive → `slices/planner-edge-tab-*.png`
 - Rainbow: `planner-rainbow-mark.png` / `.svg`
-- Schedule-setup wood only: `light-wood-desk.png`
+- Legacy archives (do not re-wire as desk wood): `assets/arc/icarus/texture-wood.png`, `assets/desk/light-wood-desk.png`
 
 ## Implementation rules
 
 1. Do not mark an asset reconciled merely because its file loads.
 2. Verify role, scale, crop, aspect ratio, edge behavior, layering, lighting and placement against the approved desk reference.
 3. Prefer labeled source assets over screenshot-derived crop PNGs when they describe the complete object.
-4. Never use `object-fit: fill` on tactile source art unless a specifically documented scalable interior region exists.
+4. Never use `object-fit: fill` / stretch on tactile wood — wood uses **cover**; no recolor filters.
 5. Some SVG files contain embedded raster texture. Do not aggressively optimize, trace, or re-vectorize them without visual comparison.
 6. `calendar-tab-selected.svg` and `calendar-tab-unselected.svg` are state bodies; DAY/WEEK/MONTH/YEAR should remain live accessible labels unless later authority proves otherwise.
 7. `calendar-class-selected-marker.svg` is not interchangeable with the general selected calendar-view tab.
 8. `start-class-mark` is distinct from the generic ArcTable mark — do not double script chrome.
 9. `ideas-tray.svg`, `settings-tab.svg`, and `todos-tab.svg` came from explicitly labeled `(USE)` files and should lead their respective reconciliations.
-10. Keep current production assets intact until visual reconciliation and smoke tests are complete.
+10. `todos-tab-alt` is reference / folder-tab geometry only — do not swap it in as the USE TO-DOS tab.
+11. Keep current production assets intact until visual reconciliation and smoke tests are complete.
 
 ## Concurrent work (do not regress)
 

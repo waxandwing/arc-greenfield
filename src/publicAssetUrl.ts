@@ -13,10 +13,10 @@ export function publicAssetCssUrl(path: string): string {
 }
 
 const DESK_ASSET_PATHS = {
-  /** Full viewport / `.arc-desk-tabletop` — Icarus wood (compare to Figma). */
-  woodSurface: 'assets/arc/icarus/texture-wood.png',
-  /** Schedule setup / onboarding calendar-on-wood only — not main desk authority. */
-  scheduleSetupWood: 'assets/desk/light-wood-desk.png',
+  /** Full viewport / `.arc-desk-tabletop` — Kelly wood-background-light (singular desk wood). */
+  woodSurface: 'assets/desk/canonical/wood-background-light.png',
+  /** Schedule setup / onboarding — same singular Kelly wood authority (cover, no recolor). */
+  scheduleSetupWood: 'assets/desk/canonical/wood-background-light.png',
   /** Legacy molded tray — superseded on live desk by green folders drawer PNG. */
   blueTray: 'assets/desk/blue-molded-tray.png',
   /**

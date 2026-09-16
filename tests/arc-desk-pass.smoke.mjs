@@ -132,7 +132,7 @@ try {
   assert(await page.locator('.arc-planner-physical-tabs').isVisible(), 'Planner-attached physical tabs must be visible on default desk.')
   assert(await page.locator('.b01-side-rail > .arc-index-tabs').count() === 0, 'Vertical index rail must not show beside desk composition.')
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
-  assert(shellWood.includes('texture-wood'), 'Desk shell must be edge-to-edge icarus wood (no cream mat).')
+  assert(shellWood.includes('wood-background-light'), 'Desk shell must be edge-to-edge Kelly wood-background-light (no cream mat).')
   const calendarSpreadPaper = await page.locator('.arc-calendar-spread--desk').evaluate((el) => {
     const style = getComputedStyle(el)
     return {
@@ -151,7 +151,7 @@ try {
   )
   const tabletopImg = await page.locator('.arc-desk-tabletop').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(
-    tabletopImg === 'none' || !tabletopImg.includes('texture-wood'),
+    tabletopImg === 'none' || !tabletopImg.includes('wood-background-light'),
     'Desk tabletop must not duplicate wood card — single continuous shell plane.',
   )
   const planShellPattern = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage.includes('pattern'))

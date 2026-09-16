@@ -125,7 +125,7 @@ try {
   }
 
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
-  await pass('wood-texture', shellWood.includes('texture-wood'), shellWood.slice(0, 80))
+  await pass('wood-texture', shellWood.includes('wood-background-light'), shellWood.slice(0, 80))
 
   const ideasTab = await page.getByRole('button', { name: 'IDEAS', exact: true }).isVisible()
   await pass('ideas-drawer', ideasTab, ideasTab ? 'IDEAS tab visible' : 'missing IDEAS tab')
