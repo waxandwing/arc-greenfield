@@ -39,7 +39,7 @@ try {
 
   await page.goto(`${baseUrl}/?gold=week-edit`, { waitUntil: 'networkidle' })
   assert(await page.locator('.gm-inline-create').isVisible(), 'Selected lesson / inline-create state did not render')
-  assert(await page.getByDisplayValue('Gallery Walk').isVisible(), 'Inline lesson title field missing')
+  assert(await page.locator('input[value="Gallery Walk"]').isVisible(), 'Inline lesson title field missing')
   await page.screenshot({ path: `${evidenceDir}week-edit.png`, fullPage: true })
 
   await page.goto(`${baseUrl}/?gold=shift`, { waitUntil: 'networkidle' })
