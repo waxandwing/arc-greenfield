@@ -71,6 +71,7 @@ if (typeof document !== 'undefined') {
   assert(parkTray.type === 'ideas-tray', 'IDEAS tray must resolve as return park target.')
   highlightDeskPostItParkTarget(parkTray)
   assert(tray.classList.contains(DESK_POSTIT_PARK_TRAY_CLASS), 'Tray must show return highlight.')
+assert(tray.getAttribute('data-desk-postit-park') === 'ideas', 'Tray must stamp durable ideas park data attr.')
   clearDeskPostItDropHighlights()
   tray.remove()
 

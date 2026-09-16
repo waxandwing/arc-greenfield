@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { CalendarProjectionView } from './CalendarProjectionView'
 import { CalendarSetup } from './CalendarSetup'
 import { ClassSetup } from './ClassSetup'
@@ -267,22 +268,52 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
       }
     : null
 
+  const canOpenPlanMove = Boolean(
+    planMoveIntent && planningWorkspace && unitWorkspace && lessonWorkspace && shiftState && onCancelPlanLessonMove && onConfirmPlanLessonMove,
+  )
+
+  const planMoveOverlay =
+    planMoveIntent && onCancelPlanLessonMove && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className="plan-move-layer"
+            role="presentation"
+            data-testid="plan-move-layer"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) onCancelPlanLessonMove()
+            }}
+          >
+            {canOpenPlanMove && planningWorkspace && unitWorkspace && lessonWorkspace && shiftState && onConfirmPlanLessonMove ? (
+              <PlanLessonMovePanel
+                calendar={calendar}
+                planning={planningWorkspace}
+                units={unitWorkspace}
+                lessons={lessonWorkspace}
+                shiftState={shiftState}
+                lessonId={planMoveIntent.lessonId}
+                sectionId={planMoveIntent.sectionId}
+                defaultDestination={planMoveIntent.defaultDestination}
+                onConfirm={onConfirmPlanLessonMove}
+                onCancel={onCancelPlanLessonMove}
+              />
+            ) : (
+              <div className="plan-move-panel plan-move-panel--blocked" role="dialog" aria-label="Move Lesson unavailable">
+                <p className="recovery-blocked" role="alert">
+                  Arc cannot open Move for this Lesson right now — planning data is incomplete. Nothing changed.
+                </p>
+                <button type="button" className="quiet-button" onClick={onCancelPlanLessonMove}>
+                  Close
+                </button>
+              </div>
+            )}
+          </div>,
+          document.body,
+        )
+      : null
+
   return (
     <>
-      {planMoveIntent && planningWorkspace && unitWorkspace && lessonWorkspace && shiftState && onCancelPlanLessonMove && onConfirmPlanLessonMove ? (
-        <PlanLessonMovePanel
-          calendar={calendar}
-          planning={planningWorkspace}
-          units={unitWorkspace}
-          lessons={lessonWorkspace}
-          shiftState={shiftState}
-          lessonId={planMoveIntent.lessonId}
-          sectionId={planMoveIntent.sectionId}
-          defaultDestination={planMoveIntent.defaultDestination}
-          onConfirm={onConfirmPlanLessonMove}
-          onCancel={onCancelPlanLessonMove}
-        />
-      ) : null}
+      {planMoveOverlay}
       {planPlaceIntent && planningWorkspace && onCancelPlanPlaceLesson && onCreateLessonFromSlot && onPlaceUnscheduledFromSlot ? (
         <PlanPlaceLessonPanel
           intent={planPlaceIntent}

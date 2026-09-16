@@ -110,7 +110,7 @@ try {
   await page.getByTestId('arc-desk-quick-capture-notice').waitFor({ timeout: 3000 })
   const captures = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.captures.v1')))
   assert(captures.workspace.captures.some((capture) => capture.text === 'Pull comparison prints for P4'), 'First Capture did not persist immediately.')
-  assert(await page.getByRole('button', { name: 'TRAY', exact: true }).getAttribute('aria-expanded') !== 'true', 'Capture save must not open Tray.')
+  assert(await page.getByRole('button', { name: 'IDEAS', exact: true }).getAttribute('aria-expanded') !== 'true', 'Capture save must not open Tray.')
   await shot(page, '07-first-capture.png')
   if (await page.getByTestId('capture-coach-mark').isVisible()) {
     await page.getByRole('button', { name: 'Got it' }).click()

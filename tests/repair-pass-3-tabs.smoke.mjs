@@ -85,10 +85,10 @@ try {
   await shot(desktop, 'week-tabs-closed')
 
   const viewBefore = await desktop.locator('.arc-index-tab[aria-current="page"]').textContent()
-  await desktop.getByRole('button', { name: 'TRAY' }).click()
+  await desktop.getByRole('button', { name: 'IDEAS' }).click()
   assert(await desktop.locator('.b01-furniture-composition').getAttribute('data-side-panel') === 'workspace', 'Tray push panel open.')
   await shot(desktop, 'workspace-open-push')
-  await desktop.getByRole('button', { name: 'Close Tray' }).click()
+  await desktop.getByRole('button', { name: 'Close IDEAS' }).click()
   assert((await desktop.locator('.arc-index-tab[aria-current="page"]').textContent()) === viewBefore, 'Exact return after workspace close.')
 
   await desktop.getByRole('button', { name: 'SETTINGS' }).click()
@@ -100,7 +100,7 @@ try {
 
   const tablet = await browser.newPage({ viewport: { width: 820, height: 900 } })
   await seed(tablet, data)
-  await tablet.getByRole('button', { name: 'TRAY' }).click()
+  await tablet.getByRole('button', { name: 'IDEAS' }).click()
   await shot(tablet, 'tablet-workspace-overlay')
 
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } })

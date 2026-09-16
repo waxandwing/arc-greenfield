@@ -126,12 +126,14 @@ assert(await page.locator('.arctable-furniture-tabs').count() === 1, 'furniture 
 assert(await page.locator('.arctable-teacher-stage-shell').count() === 1, 'stage shell missing')
 
 await page.getByTestId('arctable-settings').click()
-await page.waitForSelector('#b01-settings-surface')
-assert(await page.getByRole('button', { name: /Return to ArcTable/ }).count() === 1, 'settings opens plan with return')
-assert(await page.locator('.b01-settings-group').count() > 0, 'settings surface must show planner settings groups')
+await page.waitForSelector('[data-testid="arctable-table-settings-surface"]')
+assert(await page.locator('#b01-settings-surface').count() === 0, 'table settings must not open plan settings furniture')
+assert(await page.getByRole('heading', { name: 'Table settings', exact: true }).count() === 1, 'table settings panel heading')
+assert(await page.locator('.arctable-table-settings-group').count() >= 2, 'table settings must show classroom-owned groups')
 await page.screenshot({ path: '/tmp/teacher-monitor-ux-9f3c/artifacts/teacher-ux/teacher-settings-open.png', fullPage: false })
-await page.getByRole('button', { name: /Return to ArcTable/ }).evaluate((el) => el.click())
+await page.getByRole('button', { name: 'Close', exact: true }).click()
 await page.waitForSelector('.arctable--teacher')
+assert(await page.getByTestId('arctable-table-settings-surface').count() === 0, 'table settings closed')
 
 console.log('Teacher Monitor UX verify OK', checks)
 await browser.close()

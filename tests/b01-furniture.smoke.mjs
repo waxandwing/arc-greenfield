@@ -92,7 +92,7 @@ try {
   assert(await page.getByText('Period 1', { exact: true }).count() > 0, 'B01: representative Section row is missing.')
 
   const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
-  const fridge = page.getByRole('button', { name: 'TRAY', exact: true })
+  const fridge = page.getByRole('button', { name: 'IDEAS', exact: true })
   const settingsSurface = page.locator('.b01-settings-surface')
   const fridgeSurface = page.locator('.b01-fridge-surface')
   const taskSurface = page.locator('.b01-task-surface')
