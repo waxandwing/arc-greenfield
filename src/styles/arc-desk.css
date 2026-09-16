@@ -169,14 +169,15 @@ html:has(.arc-shell--desk) body {
   z-index: 2;
 }
 
-/* Lower ArcTable / start-class mark — readable brand lockup on wood, clear of planner (~89.5%),
-   SETTINGS, edge tabs, and help (?). Original asset — no glow / wood-burn filters. */
+/* Lower ArcTable / start-class mark — visible brand lockup on wood (~104px), tucked so the
+   planner (~89.5% right edge) keeps desk space; clear of SETTINGS, edge tabs, and help (?).
+   Canonical start-class-mark.png — no glow / wood-burn filters. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor {
   position: absolute;
-  right: 3.2%;
-  bottom: 4.8%;
+  right: 2.6%;
+  bottom: 3.9%;
   width: auto;
-  max-width: 132px;
+  max-width: 104px;
   aspect-ratio: auto;
   z-index: 18;
   left: auto;
@@ -1969,8 +1970,8 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor .arc-desk-mark-svg,
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor .arc-desk-start-class-mark {
-  width: clamp(96px, 9.2vw, 128px);
-  max-width: 128px;
+  width: clamp(90px, 7.4vw, 104px);
+  max-width: 104px;
   height: auto;
   filter: none;
   mix-blend-mode: normal;
@@ -2179,7 +2180,7 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .arc-desk-start-class-mark {
   display: block;
-  width: clamp(96px, 9.2vw, 128px);
+  width: clamp(90px, 7.4vw, 104px);
   height: auto;
   object-fit: contain;
   /* Kelly: original ArcTable / start-class mark — no glow, wood-burn, or blend filters. */
@@ -2817,8 +2818,8 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-arctable-mark-wrap {
   width: 100%;
-  max-width: 88px;
-  filter: drop-shadow(0 10px 18px -14px rgba(33, 29, 23, 0.45));
+  max-width: 104px;
+  filter: none;
 }
 
 .arc-desk-arctable-single {
@@ -2839,7 +2840,7 @@ html:has(.arc-shell--desk) body {
   display: block;
   width: 100%;
   height: auto;
-  max-width: 88px;
+  max-width: 104px;
 }
 
 .arc-desk-mark-quadrant,
@@ -3492,11 +3493,11 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .arc-planner-object { filter: drop-shadow(0 16px 34px -24px rgba(33, 29, 23, 0.4)); }
 
 /* Quiet desk help — paper note on wood (not native dialog chrome).
-   Keep ? help left of the lower ArcTable / start-class mark. */
+   Keep ? help left of the tucked lower ArcTable / start-class mark (~104px). */
 .arc-desk-help {
   position: absolute;
-  right: 16.5%;
-  bottom: 5.2%;
+  right: 15.2%;
+  bottom: 4.6%;
   top: auto;
   z-index: 21;
   pointer-events: auto;
