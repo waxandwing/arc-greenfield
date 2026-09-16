@@ -664,6 +664,16 @@ export function useArcWorkspace(onCloseMode: () => void) {
   }
 
   function beginPlanLessonMove(input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) {
+    if (!calendar || !planningWorkspace || !unitWorkspace || !lessonWorkspace || !shiftState) {
+      setStorageNotice('Arc cannot move this Lesson right now — planning data is incomplete or still loading. Nothing changed.')
+      return
+    }
+    const lesson = lessonWorkspace.lessons.find((candidate) => candidate.id === input.lessonId)
+    if (!lesson) {
+      setStorageNotice('That Lesson is no longer available. Nothing changed.')
+      return
+    }
+    setStorageNotice(null)
     setPlanMoveIntent(input)
   }
 
@@ -672,7 +682,11 @@ export function useArcWorkspace(onCloseMode: () => void) {
   }
 
   function confirmPlanLessonMove(destination: ISODate, _preview: LessonMovePreview): boolean {
-    if (!calendar || !planningWorkspace || !unitWorkspace || !lessonWorkspace || !shiftState || !planMoveIntent) return false
+    if (!calendar || !planningWorkspace || !unitWorkspace || !lessonWorkspace || !shiftState || !planMoveIntent) {
+      setStorageNotice('Arc cannot finish this Move — planning data is incomplete. Nothing changed.')
+      setPlanMoveIntent(null)
+      return false
+    }
     const lesson = lessonWorkspace.lessons.find((candidate) => candidate.id === planMoveIntent.lessonId)
     if (!lesson) {
       setStorageNotice('That Lesson is no longer available. Nothing changed.')
