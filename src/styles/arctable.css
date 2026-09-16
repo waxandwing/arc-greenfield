@@ -12,7 +12,7 @@
 .arctable-timer-control label,.arctable-cleanup-control label,.arctable-tool-panel label{display:grid;gap:5px;font-size:13px;font-weight:700}.arctable-timer-control input,.arctable-cleanup-control input,.arctable-tool-panel input,.arctable-tool-panel select{min-height:40px;padding:7px 9px;border:1px solid color-mix(in srgb,var(--ink) 18%, transparent);border-radius:8px;background:#fffdf8;color:inherit}
 .arctable-presets,.arctable-timer-actions,.arctable-cleanup-control>div:last-child{display:flex;flex-wrap:wrap;gap:8px}.arctable-presets{justify-content:center}.arctable-presets button,.arctable-timer-actions button,.arctable-cleanup-control button,.arctable-tool-panel button{min-height:40px;padding:8px 12px;border:1px solid color-mix(in srgb,var(--ink) 18%, transparent);border-radius:999px;background:#fffdf8;color:var(--ink);font-weight:750;cursor:pointer}.arctable-timer-primary,.arctable-timer-actions .arctable-timer-primary,.arctable-cleanup-control>div:last-child button:first-child{background:var(--terracotta);color:#fff;border-color:transparent}.arctable-timer-reset{border:0!important;background:transparent!important;text-decoration:underline;text-underline-offset:3px;color:var(--ink)}
 .arctable-tool-row{grid-template-columns:repeat(3,1fr)}.arctable-tool-row button[aria-expanded='true']{box-shadow:inset 0 0 0 3px rgba(255,255,255,.62)}
-.arctable-tool-panel{position:relative;overflow:hidden}.arctable-tool-panel>*{position:relative;z-index:1}.arctable-tool-panel h2{margin:0;font:400 25px/1.1 'Instrument Serif',serif}.arctable-tool-panel form{display:grid;gap:8px}.arctable-tool-panel p{margin:0;color:#5d574f;line-height:1.35}.arctable-people-panel{background:rgba(225,233,213,.95) var(--arctable-people-surface, url('/assets/arctable/people-surface-open.png')) right top/46% auto no-repeat}.arctable-picker-result{min-height:42px;padding:12px;border-radius:10px;background:#fffdf8;font-weight:800}.arctable-pass{display:grid;gap:8px;align-content:start;padding:13px 14px;border-radius:12px;overflow:hidden;background-color:#fffdf8;background-image:var(--arctable-pass-plate-available, url('/assets/arctable/pass-plate-available.png'));background-position:center;background-size:100% 100%;background-repeat:no-repeat}.arctable-pass--active{background-color:#c44d43;background-image:var(--arctable-pass-plate-active, url('/assets/arctable/pass-plate-active.png'));color:#fff}.arctable-pass--active>div:first-child{padding-right:48px}.arctable-pass--active>div:first-child span{max-width:48%}.arctable-pass--requested{background-color:#ead7a8}.arctable-pass>div:first-child{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}.arctable-pass>div:first-child strong{min-width:0;overflow-wrap:anywhere}.arctable-pass>div:first-child span{flex:0 1 auto;text-align:right;text-transform:capitalize;opacity:.92}.arctable-pass label{min-width:0}.arctable-pass>div:last-child{display:flex;flex-wrap:wrap;gap:6px}.arctable-pass--active label>span{color:rgba(255,255,255,.92)}.arctable-pass--active select{color:#3a241f;background:#fffdf8}.arctable-pass--active button{background:#fff;color:#7d261f}.arctable-media-panel>button.is-active{background:var(--ink);color:#fff}
+.arctable-tool-panel{position:relative;overflow:hidden}.arctable-tool-panel>*{position:relative;z-index:1}.arctable-tool-panel h2{margin:0;font:400 25px/1.1 'Instrument Serif',serif}.arctable-tool-panel form{display:grid;gap:8px}.arctable-tool-panel p{margin:0;color:#5d574f;line-height:1.35}.arctable-people-panel{background:rgba(225,233,213,.95) var(--arctable-people-surface, url('/assets/arctable/people-surface-open.png')) right top/46% auto no-repeat}.arctable-picker-result{min-height:42px;padding:12px;border-radius:10px;background:#fffdf8;font-weight:800}.arctable-pass{display:grid;gap:8px;align-content:start;padding:13px 14px;border-radius:12px;overflow:hidden;background-color:#fffdf8;background-image:var(--arctable-pass-plate-available, url('/assets/arctable/pass-plate-available.png'));background-position:center;background-size:100% 100%;background-repeat:no-repeat}.arctable-pass--active{background-color:#c44d43;background-image:var(--arctable-pass-plate-active, url('/assets/arctable/pass-plate-active.png'));color:#fff}.arctable-pass--active>div:first-child{padding-right:48px}.arctable-pass--active>div:first-child span{max-width:48%}.arctable-pass--requested{background-color:#ead7a8}.arctable-pass>div:first-child{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}.arctable-pass>div:first-child strong{min-width:0;overflow-wrap:anywhere}.arctable-pass>div:first-child span{flex:0 1 auto;text-align:right;text-transform:capitalize;opacity:.92}.arctable-pass label{min-width:0}.arctable-pass>div:last-child{display:flex;flex-wrap:wrap;gap:6px}.arctable-pass--active label>span{color:rgba(255,255,255,.92)}.arctable-pass--active select{color:#3a241f;background:#fffdf8}.arctable-pass--active button{background:#fff;color:#7d261f}.arctable-media-panel button.is-active{background:var(--ink);color:#fff}
 .arctable-cleanup-control.is-active{background:#f6d68d var(--arctable-cleanup-corner, url('/assets/arctable/cleanup-corner-accent.png')) right bottom/110px no-repeat;border-color:#b78024}
 .arctable-media{display:grid;gap:10px;align-content:center}.arctable-media--empty span{color:#5d574f}.arctable-media--active{padding:30px;background:#171a18 var(--arctable-media-apparatus, url('/assets/arctable/media-apparatus-frame.png')) center/100% 100%;color:#fff}.arctable-media--active img,.arctable-media--active iframe{display:block;width:100%;height:min(48vh,460px);border:0;border-radius:8px;object-fit:contain;background:#0c0d0c}.arctable-media.is-projected{margin-top:44px;min-height:320px}
 .arctable-student-class-time{margin-left:auto;font-size:13px;font-weight:750;text-transform:uppercase}.arctable-student-header time{margin-left:0}.arctable-student-session{display:grid;gap:2px;min-width:0}.arctable-student-session strong{font:750 15px/1.2 var(--font-label),var(--font-ui)}.arctable-student-session span{opacity:.72;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.arctable-student-header-actions{display:flex;align-items:center;gap:10px;margin-left:auto;flex:0 0 auto}.arctable-sync-button,.arctable-projection-exit{min-height:40px;padding:8px 13px;border:1px solid rgba(255,255,255,.45);border-radius:999px;background:transparent;color:#fff;font-weight:750;cursor:pointer}.arctable-sync-button{border-color:rgba(255,255,255,.28)}.arctable-projection-exit{background:rgba(255,255,255,.08)}.arctable-projected-person{margin:34px 0 0;padding:24px 30px;border-radius:16px;background:color-mix(in srgb,var(--mustard-soft) 70%, var(--field-elevated));font:400 clamp(30px,4vw,56px)/1.05 'Instrument Serif',serif;text-align:center}
@@ -58,9 +58,85 @@
   min-height:36px;
   padding:4px 2px;
 }
-.arctable--teacher .arctable-settings-button{
-  border-bottom-color:var(--mustard);
-  font-weight:750;
+/* Table settings: boxed classroom control — not quiet underline text, not copper SETTINGS tab. */
+.arctable--teacher .arctable-table-settings-button{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:36px;
+  padding:5px 11px 5px 9px;
+  border:1px solid color-mix(in srgb, var(--dusty-blue) 55%, var(--ink));
+  border-radius:3px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--dusty-blue) 18%, #fffdf8), #fffdf8);
+  color:var(--ink);
+  font:750 12px/1.1 var(--font-label),var(--font-ui);
+  letter-spacing:.02em;
+  cursor:pointer;
+  box-shadow:inset 0 -1px 0 color-mix(in srgb, var(--dusty-blue) 28%, transparent);
+}
+.arctable--teacher .arctable-table-settings-button.is-open,
+.arctable--teacher .arctable-table-settings-button[aria-expanded='true']{
+  background:color-mix(in srgb, var(--dusty-blue) 22%, #fffdf8);
+  border-color:color-mix(in srgb, var(--dusty-blue) 70%, var(--ink));
+}
+.arctable--teacher .arctable-table-settings-icon{
+  display:inline-grid;
+  place-items:center;
+  width:18px;
+  height:18px;
+  color:color-mix(in srgb, var(--dusty-blue) 72%, var(--ink));
+}
+.arctable--teacher .arctable-table-settings-label{white-space:nowrap}
+.arctable--teacher .arctable-table-settings-panel{
+  position:fixed;
+  z-index:45;
+  top:68px;
+  right:max(28px, calc((100vw - 1280px) / 2 + 28px));
+  width:min(420px, calc(100vw - 32px));
+  max-height:calc(100dvh - 96px);
+  overflow:auto;
+  padding:20px 22px 22px;
+  border:1px solid color-mix(in srgb, var(--dusty-blue) 35%, var(--ink));
+  border-radius:4px;
+  background:
+    linear-gradient(180deg, rgba(255,253,248,.96), rgba(248,244,236,.98)),
+    var(--arctable-paper-cream, url('/assets/arctable/paper-cream.png'));
+  box-shadow:0 28px 70px -30px rgba(44,46,46,.55);
+}
+.arctable--teacher .arctable-table-settings-heading-row{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;
+}
+.arctable--teacher .arctable-table-settings-heading-row h2{
+  margin:0;font:400 28px/1.05 'Instrument Serif',serif;letter-spacing:-.02em;
+}
+.arctable--teacher .arctable-table-settings-scope{
+  margin:0 0 16px;color:#5d574f;line-height:1.4;font-size:14px;
+}
+.arctable--teacher .arctable-table-settings-groups{display:grid;gap:16px}
+.arctable--teacher .arctable-table-settings-group{
+  display:grid;gap:10px;padding-top:14px;border-top:1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+.arctable--teacher .arctable-table-settings-group h3{
+  margin:0;font:750 12px/1.2 var(--font-label),var(--font-ui);letter-spacing:.06em;text-transform:uppercase;color:#6b6257;
+}
+.arctable--teacher .arctable-table-settings-group p{margin:0;color:#5d574f;line-height:1.4;font-size:14px}
+.arctable--teacher .arctable-table-settings-group label{display:grid;gap:5px;font-size:13px;font-weight:700}
+.arctable--teacher .arctable-table-settings-group input,
+.arctable--teacher .arctable-table-settings-group select{
+  min-height:40px;padding:7px 9px;border:1px solid color-mix(in srgb, var(--ink) 18%, transparent);border-radius:3px;background:#fffdf8;color:inherit;
+}
+.arctable--teacher .arctable-table-settings-actions{display:grid;gap:8px}
+.arctable--teacher .arctable-table-settings-actions button,
+.arctable--teacher .arctable-table-settings-toggle{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;width:100%;padding:10px 12px;
+  border:1px solid color-mix(in srgb, var(--ink) 14%, transparent);border-radius:3px;background:#fffdf8;color:var(--ink);font-weight:750;text-align:left;cursor:pointer;
+}
+.arctable--teacher .arctable-table-settings-toggle span{
+  color:#6b6257;font-size:12px;font-weight:750;text-transform:uppercase;letter-spacing:.04em;
+}
+@media(max-width:900px){
+  .arctable--teacher .arctable-table-settings-panel{top:78px;right:16px;left:16px;width:auto}
 }
 .arctable--teacher .arctable-live-chip{
   min-height:32px;
@@ -891,4 +967,226 @@
   }
   .arctable-student-decor{display:none}
   .arctable-student-facts-row{grid-template-columns:1fr}
+}
+
+/* Board click-to-add authoring */
+.arctable-board-empty-add,
+.arctable-board-add-more{
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  margin-top:18px;
+  padding:0;
+  border:0;
+  border-bottom:1px solid color-mix(in srgb, var(--ink) 28%, transparent);
+  border-radius:0;
+  background:transparent;
+  color:var(--soft-charcoal);
+  font:400 22px/1.3 'Instrument Serif',serif;
+  cursor:pointer;
+  text-align:left;
+}
+.arctable-board-empty-add:disabled{
+  cursor:default;
+  border-bottom:0;
+  opacity:.85;
+}
+.arctable-board-compose{
+  display:grid;
+  gap:10px;
+  max-width:640px;
+  margin-top:22px;
+}
+.arctable-board-compose input{
+  min-height:48px;
+  padding:10px 0;
+  border:0;
+  border-bottom:2px solid color-mix(in srgb, var(--ink) 35%, transparent);
+  border-radius:0;
+  background:transparent;
+  font:400 24px/1.3 'Instrument Serif',serif;
+  color:var(--ink);
+}
+.arctable-board-compose-actions{display:flex;flex-wrap:wrap;gap:10px}
+.arctable-board.is-editable{cursor:text}
+.arctable-board.is-locked{cursor:default}
+
+/* Board click-to-author (Teacher Monitor) — match /table empty CTA grammar */
+.arctable--teacher .arctable-board.is-editable{cursor:text}
+.arctable--teacher .arctable-board.is-locked{cursor:default}
+.arctable--teacher .arctable-board-empty-add{
+  display:block;
+  width:100%;
+  max-width:640px;
+  margin:8px 0 0;
+  padding:18px 16px;
+  border:1px dashed color-mix(in srgb, var(--ink) 22%, transparent);
+  border-radius:4px;
+  background:color-mix(in srgb, var(--field-elevated) 72%, transparent);
+  color:var(--soft-charcoal);
+  font:400 20px/1.35 'Instrument Serif',serif;
+  text-align:left;
+  cursor:pointer;
+}
+.arctable--teacher .arctable-board-empty-add:hover,
+.arctable--teacher .arctable-board-empty-add:focus-visible{
+  border-color:color-mix(in srgb, var(--ink) 40%, transparent);
+  color:var(--ink);
+}
+.arctable--teacher .arctable-board-compose{
+  display:grid;
+  gap:10px;
+  max-width:720px;
+  margin-top:10px;
+}
+.arctable--teacher .arctable-board-compose input{
+  min-height:48px;
+  padding:10px 12px;
+  border:0;
+  border-bottom:2px solid color-mix(in srgb, var(--ink) 28%, transparent);
+  border-radius:0;
+  background:transparent;
+  font:400 20px/1.35 'Instrument Serif',serif;
+  color:var(--ink);
+}
+.arctable--teacher .arctable-board-compose-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.arctable--teacher .arctable-board-add-elements{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+.arctable--teacher .arctable-board-add-elements button{
+  min-height:36px;
+  padding:6px 12px;
+  border:1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  border-radius:2px;
+  background:var(--field-elevated);
+  color:var(--ink);
+  font:750 12px/1 var(--font-label),var(--font-ui);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.arctable--teacher .arctable-board-flow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  list-style:none;
+  margin:4px 0 10px;
+  padding:0;
+}
+.arctable--teacher .arctable-board-flow li{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:color-mix(in srgb, var(--field-elevated) 80%, transparent);
+  color:var(--soft-charcoal);
+  font-size:12px;
+}
+.arctable--teacher .arctable-board-flow li.is-current{
+  background:color-mix(in srgb, var(--mustard-soft) 70%, var(--field-elevated));
+  color:var(--ink);
+  font-weight:750;
+}
+.arctable--teacher .arctable-board-flow-index{
+  display:inline-grid;
+  place-items:center;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:color-mix(in srgb, var(--ink) 12%, transparent);
+  font-weight:750;
+}
+.arctable--teacher .arctable-materials-hit{
+  display:block;
+  width:100%;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  text-align:left;
+  cursor:pointer;
+  color:inherit;
+}
+.arctable--teacher .arctable-materials-edit input{
+  width:100%;
+  min-height:40px;
+  padding:6px 0;
+  border:0;
+  border-bottom:2px solid color-mix(in srgb, var(--ink) 28%, transparent);
+  background:transparent;
+  font:650 16px/1.3 var(--font-label),var(--font-ui);
+  color:var(--ink);
+}
+
+/* Media tool panel — People/Pass furniture rhythm: add → list → project */
+.arctable-media-panel{
+  align-content:start;
+  gap:14px;
+}
+.arctable-media-panel .arctable-media-add{
+  gap:10px;
+  margin:0;
+  padding-bottom:14px;
+  border-bottom:1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+}
+.arctable-media-panel .arctable-media-add button[type='submit']{
+  width:100%;
+  justify-self:stretch;
+}
+.arctable-media-notice{
+  margin:-4px 0 0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#756b5f!important;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.4;
+}
+.arctable-media-list{
+  display:grid;
+  gap:8px;
+  margin:0;
+}
+.arctable-media-empty{
+  margin:0;
+  padding:2px 0 4px;
+  color:#756b5f;
+  font-size:13px;
+  line-height:1.4;
+}
+.arctable-media-list > button{
+  width:100%;
+  justify-self:stretch;
+  text-align:left;
+}
+.arctable-media-project{
+  display:grid;
+  gap:8px;
+  margin-top:4px;
+}
+.arctable-media-project-btn{
+  width:100%;
+}
+.arctable-tool-panel button:disabled{
+  opacity:.48;
+  cursor:not-allowed;
+  color:#756b5f;
+  background:color-mix(in srgb, #fffdf8 55%, #d4cec4);
+}
+.arctable-media-panel .arctable-media-project-btn:not(:disabled){
+  background:var(--ink);
+  color:#fff;
+  border-color:transparent;
+}
+.arctable-media-panel .arctable-media-project-btn:not(:disabled):hover{
+  background:color-mix(in srgb, var(--ink) 88%, #fff);
 }
