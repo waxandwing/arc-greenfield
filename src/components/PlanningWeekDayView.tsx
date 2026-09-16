@@ -1,14 +1,24 @@
-import { useState } from 'react'
+import { useState, type MouseEvent } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { ISODate, PlanNavigationContext } from '../calendar'
 import { isPlannableDayKind } from '../calendar/schoolCalendar'
 import type { PlanningNote } from '../planning'
-import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection } from '../planning/planningProjection'
+import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection, PlanningUnitSpan } from '../planning/planningProjection'
 import { ArcImportantObject } from './ArcImportantObject'
 import { ArcObjectMenu, type ArcObjectMenuItem } from './ArcObjectMenu'
 import { CalendarDayNotes, type CalendarDayNoteHandlers } from './CalendarDayNotes'
 import { DeskNotesObject } from './DeskNotesObject'
 import { formatKellyDeskDayNumber, formatKellyDeskWeekday, formatLongDate, formatShortDate } from './dateLabels'
+
+type SelectLessonHandler = (lesson: {
+  lessonId: string
+  unitId: string
+  courseId: string
+  sectionId?: string
+  date?: ISODate
+}) => void
+
+type SelectUnitHandler = (input: { date: ISODate; courseId: string; unitId: string }) => void
 
 export function PlanningWeekDayView({
   days,
@@ -17,6 +27,8 @@ export function PlanningWeekDayView({
   focusDate,
   planContext,
   onSelectDate,
+  onSelectLesson,
+  onSelectUnit,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
   onSetLessonImportant,
@@ -30,6 +42,8 @@ export function PlanningWeekDayView({
   focusDate?: string
   planContext?: PlanNavigationContext | null
   onSelectDate?: (date: ISODate) => void
+  onSelectLesson?: SelectLessonHandler
+  onSelectUnit?: SelectUnitHandler
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
@@ -65,6 +79,8 @@ export function PlanningWeekDayView({
           single={single}
           focusDate={focusDate}
           planContext={planContext}
+          onSelectLesson={onSelectLesson}
+          onSelectUnit={onSelectUnit}
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
           onSetLessonImportant={onSetLessonImportant}
@@ -151,6 +167,8 @@ function PlanningCourse({
   single,
   focusDate,
   planContext,
+  onSelectLesson,
+  onSelectUnit,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
   onSetLessonImportant,
@@ -162,6 +180,8 @@ function PlanningCourse({
   single: boolean
   focusDate?: string
   planContext?: PlanNavigationContext | null
+  onSelectLesson?: SelectLessonHandler
+  onSelectUnit?: SelectUnitHandler
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
@@ -178,13 +198,7 @@ function PlanningCourse({
           {course.unitSpans.map((unit, index) => (
             <div className="planning-unit-grid" style={gridTemplate(days)} key={unit.unitId}>
               <span className="planning-row-label planning-row-label--unit">{index === 0 ? 'Unit' : ''}</span>
-              <div
-                className="planning-unit-span"
-                style={{ gridColumn: `${unit.startIndex + 2} / ${unit.endIndex + 3}` }}
-                title={`${unit.title}: ${unit.startDate} through ${unit.endDate}`}
-              >
-                {unit.title}
-              </div>
+              <UnitSpanButton unit={unit} onSelectUnit={onSelectUnit} />
             </div>
           ))}
         </div>
@@ -215,6 +229,7 @@ function PlanningCourse({
                     focusDate={focusDate}
                     important={lessonImportantById?.(lesson.lessonId) ?? false}
                     selected={planContext?.lessonId === lesson.lessonId}
+                    onSelectLesson={onSelectLesson}
                     onBeginPlanLessonMove={onBeginPlanLessonMove}
                     onOpenRecoveryForSection={onOpenRecoveryForSection}
                     onSetLessonImportant={onSetLessonImportant}
@@ -232,6 +247,40 @@ function PlanningCourse({
   )
 }
 
+function UnitSpanButton({
+  unit,
+  onSelectUnit,
+}: {
+  unit: PlanningUnitSpan
+  onSelectUnit?: SelectUnitHandler
+}) {
+  const title = `${unit.title}: ${unit.startDate} through ${unit.endDate}`
+  if (!onSelectUnit) {
+    return (
+      <div
+        className="planning-unit-span"
+        style={{ gridColumn: `${unit.startIndex + 2} / ${unit.endIndex + 3}` }}
+        title={title}
+      >
+        {unit.title}
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      className="planning-unit-span planning-unit-span--open"
+      style={{ gridColumn: `${unit.startIndex + 2} / ${unit.endIndex + 3}` }}
+      title={title}
+      aria-label={`Open ${unit.title} in Month at unit start`}
+      onClick={() => onSelectUnit({ date: unit.startDate, courseId: unit.courseId, unitId: unit.unitId })}
+    >
+      {unit.title}
+    </button>
+  )
+}
+
 function LessonTile({
   lesson,
   sectionId,
@@ -239,6 +288,7 @@ function LessonTile({
   focusDate,
   important = false,
   selected,
+  onSelectLesson,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
   onSetLessonImportant,
@@ -250,6 +300,7 @@ function LessonTile({
   focusDate?: string
   important?: boolean
   selected?: boolean
+  onSelectLesson?: SelectLessonHandler
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
@@ -292,6 +343,12 @@ function LessonTile({
     })
   }
 
+  function openPlanningSurface(event: MouseEvent) {
+    if (!onSelectLesson) return
+    event.stopPropagation()
+    onSelectLesson({ ...lesson, sectionId, date: slotDate })
+  }
+
   return (
     <ArcImportantObject important={important}>
     <article
@@ -307,7 +364,19 @@ function LessonTile({
     >
       <ArcObjectMenu label={lesson.title} items={menuItems}>
       <div className="planning-lesson-title-row">
-        <span className="planning-lesson-title" title={lesson.title}>{lesson.title}</span>
+        {onSelectLesson ? (
+          <button
+            type="button"
+            className="planning-lesson-title planning-lesson-title--open"
+            title={lesson.title}
+            aria-label={`Open ${lesson.title} lesson plan`}
+            onClick={openPlanningSurface}
+          >
+            {lesson.title}
+          </button>
+        ) : (
+          <span className="planning-lesson-title" title={lesson.title}>{lesson.title}</span>
+        )}
         {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title={lesson.title}>Fixed</span> : null}
       </div>
       {showStatus ? (

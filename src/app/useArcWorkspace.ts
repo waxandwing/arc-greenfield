@@ -741,9 +741,20 @@ export function useArcWorkspace(onCloseMode: () => void) {
     commitPlan(focusTeachingBlock(planContext, { id: block.id, courseId: block.courseId, sectionId: block.sectionId }))
   }
 
-  function selectLesson(lesson: { lessonId: string; unitId: string; courseId: string }) {
+  function selectLesson(lesson: {
+    lessonId: string
+    unitId: string
+    courseId: string
+    sectionId?: string
+    date?: ISODate
+  }) {
     if (!calendar || !planContext) return
-    commitPlan(focusLesson(planContext, lesson))
+    const withPlacement = {
+      ...planContext,
+      ...(lesson.date ? { anchorDate: lesson.date } : {}),
+      ...(lesson.sectionId ? { sectionId: lesson.sectionId } : {}),
+    }
+    commitPlan(focusLesson(withPlacement, lesson))
   }
 
   function retreatFocus() {

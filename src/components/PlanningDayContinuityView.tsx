@@ -43,7 +43,7 @@ export function PlanningDayContinuityView({
   selectedBlockId?: string
   selectedLessonId?: string
   onSelectBlock?: (block: TeachingDayRailItem) => void
-  onSelectLesson?: (lesson: DayContinuityLesson) => void
+  onSelectLesson?: (lesson: { lessonId: string; unitId: string; courseId: string; sectionId?: string; date?: ISODate }) => void
   onRetreat?: () => void
   onFollowAttention?: (item: PlanningPeriodAttentionItem) => void
   onReturnToPlanningPeriod?: () => void
@@ -351,7 +351,7 @@ function formatClockTime(value: string): string {
   return `${hour12}:${String(minutes).padStart(2, '0')} ${suffix}`
 }
 
-function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, onSelectLesson, onBeginPlanLessonMove, onSetLessonImportant, onOpenRecoveryForSection, carryover = false }: { lesson: DayContinuityLesson; sectionId: string; important?: boolean; onStartClass?: (sectionId: string, lessonId: string) => void; onSelectLesson?: (lesson: DayContinuityLesson) => void; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onSetLessonImportant?: (lessonId: string, important: boolean) => boolean; onOpenRecoveryForSection?: (sectionId: string) => void; carryover?: boolean }) {
+function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, onSelectLesson, onBeginPlanLessonMove, onSetLessonImportant, onOpenRecoveryForSection, carryover = false }: { lesson: DayContinuityLesson; sectionId: string; important?: boolean; onStartClass?: (sectionId: string, lessonId: string) => void; onSelectLesson?: (lesson: { lessonId: string; unitId: string; courseId: string; sectionId?: string; date?: ISODate }) => void; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onSetLessonImportant?: (lessonId: string, important: boolean) => boolean; onOpenRecoveryForSection?: (sectionId: string) => void; carryover?: boolean }) {
   const status = humanizeStatus(lesson.deliveryStatus)
   const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
   const accessible = [
@@ -386,7 +386,18 @@ function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, 
     <article aria-label={accessible} data-lesson-id={lesson.lessonId}>
       <ArcObjectMenu label={lesson.title} items={menuItems}>
       <div className="day-continuity-lesson-heading">
-        <strong>{lesson.title}</strong>
+        {onSelectLesson ? (
+          <button
+            type="button"
+            className="day-continuity-lesson-title-open"
+            aria-label={`Open ${lesson.title} lesson plan`}
+            onClick={() => onSelectLesson({ ...lesson, sectionId })}
+          >
+            <strong>{lesson.title}</strong>
+          </button>
+        ) : (
+          <strong>{lesson.title}</strong>
+        )}
         {lesson.datePolicy === 'fixed' ? <span className="day-continuity-fixed">Fixed</span> : null}
       </div>
       <p className="day-continuity-lesson-meta">
@@ -407,7 +418,7 @@ function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, 
         {onStartClass && (lesson.deliveryStatus === 'not-started' || lesson.deliveryStatus === 'in-progress') ? (
           <button type="button" className="day-start-class" onClick={() => onStartClass(sectionId, lesson.lessonId)}>{lesson.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
         ) : null}
-        {onSelectLesson ? <button type="button" className="text-button" onClick={() => onSelectLesson(lesson)}>Open lesson</button> : null}
+        {onSelectLesson ? <button type="button" className="text-button" onClick={() => onSelectLesson({ ...lesson, sectionId })}>Open lesson</button> : null}
         {onBeginPlanLessonMove ? (
           <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: lesson.lessonId, sectionId, defaultDestination: lesson.effectiveDate })}>Move</button>
         ) : null}

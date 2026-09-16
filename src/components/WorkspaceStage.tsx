@@ -13,7 +13,6 @@ import type { CalendarHydrationInput, ISODate, OfficialSourceCandidate, PlanNavi
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import type {
-  DayContinuityLesson,
   LessonWorkspace,
   LessonWorkspaceInput,
   PlanningWorkspace,
@@ -59,7 +58,7 @@ type WorkspaceStageProps = {
   onSelectDate: (date: ISODate, view: CalendarView) => void
   onSelectYearUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
   onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
-  onSelectLesson?: (lesson: DayContinuityLesson) => void
+  onSelectLesson?: (lesson: { lessonId: string; unitId: string; courseId: string; sectionId?: string; date?: ISODate }) => void
   onRetreatPlanFocus?: () => void
   onOpenWorkspace?: () => void
   onFollowPlanningAttention?: (item: import('../planning').PlanningPeriodAttentionItem) => void

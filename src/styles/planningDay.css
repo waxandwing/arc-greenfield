@@ -184,6 +184,22 @@
   overflow-wrap: anywhere;
 }
 
+button.day-continuity-lesson-title-open{
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+
+button.day-continuity-lesson-title-open:focus-visible{
+  outline:2px solid var(--accent-blue-deep);
+  outline-offset:2px;
+}
+
 .day-continuity-fixed {
   flex: 0 0 auto;
   color: var(--terracotta-text);

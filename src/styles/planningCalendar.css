@@ -272,6 +272,20 @@
   white-space:nowrap;
 }
 
+button.planning-unit-span--open{
+  border-top:0;
+  border-right:0;
+  border-bottom:0;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+
+button.planning-unit-span--open:focus-visible{
+  outline:2px solid var(--accent-blue-deep);
+  outline-offset:2px;
+}
+
 .planning-course[data-course-id='course-apah'] .planning-unit-span{
   border-left-color:var(--course-apah-accent);
   background:var(--course-apah-band);
@@ -424,6 +438,23 @@
   font-size:16px;
   font-weight:700;
   line-height:1.25;
+}
+
+button.planning-lesson-title--open{
+  display:inline;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+
+button.planning-lesson-title--open:focus-visible{
+  outline:2px solid var(--accent-blue-deep);
+  outline-offset:2px;
 }
 
 .planning-lesson-anchor{

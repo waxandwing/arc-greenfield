@@ -7,7 +7,7 @@ import { PLAN_WEEKDAY_LABELS } from '../calendar/dateMath'
 import { projectDayContinuity } from '../planning/dayContinuityProjection'
 import { projectPlanningRange } from '../planning/planningProjection'
 import { projectMonthPlanning } from '../planning/monthPlanningProjection'
-import type { CaptureWorkspace, DayContinuityLesson, LessonWorkspace, PlanningPeriodAttentionItem, PlanningWorkspace, ShiftPersistenceInput, TeachingDayRailItem, UnitWorkspace } from '../planning'
+import type { CaptureWorkspace, LessonWorkspace, PlanningPeriodAttentionItem, PlanningWorkspace, ShiftPersistenceInput, TeachingDayRailItem, UnitWorkspace } from '../planning'
 import { PlanningDayContinuityView } from './PlanningDayContinuityView'
 import { PlanningMonthView } from './PlanningMonthView'
 import { PlanningWeekDayView } from './PlanningWeekDayView'
@@ -36,7 +36,7 @@ type Props = {
   onSelectDate?: (date: ISODate, view: CalendarView) => void
   onSelectYearUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
   onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
-  onSelectLesson?: (lesson: DayContinuityLesson) => void
+  onSelectLesson?: (lesson: { lessonId: string; unitId: string; courseId: string; sectionId?: string; date?: ISODate }) => void
   onRetreatPlanFocus?: () => void
   onOpenWorkspace?: () => void
   onFollowPlanningAttention?: (item: PlanningPeriodAttentionItem) => void
@@ -100,6 +100,8 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           planningContext={planningContext}
           planContext={planContext}
           onSelectDate={(date) => onSelectDate?.(date, 'Day')}
+          onSelectLesson={onSelectLesson}
+          onSelectUnit={onSelectYearUnit}
           onReturnToPlanningPeriod={onReturnToPlanningPeriod}
           planningPeriodReturnPending={planningPeriodReturnPending}
           dayNotes={dayNotes}
@@ -233,7 +235,7 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   termContext?: ReactNode
   onStartClass?: (sectionId: string, lessonId: string, liveDate?: ISODate) => void
   onSelectTeachingBlock?: (block: TeachingDayRailItem) => void
-  onSelectLesson?: (lesson: DayContinuityLesson) => void
+  onSelectLesson?: (lesson: { lessonId: string; unitId: string; courseId: string; sectionId?: string; date?: ISODate }) => void
   onRetreatPlanFocus?: () => void
   onOpenWorkspace?: () => void
   onFollowPlanningAttention?: (item: import('../planning').PlanningPeriodAttentionItem) => void
@@ -312,7 +314,7 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   )
 }
 
-function PlanningWeekStrip({ title, days, focusDate, planningContext, planContext, termContext, onSelectDate, onReturnToPlanningPeriod, planningPeriodReturnPending, dayNotes, showDeskNotes = false, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection, onStartClass }: {
+function PlanningWeekStrip({ title, days, focusDate, planningContext, planContext, termContext, onSelectDate, onSelectLesson, onSelectUnit, onReturnToPlanningPeriod, planningPeriodReturnPending, dayNotes, showDeskNotes = false, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection, onStartClass }: {
   title: string
   days: ProjectedDay[]
   focusDate: ISODate
@@ -320,6 +322,8 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
   planContext?: PlanNavigationContext | null
   termContext?: ReactNode
   onSelectDate?: (date: ISODate) => void
+  onSelectLesson?: (lesson: { lessonId: string; unitId: string; courseId: string; sectionId?: string; date?: ISODate }) => void
+  onSelectUnit?: (input: { date: ISODate; courseId: string; unitId: string }) => void
   onReturnToPlanningPeriod?: () => void
   planningPeriodReturnPending?: boolean
   dayNotes?: CalendarDayNoteHandlers
@@ -362,6 +366,8 @@ function PlanningWeekStrip({ title, days, focusDate, planningContext, planContex
               focusDate={focusDate}
               planContext={planContext}
               onSelectDate={onSelectDate}
+              onSelectLesson={onSelectLesson}
+              onSelectUnit={onSelectUnit}
               onBeginPlanLessonMove={onBeginPlanLessonMove}
               onOpenRecoveryForSection={onOpenRecoveryForSection}
               onSetLessonImportant={onSetLessonImportant}
