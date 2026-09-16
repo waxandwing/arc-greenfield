@@ -40,7 +40,14 @@ import {
   parseQuickCaptureCommand,
   type QuickCaptureKind,
 } from '../planning/quickCaptureCommand'
+<<<<<<< HEAD
 import { fitMagnetNoteFont } from '../desk/fitMagnetNoteFont'
+=======
+import {
+  deskMagnetFallbackSrcForTone,
+  deskMagnetSrcForTone,
+} from '../desk/deskMagnetAssets'
+>>>>>>> df7b2d8 (fix(desk): tray stickies stay normal; magnet when in a unit)
 
 const NOTE_STORAGE_KEY = 'arc.desk-postit-notes.v1'
 const POSITION_STORAGE_KEY = 'arc.desk-postit-positions.v1'
@@ -219,6 +226,75 @@ function toneForKind(kind: QuickCaptureKind, preferred?: DeskPostItTone): DeskPo
   return 'mustard'
 }
 
+
+function isUnitSpec(spec: Pick<AccentSpec, 'form' | 'kind'> | undefined): boolean {
+  if (!spec) return false
+  return spec.form === 'magnet' || spec.kind === 'unit'
+}
+
+/** Unit association: own unit magnet/tag, or linked into a stack that includes one. */
+function isInUnitContext(
+  catalog: AccentSpec[],
+  links: DeskPostItLinkWorkspace,
+  postItId: string,
+): boolean {
+  const byId = new Map(catalog.map((item) => [item.postItId, item]))
+  const self = byId.get(postItId)
+  if (isUnitSpec(self)) return true
+  const stack = deskPostItStackForMember(links, postItId)
+  if (!stack) return false
+  return stack.memberIds.some((id) => isUnitSpec(byId.get(id)))
+}
+
+function pointInElement(clientX: number, clientY: number, el: Element | null): boolean {
+  if (!el) return false
+  const box = el.getBoundingClientRect()
+  return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom
+}
+
+function UnitMagnetBadge({
+  tone,
+  testId,
+  label,
+}: {
+  tone: DeskPostItTone
+  testId: string
+  label: string
+}) {
+  const preferred = deskMagnetSrcForTone(tone)
+  const fallback = deskMagnetFallbackSrcForTone(tone)
+  // Start on the known interim disc so missing Kelly canonical files do not flash broken.
+  const [src, setSrc] = useState(fallback)
+
+  useEffect(() => {
+    let cancelled = false
+    const probe = new Image()
+    probe.onload = () => {
+      if (!cancelled) setSrc(preferred)
+    }
+    probe.onerror = () => {
+      if (!cancelled) setSrc(fallback)
+    }
+    probe.src = preferred
+    return () => {
+      cancelled = true
+    }
+  }, [fallback, preferred])
+
+  return (
+    <img
+      className="arc-desk-post-it-unit-magnet"
+      src={src}
+      alt=""
+      aria-hidden="true"
+      data-testid={`${testId}-unit-magnet`}
+      data-desk-unit-magnet="true"
+      title={`${label} unit magnet`}
+      draggable={false}
+    />
+  )
+}
+
 function spawnSpecFromDetail(detail: DeskPostItSpawnDetail, index: number): AccentSpec {
   const id = `spawn-${detail.kind}-${Date.now()}-${index}`
   const isMagnet = detail.kind === 'unit'
@@ -242,6 +318,8 @@ type AccentPostItProps = AccentSpec & {
   position: DeskPostItPosition
   stackId: string | null
   inDrawer: boolean
+  /** True when this sticky is a unit magnet or linked into a unit stack. */
+  inUnit: boolean
   assigned: boolean
   lesson: boolean
   onLessonChange: (lesson: boolean) => void
@@ -265,6 +343,7 @@ function DeskAccentPostIt({
   position,
   stackId,
   inDrawer,
+  inUnit,
   assigned,
   lesson,
   onLessonChange,
@@ -322,7 +401,10 @@ function DeskAccentPostIt({
     onEnterSave(postItId, text)
   }
 
-  const isMagnet = form === 'magnet'
+  // In the IDEAS tray, always use paper sticky chrome so write / drag / link / lesson work like wood.
+  // Full circular magnet form stays on the wood for standalone unit magnets from `u …`.
+  const isMagnet = form === 'magnet' && !inDrawer
+  const showUnitMagnet = inUnit
 
   return (
     <DeskPostIt
@@ -333,19 +415,22 @@ function DeskAccentPostIt({
       onPositionChange={onPositionChange}
       onDragMove={onDragMove}
       onDragEnd={onDragEnd}
-      tiltDeg={inDrawer ? 0 : tiltDeg}
+      tiltDeg={tiltDeg}
+      dragSurfaceSelector={inDrawer ? '[data-testid="arc-desk-ideas-accent-slot"]' : '.arc-desk-surface'}
       className={[
         isMagnet ? 'arc-desk-post-it--magnet' : 'arc-desk-post-it--accent',
         inDrawer ? 'arc-desk-post-it--in-drawer' : '',
         assigned ? 'arc-desk-post-it--assigned' : '',
+        showUnitMagnet ? 'arc-desk-post-it--in-unit' : '',
       ].filter(Boolean).join(' ')}
       testId={testId}
-      aria-label={label}
+      aria-label={showUnitMagnet ? `${label} (in unit)` : label}
       stackId={stackId}
       lesson={lesson}
     >
       {isMagnet ? (
         <div className="arc-desk-magnet-face" data-testid={`${testId}-magnet`}>
+          <UnitMagnetBadge tone={tone} testId={testId} label={label} />
           <span className="arc-desk-magnet-kind">{kind === 'unit' ? 'Unit' : 'Magnet'}</span>
           <textarea
             ref={noteRef}
@@ -373,6 +458,7 @@ function DeskAccentPostIt({
       ) : (
         <>
           <div className="arc-desk-post-it-grip" aria-hidden="true" data-testid={`${testId}-grip`} />
+          {showUnitMagnet ? <UnitMagnetBadge tone={tone} testId={testId} label={label} /> : null}
           <textarea
             ref={noteRef}
             className="arc-desk-post-it-note"
@@ -407,6 +493,8 @@ function DeskAccentPostIt({
  * Unassigned stickies may still live on the wood. Link-when-stacked + Clean up → IDEAS preserved.
  * Quick Capture Enter can spawn a fresh sticky or unit magnet for continuous capture.
  * Lesson marks (corner dot) let teachers flag a sticky as the lesson when grouping unit + class.
+ * IDEAS tray stickies stay normal paper stickies (write / drag / link / lesson); unit-associated
+ * stickies show a physical magnet badge (own `u` magnet or linked into a unit stack).
  */
 export function DeskAccentPostIts() {
   const [spawned, setSpawned] = useState<AccentSpec[]>([])
@@ -473,9 +561,15 @@ export function DeskAccentPostIts() {
     function onCleanUp() {
       const nextPositions: Record<string, DeskPostItPosition> = {}
       const nextDrawer: Record<string, boolean> = {}
+      let index = 0
       for (const accent of catalogRef.current) {
-        nextPositions[accent.postItId] = { ...accent.defaultPosition }
+        // Tray-local free-place slots (accent slot is the drag surface while in IDEAS).
+        nextPositions[accent.postItId] = {
+          leftPct: clamp(4 + (index % 3) * 30, 2, 68),
+          topPct: clamp(6 + Math.floor(index / 3) * 38, 2, 62),
+        }
         nextDrawer[accent.postItId] = true
+        index += 1
       }
       setPositions(nextPositions)
       setInDrawer(nextDrawer)
@@ -605,31 +699,11 @@ export function DeskAccentPostIts() {
     return false
   }, [])
 
-  const onDragEnd = useCallback((info: DeskPostItDragEndInfo) => {
-    if (!info.didMove) {
-      clearDeskPostItDropHighlights()
-      return
-    }
-
-    if (inDrawerRef.current[info.postItId]) {
-      const drop =
-        positionFromSurfacePoint(info.rect.left + info.rect.width / 2, info.rect.top + info.rect.height / 2)
-        ?? info.position
-      pullFromDrawer(info.postItId, drop)
-      setPrompt(null)
-      clearDeskPostItDropHighlights()
-      return
-    }
-
-    // Prefer assign targets (date / Planning Tray) over stacking prompts.
-    if (tryAssignDrop(info)) {
-      setPrompt(null)
-      return
-    }
-
+  const promptLinkFromRects = useCallback((info: DeskPostItDragEndInfo, drawerOnly: boolean) => {
     const rects: Record<string, DeskPostItRect> = {}
     for (const accent of catalogRef.current) {
-      if (inDrawerRef.current[accent.postItId]) continue
+      const memberInDrawer = inDrawerRef.current[accent.postItId] === true
+      if (drawerOnly ? !memberInDrawer : memberInDrawer) continue
       const node = document.querySelector(`[data-desk-post-it="${accent.postItId}"]`)
       const rect = accent.postItId === info.postItId
         ? { left: info.rect.left, top: info.rect.top, width: info.rect.width, height: info.rect.height }
@@ -645,7 +719,42 @@ export function DeskAccentPostIts() {
     if (dismissedPairsRef.current.has(key)) return
     const anchor = positionsRef.current[info.postItId] ?? info.position
     setPrompt({ a: info.postItId, b: overlapId, anchor })
-  }, [pullFromDrawer, tryAssignDrop])
+  }, [])
+
+  const onDragEnd = useCallback((info: DeskPostItDragEndInfo) => {
+    if (!info.didMove) {
+      clearDeskPostItDropHighlights()
+      return
+    }
+
+    if (inDrawerRef.current[info.postItId]) {
+      const centerX = info.rect.left + info.rect.width / 2
+      const centerY = info.rect.top + info.rect.height / 2
+      const tray = document.querySelector('[data-testid="arc-desk-tray-dock"]')
+      const slot = document.querySelector('[data-testid="arc-desk-ideas-accent-slot"]')
+      const stillInTray = pointInElement(centerX, centerY, tray) || pointInElement(centerX, centerY, slot)
+      clearDeskPostItDropHighlights()
+      if (stillInTray) {
+        // Stay in IDEAS — rearrange + link like wood stickies.
+        promptLinkFromRects(info, true)
+        return
+      }
+      const drop =
+        positionFromSurfacePoint(centerX, centerY)
+        ?? info.position
+      pullFromDrawer(info.postItId, drop)
+      setPrompt(null)
+      return
+    }
+
+    // Prefer assign targets (date / Planning Tray) over stacking prompts.
+    if (tryAssignDrop(info)) {
+      setPrompt(null)
+      return
+    }
+
+    promptLinkFromRects(info, false)
+  }, [promptLinkFromRects, pullFromDrawer, tryAssignDrop])
 
   const onEnterSave = useCallback((postItId: string, raw: string) => {
     const parsed = parseQuickCaptureCommand(raw)
@@ -692,6 +801,7 @@ export function DeskAccentPostIts() {
     const stack = deskPostItStackForMember(links, accent.postItId)
     const position = positions[accent.postItId] ?? accent.defaultPosition
     const lesson = isDeskPostItLesson(lessons, accent.postItId)
+    const inUnit = isInUnitContext(catalog, links, accent.postItId)
     return (
       <DeskAccentPostIt
         key={accent.postItId}
@@ -699,6 +809,7 @@ export function DeskAccentPostIts() {
         position={position}
         stackId={stack?.stackId ?? null}
         inDrawer={drawerMode}
+        inUnit={inUnit}
         assigned={assigned[accent.postItId] === true}
         lesson={lesson}
         onLessonChange={(next) => toggleLesson(accent.postItId, next)}

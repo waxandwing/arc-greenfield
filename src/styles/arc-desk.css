@@ -647,28 +647,32 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-ideas-accent-slot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 8px;
-  min-height: 0;
+  position: relative;
+  display: block;
+  min-height: 150px;
   margin: 0 0 10px;
+  /* Free-place surface for in-tray stickies (same interactions as wood). */
 }
 
 .arc-desk-ideas-accent-slot:empty {
   display: none;
+  min-height: 0;
   margin: 0;
 }
 
+/* IDEAS tray: keep accent sticky size + tilt; absolute within the slot. */
 .arc-desk-post-it.arc-desk-post-it--in-drawer {
-  position: relative;
-  left: auto !important;
-  top: auto !important;
-  width: 78px;
-  min-width: 78px;
-  max-width: 88px;
+  position: absolute;
+  width: clamp(96px, 28%, 120px);
+  min-width: 96px;
+  max-width: 120px;
   z-index: 1;
-  transform: none !important;
+}
+
+.arc-desk-post-it.arc-desk-post-it--in-drawer.arc-desk-post-it--accent {
+  width: clamp(96px, 28%, 120px);
+  min-width: 96px;
+  max-width: 120px;
 }
 
 .arc-desk-ideas-empty {
@@ -1281,6 +1285,7 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-magnet-face {
+  position: relative;
   width: 100%;
   height: 100%;
   min-width: 0;
@@ -1292,6 +1297,32 @@ html:has(.arc-shell--desk) body {
   gap: 2px;
   text-align: center;
   box-sizing: border-box;
+}
+
+/* Physical magnet disc — shown when sticky is in a unit (own `u` or linked to unit). */
+.arc-desk-post-it-unit-magnet {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  z-index: 4;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(40, 28, 12, 0.35));
+}
+
+.arc-desk-post-it--magnet .arc-desk-post-it-unit-magnet {
+  top: -2px;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  transform: translateX(-50%);
+}
+
+.arc-desk-post-it--in-unit.arc-desk-post-it--accent .arc-desk-post-it-note {
+  /* Leave room for the corner magnet so writing stays clear. */
+  padding-top: 18px;
 }
 
 .arc-desk-magnet-kind {

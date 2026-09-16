@@ -366,10 +366,19 @@ try {
   assert(await page.getByTestId('arc-desk-quick-capture-notice').innerText() === 'Saved as unit', 'u prefix must save as unit.')
   assert(await quickCaptureNote.inputValue() === '', 'QC must clear after u-prefix Enter.')
   assert(await page.locator('.arc-desk-post-it--magnet').count() >= 1, 'u prefix must spawn a unit magnet on the wood.')
+  assert(await page.locator('[data-desk-unit-magnet="true"]').count() >= 1, 'Unit magnet must show physical magnet artwork.')
+  assert(await page.locator('.arc-desk-post-it--in-unit').count() >= 1, 'Unit spawn must mark the sticky/magnet as in-unit.')
+  const unitMagnetImg = page.locator('[data-desk-unit-magnet="true"]').first()
+  const unitMagnetSrc = await unitMagnetImg.getAttribute('src')
+  assert(
+    Boolean(unitMagnetSrc && (unitMagnetSrc.includes('/assets/desk/canonical/magnet-') || unitMagnetSrc.includes('/assets/desk/magnets/magnet-'))),
+    `Unit magnet artwork src must be a magnet asset (got ${unitMagnetSrc}).`,
+  )
   await quickCaptureNote.fill('n bring clay')
   await quickCaptureNote.press('Enter')
   assert(await page.getByTestId('arc-desk-quick-capture-notice').innerText() === 'Saved as note', 'n prefix must save as note.')
   assert(await page.locator('[data-desk-post-it^="spawn-"]').count() >= 1, 'Subsequent Enter must leave spawned sticky/magnet on wood.')
+
 
   // Drop targets: Planning Tray lanes + calendar date cells advertise post-it drops.
   assert(await page.locator('[data-desk-postit-drop="priority"][data-priority="must"]').count() >= 1, 'MUST lane must be a post-it drop target.')
@@ -416,6 +425,18 @@ try {
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'Clean up must move pink accent into IDEAS.')
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-blue"]').count() === 1, 'Clean up must move blue accent into IDEAS.')
   assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Open IDEAS well must expose Clean up.')
+  // Tray stickies stay normal paper accents (writable + lesson mark), not locked tray chrome.
+  const trayBlue = page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-blue"]')
+  assert(await trayBlue.evaluate((node) => node.classList.contains('arc-desk-post-it--accent')), 'IDEAS tray stickies must keep accent paper chrome.')
+  assert(await trayBlue.evaluate((node) => node.classList.contains('arc-desk-post-it--in-drawer')), 'Cleaned-up stickies must mark in-drawer.')
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').getByTestId('arc-desk-post-it-accent-blue-note').count() === 1, 'Tray sticky must remain writable.')
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').getByTestId('arc-desk-post-it-accent-blue-lesson-mark').count() === 1, 'Tray sticky must keep lesson corner dot.')
+  // Unit magnets cleaned into IDEAS become paper stickies with a visible magnet badge.
+  const trayUnit = page.getByTestId('arc-desk-ideas-accent-slot').locator('.arc-desk-post-it--in-unit').first()
+  if (await trayUnit.count() >= 1) {
+    assert(await trayUnit.evaluate((node) => node.classList.contains('arc-desk-post-it--accent')), 'Unit items in IDEAS must function as normal paper stickies.')
+    assert(await trayUnit.locator('[data-desk-unit-magnet="true"]').count() === 1, 'Unit-associated tray sticky must show a magnet.')
+  }
   // Collapse again so later tray-utility assertions match a closed IDEAS dock.
   await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
   // Pull accents back onto the wood for later accent assertions that expect loose stickies.

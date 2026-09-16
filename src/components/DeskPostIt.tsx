@@ -34,6 +34,11 @@ type Props = {
   stackId?: string | null
   /** When true, show lesson corner-dot + light marking for unit/class grouping. */
   lesson?: boolean
+  /**
+   * Drag percentage reference. Defaults to `.arc-desk-surface`.
+   * IDEAS tray stickies use the accent slot so in-tray drags stay local.
+   */
+  dragSurfaceSelector?: string
   children?: ReactNode
   'aria-label'?: string
 }
@@ -105,6 +110,7 @@ export function DeskPostIt({
   dragEnabled = true,
   stackId = null,
   lesson = false,
+  dragSurfaceSelector = '.arc-desk-surface',
   children,
   'aria-label': ariaLabel = 'Desk post-it',
 }: Props) {
@@ -118,6 +124,13 @@ export function DeskPostIt({
   positionRef.current = position
   const [dragging, setDragging] = useState(false)
   const dragRef = useRef<DragState | null>(null)
+
+  const resolveDragSurface = useCallback((): HTMLElement | null => {
+    const scoped = document.querySelector(dragSurfaceSelector)
+    if (scoped instanceof HTMLElement) return scoped
+    const fallback = document.querySelector('.arc-desk-surface')
+    return fallback instanceof HTMLElement ? fallback : null
+  }, [dragSurfaceSelector])
 
   useEffect(() => {
     if (isControlled) return
@@ -159,7 +172,7 @@ export function DeskPostIt({
     const target = event.target as HTMLElement | null
     // Keep capture form controls interactive; never drag from buttons/links/inputs/selects.
     if (target?.closest('button, a, input, select, label, dialog')) return
-    const surface = nodeRef.current?.closest('.arc-desk-surface') as HTMLElement | null
+    const surface = resolveDragSurface()
     if (!surface || !nodeRef.current) return
     const surfaceRect = surface.getBoundingClientRect()
     const editTarget = Boolean(target?.closest('textarea, [contenteditable="true"]'))
@@ -179,7 +192,7 @@ export function DeskPostIt({
       setDragging(true)
       event.preventDefault()
     }
-  }, [dragEnabled, position.leftPct, position.topPct])
+  }, [dragEnabled, position.leftPct, position.topPct, resolveDragSurface])
 
   const onPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current
