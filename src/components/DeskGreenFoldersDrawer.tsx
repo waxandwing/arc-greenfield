@@ -233,6 +233,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
             <div
               className="arc-desk-ideas-accent-slot"
               data-testid="arc-desk-ideas-accent-slot"
+              data-desk-postit-drop="ideas-tray"
               aria-label="Post-its in IDEAS"
             />
             {children}
