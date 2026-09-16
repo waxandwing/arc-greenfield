@@ -95,7 +95,8 @@ const ACCENTS: AccentSpec[] = [
     postItId: 'accent-blue',
     tone: 'blue',
     defaultPosition: { leftPct: 51.5, topPct: 1.6 },
-    tiltDeg: -3,
+    // Kelly postit-blue PNG is already tilted; keep CSS rotation at 0.
+    tiltDeg: 0,
     testId: 'arc-desk-post-it-accent-blue',
     label: 'Blue post-it',
   },

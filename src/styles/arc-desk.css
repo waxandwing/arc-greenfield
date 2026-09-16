@@ -1165,8 +1165,25 @@ html:has(.arc-shell--desk) body {
   background: linear-gradient(165deg, #f6d0d4 0%, #e8a8b0 55%, #d48992 100%);
 }
 
-.arc-desk-post-it--blue {
-  background: linear-gradient(165deg, #e4eef7 0%, #c5d7e8 52%, #9eb8c7 100%);
+.arc-desk-post-it--blue:not(.arc-desk-post-it--magnet) {
+  /* Kelly postit-blue paper (tilted hand-drawn) — prefer over CSS gradient fill. */
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/postit-blue.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.arc-desk-post-it--magnet.arc-desk-post-it--blue {
+  /* Kelly slate-blue speckled magnet face. */
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/magnet-blue.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: none;
 }
 
 .arc-desk-post-it--cream {

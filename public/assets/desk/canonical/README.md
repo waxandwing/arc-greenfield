@@ -1,85 +1,100 @@
 # Arc desk labeled asset authority
 
-**STATUS: BLOCKED** — the 22 Kelly labeled SVG binaries are **not in this folder**.
+**STATUS: PARTIAL** — four Kelly PNG source-art files landed 2026-09-16; the 22 labeled SVG binaries are still missing.
 
-Do **not** invent substitutes (crops, CSS gradients, generated magnets, re-traced SVGs) and claim Kelly labeled authority. Wire only after files land in `uploads/desk-incoming/` and are copied here per the rename map below.
+Do **not** invent substitutes (crops, CSS gradients, generated magnets, re-traced SVGs) and claim Kelly labeled authority. Wire remaining roles only after files land in `uploads/desk-incoming/` and are copied here per the rename map below.
 
-Source: Kelly-labeled SVG handoff, 2026-09-15. Filenames containing `(USE)` are the strongest source-of-truth signal.
+Source: Kelly-labeled SVG handoff, 2026-09-15, plus **Kelly PNG chat upload 2026-09-16** (four files, empty message — ingested by asset-ingest agent). Filenames containing `(USE)` are the strongest source-of-truth signal for the SVG pack.
 
 **Kelly drop path:** `uploads/desk-incoming/`  
 → `KELLY-DROP-22-LABELED-SVGS-HERE.txt` · `LABELED-SVG-CHECKLIST.md` · `README.txt`
 
 **Presence check:** `npm run check:canonical-desk-svgs`
 
+## Kelly PNG ingest (2026-09-16) — PARTIAL LAND
+
+Kelly uploaded four source PNGs (letterboxed, transparent). Cropped to content bbox (+2px) and wired for matching roles. **Did not invent** the other labeled SVGs.
+
+Provenance: `PROVENANCE-kelly-2026-09-16.json`
+
+| Saved path | Role | Wire |
+|---|---|---|
+| `arc-upper-left-logo.png` (+ `public/assets/arc/arc-mark-stacked.png`) | Original Arc stacked mark (a/r/c + red pie) | **WIRED** — wood wordmark + planner shell; **no wood-burn** |
+| `arctable-mark.png` (+ `public/assets/arctable/arctable-quadrant-mark.png`) | ArcTable four-quadrant star/table mark (sticker) | **WIRED** — `ARC_TABLE_MARK_ASSET` (header + desk table identity); AT-001 SVG kept for hit geometry |
+| `magnet-blue.png` (+ `desk/magnets/magnet-blue.png`) | Slate-blue speckled magnet/plate | **WIRED** — blue/slate magnet face |
+| `postit-blue.png` | Pale blue tilted post-it paper | **WIRED** — `.arc-desk-post-it--blue` / accent-blue |
+
+`start-class-mark.png` may also be present from a concurrent Kelly PNG drop (script + quadrant lockup). Desk Start Class chrome still uses live script + `ARC_TABLE_MARK_ASSET` quadrant art so script is not doubled.
+
 ## Wiring order (from re-audit — do not skip ahead)
 
-When binaries land, wire in this order only:
+When remaining binaries land, wire in this order only:
 
 1. **Wood** → `wood-background-light.svg`
 2. **Tray** → `ideas-tray.svg` (`tray image (use).svg`)
 3. **Settings / TO-DOS tabs** → `settings-tab.svg`, `todos-tab.svg`
 4. **Calendar tabs** → `calendar-tab-selected.svg`, `calendar-tab-unselected.svg`
-5. **Calendar bg / rainbow / today / start-class / magnets** → `calendar-background.svg`, `calendar-date-rainbow.svg`, `today-button.svg`, `today-highlight.svg`, `start-class-mark.svg`, `magnet-*.svg`
+5. **Calendar bg / rainbow / today / start-class / magnets** → remaining `calendar-*.svg`, `today-*.svg`, `start-class-mark.svg`, other `magnet-*.svg`
 6. **Pixel gate** → `npm run test:desk-pixel-pass` (do not claim visual DONE while >>15% RGB)
 
 ## Recon pass landing (2026-09-15)
 
 - **SHA:** `9fd392f` on `main` / `cursor/arc-production-integration` (feature commits `4dea09d` + evidence); stamped `580822b`.
-- **P0 asset wires:** all **BLOCKED** — Kelly labeled SVG binaries still absent.
+- **P0 asset wires:** were **BLOCKED** for labeled SVG binaries; four PNG roles now partial above.
 - **Shipped without binaries:** Week-grid repair (MON/day headers, paper lesson objects, denser unit/course hierarchy, softer planner rim, `object-fit:contain` on todos slice).
 - **Smokes:** `test:arc-desk-pass` + `test:desk-slices` passed on preview stamped `desk-v2` / `4dea09d`.
 - **Evidence:** `docs/overnight/evidence/kelly-labeled-recon/` + arc-desk-pass smoke shots.
 
-## Re-hunt / re-audit (2026-09-16) — still NOT FOUND
+## Re-hunt / re-audit (2026-09-16) — labeled SVGs still NOT FOUND
 
-Aggressive hunt confirmed **no** Kelly labeled SVG binaries (Drive/Gmail/git/`uploads/`/`public/assets/`/LFS/Skin Lab). Visual grade improved **RED → YELLOW/RED**; title/kicker/rainbow/3-course week from the 2026-09-15 RED audit are **historical** (landed). **Current major blocker = these 22 labeled binaries.**
+Aggressive hunt confirmed **no** Kelly labeled SVG binaries (Drive/Gmail/git/`uploads/`/`public/assets/`/LFS/Skin Lab). Visual grade improved **RED → YELLOW/RED**; title/kicker/rainbow/3-course week from the 2026-09-15 RED audit are **historical** (landed). **Current major blocker = remaining labeled binaries.**
 
 Do **not** invent replacements from screenshot crops, CSS gradients, tiny generated magnet SVGs, or previously wired approximations and claim Kelly labeled authority.
 
 ## Planning Period desk audit (2026-09-16) — still BLOCKED
 
-Kelly selected `.arc-desk-surface` on Planning Period and asked to find correct assets. Third hunt (uploads / Drive / Gmail / branches / zips / worktrees) again found **zero** of the 22 labeled SVG binaries.
+Kelly selected `.arc-desk-surface` on Planning Period and asked to find correct assets. Third hunt again found **zero** of the 22 labeled SVG binaries.
 
-**No P0 wires shipped** for this view (rule: do not CSS-fake). Object → asset map + blocking filenames: `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md` § Planning Period view.
+**No P0 wires shipped** for Planning Period furniture (rule: do not CSS-fake). Object → asset map: `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md` § Planning Period view.
 
-Planning Period blockers: `TODO tab (use).svg`, `tray image (use).svg`, `Settings tab (USE).svg`, `calendar selected tab view.svg`, `unselected calendar states.svg`, `Wood Background Light.svg`, `calendar background.svg`.
 ## Binary handoff status
 
-**BLOCKED — binaries not in repo.** Only this README (filename → canonical map) ships here until the 22 originals land in `uploads/desk-incoming/` and are copied into this folder.
+**PARTIAL** — four Kelly PNGs wired 2026-09-16; remaining labeled SVG binaries still missing.
 
 | Canonical file | Original labeled source | Intended role | Authority | Wire status |
 |---|---|---|---|---|
-| `wood-background-light.svg` | `Wood Background Light.svg` | light wood desk surface | canonical candidate | **BLOCKED** — binary missing |
-| `ideas-tray.svg` | `tray image (use).svg` | IDEAS tray/drawer | **USE / canonical** | **BLOCKED** — binary missing |
-| `ideas-tray-vector-alt.svg` | `Ideas Tray Vector.svg` | simplified/alternate tray | reference only | **BLOCKED** — binary missing |
-| `settings-tab.svg` | `Settings tab (USE).svg` | SETTINGS physical tab | **USE / canonical** | **BLOCKED** — binary missing |
-| `todos-tab.svg` | `TODO tab (use).svg` | TO-DOS physical tab | **USE / canonical** | **BLOCKED** — binary missing |
-| `todos-tab-alt.svg` | `TODOS tab.svg` | alternate/legacy TO-DOS reference | reference only | **BLOCKED** — binary missing |
-| `calendar-tab-selected.svg` | `calendar selected tab view.svg` | selected planner-view tab body | canonical | **BLOCKED** — binary missing |
-| `calendar-tab-unselected.svg` | `unselected calendar states.svg` | inactive planner-view tab body | canonical | **BLOCKED** — binary missing |
-| `calendar-background.svg` | `calendar background.svg` | planner/calendar physical background | canonical candidate | **BLOCKED** — binary missing |
-| `calendar-date-rainbow.svg` | `to left of date on calendar rainbow icon.svg` | accent left of calendar date | canonical | **BLOCKED** — binary missing |
-| `today-button.svg` | `today button.svg` | Today physical control | canonical | **BLOCKED** — binary missing |
-| `today-highlight.svg` | `today highlighter icon.svg` | Today marker/highlighter | canonical | **BLOCKED** — binary missing |
-| `start-class-mark.svg` | `start class arctable logo.svg` | Start Class desk control | canonical | **BLOCKED** — binary missing |
-| `magnet-blue.svg` | `blue icon magnet.svg` | blue physical magnet | canonical | **BLOCKED** — binary missing |
-| `magnet-green.svg` | `green icon magnet.svg` | green physical magnet | canonical | **BLOCKED** — binary missing |
-| `magnet-mustard.svg` | `magnet vector yellow.svg` | mustard physical magnet | canonical | **BLOCKED** — binary missing |
-| `magnet-terracotta.svg` | `red icon magnet.svg` | terracotta/red physical magnet | canonical | **BLOCKED** — binary missing |
-| `arc-upper-left-logo.svg` | `Art upper left logo.svg` | Arc mark on wood / upper-left desk | canonical candidate | **BLOCKED** — binary missing |
-| `arctable-mark.svg` | `arctable vector icon.svg` | generic ArcTable identity | canonical candidate | **BLOCKED** — binary missing |
-| `postit-blue.svg` | `Blue post it.svg` | blue Post-it object | canonical candidate | **BLOCKED** — binary missing |
-| `postit-stack.svg` | `Post it stack.svg` | stacked paper/Post-it object | canonical candidate | **BLOCKED** — binary missing |
-| `calendar-class-selected-marker.svg` | `selected class calendar icon vector.svg` | class-focus selection marker | canonical | **BLOCKED** — binary missing |
+| `arc-upper-left-logo.png` | Kelly chat PNG 2026-09-16 (a/r/c + red pie) | Arc mark on wood / planner | **Kelly PNG** | **WIRED** → `assets/arc/arc-mark-stacked.png` |
+| `arctable-mark.png` | Kelly chat PNG 2026-09-16 (quadrant sticker) | ArcTable identity | **Kelly PNG** (vs AT-001) | **WIRED** → `ARC_TABLE_MARK_ASSET` |
+| `magnet-blue.png` | Kelly chat PNG 2026-09-16 | blue physical magnet | **Kelly PNG** | **WIRED** |
+| `postit-blue.png` | Kelly chat PNG 2026-09-16 | blue Post-it object | **Kelly PNG** | **WIRED** |
+| `wood-background-light.svg` | `Wood Background Light.svg` | light wood desk surface | canonical candidate | **BLOCKED** |
+| `ideas-tray.svg` | `tray image (use).svg` | IDEAS tray/drawer | **USE / canonical** | **BLOCKED** |
+| `settings-tab.svg` | `Settings tab (USE).svg` | SETTINGS physical tab | **USE / canonical** | **BLOCKED** |
+| `todos-tab.svg` | `TODO tab (use).svg` | TO-DOS physical tab | **USE / canonical** | **BLOCKED** |
+| `calendar-tab-selected.svg` | `calendar selected tab view.svg` | selected planner-view tab body | canonical | **BLOCKED** |
+| `calendar-tab-unselected.svg` | `unselected calendar states.svg` | inactive planner-view tab body | canonical | **BLOCKED** |
+| `calendar-background.svg` | `calendar background.svg` | planner/calendar physical background | canonical candidate | **BLOCKED** |
+| `calendar-date-rainbow.svg` | `to left of date on calendar rainbow icon.svg` | accent left of calendar date | canonical | **BLOCKED** |
+| `today-button.svg` | `today button.svg` | Today physical control | canonical | **BLOCKED** |
+| `today-highlight.svg` | `today highlighter icon.svg` | Today marker/highlighter | canonical | **BLOCKED** |
+| `start-class-mark.svg` | `start class arctable logo.svg` | Start Class desk control | canonical | **BLOCKED** (PNG lockup may exist separately) |
+| `magnet-green.svg` | `green icon magnet.svg` | green physical magnet | canonical | **BLOCKED** |
+| `magnet-mustard.svg` | `magnet vector yellow.svg` | mustard physical magnet | canonical | **BLOCKED** |
+| `magnet-terracotta.svg` | `red icon magnet.svg` | terracotta/red physical magnet | canonical | **BLOCKED** |
+| `postit-stack.svg` | `Post it stack.svg` | stacked paper/Post-it object | canonical candidate | **BLOCKED** |
+| `calendar-class-selected-marker.svg` | `selected class calendar icon vector.svg` | class-focus selection marker | canonical | **BLOCKED** |
+| `todos-tab-alt.svg` | `TODOS tab.svg` | alternate/legacy TO-DOS reference | reference only | **BLOCKED** |
+| `ideas-tray-vector-alt.svg` | `Ideas Tray Vector.svg` | simplified/alternate tray | reference only | **BLOCKED** |
 
 ## Live controllers still active (do not dual-wire)
 
-Until Kelly binaries land and are visually compared:
-
-- Wood: `--arc-wood-surface-image` → `assets/arc/icarus/texture-wood.png`
+- Wood surface: `--arc-wood-surface-image` → `assets/arc/icarus/texture-wood.png`
+- Arc mark on wood / planner: `assets/arc/arc-mark-stacked.png` (Kelly PNG; no pyrography)
+- ArcTable / Start Class mark art: `assets/arctable/arctable-quadrant-mark.png` (Kelly PNG; AT-001 SVG for hits)
+- Blue magnet / blue post-it: canonical PNGs above
 - IDEAS: `green-folders-drawer.svg` / `.png`
-- Edge tabs: `public/assets/desk/slices/planner-edge-tab-*.png` (+ live DAY/WEEK/MONTH/YEAR text)
-- Rainbow: `planner-rainbow-mark.png` / `.svg` (interim — not the labeled `calendar-date-rainbow.svg`)
+- Edge tabs: `public/assets/desk/slices/planner-edge-tab-*.png`
+- Rainbow: `planner-rainbow-mark.png` / `.svg`
 - Schedule-setup wood only: `light-wood-desk.png`
 
 ## Implementation rules
@@ -91,13 +106,13 @@ Until Kelly binaries land and are visually compared:
 5. Some SVG files contain embedded raster texture. Do not aggressively optimize, trace, or re-vectorize them without visual comparison.
 6. `calendar-tab-selected.svg` and `calendar-tab-unselected.svg` are state bodies; DAY/WEEK/MONTH/YEAR should remain live accessible labels unless later authority proves otherwise.
 7. `calendar-class-selected-marker.svg` is not interchangeable with the general selected calendar-view tab.
-8. `start-class-mark.svg` is distinct from the generic ArcTable mark.
+8. `start-class-mark` is distinct from the generic ArcTable mark — do not double script chrome.
 9. `ideas-tray.svg`, `settings-tab.svg`, and `todos-tab.svg` came from explicitly labeled `(USE)` files and should lead their respective reconciliations.
 10. Keep current production assets intact until visual reconciliation and smoke tests are complete.
-11. Do not run another “prettier CSS” pass on wrong interim assets while labeled binaries are missing.
 
 ## Concurrent work (do not regress)
 
+- Additional Kelly PNG batches (settings/tray/wood/start-class lockup) — coordinate; do not invent SVGs
+- Planning Period asset map (`bc-a47c451f`)
 - Post-it drops + u/l/i/n capture (`bc-61cb9db8`)
 - IDEAS cleanup (`bc-5a50eada`)
-- Student ArcTable work — merge carefully around desk chrome

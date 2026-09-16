@@ -178,7 +178,7 @@ try {
   assert(closedIdeasPeek.artVisibility === 'hidden', 'Closed IDEAS must hide drawer chrome art so only the tab peeks.')
   assert(await page.getByTestId('arc-desk-clean-up-tab').isVisible(), 'Clean up must sit beside the IDEAS tab on every desk view.')
   const woodMarkSrc = await page.getByTestId('arc-desk-wood-wordmark').getAttribute('src')
-  assert(woodMarkSrc?.includes('arc-mark.png') && !woodMarkSrc?.includes('arc-mark-stacked'), 'Wood wordmark must use original arc-mark.png with no stacked substitute.')
+  assert(woodMarkSrc?.includes('arc-mark-stacked.png'), 'Wood wordmark must use Kelly original Arc stacked mark.')
   const woodMarkFilter = await page.getByTestId('arc-desk-wood-wordmark').evaluate((img) => getComputedStyle(img).filter)
   assert(!/sepia|grayscale|contrast|brightness/i.test(woodMarkFilter) || woodMarkFilter === 'none', 'Wood wordmark must not use wood-burn filters.')
   assert(await page.getByTestId('desk-slice-ideas-drawer').count() === 1, 'IDEAS drawer must use ideas-drawer-chrome.png by default.')
