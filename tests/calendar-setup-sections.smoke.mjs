@@ -60,15 +60,19 @@ try {
   assert(await page.getByRole('heading', { level: 1, name: 'Terms' }).isVisible(), 'Term boundaries must open Terms setup.')
   const setupNav = page.getByRole('navigation', { name: 'Setup sections' })
   assert(await setupNav.count() === 1, 'Settings setup must show section navigation.')
-  for (const name of ['Calendar', 'Terms', 'Courses', 'Teaching day', 'Units', 'Lessons', 'Import']) {
+  for (const name of ['Calendar', 'Terms', 'Courses', 'Teaching day', 'Import']) {
     assert(await setupNav.getByRole('button', { name, exact: true }).count() === 1, `Missing setup section: ${name}`)
   }
+  assert(await setupNav.getByRole('button', { name: 'Units', exact: true }).count() === 0, 'Units must not appear in setup section navigation.')
+  assert(await setupNav.getByRole('button', { name: 'Lessons', exact: true }).count() === 0, 'Lessons must not appear in setup section navigation.')
   assert(await setupNav.getByRole('button', { name: 'Terms', exact: true }).getAttribute('aria-current') === 'page', 'Terms must be current after Settings entry.')
   assert(await setupNav.getByRole('button', { name: 'Teaching day', exact: true }).isEnabled(), 'Teaching day must unlock after courses exist.')
   assert(await setupNav.getByRole('button', { name: 'Import', exact: true }).isEnabled(), 'Import must unlock after courses exist.')
 
   await setupNav.getByRole('button', { name: 'Courses', exact: true }).click()
   assert(await page.getByRole('heading', { level: 1, name: 'Courses & sections' }).isVisible(), 'Setup nav must open Courses.')
+  assert(await page.getByRole('navigation', { name: 'Setup sections' }).count() === 1, 'Courses setup must keep setup section navigation.')
+  assert(await page.getByRole('heading', { level: 1, name: 'Lessons' }).count() === 0, 'Setup chrome must not show a Lessons heading.')
   await page.getByRole('navigation', { name: 'Setup sections' }).getByRole('button', { name: 'Teaching day', exact: true }).click()
   assert(await page.getByRole('heading', { level: 1, name: 'Teaching day' }).isVisible(), 'Setup nav must open Teaching day.')
   await page.getByRole('navigation', { name: 'Setup sections' }).getByRole('button', { name: 'Calendar', exact: true }).click()
@@ -82,6 +86,12 @@ try {
   const settings = page.getByRole('button', { name: 'SETTINGS', exact: true })
   assert(await settings.getAttribute('aria-expanded') === 'true', 'Cancel from setup must reopen Settings.')
   assert(await page.locator('aside[aria-label="Settings furniture"]').getByRole('button', { name: 'Term boundaries' }).isVisible(), 'Cancel must land back in the Settings panel.')
+
+  await page.getByRole('button', { name: 'Add units' }).click()
+  assert(await page.getByRole('heading', { level: 1, name: 'Units' }).isVisible(), 'Settings Unit library must still open Units.')
+  assert(await page.getByRole('navigation', { name: 'Setup sections' }).count() === 0, 'Unit library must not use setup section navigation.')
+  await page.getByRole('button', { name: 'Cancel' }).click()
+  assert(await settings.getAttribute('aria-expanded') === 'true', 'Cancel from Unit library must reopen Settings.')
 
   await page.getByRole('button', { name: 'Term boundaries' }).click()
   await page.getByRole('button', { name: 'Cancel' }).click()
