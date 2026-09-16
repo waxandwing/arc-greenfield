@@ -92,6 +92,8 @@ type WorkspaceStageProps = {
   recoveryFocusSectionId?: string | null
   onEditLesson?: (lessonId: string) => void
   focusLessonId?: string | null
+  /** Lessons library: scope list to one course (`null` = All classes). */
+  filterCourseId?: string | null
   onShowUnscheduledInIdeas?: (lessonId: string) => void
 }
 
@@ -157,6 +159,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     recoveryFocusSectionId,
     onEditLesson,
     focusLessonId = null,
+    filterCourseId = null,
     onShowUnscheduledInIdeas,
   } = props
 
@@ -231,6 +234,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         shiftState={shiftState}
         initialValue={lessonInput}
         focusLessonId={focusLessonId}
+        filterCourseId={filterCourseId}
         createSeed={lessonCreateSeed}
         onConsumeCreateSeed={onConsumeLessonCreateSeed}
         onSave={onUseLessons}

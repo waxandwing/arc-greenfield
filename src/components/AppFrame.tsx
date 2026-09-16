@@ -118,6 +118,8 @@ export function AppFrame() {
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
   const [lessonSetupFocusId, setLessonSetupFocusId] = useState<string | null>(null)
+  /** Lessons library course filter; `null` = All classes. */
+  const [lessonClassFilterId, setLessonClassFilterId] = useState<string | null>(null)
   const [planPlaceIntent, setPlanPlaceIntent] = useState<PlanPlaceLessonIntent | null>(null)
   const [lessonCreateSeed, setLessonCreateSeed] = useState<LessonCreateSeed | null>(null)
   const [revealUnscheduledLessonId, setRevealUnscheduledLessonId] = useState<string | null>(null)
@@ -268,11 +270,14 @@ export function AppFrame() {
 
   function returnToSettings() {
     setLessonSetupFocusId(null)
+    setLessonClassFilterId(null)
     workspaceMode.close()
     setSettingsOpenToken((token) => token + 1)
   }
 
   function openLessonForEdit(lessonId: string) {
+    const lesson = workspace.lessonWorkspace?.lessons.find((candidate) => candidate.id === lessonId)
+    setLessonClassFilterId(lesson?.courseId ?? null)
     setLessonSetupFocusId(lessonId)
     openUnitLessonLibrary('lessons')
   }
@@ -290,6 +295,7 @@ export function AppFrame() {
     const seed = buildLessonCreateSeed(planPlaceIntent, workspace.calendar)
     setLessonCreateSeed(seed)
     setLessonSetupFocusId(null)
+    setLessonClassFilterId(planPlaceIntent.courseId)
     setPlanPlaceIntent(null)
     openUnitLessonLibrary('lessons')
   }
@@ -309,6 +315,7 @@ export function AppFrame() {
     setRevealUnscheduledLessonId(lessonId)
     workspaceMode.close()
     setLessonSetupFocusId(null)
+    setLessonClassFilterId(null)
     openWorkspaceOverlay(true)
     requestDeskIdeasOpen()
     workspace.setStorageNotice('Lesson is in Unscheduled lessons in IDEAS. Teaching history was preserved.')
@@ -880,6 +887,7 @@ export function AppFrame() {
       onOpenUnits={() => openUnitLessonLibrary('units')}
       onOpenLessons={() => {
         setLessonSetupFocusId(null)
+        setLessonClassFilterId(null)
         openUnitLessonLibrary('lessons')
       }}
       onOpenTaskBar={() => setTasksOverlayOpen(true)}
@@ -967,6 +975,7 @@ export function AppFrame() {
       recoveryFocusSectionId={recoveryFocusSectionId}
       onEditLesson={openLessonForEdit}
       focusLessonId={lessonSetupFocusId}
+      filterCourseId={lessonClassFilterId}
       onShowUnscheduledInIdeas={showUnscheduledInIdeas}
     />
   )
@@ -1114,6 +1123,14 @@ export function AppFrame() {
                       activeId: onboardingNavActive,
                       disabledIds: onboardingDisabledIds,
                       onSelect: openOnboardingSection,
+                    } : null}
+                    classTabs={workspaceMode.mode === 'lessons' && workspace.planningWorkspace?.courses.length ? {
+                      courses: workspace.planningWorkspace.courses.map((course) => ({
+                        id: course.id,
+                        title: course.title,
+                      })),
+                      activeId: lessonClassFilterId,
+                      onSelect: setLessonClassFilterId,
                     } : null}
                   />
                   {workspace.storageNotice ? (
