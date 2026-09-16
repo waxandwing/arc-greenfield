@@ -96,3 +96,4 @@ Copy sources → `public/assets/desk/canonical/` using the rename map. Update pr
 ## Agent note (2026-09-16 Kelly desk pass)
 
 Labeled SVG USE binaries still missing. Kelly chat PNGs (`todos-tab.png`, `ideas-tray.png`, `settings-tab.png`) ingested under `public/assets/desk/canonical/` as interim wires — not SVG authority.
+SETTINGS USE SVG still missing (interim planner edge tab shipped). IDEAS tray + TO-DOS tab PNGs are wired; labeled SVGs still outstanding. Drop remaining labeled SVGs here to unblock P0 wires.

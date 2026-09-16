@@ -1920,30 +1920,8 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings {
-  position: relative;
-  left: auto;
-  bottom: auto;
-  width: auto;
-  height: auto;
-  min-height: 36px;
-  padding: 8px 14px;
-  overflow: visible;
-  opacity: 1;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  border-radius: 8px;
-  color: var(--ink);
-  background: color-mix(in srgb, var(--field-elevated) 94%, transparent);
-  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 42%, var(--line-subtle));
-  box-shadow:
-    0 10px 22px -14px rgba(33, 29, 23, 0.5),
-    inset 0 1px 0 rgba(255, 253, 248, 0.65);
-}
-
 /* Kelly copper SETTINGS physical tab — replace CSS pill when raster chrome is on. */
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -1959,7 +1937,7 @@ html:has(.arc-shell--desk) body {
   color: color-mix(in srgb, #3a2418 88%, #8a4a28);
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical .arc-settings-tab-face {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical .arc-settings-tab-face {
   display: block;
   width: clamp(36px, 3.6vw, 52px);
   height: auto;
@@ -1968,7 +1946,7 @@ html:has(.arc-shell--desk) body {
   filter: drop-shadow(0 10px 18px -12px rgba(33, 29, 23, 0.55));
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical .arc-settings-tab-label {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical .arc-settings-tab-label {
   font-family: 'League Spartan', var(--font-label), sans-serif;
   font-size: 8px;
   font-weight: 800;
@@ -1978,12 +1956,12 @@ html:has(.arc-shell--desk) body {
   text-shadow: 0 1px 0 rgba(255, 248, 235, 0.35);
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical[aria-current='page'] {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical[aria-current='page'] {
   opacity: 1;
   filter: brightness(1.04);
 }
 
-.b01-furniture-composition--desk .arc-desk-utility-tabs .arc-index-tab--settings-physical:focus-visible {
+.arc-planner-physical-tabs--desk-edge .arc-index-tab--settings-physical:focus-visible {
   outline: 3px solid var(--mustard);
   outline-offset: 3px;
 }
@@ -3138,6 +3116,35 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .desk-planner-head-title-copy { display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-width:0; }
 .b01-furniture-composition--desk .desk-planner-head-title-copy .plan-state-header { margin:0; padding:0; }
 .b01-furniture-composition--desk .desk-planner-head-title-copy .plan-state-header .plan-state-secondary { display:none; }
+/* Day class/lesson focus: keep unit · date visible so the title is not a lonely mode stamp. */
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='class'] .plan-state-header .plan-state-secondary,
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='lesson'] .plan-state-header .plan-state-secondary {
+  display: block;
+  margin: 2px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: color-mix(in srgb, var(--ink) 72%, var(--soft-charcoal));
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='class'] .plan-state-kicker,
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='lesson'] .plan-state-kicker {
+  margin: 0 0 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--ink) 70%, var(--soft-charcoal));
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 .b01-furniture-composition--desk .desk-planner-week-kicker { font-family:'League Spartan', var(--font-label), sans-serif; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:color-mix(in srgb, var(--ink) 78%, var(--soft-charcoal)); margin:0; }
 .b01-furniture-composition--desk .desk-planner-rainbow-mark { width:clamp(40px,4.2vw,56px); height:auto; flex:0 0 auto; object-fit:contain; pointer-events:none; }
 .b01-furniture-composition--desk .desk-planner-head-tools { gap:6px; padding-top:4px; opacity:0.82; }

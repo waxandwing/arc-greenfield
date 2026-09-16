@@ -142,12 +142,8 @@ try {
     }
   })
   assert(
-    calendarSpreadPaper.image.includes('texture-cream-paper') && calendarSpreadPaper.image.includes('paper-cream'),
-    'Desk calendar spread must use existing cream paper fill + texture (not invented Kelly art).',
-  )
-  assert(
-    calendarSpreadPaper.blend.includes('soft-light'),
-    'Desk calendar spread paper texture must soft-light blend so fiber tooth is visible.',
+    calendarSpreadPaper.image.includes('calendar-background.png'),
+    'Desk calendar spread must use Kelly canonical calendar-background.png planner plate.',
   )
   const tabletopImg = await page.locator('.arc-desk-tabletop').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(
@@ -526,12 +522,12 @@ try {
   assert(await settingsTab.isVisible(), 'SETTINGS must protrude from the planner as a physical edge tab.')
   const titleMark = page.getByTestId('desk-planner-rainbow-mark')
   const titleMarkSource = await titleMark.getAttribute('data-desk-mark-source')
-  assert(titleMarkSource === 'committed-png', 'Week title mark must use committed planner-rainbow-mark.png.')
+  assert(titleMarkSource === 'canonical-calendar-date-rainbow', 'Week title mark must use Kelly calendar-date-rainbow.png.')
   const markOk = await page.getByTestId('desk-planner-rainbow-mark').evaluate((img) => img instanceof HTMLImageElement && img.naturalWidth > 20)
   assert(markOk, 'Rainbow title mark must load real pixels.')
   assert(await page.getByTestId('desk-planner-week-kicker').count() === 1, 'Week kicker must render above Teaching week.')
   const titleMarkSrc = await titleMark.getAttribute('src')
-  assert(Boolean(titleMarkSrc && titleMarkSrc.includes('planner-rainbow-mark.png')), 'Week title mark src must be planner-rainbow-mark.png.')
+  assert(Boolean(titleMarkSrc && titleMarkSrc.includes('calendar-date-rainbow.png')), 'Week title mark src must be calendar-date-rainbow.png.')
   await titleMark.evaluate((el) => (el.complete ? null : new Promise((resolve, reject) => {
     el.addEventListener('load', () => resolve(null), { once: true })
     el.addEventListener('error', () => reject(new Error('rainbow mark failed to load')), { once: true })

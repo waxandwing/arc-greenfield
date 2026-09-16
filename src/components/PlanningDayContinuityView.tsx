@@ -33,6 +33,8 @@ export function PlanningDayContinuityView({
   onBeginPlanLessonMove,
   onSetLessonImportant,
   onOpenRecoveryForSection,
+  onEditLesson,
+  onOpenWorkspace,
 }: {
   day: ProjectedDay
   continuity: DayContinuityProjection
@@ -54,6 +56,8 @@ export function PlanningDayContinuityView({
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onOpenRecoveryForSection?: (sectionId: string) => void
+  onEditLesson?: (lessonId: string) => void
+  onOpenWorkspace?: () => void
 }) {
   const periodRail = buildTeachingDayRail(planning, continuity)
   const selectedRail = periodRail.find((item) => item.id === selectedBlockId) ?? null
@@ -117,6 +121,7 @@ export function PlanningDayContinuityView({
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onSetLessonImportant={onSetLessonImportant}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
+          onEditLesson={onEditLesson}
         />
       ) : surfaceSection && surfaceRail?.course ? (
         <section className="day-continuity-course day-continuity-course--focus" data-course-id={surfaceRail.course.courseId} aria-label={`${surfaceRail.course.courseTitle} today`}>
@@ -127,35 +132,37 @@ export function PlanningDayContinuityView({
                 <span>Unit</span>
                 <strong>{surfaceRail.course.activeUnits.map((unit) => unit.title).join(' · ')}</strong>
               </p>
-            ) : null}
+            ) : (
+              <p className="day-continuity-units day-continuity-units--empty">
+                <span>No active unit</span>
+              </p>
+            )}
           </header>
 
-          <div className="day-continuity-sections">
-            <article className="day-continuity-section">
-              <header className="day-continuity-section-heading">
-                <h3>{surfaceSection.sectionName}</h3>
-              </header>
-              <div className="day-continuity-work">
-                {surfaceSection.carryovers.length > 0 ? (
-                  <section className="day-continuity-held" aria-label={`${surfaceSection.sectionName} unfinished teaching`}>
-                    <p className="day-continuity-kicker">Arc is holding your place</p>
-                    {surfaceSection.carryovers.map((lesson) => (
-                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} important={lessons.lessons.find((item) => item.id === lesson.lessonId)?.important === true} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} onBeginPlanLessonMove={onBeginPlanLessonMove} onSetLessonImportant={onSetLessonImportant} onOpenRecoveryForSection={onOpenRecoveryForSection} carryover />
-                    ))}
-                  </section>
-                ) : null}
-                <section className="day-continuity-planned" aria-label={`${surfaceSection.sectionName} plan for today`}>
-                  <p className="day-continuity-kicker">Today’s plan</p>
-                  {surfaceSection.scheduledLessons.length > 0 ? (
-                    surfaceSection.scheduledLessons.map((lesson) => (
-                      <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} important={lessons.lessons.find((item) => item.id === lesson.lessonId)?.important === true} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} onBeginPlanLessonMove={onBeginPlanLessonMove} onSetLessonImportant={onSetLessonImportant} onOpenRecoveryForSection={onOpenRecoveryForSection} />
-                    ))
-                  ) : (
-                    <p className="day-continuity-empty">No Lesson placed for this class.</p>
-                  )}
-                </section>
-              </div>
-            </article>
+          <div className="day-continuity-work day-continuity-work--focus">
+            {surfaceSection.carryovers.length > 0 ? (
+              <section className="day-continuity-held" aria-label={`${surfaceSection.sectionName} unfinished teaching`}>
+                <p className="day-continuity-kicker">Still teaching</p>
+                {surfaceSection.carryovers.map((lesson) => (
+                  <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} important={lessons.lessons.find((item) => item.id === lesson.lessonId)?.important === true} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} onBeginPlanLessonMove={onBeginPlanLessonMove} onSetLessonImportant={onSetLessonImportant} onOpenRecoveryForSection={onOpenRecoveryForSection} onEditLesson={onEditLesson} carryover />
+                ))}
+              </section>
+            ) : null}
+            <section className="day-continuity-planned" aria-label={`${surfaceSection.sectionName} plan for today`}>
+              <p className="day-continuity-kicker">Today’s plan</p>
+              {surfaceSection.scheduledLessons.length > 0 ? (
+                surfaceSection.scheduledLessons.map((lesson) => (
+                  <ContinuityLesson key={lesson.lessonId} lesson={lesson} sectionId={surfaceSection.sectionId} important={lessons.lessons.find((item) => item.id === lesson.lessonId)?.important === true} onStartClass={onStartClass} onSelectLesson={classFocused ? onSelectLesson : undefined} onBeginPlanLessonMove={onBeginPlanLessonMove} onSetLessonImportant={onSetLessonImportant} onOpenRecoveryForSection={onOpenRecoveryForSection} onEditLesson={onEditLesson} />
+                ))
+              ) : (
+                <div className="day-continuity-empty-block">
+                  <p className="day-continuity-empty">No lesson placed for this class today.</p>
+                  {onOpenWorkspace ? (
+                    <button type="button" className="text-button day-continuity-add" onClick={onOpenWorkspace}>Place a lesson</button>
+                  ) : null}
+                </div>
+              )}
+            </section>
           </div>
         </section>
       ) : surfaceRail?.type === 'planning' ? (
@@ -171,6 +178,7 @@ export function PlanningDayContinuityView({
           classFocused={planningPeriodFocused}
           onRetreat={planningPeriodFocused ? onRetreat : undefined}
           onFollowAttention={planningPeriodFocused ? onFollowAttention : undefined}
+          onOpenWorkspace={onOpenWorkspace}
         />
       ) : surfaceRail ? (
         <NonTeachingLens label={surfaceRail.label} onRetreat={classFocused ? onRetreat : undefined} />
@@ -192,6 +200,7 @@ function LessonFocus({
   onBeginPlanLessonMove,
   onSetLessonImportant,
   onOpenRecoveryForSection,
+  onEditLesson,
 }: {
   lessonId?: string
   section: DayContinuitySection
@@ -203,6 +212,7 @@ function LessonFocus({
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onOpenRecoveryForSection?: (sectionId: string) => void
+  onEditLesson?: (lessonId: string) => void
 }) {
   const projected = [...section.carryovers, ...section.scheduledLessons].find((item) => item.lessonId === lessonId) ?? null
   const source = canonical.find((item) => item.id === lessonId) ?? null
@@ -219,6 +229,7 @@ function LessonFocus({
         <p className="day-continuity-lesson-meta lesson-focus-context">
           <span>{section.sectionName} · {courseTitle}</span>
           <span>{projected.unitTitle}</span>
+          <span>{humanizeStatus(projected.deliveryStatus)}</span>
           {projected.datePolicy === 'fixed' ? <span className="day-continuity-fixed">Fixed</span> : null}
           {projected.isSectionOverride ? <span>Shifted for this class</span> : null}
         </p>
@@ -229,12 +240,18 @@ function LessonFocus({
       {source.directions.length > 0 ? <LessonField label="Directions" items={source.directions} /> : null}
       {source.materials.length > 0 ? <LessonField label="Materials" items={source.materials} /> : null}
       {source.phases.length > 0 ? <LessonField label="Teaching phases" items={source.phases} /> : null}
+      {source.directions.length === 0 && source.materials.length === 0 && source.phases.length === 0 ? (
+        <p className="day-continuity-empty lesson-focus-empty-body">No directions, materials, or phases yet.</p>
+      ) : null}
       <div className="day-continuity-lesson-actions plan-lesson-action-row">
-        {onSetLessonImportant ? (
-          <button type="button" className="text-button" onClick={() => onSetLessonImportant(source.id, !(source.important === true))}>{source.important ? 'Remove Important' : 'Mark Important'}</button>
+        {onEditLesson ? (
+          <button type="button" className="primary-button lesson-focus-edit" onClick={() => onEditLesson(source.id)}>Edit lesson</button>
         ) : null}
         {onStartClass && (projected.deliveryStatus === 'not-started' || projected.deliveryStatus === 'in-progress') ? (
           <button type="button" className="day-start-class" onClick={() => onStartClass(section.sectionId, source.id)}>{projected.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
+        ) : null}
+        {onSetLessonImportant ? (
+          <button type="button" className="text-button" onClick={() => onSetLessonImportant(source.id, !(source.important === true))}>{source.important ? 'Remove Important' : 'Mark Important'}</button>
         ) : null}
         {onBeginPlanLessonMove && projected.datePolicy !== 'fixed' ? (
           <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: source.id, sectionId: section.sectionId, defaultDestination: projected.effectiveDate })}>Move</button>
@@ -271,6 +288,7 @@ function PlanningPeriodLens({
   classFocused: _classFocused,
   onRetreat: _onRetreat,
   onFollowAttention,
+  onOpenWorkspace,
 }: {
   label: string
   date: ISODate
@@ -283,43 +301,75 @@ function PlanningPeriodLens({
   classFocused: boolean
   onRetreat?: () => void
   onFollowAttention?: (item: PlanningPeriodAttentionItem) => void
+  onOpenWorkspace?: () => void
 }) {
   const attention = projectPlanningPeriodAttention({ date, planning, units, lessons, captures, overrides, continuity })
-  const bucketLabels: Record<keyof typeof attention.buckets, string> = {
-    now: 'Now',
-    'needs-attention': 'Needs attention',
-    'next-planned': 'Next planned',
+  const bucketMeta: Record<keyof typeof attention.buckets, { label: string; addLabel: string; emptyHint: string }> = {
+    now: {
+      label: 'Now',
+      addLabel: 'Open Workspace',
+      emptyHint: 'Nothing on deck for the rest of today.',
+    },
+    'needs-attention': {
+      label: 'Needs attention',
+      addLabel: 'Add from Workspace',
+      emptyHint: 'Stopped lessons and behind sections show up here.',
+    },
+    'next-planned': {
+      label: 'Next planned',
+      addLabel: 'Place a lesson',
+      emptyHint: 'Place the next dated lesson per class.',
+    },
   }
 
   return (
     <section className="planning-period-lens" aria-label={`${label} planning time`} data-planning-period-date={date}>
       <div className="planning-period-buckets">
-        {(Object.keys(attention.buckets) as Array<keyof typeof attention.buckets>).map((bucket) => (
-          <section key={bucket} className="planning-period-bucket" aria-label={bucketLabels[bucket]}>
-            <h3>{bucketLabels[bucket]}</h3>
-            {attention.buckets[bucket].length === 0 ? (
-              <p className="planning-period-empty" aria-hidden="true" />
-            ) : (
-              <ul className="planning-period-items">
-                {attention.buckets[bucket].map((item) => (
-                  <li key={item.id}>
-                    {onFollowAttention ? (
-                      <button type="button" className="planning-period-item" data-attention-kind={item.kind} onClick={() => onFollowAttention(item)}>
-                        <strong>{[item.courseTitle, item.sectionName, item.lessonTitle].filter(Boolean).join(' · ')}</strong>
-                        <span>{item.reason}</span>
-                      </button>
-                    ) : (
-                      <div className="planning-period-item" data-attention-kind={item.kind}>
-                        <strong>{[item.courseTitle, item.sectionName, item.lessonTitle].filter(Boolean).join(' · ')}</strong>
-                        <span>{item.reason}</span>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        ))}
+        {(Object.keys(attention.buckets) as Array<keyof typeof attention.buckets>).map((bucket) => {
+          const meta = bucketMeta[bucket]
+          const items = attention.buckets[bucket]
+          const showAdd = Boolean(onOpenWorkspace) && bucket !== 'now'
+          return (
+            <section key={bucket} className="planning-period-bucket" aria-label={meta.label} data-bucket={bucket}>
+              <header className="planning-period-bucket-heading">
+                <h3>{meta.label}</h3>
+                {showAdd ? (
+                  <button type="button" className="text-button planning-period-bucket-add" onClick={onOpenWorkspace}>
+                    {meta.addLabel}
+                  </button>
+                ) : null}
+              </header>
+              {items.length === 0 ? (
+                <div className="planning-period-empty-block">
+                  <p className="planning-period-empty">{meta.emptyHint}</p>
+                  {showAdd ? (
+                    <button type="button" className="text-button planning-period-bucket-add planning-period-bucket-add--empty" onClick={onOpenWorkspace}>
+                      {meta.addLabel}
+                    </button>
+                  ) : null}
+                </div>
+              ) : (
+                <ul className="planning-period-items">
+                  {items.map((item) => (
+                    <li key={item.id}>
+                      {onFollowAttention ? (
+                        <button type="button" className="planning-period-item" data-attention-kind={item.kind} onClick={() => onFollowAttention(item)}>
+                          <strong>{[item.courseTitle, item.sectionName, item.lessonTitle].filter(Boolean).join(' · ')}</strong>
+                          <span>{item.reason}</span>
+                        </button>
+                      ) : (
+                        <div className="planning-period-item" data-attention-kind={item.kind}>
+                          <strong>{[item.courseTitle, item.sectionName, item.lessonTitle].filter(Boolean).join(' · ')}</strong>
+                          <span>{item.reason}</span>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )
+        })}
       </div>
     </section>
   )
@@ -350,7 +400,7 @@ function formatClockTime(value: string): string {
   return `${hour12}:${String(minutes).padStart(2, '0')} ${suffix}`
 }
 
-function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, onSelectLesson, onBeginPlanLessonMove, onSetLessonImportant, onOpenRecoveryForSection, carryover = false }: { lesson: DayContinuityLesson; sectionId: string; important?: boolean; onStartClass?: (sectionId: string, lessonId: string) => void; onSelectLesson?: (lesson: { lessonId: string; unitId: string; courseId: string; sectionId?: string; date?: ISODate }) => void; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onSetLessonImportant?: (lessonId: string, important: boolean) => boolean; onOpenRecoveryForSection?: (sectionId: string) => void; carryover?: boolean }) {
+function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, onSelectLesson, onBeginPlanLessonMove, onSetLessonImportant, onOpenRecoveryForSection, onEditLesson, carryover = false }: { lesson: DayContinuityLesson; sectionId: string; important?: boolean; onStartClass?: (sectionId: string, lessonId: string) => void; onSelectLesson?: (lesson: { lessonId: string; unitId: string; courseId: string; sectionId?: string; date?: ISODate }) => void; onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void; onSetLessonImportant?: (lessonId: string, important: boolean) => boolean; onOpenRecoveryForSection?: (sectionId: string) => void; onEditLesson?: (lessonId: string) => void; carryover?: boolean }) {
   const status = humanizeStatus(lesson.deliveryStatus)
   const actualDateDiffers = Boolean(lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate)
   const accessible = [
@@ -365,6 +415,13 @@ function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, 
   ].filter(Boolean).join('. ')
 
   const menuItems: ArcObjectMenuItem[] = []
+  if (onEditLesson) {
+    menuItems.push({
+      id: 'edit',
+      label: 'Edit lesson',
+      onSelect: () => { onEditLesson(lesson.lessonId) },
+    })
+  }
   if (onSetLessonImportant) {
     menuItems.push({
       id: 'important',
@@ -418,6 +475,7 @@ function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, 
           <button type="button" className="day-start-class" onClick={() => onStartClass(sectionId, lesson.lessonId)}>{lesson.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
         ) : null}
         {onSelectLesson ? <button type="button" className="text-button" onClick={() => onSelectLesson({ ...lesson, sectionId })}>Open lesson</button> : null}
+        {onEditLesson ? <button type="button" className="text-button" onClick={() => onEditLesson(lesson.lessonId)}>Edit</button> : null}
         {onBeginPlanLessonMove ? (
           <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: lesson.lessonId, sectionId, defaultDestination: lesson.effectiveDate })}>Move</button>
         ) : null}
