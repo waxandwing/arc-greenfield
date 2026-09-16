@@ -12,6 +12,9 @@ type Props = {
 /**
  * IDEAS tray — Kelly `canonical/ideas-tray.png` is the visual authority
  * (replaces interim cardboard/`green-folders-drawer` chrome + CSS green pill).
+ *
+ * Clean up is a single stamped lip label locked to the tray top chrome —
+ * not a planning pill, and not duplicated inside the well.
  */
 export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Props) {
   const [extended, setExtended] = useState(defaultExtended)
@@ -39,18 +42,21 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     setSurfaceHost(document.querySelector('.arc-desk-surface'))
   }, [])
 
-  /* Closed: one Clean up beside the IDEAS tab. Open: only the well toolbar Clean up (no duplicate). */
-  const cleanUpTab = !extended ? (
+  /* Portaled onto arc-desk-surface so year-expanded drawer transforms do not hide Clean up.
+   * Positioned as a stamped lip on the IDEAS tray top chrome (see .arc-desk-clean-up--lip). */
+  const cleanUpLip = (
     <button
       type="button"
-      className="arc-desk-clean-up arc-desk-clean-up--tab-side"
-      data-testid="arc-desk-clean-up-tab"
+      className="arc-desk-clean-up arc-desk-clean-up--lip"
+      data-testid="arc-desk-clean-up"
+      data-ideas-clean-up="lip"
       title="Move desk post-its back into IDEAS"
+      aria-label="Clean up desk post-its into IDEAS"
       onClick={() => requestDeskIdeasCleanUp()}
     >
       Clean up
     </button>
-  ) : null
+  )
 
   return (
     <aside
@@ -79,17 +85,6 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
           aria-labelledby={tabId}
           aria-hidden={extended ? undefined : true}
         >
-          <div className="arc-desk-ideas-well-toolbar">
-            <button
-              type="button"
-              className="arc-desk-clean-up"
-              data-testid="arc-desk-clean-up"
-              title="Move desk post-its back into IDEAS"
-              onClick={() => requestDeskIdeasCleanUp()}
-            >
-              Clean up
-            </button>
-          </div>
           <div
             className="arc-desk-ideas-accent-slot"
             data-testid="arc-desk-ideas-accent-slot"
@@ -110,8 +105,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
           <span className="sr-only">IDEAS</span>
         </button>
       </div>
-      {/* Portaled onto arc-desk-surface so year-expanded drawer transforms do not hide Clean up. */}
-      {cleanUpTab ? (surfaceHost ? createPortal(cleanUpTab, surfaceHost) : cleanUpTab) : null}
+      {surfaceHost ? createPortal(cleanUpLip, surfaceHost) : cleanUpLip}
     </aside>
   )
 }

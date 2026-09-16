@@ -624,54 +624,54 @@ html:has(.arc-shell--desk) body {
 }
 
 
+
+/*
+ * Clean up — one stamped ink label locked to the IDEAS tray top lip.
+ * Not a planning pill; gathers post-its without opening the tray.
+ * Portaled onto .arc-desk-surface so Year scale/translate does not hide it.
+ */
 .arc-desk-clean-up {
-  min-height: 2rem;
-  padding: 6px 12px;
-  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 28%, var(--line-subtle));
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--field-elevated) 94%, transparent), color-mix(in srgb, var(--field-elevated) 90%, transparent)),
-    var(--plan-surface-paper-texture);
-  background-size: auto, 240px;
-  background-blend-mode: normal, soft-light;
-  color: color-mix(in srgb, var(--ink) 88%, var(--shell-frame-green));
-  font: 750 11px/1 var(--font-label);
-  letter-spacing: 0.08em;
-  text-transform: none;
+  appearance: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.85);
   pointer-events: auto;
+  font: 700 10px/1 var(--font-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.arc-desk-clean-up:hover {
-  border-color: color-mix(in srgb, var(--shell-frame-green) 48%, var(--mustard));
-  background-color: color-mix(in srgb, var(--field-elevated) 88%, var(--mustard-soft));
-}
-
-.arc-desk-clean-up:focus-visible {
-  outline: 2px solid var(--mustard);
-  outline-offset: 2px;
-}
-
-/* Peeks beside the IDEAS tab when the drawer is collapsed. */
-.arc-desk-clean-up--tab-side {
+.arc-desk-clean-up--lip {
   position: absolute;
-  /* Anchored on the desk surface (not inside the translating drawer) left of IDEAS. */
-  left: 28%;
+  /* Align with tray dock (left 20.5% / width 58%) — sit on the top chrome lip. */
+  left: 24.5%;
   top: 0.35%;
   z-index: 16;
-  min-height: 2.1rem;
-  padding: 6px 10px;
-  border-radius: 8px 8px 10px 10px;
-  white-space: nowrap;
-  pointer-events: auto;
+  min-height: 1.35rem;
+  padding: 0.2rem 0.1rem 0.35rem;
+  color: color-mix(in srgb, #f3ebe0 88%, var(--shell-frame-green));
+  opacity: 0.82;
+  text-shadow: 0 1px 0 rgba(8, 28, 22, 0.35);
+  /* Quiet underline stamp — tray utility, not a CTA */
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, #f3ebe0 42%, transparent);
 }
 
-.arc-desk-ideas-well-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin: 0 0 4px;
+.arc-desk-clean-up--lip:hover {
+  opacity: 1;
+  color: #f7f1e6;
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, #f7f1e6 72%, transparent);
 }
+
+.arc-desk-clean-up--lip:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 3px;
+  opacity: 1;
+}
+
 
 .arc-desk-ideas-accent-slot {
   position: relative;
