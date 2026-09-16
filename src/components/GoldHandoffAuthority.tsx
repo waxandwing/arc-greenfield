@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
-import '../styles/gold-handoff-authority.css'
+import '../styles/gold-handoff-authority-v2.css'
 
 type HandoffView = 'week' | 'divergence' | 'recovery' | 'sync' | 'login' | 'arcpal' | 'arctable'
 
-type Lesson = { meta: string; title: string; tone: 'apah' | '2d' | '3d' | 'neutral' }
+type Tone = 'apah' | 'tone-2d' | 'tone-3d' | 'neutral'
+type Lesson = { meta: string; title: string; tone: Tone }
 
 const weekDays = [
   { day: 'MON', date: '24' },
@@ -13,7 +14,7 @@ const weekDays = [
   { day: 'FRI', date: '28', today: true },
 ]
 
-const courseRows: Array<{ label: string; unit: string; tone: Lesson['tone']; lessons: Array<Lesson | null> }> = [
+const courseRows: Array<{ label: string; unit: string; tone: Tone; lessons: Array<Lesson | null> }> = [
   {
     label: 'AP ART HISTORY',
     unit: 'Renaissance + Mannerism',
@@ -29,25 +30,25 @@ const courseRows: Array<{ label: string; unit: string; tone: Lesson['tone']; les
   {
     label: '2D ART 1',
     unit: 'Collage + Composition',
-    tone: '2d',
+    tone: 'tone-2d',
     lessons: [
-      { meta: '2D · P2', title: 'Source Gathering', tone: '2d' },
-      { meta: '2D · P2', title: 'Thumbnail Studies', tone: '2d' },
-      { meta: '2D · P2', title: 'Focal Point Studio', tone: '2d' },
+      { meta: '2D · P2', title: 'Source Gathering', tone: 'tone-2d' },
+      { meta: '2D · P2', title: 'Thumbnail Studies', tone: 'tone-2d' },
+      { meta: '2D · P2', title: 'Focal Point Studio', tone: 'tone-2d' },
       null,
-      { meta: '2D · P2', title: 'Final Mount', tone: '2d' },
+      { meta: '2D · P2', title: 'Final Mount', tone: 'tone-2d' },
     ],
   },
   {
     label: '3D ART 1',
     unit: 'Paper + Structure',
-    tone: '3d',
+    tone: 'tone-3d',
     lessons: [
       null,
-      { meta: '3D · P3', title: 'Tabs + Slots', tone: '3d' },
-      { meta: '3D · P3', title: 'Structure Test', tone: '3d' },
+      { meta: '3D · P3', title: 'Tabs + Slots', tone: 'tone-3d' },
+      { meta: '3D · P3', title: 'Structure Test', tone: 'tone-3d' },
       null,
-      { meta: '3D · P3', title: 'Critique + Photo', tone: '3d' },
+      { meta: '3D · P3', title: 'Critique + Photo', tone: 'tone-3d' },
     ],
   },
 ]
