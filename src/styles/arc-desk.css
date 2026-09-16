@@ -174,8 +174,8 @@ html:has(.arc-shell--desk) body {
    Canonical start-class-mark.png — no glow / wood-burn filters. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor {
   position: absolute;
-  right: 2.6%;
-  bottom: 3.9%;
+  right: 3.0%;
+  bottom: 3.6%;
   width: auto;
   max-width: 104px;
   aspect-ratio: auto;
