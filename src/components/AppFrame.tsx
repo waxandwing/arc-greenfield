@@ -334,8 +334,21 @@ export function AppFrame() {
   useEffect(() => {
     function onAssignDate(event: Event) {
       const detail = (event as CustomEvent<DeskPostItAssignDateDetail>).detail
-      if (!detail?.date || !detail.text?.trim()) return
-      workspace.addCalendarNote(detail.date, detail.text.trim())
+      if (!detail?.date) return
+      const noteTexts = detail.bundle?.noteTexts?.length
+        ? detail.bundle.noteTexts
+        : detail.text?.trim()
+          ? [detail.text.trim()]
+          : []
+      if (noteTexts.length === 0) return
+      for (const note of noteTexts) {
+        workspace.addCalendarNote(detail.date, note)
+      }
+      if (detail.bundle?.notice) {
+        workspace.setStorageNotice(detail.bundle.notice)
+      } else if (detail.bundle?.isBundledUnit) {
+        workspace.setStorageNotice(`Unit + lesson attached to ${detail.date}.`)
+      }
     }
     function onAssignPriority(event: Event) {
       const detail = (event as CustomEvent<DeskPostItAssignPriorityDetail>).detail

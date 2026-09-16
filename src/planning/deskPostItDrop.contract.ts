@@ -30,6 +30,24 @@ if (typeof document !== 'undefined') {
   clearDeskPostItDropHighlights()
   assert(!lane.classList.contains(DESK_POSTIT_DROP_HIGHLIGHT_CLASS), 'Highlights must clear.')
   lane.remove()
+
+  const slot = document.createElement('div')
+  slot.className = 'planning-day-slot'
+  slot.setAttribute('data-desk-postit-drop', 'date')
+  slot.setAttribute('data-desk-postit-date', '2026-09-08')
+  slot.setAttribute('data-date', '2026-09-08')
+  slot.style.position = 'fixed'
+  slot.style.left = '0'
+  slot.style.top = '0'
+  slot.style.width = '40px'
+  slot.style.height = '40px'
+  document.body.appendChild(slot)
+  const hit = hitTestDeskPostItDrop(20, 20)
+  assert(hit.type === 'date' && hit.date === '2026-09-08', 'Planning day slots must resolve as date drop targets.')
+  highlightDeskPostItDropTarget(hit)
+  assert(slot.classList.contains(DESK_POSTIT_DROP_HIGHLIGHT_CLASS), 'Day slot must highlight on hover.')
+  clearDeskPostItDropHighlights()
+  slot.remove()
 }
 
 console.log('desk post-it drop contract passed')

@@ -219,6 +219,9 @@ function PlanningCourse({
                 key={slot.date}
                 className={`planning-day-slot planning-day-slot--${dayKind}${offDay ? ' planning-day-slot--off' : ''}${slot.date === focusDate ? ' planning-day-slot--focus' : ''}`}
                 aria-label={`${row.section.name}, ${formatLongDate(slot.date)}${offDay ? `. ${days[index]?.label || humanizeKind(dayKind)}` : ''}`}
+                data-desk-postit-drop="date"
+                data-desk-postit-date={slot.date}
+                data-date={slot.date}
               >
                 {slot.lessons.map((lesson) => (
                   <LessonTile

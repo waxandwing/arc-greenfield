@@ -385,6 +385,10 @@ try {
   assert(await page.locator('[data-desk-postit-drop="priority"][data-priority="should"]').count() >= 1, 'SHOULD lane must be a post-it drop target.')
   assert(await page.locator('[data-desk-postit-drop="priority"][data-priority="could"]').count() >= 1, 'COULD lane must be a post-it drop target.')
 
+  // Week planning day slots accept bundled unit (unit magnet + lesson sticky) drops.
+  assert(await page.locator('.planning-day-slot[data-desk-postit-drop="date"]').count() >= 1, 'Planning day slots must be post-it date drop targets.')
+  assert(await page.locator('.planning-date-heading[data-desk-postit-drop="date"]').count() >= 1, 'Date headings must remain post-it date drop targets.')
+
   // Ensure IDEAS is open so the new capture card is visible (reload leaves the drawer collapsed).
   const ideasExtended = await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')
   if (ideasExtended !== 'true') {

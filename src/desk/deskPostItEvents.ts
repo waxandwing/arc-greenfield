@@ -13,6 +13,19 @@ export type DeskPostItAssignDateDetail = {
   postItId: string
   date: ISODate
   text: string
+  /**
+   * When a linked unit magnet + lesson sticky (or multi-member stack) drops as one package.
+   * `text` stays the primary note line; `bundle.noteTexts` lists every calendar note to write.
+   */
+  bundle?: {
+    stackId: string
+    isBundledUnit: boolean
+    unitText: string | null
+    lessonTexts: string[]
+    memberIds: string[]
+    noteTexts: string[]
+    notice: string
+  }
 }
 
 export type DeskPostItAssignPriorityDetail = {

@@ -45,6 +45,16 @@ import {
   deskMagnetFallbackSrcForTone,
   deskMagnetSrcForTone,
 } from '../desk/deskMagnetAssets'
+import {
+  bundleCalendarNoteTexts,
+  createBundlePlacement,
+  formatBundledUnitDropNotice,
+  loadDeskPostItBundlePlacements,
+  recordBundlePlacement,
+  resolveDeskPostItBundle,
+  saveDeskPostItBundlePlacements,
+  unionDeskPostItRects,
+} from '../planning/deskPostItBundle'
 
 const NOTE_STORAGE_KEY = 'arc.desk-postit-notes.v1'
 const POSITION_STORAGE_KEY = 'arc.desk-postit-positions.v1'
@@ -486,7 +496,8 @@ function DeskAccentPostIt({
 
 /**
  * Loose accent post-its on the wood — free placement anywhere on the desk surface.
- * Drop onto a date (week/day/month/year cell) or Planning Tray MUST/SHOULD/COULD to assign.
+ * Drop onto a date (week/day/month/year cell or planning day slot) or Planning Tray MUST/SHOULD/COULD to assign.
+ * Linked unit magnet + lesson sticky stacks drop as one bundled unit onto that day.
  * Unassigned stickies may still live on the wood. Link-when-stacked + Clean up → IDEAS preserved.
  * Quick Capture Enter can spawn a fresh sticky or unit magnet for continuous capture.
  * Lesson marks (corner dot) let teachers flag a sticky as the lesson when grouping unit + class.
@@ -511,6 +522,8 @@ export function DeskAccentPostIts() {
   )
   const [assigned, setAssigned] = useState<Record<string, boolean>>(() => readAssigned())
   const [lessons, setLessons] = useState<DeskPostItLessonMarks>(() => loadDeskPostItLessons())
+  const lessonsRef = useRef(lessons)
+  lessonsRef.current = lessons
   const [drawerSlot, setDrawerSlot] = useState<Element | null>(null)
   const [links, setLinks] = useState<DeskPostItLinkWorkspace>(() => loadDeskPostItLinks())
   const [prompt, setPrompt] = useState<LinkPrompt | null>(null)
@@ -664,37 +677,99 @@ export function DeskAccentPostIts() {
     })
   }, [])
 
+  const hitPointForDrag = useCallback((info: { postItId: string; rect: DOMRect }) => {
+    const stack = deskPostItStackForMember(linksRef.current, info.postItId)
+    if (!stack) return pointFromRectCenter(info.rect)
+    const rects = []
+    for (const memberId of stack.memberIds) {
+      if (memberId === info.postItId) {
+        rects.push({ left: info.rect.left, top: info.rect.top, width: info.rect.width, height: info.rect.height })
+        continue
+      }
+      const node = document.querySelector(`[data-desk-post-it="${memberId}"]`)
+      const rect = rectFromNode(node)
+      if (rect) rects.push(rect)
+    }
+    const union = unionDeskPostItRects(rects)
+    return union ? pointFromRectCenter(union) : pointFromRectCenter(info.rect)
+  }, [])
+
   const onDragMove = useCallback((info: { postItId: string; clientX: number; clientY: number; rect: DOMRect }) => {
     if (inDrawerRef.current[info.postItId]) {
       clearDeskPostItDropHighlights()
       return
     }
-    const point = pointFromRectCenter(info.rect)
+    const point = hitPointForDrag(info)
     const target = hitTestDeskPostItDrop(point.clientX, point.clientY)
     highlightDeskPostItDropTarget(target)
-  }, [])
+  }, [hitPointForDrag])
 
   const tryAssignDrop = useCallback((info: DeskPostItDragEndInfo): boolean => {
-    const point = pointFromRectCenter(info.rect)
+    const point = hitPointForDrag(info)
     const target = hitTestDeskPostItDrop(point.clientX, point.clientY)
     clearDeskPostItDropHighlights()
     if (target.type === 'empty') return false
 
-    const text = (textsRef.current[info.postItId] ?? readStoredNote(info.postItId)).trim()
-    if (!text) return false
+    const texts: Record<string, string> = { ...textsRef.current }
+    for (const accent of catalogRef.current) {
+      if (!(accent.postItId in texts)) texts[accent.postItId] = readStoredNote(accent.postItId)
+    }
+    const bundle = resolveDeskPostItBundle({
+      draggedId: info.postItId,
+      links: linksRef.current,
+      lessons: lessonsRef.current,
+      catalog: catalogRef.current,
+      texts,
+    })
+    const noteTexts = bundleCalendarNoteTexts(bundle)
+    if (noteTexts.length === 0) return false
 
     if (target.type === 'date') {
-      requestDeskPostItAssignDate({ postItId: info.postItId, date: target.date, text })
-      setAssigned((prev) => ({ ...prev, [info.postItId]: true }))
+      const notice = formatBundledUnitDropNotice(bundle, target.date)
+      requestDeskPostItAssignDate({
+        postItId: info.postItId,
+        date: target.date,
+        text: noteTexts[0]!,
+        bundle: {
+          stackId: bundle.stackId,
+          isBundledUnit: bundle.isBundledUnit,
+          unitText: bundle.unitText,
+          lessonTexts: bundle.lessonTexts,
+          memberIds: bundle.memberIds,
+          noteTexts,
+          notice,
+        },
+      })
+      if (bundle.isBundledUnit) {
+        const placement = createBundlePlacement({ date: target.date, bundle })
+        const next = recordBundlePlacement(loadDeskPostItBundlePlacements(), placement)
+        saveDeskPostItBundlePlacements(next)
+      }
+      setAssigned((prev) => {
+        const updated = { ...prev }
+        for (const memberId of bundle.memberIds) updated[memberId] = true
+        return updated
+      })
       return true
     }
     if (target.type === 'priority') {
-      requestDeskPostItAssignPriority({ postItId: info.postItId, priority: target.priority, text })
-      setAssigned((prev) => ({ ...prev, [info.postItId]: true }))
+      for (const member of bundle.members) {
+        if (!member.text) continue
+        requestDeskPostItAssignPriority({
+          postItId: member.postItId,
+          priority: target.priority,
+          text: member.text,
+        })
+      }
+      setAssigned((prev) => {
+        const updated = { ...prev }
+        for (const memberId of bundle.memberIds) updated[memberId] = true
+        return updated
+      })
       return true
     }
     return false
-  }, [])
+  }, [hitPointForDrag])
 
   const promptLinkFromRects = useCallback((info: DeskPostItDragEndInfo, drawerOnly: boolean) => {
     const rects: Record<string, DeskPostItRect> = {}

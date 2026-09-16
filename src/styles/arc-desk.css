@@ -1244,6 +1244,7 @@ html:has(.arc-shell--desk) body {
 .calendar-day-note-drop.arc-desk-postit-drop-target,
 .planning-desk-notes-cell.arc-desk-postit-drop-target,
 .planning-date-heading.arc-desk-postit-drop-target,
+.planning-day-slot.arc-desk-postit-drop-target,
 .desk-priority-lane.arc-desk-postit-drop-target {
   outline: 2px solid color-mix(in srgb, var(--arc-forest, #2f5d50) 70%, white);
   outline-offset: 2px;

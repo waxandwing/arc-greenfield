@@ -53,7 +53,7 @@ export function hitTestDeskPostItDrop(clientX: number, clientY: number): DeskPos
     }
 
     const dateHost = node.closest(
-      '[data-desk-postit-drop="date"], [data-plan-drop-date], [data-day-notes-date], .calendar-day-cell[data-date], .planning-date-heading',
+      '[data-desk-postit-drop="date"], [data-plan-drop-date], [data-day-notes-date], .calendar-day-cell[data-date], .planning-date-heading, .planning-day-slot[data-desk-postit-date], .planning-day-slot[data-date]',
     )
     if (dateHost) {
       const date = dateFromElement(dateHost)
