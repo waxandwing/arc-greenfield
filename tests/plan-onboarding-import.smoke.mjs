@@ -45,11 +45,11 @@ try {
   assert(await page.getByRole('heading', { name: 'Arc is where your plan lives when the plan changes.' }).isVisible(), 'Welcome editorial must remain visible in the composed canvas.')
 
   // 2 — welcome actions
-  assert(await page.getByRole('button', { name: 'Set up my teaching day' }).isVisible(), 'Guided setup entry missing.')
+  assert(await page.getByRole('button', { name: 'Set up my school year' }).isVisible(), 'Guided setup entry missing.')
   assert(await page.getByRole('button', { name: 'Import what I already have' }).isVisible(), 'Import entry missing on welcome.')
   await shot(page, '01-welcome.png')
 
-  await page.getByRole('button', { name: 'Set up my teaching day' }).click()
+  await page.getByRole('button', { name: 'Set up my school year' }).click()
   assert(await page.getByRole('heading', { level: 1, name: 'School year' }).isVisible(), 'School year step must use Plan shell header.')
 
   // 3 — school year
