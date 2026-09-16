@@ -570,7 +570,7 @@ try {
   assert(markMetrics.clientWidth >= 24 && markMetrics.clientHeight >= 20, 'Rainbow mark must render at visible size, not a collapsed square.')
   assert(await page.getByTestId('arc-desk-tray-dock').count() === 0, 'TRAY drawer must replace the molded tray dock, not stack beside it.')
   assert(await page.locator('.b01-fridge-owner[data-state="open"] .b01-fridge-content').count() === 1, 'TRAY drawer must expose one workspace panel.')
-  await page.getByRole('button', { name: 'Close Tray', exact: true }).click()
+  await page.getByRole('button', { name: 'Close IDEAS', exact: true }).click()
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
   await shot(page, '01-desk-layout.png')
 

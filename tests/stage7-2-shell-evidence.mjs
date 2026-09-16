@@ -117,7 +117,7 @@ try {
 
   await page.getByRole('button', { name: 'IDEAS', exact: true }).click()
   await shot(page, '08-workspace.png')
-  await page.getByRole('button', { name: 'Close Tray', exact: true }).click()
+  await page.getByRole('button', { name: 'Close IDEAS', exact: true }).click()
 
   await selectView(page, 'Day')
   await page.getByRole('button', { name: /Period 4 AP Art History/ }).click()

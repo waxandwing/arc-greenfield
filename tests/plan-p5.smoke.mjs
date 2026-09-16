@@ -153,7 +153,7 @@ try {
   await page.getByRole('button', { name: 'IDEAS', exact: true }).evaluate((el) => el.click())
   assert(await page.locator('.plan-state-header').getAttribute('data-plan-overlay') === 'workspace', 'Planning period did not open Tray overlay.')
   await shot(page, '06-planning-workspace.png')
-  await page.getByRole('button', { name: 'Close Tray', exact: true }).evaluate((el) => el.click())
+  await page.getByRole('button', { name: 'Close IDEAS', exact: true }).evaluate((el) => el.click())
   assert(await page.getByRole('heading', { name: 'Planning period' }).isVisible(), 'Closing Tray did not restore Planning period.')
   assert(await page.locator('.day-continuity').getAttribute('data-plan-date') === '2026-09-15', 'Tray close moved the anchor date.')
   await shot(page, '07-planning-after-workspace.png')

@@ -54,7 +54,7 @@ try {
   await capture('desk-year-grid-expanded')
   await page.getByRole('button', { name: 'IDEAS', exact: true }).click()
   await capture('tray-push-panel')
-  await page.getByRole('button', { name: 'Close Tray', exact: true }).click()
+  await page.getByRole('button', { name: 'Close IDEAS', exact: true }).click()
   await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
   await capture('settings-desk-setup')
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click()

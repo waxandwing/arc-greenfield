@@ -88,7 +88,7 @@ try {
   await desktop.getByRole('button', { name: 'IDEAS' }).click()
   assert(await desktop.locator('.b01-furniture-composition').getAttribute('data-side-panel') === 'workspace', 'Tray push panel open.')
   await shot(desktop, 'workspace-open-push')
-  await desktop.getByRole('button', { name: 'Close Tray' }).click()
+  await desktop.getByRole('button', { name: 'Close IDEAS' }).click()
   assert((await desktop.locator('.arc-index-tab[aria-current="page"]').textContent()) === viewBefore, 'Exact return after workspace close.')
 
   await desktop.getByRole('button', { name: 'SETTINGS' }).click()
