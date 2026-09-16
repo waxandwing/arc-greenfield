@@ -548,3 +548,242 @@
   .arctable-student-parts ol{gap:8px 12px}
   .arctable-student-parts-label{max-width:14ch}
 }
+
+/* Design-audit /table alignment: cream stage shell, materials band, furniture tabs, student arcs.
+   Uses existing paper/mustard/blue textures — no invented desk labeled SVGs. */
+.arctable-paper-texture{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.14;
+  background-image:var(--arctable-paper-cream, url('/assets/arctable/paper-cream.png'));
+  background-size:720px auto;
+  mix-blend-mode:multiply;
+  z-index:0;
+}
+.arctable--teacher > *:not(.arctable-paper-texture),
+.arctable--student > *:not(.arctable-paper-texture){position:relative;z-index:1}
+.arctable-header-table-word{
+  letter-spacing:.22em;
+  font-size:15px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+.arctable--teacher .arctable-header-brand{gap:12px}
+.arctable--teacher{
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--paper) 92%, white), var(--paper)),
+    var(--arctable-paper-cream, url('/assets/arctable/paper-cream.png'));
+}
+.arctable-teacher-room{
+  position:relative;
+  min-height:0;
+  height:100%;
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr);
+  gap:0;
+  padding-top:10px;
+  overflow:hidden;
+}
+.arctable-furniture-tabs{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:18px 0 0;
+  align-items:stretch;
+}
+.arctable-furniture-tab{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  width:100%;
+  min-height:88px;
+  padding:10px 6px;
+  border:0;
+  border-radius:0 12px 12px 0;
+  background:#eee8dc url('/assets/arc/texture-cream-paper.png') center/cover;
+  color:var(--ink);
+  font:800 11px/1.15 var(--font-label),var(--font-ui);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  box-shadow:0 8px 18px -12px rgba(44,46,46,.45);
+  cursor:pointer;
+}
+.arctable-furniture-tab > span{
+  font-size:18px;
+  line-height:1;
+  font-weight:800;
+  letter-spacing:0;
+  text-transform:none;
+}
+.arctable-furniture-tab--people{background-color:color-mix(in srgb, var(--dusty-blue) 72%, #eee8dc)}
+.arctable-furniture-tab--pass{background-color:color-mix(in srgb, var(--mustard) 78%, #eee8dc)}
+.arctable-furniture-tab--media{background-color:color-mix(in srgb, var(--terracotta) 62%, #eee8dc);color:#fff}
+.arctable-furniture-tab.is-active{
+  transform:translateX(5px);
+  box-shadow:0 10px 22px -10px rgba(44,46,46,.5);
+}
+.arctable-teacher-stage-shell{
+  position:relative;
+  min-height:0;
+  height:100%;
+  overflow:hidden;
+  border-radius:16px;
+  border:1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  background:rgba(255,252,246,.94);
+  box-shadow:0 14px 36px -28px rgba(44,46,46,.45);
+}
+.arctable-arc-crop{
+  position:absolute;
+  left:-118px;
+  top:72px;
+  width:230px;
+  height:320px;
+  border-radius:0 170px 170px 0;
+  background:var(--mustard) url('/assets/arc/texture-mustard-paper.png') center/cover;
+  opacity:.92;
+  pointer-events:none;
+  z-index:0;
+}
+.arctable--teacher .arctable-teacher-layout{
+  position:relative;
+  z-index:1;
+  padding:14px 14px 14px 28px;
+  height:100%;
+  /* keep three columns: board | stage | controls */
+  grid-template-columns:minmax(0,1.1fr) minmax(220px,.88fr) minmax(280px,300px);
+}
+.arctable--teacher .arctable-board,
+.arctable--teacher .arctable-stage{
+  background:
+    linear-gradient(180deg, rgba(255,253,248,.55), rgba(255,253,248,.28)),
+    var(--field-elevated);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--ink) 7%, transparent);
+}
+.arctable-materials-band{
+  display:grid;
+  gap:4px;
+  padding:10px 12px;
+  border-radius:10px;
+  background:color-mix(in srgb, var(--mustard-soft) 70%, var(--field-elevated));
+  border:1px solid color-mix(in srgb, var(--mustard) 28%, transparent);
+}
+.arctable-materials-band .arctable-kicker{margin:0}
+.arctable-materials-band strong{
+  font:650 15px/1.3 var(--font-label),var(--font-ui);
+  color:var(--ink);
+}
+.arctable--teacher .arctable-tool-panel{
+  left:96px;
+  right:auto;
+  top:78px;
+  width:min(340px, 32vw);
+  max-height:calc(100dvh - 110px);
+}
+.arctable--teacher .arctable-tool-row{display:none}
+
+/* Student: cream stage + material arcs + 3-col materials/phase/cleanup */
+.arctable--student{
+  background:var(--paper);
+}
+.arctable--student .arctable-student-header{
+  background:var(--ink);
+  color:#fff;
+  border-bottom:0;
+}
+.arctable--student .arctable-sync-button,
+.arctable--student .arctable-projection-exit{
+  border-color:rgba(255,255,255,.45);
+  color:#fff;
+}
+.arctable--student .arctable-projection-exit{
+  background:rgba(255,255,255,.08);
+}
+.arctable--student .arctable-student-stage{
+  position:relative;
+  margin:18px 4vw 28px;
+  padding:36px 4vw 28px;
+  border-radius:16px;
+  border:1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  background:rgba(255,252,246,.94);
+  box-shadow:0 14px 36px -28px rgba(44,46,46,.4);
+  overflow:hidden;
+  grid-template-columns:minmax(0,1.55fr) minmax(260px,.7fr);
+  grid-template-rows:auto 1fr auto;
+}
+.arctable-student-decor{
+  position:absolute;
+  pointer-events:none;
+  opacity:.9;
+  z-index:0;
+}
+.arctable-student-decor--left{
+  width:280px;
+  height:460px;
+  border-radius:0 230px 230px 0;
+  left:-150px;
+  top:90px;
+  background:var(--dusty-blue) url('/assets/arc/texture-blue-paper.png') center/cover;
+}
+.arctable-student-decor--right{
+  width:240px;
+  height:440px;
+  border-radius:220px 0 0 220px;
+  right:-130px;
+  top:50px;
+  background:var(--mustard) url('/assets/arc/texture-mustard-paper.png') center/cover;
+}
+.arctable--student .arctable-student-parts,
+.arctable--student .arctable-student-work,
+.arctable--student .arctable-student-now,
+.arctable--student .arctable-student-facts-row{position:relative;z-index:1}
+.arctable-student-facts-row{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin-top:8px;
+}
+.arctable-student-facts-row > div{
+  min-height:92px;
+  padding:16px 18px;
+  border-radius:12px;
+  background:rgba(255,252,246,.88);
+  border:1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+  box-shadow:0 3px 10px rgba(44,46,46,.06);
+  display:grid;
+  align-content:center;
+  gap:4px;
+}
+.arctable-student-facts-row .arctable-kicker{margin:0}
+.arctable-student-facts-row strong{
+  font:750 clamp(18px,1.8vw,28px)/1.15 var(--font-label),var(--font-ui);
+  color:var(--ink);
+}
+@media(max-width:900px){
+  .arctable-teacher-room{grid-template-columns:1fr;height:auto;overflow:visible}
+  .arctable-furniture-tabs{
+    flex-direction:row;
+    padding:0 0 10px;
+    gap:8px;
+  }
+  .arctable-furniture-tab{
+    flex:1 1 0;
+    min-height:64px;
+    border-radius:10px;
+  }
+  .arctable-furniture-tab.is-active{transform:none}
+  .arctable-arc-crop{display:none}
+  .arctable-teacher-stage-shell{height:auto;overflow:visible}
+  .arctable--teacher .arctable-teacher-layout{padding:14px}
+  .arctable--teacher .arctable-tool-panel{left:14px;right:14px;width:auto}
+  .arctable--student .arctable-student-stage{
+    margin:12px 14px 20px;
+    padding:22px 16px;
+    grid-template-columns:1fr;
+  }
+  .arctable-student-decor{display:none}
+  .arctable-student-facts-row{grid-template-columns:1fr}
+}

@@ -126,6 +126,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
 
   return (
     <main className="arctable arctable--teacher">
+      <div className="arctable-paper-texture" aria-hidden="true" />
       <header className="arctable-header">
         <div className="arctable-header-brand">
           <img
@@ -136,7 +137,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
             height={44}
             data-testid="arctable-header-mark"
           />
-          <span>ArcTable</span>
+          <span className="arctable-header-table-word">TABLE</span>
         </div>
         <div><p className="arctable-kicker">Teacher Monitor</p><strong>{live.session.courseTitle} · {live.session.sectionName}</strong></div>
         <div className="arctable-header-actions">
@@ -151,58 +152,85 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
         </div>
       </header>
 
-      <div className="arctable-teacher-layout" data-testid="arctable-teacher-layout">
-        <section className="arctable-board" aria-labelledby="arctable-lesson-title">
-          <div className="arctable-progress" aria-label={`Phase ${live.phase} of ${live.phaseCount}`}><span style={{ width: `${(live.phase / live.phaseCount) * 100}%` }} /></div>
-          <div className="arctable-board-stack">
-            <p className="arctable-kicker">Phase {live.phase} of {live.phaseCount}{live.session.phases[live.phase - 1] ? ` · ${live.session.phases[live.phase - 1]}` : ''}</p>
-            <h1 id="arctable-lesson-title">{live.session.lessonTitle}</h1>
-            {live.directions.length > 0 ? (
-              <ol className="arctable-directions">{live.directions.map((direction, index) => <li key={`${direction}-${index}`}>{direction}</li>)}</ol>
-            ) : (
-              <p className="arctable-content-empty">No directions authored — project media or open Plan View to author the board.</p>
-            )}
-          </div>
-          <div className="arctable-board-footer">
-            <div className="arctable-student-facts">
-              <span>Voice {live.voiceLevel}</span><span>{live.materials || 'No materials listed'}</span>
-              {cleanupActive ? <strong>{live.cleanupTimer.status === 'completed' ? 'Cleanup complete' : `Cleanup · ${formatDuration(cleanupRemaining)}`}</strong> : <span>Cleanup later</span>}
-            </div>
-          </div>
-        </section>
+      <div className="arctable-teacher-room">
+        <div className="arctable-furniture-tabs" ref={toolRowRef} role="toolbar" aria-label="Classroom tools">
+          <button type="button" className={`arctable-furniture-tab arctable-furniture-tab--people${tool === 'people' ? ' is-active' : ''}`} aria-label="People picker" aria-expanded={tool === 'people'} onClick={() => setTool(tool === 'people' ? null : 'people')}>
+            <span aria-hidden="true">{live.people.roster.length || '·'}</span>People
+          </button>
+          <button type="button" className={`arctable-furniture-tab arctable-furniture-tab--pass${tool === 'passes' ? ' is-active' : ''}`} aria-label="Pass tools" aria-expanded={tool === 'passes'} onClick={() => setTool(tool === 'passes' ? null : 'passes')}>
+            <span aria-hidden="true">{live.passes.passes.filter((pass) => pass.status === 'active').length || '·'}</span>Pass
+          </button>
+          <button type="button" className={`arctable-furniture-tab arctable-furniture-tab--media${tool === 'media' ? ' is-active' : ''}`} aria-label="Media" aria-expanded={tool === 'media'} onClick={() => setTool(tool === 'media' ? null : 'media')}>
+            <span aria-hidden="true">+</span>Media
+          </button>
+        </div>
 
-        <section className="arctable-stage" aria-label="Center stage" data-testid="arctable-stage">
-          <p className="arctable-kicker">Center stage</p>
-          <MediaSurface media={live.media} onOpenMedia={() => setTool('media')} onPreviewStudent={onShowStudent} />
-          {live.people.projected && selectedPerson ? (
-            <p className="arctable-stage-person" role="status">{selectedPerson.name}, you’re up.</p>
-          ) : (
-            <p className="arctable-stage-hint">Projection for the room — media, artwork, or a selected student.</p>
-          )}
-        </section>
+        <div className="arctable-teacher-stage-shell">
+          <div className="arctable-arc-crop" aria-hidden="true" />
+          <div className="arctable-teacher-layout" data-testid="arctable-teacher-layout">
+            <section className="arctable-board" aria-labelledby="arctable-lesson-title">
+              <div className="arctable-progress" aria-label={`Phase ${live.phase} of ${live.phaseCount}`}><span style={{ width: `${(live.phase / live.phaseCount) * 100}%` }} /></div>
+              <div className="arctable-board-stack">
+                <p className="arctable-kicker">Phase {live.phase} of {live.phaseCount}{live.session.phases[live.phase - 1] ? ` · ${live.session.phases[live.phase - 1]}` : ''}</p>
+                <h1 id="arctable-lesson-title">{live.session.lessonTitle}</h1>
+                {live.directions.length > 0 ? (
+                  <ol className="arctable-directions">{live.directions.map((direction, index) => <li key={`${direction}-${index}`}>{direction}</li>)}</ol>
+                ) : (
+                  <p className="arctable-content-empty">No directions authored — project media or open Plan View to author the board.</p>
+                )}
+              </div>
+              <div className="arctable-board-footer">
+                <div className="arctable-materials-band" data-testid="arctable-materials-band">
+                  <span className="arctable-kicker">Materials</span>
+                  <strong>{live.materials || 'No materials listed'}</strong>
+                </div>
+                <div className="arctable-student-facts">
+                  <span>Voice {live.voiceLevel}</span>
+                  {cleanupActive ? <strong>{live.cleanupTimer.status === 'completed' ? 'Cleanup complete' : `Cleanup · ${formatDuration(cleanupRemaining)}`}</strong> : <span>Cleanup later</span>}
+                </div>
+              </div>
+            </section>
 
-        <aside className="arctable-controls" aria-label="Teacher controls">
-          <p className="arctable-kicker">Teacher controls</p>
-          <section className="arctable-timer-control" aria-labelledby="classroom-timer-heading">
-            <div className="arctable-timer-control-heading"><strong id="classroom-timer-heading">Classroom timer</strong><span>{live.timer.status}</span></div>
-            <div className="arctable-timer-display" aria-live="polite"><TimerDigits seconds={timerDisplaySeconds} /></div>
-            <label><span>Duration in minutes</span><input aria-label="Timer duration in minutes" type="number" min="1" max={ARC_TABLE_MAX_COUNTDOWN_SECONDS / 60} value={Math.ceil(live.timer.durationSeconds / 60)} onChange={(event) => onUpdate({ timer: setArcTableCountdownDuration(live.timer, Number(event.target.value) * 60) })} /></label>
-            <div className="arctable-presets" aria-label="Timer presets">{[5, 10, 15].map((minutes) => <button type="button" key={minutes} onClick={() => onUpdate({ timer: setArcTableCountdownDuration(live.timer, minutes * 60) })}>{minutes} min</button>)}</div>
-            <div className="arctable-timer-actions">
-              {live.timer.status === 'running' ? <button type="button" onClick={() => onUpdate({ timer: pauseArcTableCountdown(live.timer, now) })}>Pause Timer</button> : <button type="button" onClick={() => onUpdate({ timer: startArcTableCountdown(live.timer, now) })}>{live.timer.status === 'paused' ? 'Resume Timer' : 'Start Timer'}</button>}
-              <button type="button" onClick={() => onUpdate({ timer: resetArcTableCountdown(live.timer) })}>Reset Timer</button>
-            </div>
-          </section>
-          <div className="arctable-control-row"><strong>Phase</strong><div className="arctable-stepper"><button type="button" aria-label="Previous phase" disabled={live.phase === 1} onClick={() => onUpdate({ phase: live.phase - 1 })}>−</button><span>{live.phase} / {live.phaseCount}</span><button type="button" aria-label="Next phase" disabled={live.phase === live.phaseCount} onClick={() => onUpdate({ phase: live.phase + 1 })}>+</button></div></div>
-          <label className="arctable-control-field"><strong>Materials</strong><input value={live.materials} onChange={(event) => onUpdate({ materials: event.target.value })} /></label>
-          <label className="arctable-control-field"><strong>Voice expectation</strong><select value={live.voiceLevel} onChange={(event) => onUpdate({ voiceLevel: Number(event.target.value) as 1 | 2 | 3 })}><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option></select></label>
-          <button type="button" className="arctable-control-row" onClick={() => onUpdate({ boardLocked: !live.boardLocked })}><strong>Board</strong><span>{live.boardLocked ? 'Locked' : 'Editable'}</span></button>
-          <button type="button" className="arctable-control-row" onClick={onShowStudent}><strong>Student preview</strong><span>Open projected view</span></button>
-          <div className="arctable-tool-row" ref={toolRowRef}>
-            <button type="button" aria-expanded={tool === 'people'} onClick={() => setTool(tool === 'people' ? null : 'people')}>People picker</button>
-            <button type="button" aria-expanded={tool === 'passes'} onClick={() => setTool(tool === 'passes' ? null : 'passes')}>Pass tools</button>
-            <button type="button" aria-expanded={tool === 'media'} onClick={() => setTool(tool === 'media' ? null : 'media')}>Media</button>
+            <section className="arctable-stage" aria-label="Center stage" data-testid="arctable-stage">
+              <p className="arctable-kicker">Center stage</p>
+              <MediaSurface media={live.media} onOpenMedia={() => setTool('media')} onPreviewStudent={onShowStudent} />
+              {live.people.projected && selectedPerson ? (
+                <p className="arctable-stage-person" role="status">{selectedPerson.name}, you’re up.</p>
+              ) : (
+                <p className="arctable-stage-hint">Projection for the room — media, artwork, or a selected student.</p>
+              )}
+            </section>
+
+            <aside className="arctable-controls" aria-label="Teacher controls">
+              <p className="arctable-kicker">Teacher controls</p>
+              <section className="arctable-timer-control" aria-labelledby="classroom-timer-heading">
+                <div className="arctable-timer-control-heading"><strong id="classroom-timer-heading">Classroom timer</strong><span>{live.timer.status}</span></div>
+                <div className="arctable-timer-display" aria-live="polite"><TimerDigits seconds={timerDisplaySeconds} /></div>
+                <label><span>Duration in minutes</span><input aria-label="Timer duration in minutes" type="number" min="1" max={ARC_TABLE_MAX_COUNTDOWN_SECONDS / 60} value={Math.ceil(live.timer.durationSeconds / 60)} onChange={(event) => onUpdate({ timer: setArcTableCountdownDuration(live.timer, Number(event.target.value) * 60) })} /></label>
+                <div className="arctable-presets" aria-label="Timer presets">{[5, 10, 15].map((minutes) => <button type="button" key={minutes} onClick={() => onUpdate({ timer: setArcTableCountdownDuration(live.timer, minutes * 60) })}>{minutes} min</button>)}</div>
+                <div className="arctable-timer-actions">
+                  {live.timer.status === 'running' ? <button type="button" onClick={() => onUpdate({ timer: pauseArcTableCountdown(live.timer, now) })}>Pause Timer</button> : <button type="button" onClick={() => onUpdate({ timer: startArcTableCountdown(live.timer, now) })}>{live.timer.status === 'paused' ? 'Resume Timer' : 'Start Timer'}</button>}
+                  <button type="button" onClick={() => onUpdate({ timer: resetArcTableCountdown(live.timer) })}>Reset Timer</button>
+                </div>
+              </section>
+              <div className="arctable-control-row"><strong>Phase</strong><div className="arctable-stepper"><button type="button" aria-label="Previous phase" disabled={live.phase === 1} onClick={() => onUpdate({ phase: live.phase - 1 })}>−</button><span>{live.phase} / {live.phaseCount}</span><button type="button" aria-label="Next phase" disabled={live.phase === live.phaseCount} onClick={() => onUpdate({ phase: live.phase + 1 })}>+</button></div></div>
+              <label className="arctable-control-field"><strong>Materials</strong><input value={live.materials} onChange={(event) => onUpdate({ materials: event.target.value })} /></label>
+              <label className="arctable-control-field"><strong>Voice expectation</strong><select value={live.voiceLevel} onChange={(event) => onUpdate({ voiceLevel: Number(event.target.value) as 1 | 2 | 3 })}><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option></select></label>
+              <button type="button" className="arctable-control-row" onClick={() => onUpdate({ boardLocked: !live.boardLocked })}><strong>Board</strong><span>{live.boardLocked ? 'Locked' : 'Editable'}</span></button>
+              <button type="button" className="arctable-control-row" onClick={onShowStudent}><strong>Student preview</strong><span>Open projected view</span></button>
+              <section className={`arctable-cleanup-control${cleanupActive ? ' is-active' : ''}`} aria-labelledby="cleanup-heading">
+                <div><strong id="cleanup-heading">Cleanup countdown</strong><span>{cleanupActive ? `${live.cleanupTimer.status} · ${formatDuration(cleanupRemaining)}` : 'Ready when you are'}</span></div>
+                <label><span>Minutes</span><input aria-label="Cleanup duration in minutes" type="number" min="1" max="30" value={Math.ceil(live.cleanupTimer.durationSeconds / 60)} onChange={(event) => onUpdate({ cleanupTimer: setArcTableCountdownDuration(live.cleanupTimer, Number(event.target.value) * 60) })} /></label>
+                <div>
+                  {!cleanupActive || live.cleanupTimer.status === 'completed' ? <button type="button" onClick={() => onUpdate({ cleanupTimer: startArcTableCountdown(resetArcTableCountdown(live.cleanupTimer), now) })}>Start cleanup</button> : null}
+                  {live.cleanupTimer.status === 'running' ? <button type="button" onClick={() => onUpdate({ cleanupTimer: pauseArcTableCountdown(live.cleanupTimer, now) })}>Pause cleanup</button> : null}
+                  {live.cleanupTimer.status === 'paused' ? <button type="button" onClick={() => onUpdate({ cleanupTimer: startArcTableCountdown(live.cleanupTimer, now) })}>Resume cleanup</button> : null}
+                  {cleanupActive ? <button type="button" onClick={() => onUpdate({ cleanupTimer: resetArcTableCountdown(live.cleanupTimer) })}>Cancel cleanup</button> : null}
+                </div>
+              </section>
+            </aside>
           </div>
+
           {tool === 'people' ? (
             <section ref={toolPanelRef} className="arctable-tool-panel arctable-people-panel" aria-labelledby="people-picker-heading">
               <h2 id="people-picker-heading">People · {live.session.sectionName}</h2>
@@ -230,17 +258,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
               <button type="button" disabled={!activeMedia} onClick={() => onUpdate({ media: { ...live.media, projected: !live.media.projected } })}>{live.media.projected ? 'Stop projecting media' : 'Project active media'}</button>
             </section>
           ) : null}
-          <section className={`arctable-cleanup-control${cleanupActive ? ' is-active' : ''}`} aria-labelledby="cleanup-heading">
-            <div><strong id="cleanup-heading">Cleanup countdown</strong><span>{cleanupActive ? `${live.cleanupTimer.status} · ${formatDuration(cleanupRemaining)}` : 'Ready when you are'}</span></div>
-            <label><span>Minutes</span><input aria-label="Cleanup duration in minutes" type="number" min="1" max="30" value={Math.ceil(live.cleanupTimer.durationSeconds / 60)} onChange={(event) => onUpdate({ cleanupTimer: setArcTableCountdownDuration(live.cleanupTimer, Number(event.target.value) * 60) })} /></label>
-            <div>
-              {!cleanupActive || live.cleanupTimer.status === 'completed' ? <button type="button" onClick={() => onUpdate({ cleanupTimer: startArcTableCountdown(resetArcTableCountdown(live.cleanupTimer), now) })}>Start cleanup</button> : null}
-              {live.cleanupTimer.status === 'running' ? <button type="button" onClick={() => onUpdate({ cleanupTimer: pauseArcTableCountdown(live.cleanupTimer, now) })}>Pause cleanup</button> : null}
-              {live.cleanupTimer.status === 'paused' ? <button type="button" onClick={() => onUpdate({ cleanupTimer: startArcTableCountdown(live.cleanupTimer, now) })}>Resume cleanup</button> : null}
-              {cleanupActive ? <button type="button" onClick={() => onUpdate({ cleanupTimer: resetArcTableCountdown(live.cleanupTimer) })}>Cancel cleanup</button> : null}
-            </div>
-          </section>
-        </aside>
+        </div>
       </div>
 
       {ending ? <EndClassDialog live={live} resumeNote={resumeNote} error={error} onResumeNote={setResumeNote} onFinish={finish} onCancel={() => setEnding(false)} /> : null}
@@ -279,6 +297,7 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onSyncLive, onUpda
 
   return (
     <main className={`arctable arctable--student${cleanupActive ? ' is-cleanup' : ''}`}>
+      <div className="arctable-paper-texture" aria-hidden="true" />
       <header className="arctable-student-header">
         <img
           className="arctable-header-wordmark"
@@ -312,6 +331,8 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onSyncLive, onUpda
         </div>
       </header>
       <section className="arctable-student-stage">
+        <div className="arctable-student-decor arctable-student-decor--left" aria-hidden="true" />
+        <div className="arctable-student-decor arctable-student-decor--right" aria-hidden="true" />
         <nav className="arctable-student-parts" aria-label="Lesson parts" data-testid="arctable-student-parts">
           <ol>
             {lessonParts.map((label, index) => {
@@ -323,7 +344,7 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onSyncLive, onUpda
                     type="button"
                     className={current ? 'is-current' : undefined}
                     aria-current={current ? 'step' : undefined}
-                    aria-label={current ? `Current part: ${label}` : `Preview part: ${label}`}
+                    aria-label={current ? `Current part: ${label}` : `Go to part: ${label}`}
                     onClick={() => {
                       if (current && followingTeacher) return
                       setLocalPhase(partNumber)
@@ -347,8 +368,22 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onSyncLive, onUpda
         <aside className="arctable-student-now">
           <div className="arctable-timer-ring" aria-label={cleanupActive ? `Cleanup ${formatDuration(cleanupRemaining)} remaining` : `Classroom timer ${formatDuration(timerRemaining)} remaining`}><TimerDigits as="strong" seconds={cleanupActive ? cleanupRemaining : timerRemaining} /></div>
           <span className="arctable-voice">Voice {live.voiceLevel}</span>
-          {live.materials ? <p><span>Materials</span><strong>{live.materials}</strong></p> : null}<p><span>Current phase</span><strong>{displayPhase} of {live.phaseCount}{lessonParts[displayPhase - 1] ? ` · ${lessonParts[displayPhase - 1]}` : ''}{followingTeacher ? '' : ' · preview'}</strong></p>
+          <p><span>Current phase</span><strong>{displayPhase} of {live.phaseCount}{lessonParts[displayPhase - 1] ? ` · ${lessonParts[displayPhase - 1]}` : ''}{followingTeacher ? '' : ' · preview'}</strong></p>
         </aside>
+        <div className="arctable-student-facts-row" data-testid="arctable-student-facts-row">
+          <div>
+            <span className="arctable-kicker">Materials</span>
+            <strong>{live.materials || 'None listed'}</strong>
+          </div>
+          <div>
+            <span className="arctable-kicker">Phase</span>
+            <strong>{displayPhase} / {live.phaseCount}{lessonParts[displayPhase - 1] ? ` · ${lessonParts[displayPhase - 1]}` : ''}</strong>
+          </div>
+          <div>
+            <span className="arctable-kicker">Clean up</span>
+            <strong>{cleanupActive ? formatDuration(cleanupRemaining) : `${Math.ceil(live.cleanupTimer.durationSeconds / 60)} min`}</strong>
+          </div>
+        </div>
       </section>
       {cleanupActive ? <div className="arctable-student-cleanup" role="status"><strong>{live.cleanupTimer.status === 'completed' ? 'Cleanup complete' : 'Cleanup now'}</strong><span>Save your work · return materials · stay at your table.</span></div> : null}
     </main>
