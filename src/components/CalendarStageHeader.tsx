@@ -9,6 +9,7 @@ import {
   type SetupSectionId,
 } from '../app/setupSections'
 import { calendarViewLabel } from '../navigation/calendarViews'
+import { ClassTabsNav, type ClassTabCourse } from './ClassTabsNav'
 import { SetupSectionNav } from './SetupSectionNav'
 
 type ViewAvailability = { available: boolean; reason?: string }
@@ -44,6 +45,12 @@ type CalendarStageHeaderProps = {
     disabledIds?: ReadonlySet<OnboardingSectionId>
     onSelect: (id: OnboardingSectionId) => void
   } | null
+  /** Lessons library: course tabs under the stage title (not Setup chrome). */
+  classTabs?: {
+    courses: readonly ClassTabCourse[]
+    activeId: string | null
+    onSelect: (courseId: string | null) => void
+  } | null
 }
 
 export function CalendarStageHeader(props: CalendarStageHeaderProps) {
@@ -66,12 +73,14 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
     onUndoShift,
     setupNav = null,
     onboardingNav = null,
+    classTabs = null,
   } = props
 
   const isCalendarMode = mode === 'calendar'
   const showSetupNav = Boolean(setupNav && isSetupWorkspaceMode(mode))
   const showOnboardingNav = Boolean(onboardingNav && mode === 'onboarding')
   const showSectionNav = showSetupNav || showOnboardingNav
+  const showClassTabs = Boolean(classTabs && mode === 'lessons' && classTabs.courses.length > 0)
   const showSpreadTitle = !editorialTitleManaged
 
   return (
@@ -80,6 +89,7 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
         'calendar-stage-header',
         editorialTitleManaged ? 'calendar-stage-header--tools-only' : '',
         showSectionNav ? 'calendar-stage-header--setup' : '',
+        showClassTabs ? 'calendar-stage-header--lessons' : '',
       ].filter(Boolean).join(' ')}
     >
       <div>
@@ -107,6 +117,13 @@ export function CalendarStageHeader(props: CalendarStageHeaderProps) {
                 activeId={onboardingNav.activeId}
                 disabledIds={onboardingNav.disabledIds}
                 onSelect={onboardingNav.onSelect}
+              />
+            ) : null}
+            {showClassTabs && classTabs ? (
+              <ClassTabsNav
+                courses={classTabs.courses}
+                activeId={classTabs.activeId}
+                onSelect={classTabs.onSelect}
               />
             ) : null}
           </>

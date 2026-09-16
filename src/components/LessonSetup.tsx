@@ -38,6 +38,8 @@ type Props = {
   shiftState: ShiftPersistenceInput | null
   initialValue: LessonWorkspaceInput | null
   focusLessonId?: string | null
+  /** Scope the library list to one course; `null` shows all. */
+  filterCourseId?: string | null
   createSeed?: LessonCreateSeed | null
   onConsumeCreateSeed?: () => void
   onSave: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => boolean | void
@@ -46,7 +48,7 @@ type Props = {
   onShowUnscheduledInIdeas?: (lessonId: string) => void
 }
 
-export function LessonSetup({ calendar, planning, units, shiftState, initialValue, focusLessonId = null, createSeed = null, onConsumeCreateSeed, onSave, onCancel, onShowUnscheduledInIdeas }: Props) {
+export function LessonSetup({ calendar, planning, units, shiftState, initialValue, focusLessonId = null, filterCourseId = null, createSeed = null, onConsumeCreateSeed, onSave, onCancel, onShowUnscheduledInIdeas }: Props) {
   const [lessons, setLessons] = useState<Lesson[]>(() => initialValue?.lessons.map((lesson) => ({ ...lesson })) ?? [])
   const [deliveryStates, setDeliveryStates] = useState<LessonDeliveryState[]>(() => initialValue?.deliveryStates.map((state) => ({ ...state })) ?? [])
   const [overrides, setOverrides] = useState(() => shiftState?.overrides.map((override) => ({ ...override })) ?? [])
@@ -63,9 +65,24 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
   const lessonListItemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const seedAppliedRef = useRef(false)
 
+  const visibleLessons = filterCourseId
+    ? lessons.filter((lesson) => lesson.courseId === filterCourseId)
+    : lessons
+  const scopedUnits = filterCourseId
+    ? units.units.filter((unit) => unit.courseId === filterCourseId)
+    : units.units
   const selectedLesson = lessons.find((lesson) => lesson.id === selectedLessonId) ?? null
   const selectedUnit = selectedLesson ? units.units.find((unit) => unit.id === selectedLesson.unitId) ?? null : null
   const selectedSections = selectedLesson ? planning.sections.filter((section) => section.courseId === selectedLesson.courseId) : []
+
+  useEffect(() => {
+    const stillVisible = selectedLessonId
+      ? lessons.some((lesson) => lesson.id === selectedLessonId && (!filterCourseId || lesson.courseId === filterCourseId))
+      : false
+    if (stillVisible) return
+    const firstVisible = lessons.find((lesson) => !filterCourseId || lesson.courseId === filterCourseId)
+    setSelectedLessonId(firstVisible?.id ?? null)
+  }, [filterCourseId, lessons, selectedLessonId])
 
   useEffect(() => {
     if (!createSeed || seedAppliedRef.current) return
@@ -101,7 +118,7 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
   }
 
   function addLesson() {
-    const unit = units.units[0]
+    const unit = scopedUnits[0] ?? units.units[0]
     if (!unit) return
     const siblings = lessonsForUnit(lessons, unit.id)
     const lesson: Lesson = {
@@ -315,7 +332,14 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
       )}
       <div className="lesson-workspace-grid">
         <aside className="lesson-list" aria-label="Lessons">
-          {lessons.map((lesson) => {
+          {visibleLessons.length === 0 ? (
+            <p className="projection-empty-state">
+              {filterCourseId
+                ? 'No Lessons for this class yet.'
+                : 'No Lessons yet.'}
+            </p>
+          ) : null}
+          {visibleLessons.map((lesson) => {
             const unit = units.units.find((candidate) => candidate.id === lesson.unitId)
             const unscheduled = lesson.plannedDate === null
             return (
@@ -332,7 +356,7 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
               </button>
             )
           })}
-          <button type="button" className="quiet-button lesson-add-button" onClick={addLesson}>Add Lesson</button>
+          <button type="button" className="quiet-button lesson-add-button" onClick={addLesson} disabled={scopedUnits.length === 0 && units.units.length === 0}>Add Lesson</button>
         </aside>
         <div className="lesson-detail">
           {!selectedLesson ? <p className="projection-empty-state">Choose a Lesson or add one.</p> : <>
@@ -340,7 +364,7 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
               <div className="lesson-detail-heading"><div><p className="section-label">Shared plan</p><h3>{selectedLesson.title || 'Untitled Lesson'}</h3></div><div><button type="button" className="text-button" onClick={() => copyDraftLesson(selectedLesson.id)}>Copy</button>{selectedLesson.plannedDate && <button type="button" className="text-button" onClick={() => unplaceDraftLesson(selectedLesson.id)}>Unplace</button>}<button type="button" className="text-button" onClick={() => deleteDraftLesson(selectedLesson.id)}>Delete</button></div></div>
               <div className="lesson-field-grid lesson-field-grid--schedule">
                 <label><span>Lesson title</span><input value={selectedLesson.title} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, title: event.target.value } : lesson))} /></label>
-                <label><span>Unit</span><select value={selectedLesson.unitId} onChange={(event) => changeUnit(selectedLesson.id, event.target.value)}>{units.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}</select></label>
+                <label><span>Unit</span><select value={selectedLesson.unitId} onChange={(event) => changeUnit(selectedLesson.id, event.target.value)}>{(scopedUnits.some((unit) => unit.id === selectedLesson.unitId) ? scopedUnits : units.units).map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}</select></label>
                 <label><span>Order</span><input type="number" min="1" step="1" value={selectedLesson.sequence} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, sequence: Number(event.target.value) } : lesson))} /></label>
                 <label><span>Planned date</span><input ref={plannedDateInputRef} type="date" disabled={!selectedUnit?.placement} min={selectedUnit?.placement?.startDate} max={selectedUnit?.placement?.endDate} value={selectedLesson.plannedDate ?? ''} onChange={(event) => changePlannedDate(selectedLesson.id, event.target.value)} /></label>
                 <label><span>Date behavior</span><select value={selectedLesson.datePolicy} disabled={!selectedLesson.plannedDate} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, datePolicy: event.target.value as LessonDatePolicy } : lesson))}><option value="flexible">Flexible</option><option value="fixed">Fixed</option></select></label>

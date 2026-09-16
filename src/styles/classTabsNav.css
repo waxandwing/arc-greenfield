@@ -1,0 +1,52 @@
+.class-tabs-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 100%;
+  margin: 4px 0 0;
+  padding: 0;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.class-tabs-nav-item {
+  min-height: 40px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--soft-charcoal);
+  font: 750 13px/1.2 var(--font-ui);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.class-tabs-nav-item:hover {
+  color: var(--ink);
+}
+
+.class-tabs-nav-item--current {
+  border-bottom-color: var(--mustard);
+  color: var(--ink);
+}
+
+.calendar-stage-header--lessons {
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+.calendar-stage-header--lessons > div:first-child {
+  width: 100%;
+  gap: 6px;
+}
+
+.calendar-stage-header--lessons .view-title {
+  font-size: clamp(28px, 3.6vw, 36px);
+}
+
+@media (max-width: 520px) {
+  .class-tabs-nav-item {
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+}
