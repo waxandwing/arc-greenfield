@@ -1,0 +1,94 @@
+{
+  "ingestedAt": "2026-09-16T00:33:39.848888+00:00",
+  "batch": 3,
+  "agent": "bc-eba92442-2854-5b29-af2c-bdce30393e6e",
+  "branch": "cursor/desk-magnet-tray-ingest-3e6e",
+  "source": "Kelly chat upload (empty message), session 2026-09-16 \u2014 four more desk PNGs (mustard/terracotta magnets, cream post-it, orange-tab tray)",
+  "coordinatesWith": [
+    "Batch 1 PROVENANCE-kelly-2026-09-16.json (Arc mark, ArcTable mark, blue magnet, blue post-it) \u2014 do not overwrite",
+    "Batch 2 PROVENANCE-kelly-2026-09-16-batch2-tray-tab-magnet-paper.json (felt ideas-tray, magnet-green, calendar bg/tab) \u2014 do not overwrite ideas-tray.png",
+    "Sibling ideas/todos ingest owns primary ideas-tray.png (sage IDEAS pull-tab) and todos-tab.png"
+  ],
+  "trayRoleNote": "ideas-tray-side-open.png is the orange-left-tab cream tray WITH paper stacks \u2014 side-open/filled alternate state. Distinct from felt empty tray (batch2 ideas-tray.png / 25dc87d8) and from primary sage IDEAS drawer with IDEAS pull-tab text (sibling ideas-tray.png / cb692436). Not a TODOs tab substitute (todos-tab is silver metal). Staged only; do not dual-wire over primary ideas-tray.",
+  "processing": "Cropped transparent letterbox to content bbox (+2px pad). No recolor.",
+  "originalUploads": {
+    "68da76b9-de05-4f49-bba2-0a59134a2491.png": "Mustard/yellow magnet \u2192 magnet-mustard.png",
+    "e2399786-b552-4a6f-81e9-c034f326b041.png": "Cream tilted paper/post-it \u2192 postit-cream.png",
+    "9a3501e7-3036-4d28-add2-3a129f2c2cd2.png": "Terracotta magnet \u2192 magnet-terracotta.png",
+    "f237dbd9-a7b0-424e-ae32-14a7fb6f3967.png": "Orange-tab tray with paper stacks \u2192 ideas-tray-side-open.png"
+  },
+  "outputs": [
+    {
+      "path": "/tmp/kelly-magnet-tray-3e6e/public/assets/desk/canonical/magnet-mustard.png",
+      "canonicalName": "magnet-mustard.png",
+      "size": [
+        459,
+        449
+      ],
+      "sha256": "631b6db729760956bab06ced68c7b935638a2580a00a2b45b4ea2c536e2f2574",
+      "bytes": 25803,
+      "role": "Mustard/yellow circular magnet disc",
+      "sourceUpload": "68da76b9-de05-4f49-bba2-0a59134a2491.png"
+    },
+    {
+      "path": "/tmp/kelly-magnet-tray-3e6e/public/assets/desk/magnets/magnet-mustard.png",
+      "canonicalName": "magnets/magnet-mustard.png",
+      "size": [
+        459,
+        449
+      ],
+      "sha256": "631b6db729760956bab06ced68c7b935638a2580a00a2b45b4ea2c536e2f2574",
+      "bytes": 25803,
+      "role": "mirror for interim magnet folder (Mustard/yellow circular magnet disc)",
+      "sourceUpload": "68da76b9-de05-4f49-bba2-0a59134a2491.png"
+    },
+    {
+      "path": "/tmp/kelly-magnet-tray-3e6e/public/assets/desk/canonical/magnet-terracotta.png",
+      "canonicalName": "magnet-terracotta.png",
+      "size": [
+        426,
+        430
+      ],
+      "sha256": "b9de3d230ad234841e8bf2e24fb3ee62b85395c7ee506e94ebbf7f39cce9c828",
+      "bytes": 29837,
+      "role": "Terracotta/red circular magnet disc",
+      "sourceUpload": "9a3501e7-3036-4d28-add2-3a129f2c2cd2.png"
+    },
+    {
+      "path": "/tmp/kelly-magnet-tray-3e6e/public/assets/desk/magnets/magnet-terracotta.png",
+      "canonicalName": "magnets/magnet-terracotta.png",
+      "size": [
+        426,
+        430
+      ],
+      "sha256": "b9de3d230ad234841e8bf2e24fb3ee62b85395c7ee506e94ebbf7f39cce9c828",
+      "bytes": 29837,
+      "role": "mirror for interim magnet folder (Terracotta/red circular magnet disc)",
+      "sourceUpload": "9a3501e7-3036-4d28-add2-3a129f2c2cd2.png"
+    },
+    {
+      "path": "/tmp/kelly-magnet-tray-3e6e/public/assets/desk/canonical/postit-cream.png",
+      "canonicalName": "postit-cream.png",
+      "size": [
+        518,
+        504
+      ],
+      "sha256": "13d3a72049d53babcb5a8c59a7dadf2831f3b437bd06adffe5f6e54ed6331df7",
+      "bytes": 12102,
+      "role": "Cream tilted paper/post-it stack (thick green base) \u2014 candidate for postit-stack role",
+      "sourceUpload": "e2399786-b552-4a6f-81e9-c034f326b041.png"
+    },
+    {
+      "path": "/tmp/kelly-magnet-tray-3e6e/public/assets/desk/canonical/ideas-tray-side-open.png",
+      "canonicalName": "ideas-tray-side-open.png",
+      "size": [
+        272,
+        249
+      ],
+      "sha256": "abf1d1551eb4bb3ba4473d74769cada32d1efe355c62785617ae80c38f6a786a",
+      "bytes": 7245,
+      "role": "Orange-tab cream tray with paper stacks \u2014 IDEAS side-open/filled alternate (NOT primary felt/sage ideas-tray.png)",
+      "sourceUpload": "f237dbd9-a7b0-424e-ae32-14a7fb6f3967.png"
+    }
+  ]
+}
