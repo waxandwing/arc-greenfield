@@ -82,6 +82,17 @@ export function hitTestDeskPostItDrop(clientX: number, clientY: number): DeskPos
  */
 export function hitTestDeskPostItPark(clientX: number, clientY: number): DeskPostItParkTarget {
   if (typeof document === 'undefined') return { type: 'empty' }
+
+  // Prefer geometry for the open IDEAS tray so a dragged sticky (same z as the tray)
+  // cannot mask the return target in elementsFromPoint.
+  const trayDock = document.querySelector('[data-testid="arc-desk-tray-dock"]')
+  if (trayDock instanceof HTMLElement && trayDock.getAttribute('data-extended') === 'true') {
+    const box = trayDock.getBoundingClientRect()
+    if (clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom) {
+      return { type: 'ideas-tray', element: trayDock }
+    }
+  }
+
   const stack = document.elementsFromPoint(clientX, clientY)
   for (const node of stack) {
     if (!(node instanceof Element)) continue
@@ -111,6 +122,13 @@ export function clearDeskPostItDropHighlights(root: ParentNode = document): void
   root.querySelectorAll(`.${DESK_POSTIT_PARK_DESK_CLASS}`).forEach((el) => {
     el.classList.remove(DESK_POSTIT_PARK_DESK_CLASS)
   })
+  // data-* park markers survive React className resets on the tray dock.
+  root.querySelectorAll('[data-desk-postit-park="ideas"]').forEach((el) => {
+    el.removeAttribute('data-desk-postit-park')
+  })
+  root.querySelectorAll('[data-desk-postit-park="desk"]').forEach((el) => {
+    el.removeAttribute('data-desk-postit-park')
+  })
 }
 
 export function highlightDeskPostItDropTarget(target: DeskPostItDropTarget): void {
@@ -126,6 +144,7 @@ export function highlightDeskPostItParkTarget(target: DeskPostItParkTarget): voi
       target.element.closest('[data-testid="arc-desk-tray-dock"]')
       ?? target.element
     tray.classList.add(DESK_POSTIT_DROP_HIGHLIGHT_CLASS, DESK_POSTIT_PARK_TRAY_CLASS)
+    if (tray instanceof Element) tray.setAttribute('data-desk-postit-park', 'ideas')
     return
   }
   if (target.type === 'desk-park') {
@@ -133,6 +152,7 @@ export function highlightDeskPostItParkTarget(target: DeskPostItParkTarget): voi
       target.element.closest('.arc-desk-surface')
       ?? target.element
     surface.classList.add(DESK_POSTIT_DROP_HIGHLIGHT_CLASS, DESK_POSTIT_PARK_DESK_CLASS)
+    if (surface instanceof Element) surface.setAttribute('data-desk-postit-park', 'desk')
   }
 }
 

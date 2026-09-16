@@ -38,7 +38,7 @@ try {
     await page.mouse.down()
     await page.mouse.move(dropX, dropY, { steps: 24 })
     await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'attached', timeout: 3000 })
-    assert(await page.locator('.arc-desk-surface.arc-desk-postit-drop-target--desk-park').count() === 1, `${tone} desk park`)
+    assert(await page.locator(".arc-desk-surface.arc-desk-postit-drop-target--desk-park, .arc-desk-surface[data-desk-postit-park='desk']").count() === 1, `${tone} desk park`)
     await page.mouse.up()
     await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {})
     assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator(`[data-desk-post-it="accent-${tone}"]`).count() === 0, `${tone} left slot`)
@@ -62,7 +62,7 @@ try {
   await page.mouse.move(pinkStart.x + pinkStart.width / 2, pinkStart.y + pinkStart.height / 2)
   await page.mouse.down()
   await page.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 18 })
-  await page.locator('.arc-desk-tray-dock.arc-desk-postit-drop-target--ideas').waitFor({ state: 'attached', timeout: 3000 })
+  await page.locator(".arc-desk-tray-dock.arc-desk-postit-drop-target--ideas, .arc-desk-tray-dock[data-desk-postit-park='ideas']").waitFor({ state: 'attached', timeout: 3000 })
   await page.mouse.up()
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'pink returned')
 

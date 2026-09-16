@@ -1589,13 +1589,15 @@ html:has(.arc-shell--desk) body {
 }
 
 /* Exterior desk park + IDEAS return — clear drop targets while escaping the tray. */
-.arc-desk-surface.arc-desk-postit-drop-target--desk-park {
+.arc-desk-surface.arc-desk-postit-drop-target--desk-park,
+.arc-desk-surface[data-desk-postit-park='desk'] {
   outline: 2px dashed color-mix(in srgb, var(--mustard, #e8c84a) 55%, transparent);
   outline-offset: -4px;
   box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--mustard, #e8c84a) 18%, transparent);
 }
 
-.arc-desk-tray-dock.arc-desk-postit-drop-target--ideas {
+.arc-desk-tray-dock.arc-desk-postit-drop-target--ideas,
+.arc-desk-tray-dock[data-desk-postit-park='ideas'] {
   outline: 2px solid color-mix(in srgb, #f3ebe0 70%, var(--shell-frame-green, #2f5d50));
   outline-offset: 3px;
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--shell-frame-green, #2f5d50) 22%, transparent);
