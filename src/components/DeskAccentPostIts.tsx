@@ -40,14 +40,11 @@ import {
   parseQuickCaptureCommand,
   type QuickCaptureKind,
 } from '../planning/quickCaptureCommand'
-<<<<<<< HEAD
 import { fitMagnetNoteFont } from '../desk/fitMagnetNoteFont'
-=======
 import {
   deskMagnetFallbackSrcForTone,
   deskMagnetSrcForTone,
 } from '../desk/deskMagnetAssets'
->>>>>>> df7b2d8 (fix(desk): tray stickies stay normal; magnet when in a unit)
 
 const NOTE_STORAGE_KEY = 'arc.desk-postit-notes.v1'
 const POSITION_STORAGE_KEY = 'arc.desk-postit-positions.v1'
@@ -369,7 +366,7 @@ function DeskAccentPostIt({
 
   // Unit magnets: scale hand lettering to fill the circular writing area.
   useEffect(() => {
-    if (form !== 'magnet') return
+    if (form !== 'magnet' || inDrawer) return
     const el = noteRef.current
     if (!el) return
 
@@ -389,7 +386,7 @@ function DeskAccentPostIt({
     return () => {
       ro?.disconnect()
     }
-  }, [form, text])
+  }, [form, inDrawer, text])
 
   const onChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setText(event.target.value)
