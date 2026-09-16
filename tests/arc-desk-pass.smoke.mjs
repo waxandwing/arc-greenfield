@@ -600,6 +600,7 @@ try {
   await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'attached', timeout: 3000 })
   await page.mouse.up()
   await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {})
+  await page.locator('.arc-desk-surface > [data-desk-post-it="accent-pink"]').waitFor({ state: 'attached', timeout: 5000 })
   assert(await page.locator('.arc-desk-surface > [data-desk-post-it="accent-pink"]').count() === 1, 'Pink must leave IDEAS again onto the exterior desk.')
 
   // Clean up still gathers desk post-its back into IDEAS.
@@ -618,8 +619,10 @@ try {
     if (!start) continue
     await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
     await page.mouse.down()
-    await page.mouse.move(surfaceBox.x + surfaceBox.width * (0.68 + (tone === 'pink' ? 0.08 : tone === 'blue' ? 0.14 : 0)), surfaceBox.y + surfaceBox.height * 0.55, { steps: 12 })
+    await page.mouse.move(surfaceBox.x + surfaceBox.width * (0.84 + (tone === 'pink' ? 0.04 : tone === 'blue' ? 0.08 : 0)), surfaceBox.y + surfaceBox.height * 0.76, { steps: 24 })
+    await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'attached', timeout: 3000 }).catch(() => {})
     await page.mouse.up()
+    await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {})
   }
   // Collapse again so later tray-utility assertions match a closed IDEAS dock.
   if ((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true') {
