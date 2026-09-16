@@ -21,6 +21,9 @@ const storage = {
 memory.set('arc.view-preferences.v1', JSON.stringify(DEFAULT_VIEW_PREFERENCES))
 
 assert(JSON.stringify(normalizeDeskPreferences(null)) === JSON.stringify(DEFAULT_DESK_PREFERENCES), 'Desk prefs must default safely.')
+assert(DEFAULT_DESK_PREFERENCES.showDeskNotes === true, 'Desk notes strip must default on for Teaching week demo.')
+assert(normalizeDeskPreferences({}).showDeskNotes === true, 'Missing showDeskNotes must resolve to on.')
+assert(normalizeDeskPreferences({ showDeskNotes: false }).showDeskNotes === false, 'Explicit false must still turn notes strip off.')
 assert(DEFAULT_DESK_PREFERENCES.homeDeskPlannerView === 'Week', 'Desk calendar default must be Teaching week (Week view).')
 assert(resolveHomeDeskPlannerView({ ...DEFAULT_VIEW_PREFERENCES, desk: { ...DEFAULT_DESK_PREFERENCES, homeDeskPlannerView: 'Week' } }) === 'Week', 'Home desk planner view must resolve from desk prefs.')
 assert(

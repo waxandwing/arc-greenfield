@@ -29,7 +29,8 @@ export type DeskAwareViewPreferences = ViewPreferences & {
 export const DEFAULT_DESK_PREFERENCES: DeskSurfacePreferences = {
   showTray: true,
   showPriorityPad: true,
-  showDeskNotes: false,
+  /** Teaching-week notes strip under CLASS/date headers — on by default for desk demo. */
+  showDeskNotes: true,
   showArcTable: true,
   /** Teaching-week grid is the desk calendar surface (Kelly); not Day / My Teaching Day. */
   homeDeskPlannerView: 'Week',
@@ -86,7 +87,7 @@ export function normalizeDeskPreferences(value: unknown): DeskSurfacePreferences
   return {
     showTray: candidate.showTray !== false,
     showPriorityPad: candidate.showPriorityPad !== false,
-    showDeskNotes: candidate.showDeskNotes === true,
+    showDeskNotes: candidate.showDeskNotes !== false,
     showArcTable: candidate.showArcTable !== false,
     homeDeskPlannerView: isHomeDeskPlannerView(candidate.homeDeskPlannerView) ? candidate.homeDeskPlannerView : DEFAULT_DESK_PREFERENCES.homeDeskPlannerView,
     plannerSize: candidate.plannerSize === 'large' ? 'large' : 'standard',

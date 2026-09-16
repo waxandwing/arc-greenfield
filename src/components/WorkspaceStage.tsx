@@ -122,7 +122,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     planningPeriodReturnPending,
     captureWorkspace,
     dayNotes,
-    showDeskNotes = false,
+    showDeskNotes = true,
     onSetLessonImportant,
     onMoveCaptureToDate: _moveCaptureToDate,
     onSetCaptureImportant: _setCaptureImportant,

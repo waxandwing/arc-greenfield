@@ -41,7 +41,17 @@
   color:var(--ink);
 }
 
-.planning-row-label--header,
+.planning-row-label--header{
+  align-items:center;
+  font-family:'Instrument Serif', var(--font-display), Georgia, serif;
+  font-size:clamp(1.2rem, 1.7vw, 1.55rem);
+  font-style:italic;
+  font-weight:700;
+  letter-spacing:-.01em;
+  text-transform:none;
+  color:var(--ink);
+}
+
 .planning-row-label--unit{
   align-items:center;
   font-size:14px;

@@ -96,7 +96,7 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
         </label>
         <label className="view-preferences-check">
           <input type="checkbox" checked={preferences.desk.showDeskNotes} onChange={(event) => patchDesk({ showDeskNotes: event.target.checked })} />
-          <span>Desk notes strip (optional)</span>
+          <span>Desk notes strip</span>
         </label>
       </fieldset>
     </section>

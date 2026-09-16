@@ -36,7 +36,7 @@ export function HomeDeskPreferences({ preferences, onChange }: Props) {
       </label>
       <label className="view-preferences-check">
         <input type="checkbox" checked={preferences.desk.showDeskNotes} onChange={(event) => patchDesk({ showDeskNotes: event.target.checked })} />
-        <span>Show desk notes strip (optional)</span>
+        <span>Show desk notes strip</span>
       </label>
     </section>
   )

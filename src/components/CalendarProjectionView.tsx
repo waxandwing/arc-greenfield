@@ -52,7 +52,7 @@ type Props = {
   onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
 }
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending = false, captureWorkspace = null, dayNotes, showDeskNotes = false, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection, onMoveCaptureToDate }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending = false, captureWorkspace = null, dayNotes, showDeskNotes = true, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection, onMoveCaptureToDate }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">

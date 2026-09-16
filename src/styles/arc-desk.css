@@ -2196,6 +2196,7 @@ html:has(.arc-shell--desk) body {
   height: 100%;
   max-height: 100%;
   overflow: hidden;
+  --planning-col-divider: 1px solid color-mix(in srgb, var(--shell-frame-green) 32%, var(--line-subtle));
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) > .planning-date-header,
@@ -2895,9 +2896,33 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .arc-desk-todos-folder .desk-priority-pad--folder .desk-priority-lane { padding:2px 0 6px; border:0; border-radius:0; background:transparent; box-shadow:none; }
 .b01-furniture-composition--desk .arc-desk-todos-folder .desk-priority-pad--folder .desk-priority-add input { border:0; border-bottom:1px solid color-mix(in srgb, #1a2a36 28%, transparent); border-radius:0; background:transparent; min-height:28px; box-shadow:none; }
 .b01-furniture-composition--desk .arc-desk-todos-folder[data-desk-slices='true'] .desk-priority-pad--folder .desk-priority-lane h3 { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-.b01-furniture-composition--desk .planning-date-heading { position:relative; justify-items:center; text-align:center; padding:6px 2px 10px; border-right:0; gap:0; }
+.b01-furniture-composition--desk .planning-date-heading { position:relative; justify-items:center; text-align:center; padding:6px 2px 10px; gap:0; }
 .b01-furniture-composition--desk .planning-date-heading--focus { border-top:0 !important; background:transparent !important; }
 .b01-furniture-composition--desk .planning-date-heading--focus::after { content:''; position:absolute; left:50%; bottom:0; width:1.55rem; height:0.72rem; transform:translateX(-50%); border-radius:0 0 999px 999px; background:color-mix(in srgb, var(--mustard) 88%, #b8860b); pointer-events:none; }
+
+/* Teaching-week columnar grid — CLASS | Mon–Fri dividers across header, notes, courses. */
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-row-label,
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-heading,
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-desk-notes-cell,
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-day-slot {
+  border-right: var(--planning-col-divider);
+}
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-date-heading:last-child,
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-desk-notes-cell:last-child,
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-day-slot:last-child {
+  border-right: 0;
+}
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-row-label--header {
+  font-family: 'Instrument Serif', var(--font-display), Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+  letter-spacing: -0.015em;
+  text-transform: none;
+  color: var(--ink);
+  line-height: 1.05;
+  padding-inline: 8px 10px;
+}
 .b01-furniture-composition--desk .arc-desk-arctable-script-detail { display:none !important; }
 .b01-furniture-composition--desk .arc-desk-arctable-script { order:-1; }
 .b01-furniture-composition--desk .arc-planner-object { filter: drop-shadow(0 16px 34px -24px rgba(33, 29, 23, 0.4)); }

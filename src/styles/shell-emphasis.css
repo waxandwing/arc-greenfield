@@ -166,7 +166,7 @@
 .planning-grid:not(.planning-grid--day) .planning-day-slot {
   gap: 4px;
   padding: var(--space-2) var(--space-2) var(--space-3);
-  border-right-color: rgba(44, 46, 46, 0.05);
+  border-right-color: color-mix(in srgb, var(--shell-frame-green) 28%, var(--line-subtle));
   background: transparent;
 }
 
