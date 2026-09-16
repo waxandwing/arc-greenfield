@@ -6,6 +6,7 @@ import {
   sundayFirstWeekdayIndex,
   validateHydrationInput,
   type CalendarHydrationInput,
+  type DayKind,
   type ISODate,
   type SchoolCalendar,
 } from '../calendar'
@@ -163,7 +164,7 @@ function SetupMonthMiniGrid({
   )
 }
 
-function dayToneClass(kind: SchoolCalendar['days'][string]['kind']): string {
+function dayToneClass(kind: DayKind): string {
   if (isPlannableDayKind(kind)) return ' is-school-day'
   if (kind === 'teacher-workday') return ' is-workday'
   if (kind === 'break' || kind === 'holiday' || kind === 'no-school') return ' is-break-day'
