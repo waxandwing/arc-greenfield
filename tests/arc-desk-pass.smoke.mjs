@@ -133,6 +133,22 @@ try {
   assert(await page.locator('.b01-side-rail > .arc-index-tabs').count() === 0, 'Vertical index rail must not show beside desk composition.')
   const shellWood = await page.locator('.arc-shell--desk').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(shellWood.includes('texture-wood'), 'Desk shell must be edge-to-edge icarus wood (no cream mat).')
+  const calendarSpreadPaper = await page.locator('.arc-calendar-spread--desk').evaluate((el) => {
+    const style = getComputedStyle(el)
+    return {
+      image: style.backgroundImage,
+      blend: style.backgroundBlendMode,
+      size: style.backgroundSize,
+    }
+  })
+  assert(
+    calendarSpreadPaper.image.includes('texture-cream-paper') && calendarSpreadPaper.image.includes('paper-cream'),
+    'Desk calendar spread must use existing cream paper fill + texture (not invented Kelly art).',
+  )
+  assert(
+    calendarSpreadPaper.blend.includes('soft-light'),
+    'Desk calendar spread paper texture must soft-light blend so fiber tooth is visible.',
+  )
   const tabletopImg = await page.locator('.arc-desk-tabletop').evaluate((el) => getComputedStyle(el).backgroundImage)
   assert(
     tabletopImg === 'none' || !tabletopImg.includes('texture-wood'),

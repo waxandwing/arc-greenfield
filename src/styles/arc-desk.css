@@ -240,16 +240,23 @@ html:has(.arc-shell--desk) body {
   min-height: 0;
   flex: 1 1 auto;
   height: 100%;
-  /* Object rim until Kelly calendar-background.svg lands — keep thin green frame, low card lift. */
+  /* Interim cream paper until Kelly calendar-background.svg lands — existing repo textures only. */
   border: 2px solid color-mix(in srgb, var(--shell-frame-green) 78%, var(--ink));
   border-radius: 6px;
   /* Tabs hang mostly outside the green border; slim gutter so roots clear cream content. */
   padding-right: 18px;
   background-color: var(--field-elevated);
+  /* Fill: arctable/paper-cream.png; fiber: arc/texture-cream-paper.png (soft-light so tooth reads). */
   background-image:
-    linear-gradient(color-mix(in srgb, var(--field-elevated) 97%, transparent), color-mix(in srgb, var(--field-elevated) 97%, transparent)),
+    linear-gradient(
+      color-mix(in srgb, var(--field-elevated) 82%, transparent),
+      color-mix(in srgb, var(--field-elevated) 82%, transparent)
+    ),
     var(--plan-surface-paper-texture),
     var(--plan-surface-paper);
+  background-size: auto, 720px 480px, 512px 512px;
+  background-repeat: repeat;
+  background-blend-mode: normal, soft-light, normal;
   /* Paper/book on wood — not a floating dialog card */
   box-shadow:
     0 8px 22px -20px rgba(33, 29, 23, 0.32),
