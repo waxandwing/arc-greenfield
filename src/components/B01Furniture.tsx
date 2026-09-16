@@ -613,17 +613,17 @@ export function B01Furniture({
               {layoutGridActive ? (
                 <>
                   {wrapDeskObject('planner', 'Planner', plannerBlock)}
-                  {wrapDeskObject('tray', 'Tray', renderDeskTrayDock())}
-                  {wrapDeskObject('msc', 'Must Should Could', deskPriorityDock ? (
-                    <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
+                  {wrapDeskObject('tray', 'IDEAS', renderDeskTrayDock())}
+                  {wrapDeskObject('msc', 'To-dos', deskPriorityDock ? (
+                    <aside className="arc-desk-priority-dock" aria-label="To-dos" data-testid="arc-desk-priority-dock">
                       <DeskTodosFolder>{deskPriorityDock}</DeskTodosFolder>
                     </aside>
                   ) : null)}
                   {wrapDeskObject('arctable', 'ArcTable', deskArcTableFixture ? (
                     <div className="arc-desk-arctable-anchor" data-testid="arc-desk-arctable-anchor">{deskArcTableFixture}</div>
                   ) : null)}
-                  {wrapDeskObject('notes', 'Desk notes', deskNotesDock ? (
-                    <aside className="arc-desk-notes-dock" aria-label="Desk notes">{deskNotesDock}</aside>
+                  {wrapDeskObject('notes', 'Day notes', deskNotesDock ? (
+                    <aside className="arc-desk-notes-dock" aria-label="Day notes">{deskNotesDock}</aside>
                   ) : null)}
                 </>
               ) : (
@@ -631,7 +631,7 @@ export function B01Furniture({
                   {plannerBlock}
                   {renderDeskTrayDock()}
                   {deskPriorityDock ? (
-                    <aside className="arc-desk-priority-dock" aria-label="Must Should Could pad" data-testid="arc-desk-priority-dock">
+                    <aside className="arc-desk-priority-dock" aria-label="To-dos" data-testid="arc-desk-priority-dock">
                       <DeskTodosFolder>{deskPriorityDock}</DeskTodosFolder>
                     </aside>
                   ) : null}

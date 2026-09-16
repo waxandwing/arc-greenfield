@@ -18,7 +18,7 @@ export function HomeDeskPreferences({ preferences, onChange }: Props) {
       <h2 id="settings-home-desk">Home desk</h2>
       <p className="home-desk-intro">Choose what stays on your Arc desk and which planner view opens first.</p>
       <label>
-        <span>Preferred desk planner view</span>
+        <span>Open Arc to</span>
         <select
           value={preferences.desk.homeDeskPlannerView}
           onChange={(event) => patchDesk({ homeDeskPlannerView: event.target.value as HomeDeskPlannerView })}
@@ -28,15 +28,15 @@ export function HomeDeskPreferences({ preferences, onChange }: Props) {
       </label>
       <label className="view-preferences-check">
         <input type="checkbox" checked={preferences.desk.showTray} onChange={(event) => patchDesk({ showTray: event.target.checked })} />
-        <span>Show tray on desk</span>
+        <span>Show IDEAS on desk</span>
       </label>
       <label className="view-preferences-check">
         <input type="checkbox" checked={preferences.desk.showPriorityPad} onChange={(event) => patchDesk({ showPriorityPad: event.target.checked })} />
-        <span>Show Must / Should / Could pad</span>
+        <span>Show To-dos</span>
       </label>
       <label className="view-preferences-check">
         <input type="checkbox" checked={preferences.desk.showDeskNotes} onChange={(event) => patchDesk({ showDeskNotes: event.target.checked })} />
-        <span>Show desk notes strip</span>
+        <span>Show Day notes</span>
       </label>
     </section>
   )

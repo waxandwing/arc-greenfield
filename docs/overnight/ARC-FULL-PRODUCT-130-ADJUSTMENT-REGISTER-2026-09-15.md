@@ -3,6 +3,32 @@
 **Date:** 2026-09-15  
 **Current audit base:** `main` around `0de0b693` plus current source reviewed in `ArcOnboarding`, `CalendarSetup`, `ClassSetup`, `TeachingDaySetup`, `SettingsFurnitureContent`, `DeskSetupSettings`, `PlanningWeekDayView`, `DeskQuickCaptureSticky`, `B01Furniture`, `DeskGreenFoldersDrawer`, `DeskTodosFolder`, `ArcTableSurfaces`, and existing UX tests.
 
+## Progress (overnight / integration)
+
+**Slice landed:** first repair wave — comprehension nouns + onboarding P0 entry (branch `cursor/register-130-first-wave-32a6`).
+
+| Register # | Status | Notes |
+|---|---|---|
+| 1 | done | Welcome CTA → **Set up my school year** |
+| 2 | done | One-sentence path outcomes under CTAs |
+| 3 | done | Minimal path is a real button: **Just set my school year** |
+| 4 | done | Welcome body shortened; day-one reassurance near paths |
+| 5 | done | Step rail: School year → Courses → Teaching day → Done |
+| 8 | done | Import dependency callout on calendar stage |
+| 12 | done | Back uses destination labels |
+| 66 / 86 | done | User-facing **Tray** → **IDEAS** (labels/empty/settings/help) |
+| 69 / 70 | done | **Open Arc to** + Year absence explained |
+| 73 | done | Planner shown as fixed text, not disabled checkbox |
+| 74 / 76 | done | Show-on-desk labels match objects; Day notes |
+| 121 | done | Prefix syntax demoted to optional Help; blank sticky stays Enter→IDEAS |
+| 136–138 / 141 | done | **Arrange desk** band, IDEAS/To-dos size labels, **Reset desk layout** |
+| 137 | done | Exit remains **Done arranging** |
+| 101 | already | Whole lesson object opens (prior gauntlet Pass 1) |
+| 88 / 89 / 90 | already | Dead prev/next removed; search scoped; Enlarge → Open |
+| Rest of register | open | See sections below; do not boil the ocean |
+
+---
+
 ## How to read this register
 
 This is not a wish list. Each item is a concrete UI debt item. `P0` means it can cause misunderstanding, wrong action, lost orientation, or broken recovery. `P1` means recurring friction or unnecessary cognitive load. `P2` means trust, accessibility, polish, or consistency debt.
@@ -13,18 +39,18 @@ Where an item describes current behavior, it is source-derived from the current 
 
 ## A. Onboarding / first-run experience
 
-1. **P0 — Welcome CTA mismatch.** `Set up my teaching day` sends the user first to Calendar Setup. Rename the CTA to reflect the actual next task, e.g. **Set up my school year**, or restructure the path so teaching day really is first.
-2. **P0 — Three first-run choices are not cleanly differentiated.** `Set up my teaching day`, `Import what I already have`, and `Start simple` need one-sentence outcome descriptions so users know how much work each path entails.
-3. **P1 — “Start simple” is an anchor link, not a first-class path.** Make it a real button/path with an explicit minimal commitment such as **Just set my school year**.
-4. **P1 — Welcome copy is too dense before first action.** Reduce the paragraph to one sentence and move the “you do not need everything on day one” reassurance next to the minimal path.
-5. **P0 — Onboarding lacks visible step count/state.** Show `School year → Courses → Teaching day → Done` so Back/Cancel never feels like an unknown maze.
+1. **P0 — Welcome CTA mismatch.** ~~`Set up my teaching day` sends the user first to Calendar Setup.~~ **DONE:** renamed to **Set up my school year**.
+2. **P0 — Three first-run choices are not cleanly differentiated.** ~~need one-sentence outcome descriptions~~ **DONE:** path outcomes list under CTAs.
+3. **P1 — “Start simple” is an anchor link, not a first-class path.** ~~Make it a real button~~ **DONE:** **Just set my school year** button with `intent: 'simple'`.
+4. **P1 — Welcome copy is too dense before first action.** **DONE:** shortened; reassurance near paths.
+5. **P0 — Onboarding lacks visible step count/state.** **DONE:** `School year → Courses → Teaching day → Done` rail.
 6. **P1 — “School year” and “Calendar” are used as overlapping concepts.** Pick one user-facing label and use it in onboarding, Settings, setup nav, and validation.
 7. **P1 — `calendar` onboarding stage is labeled “School year” elsewhere.** Remove implementation-stage naming inconsistency from user-visible breadcrumbs.
-8. **P0 — Import path requires calendar first but the dependency is only explained in footnote copy.** Surface the dependency immediately when Import is chosen: **First confirm your school year so dates land correctly.**
+8. **P0 — Import path requires calendar first but the dependency is only explained in footnote copy.** **DONE:** stage callout when Import chosen.
 9. **P1 — Import path lands directly in import after calendar without a visible transition summary.** Insert a lightweight confirmation: **School year saved. Now bring in your curriculum.**
 10. **P0 — Cancel behavior differs by onboarding stage.** Define one rule: Cancel always returns to the prior safe surface and preserves drafts.
 11. **P0 — Draft preservation is implicit.** Add visible `Saved as you go` messaging or equivalent state once a setup draft has persisted.
-12. **P1 — Back button always says `← Back`.** On deeper steps use destination labels when useful: **Back to Courses**, **Back to School year**.
+12. **P1 — Back button always says `← Back`.** **DONE:** destination labels (**Back to welcome / School year / Courses**).
 13. **P1 — Onboarding has no “do this later” affordance on Classes/Teaching Day even though the welcome says everything is not required day one.** Add explicit defer actions where product state permits.
 14. **P0 — The product auto-resolves a requested stage based on capabilities.** If Arc redirects the user because a prerequisite is missing, explain why rather than silently changing the destination.
 15. **P2 — Welcome uses product manifesto language before demonstrating utility.** Lead with the first useful outcome, then brand statement.
@@ -93,17 +119,17 @@ Where an item describes current behavior, it is source-derived from the current 
 63. **P1 — `My school year`, `My teaching day`, `My courses` are good categories; `Planning`, `Desk setup`, `ArcTable`, `Accessibility & display`, `Data / import / reuse` are flatter and more implementation-like.** Reorganize around teacher goals.
 64. **P1 — ArcTable Settings section contains only explanatory copy.** Either add actual ArcTable controls there or remove the dead section.
 65. **P1 — Accessibility & Display contains only explanatory copy.** Put actual display/accessibility controls there or remove the pseudo-section.
-66. **P0 — Settings says `Tray` while desk semantics are moving to `IDEAS`.** Eliminate `Tray` as user-facing terminology if it is the same concept.
-67. **P1 — `Edit Workspace` should be renamed **Arrange desk**.
+66. **P0 — Settings says `Tray` while desk semantics are moving to `IDEAS`.** **DONE:** user-facing Tray → IDEAS in desk settings / home desk / arrange mode.
+67. **P1 — `Edit Workspace` should be renamed **Arrange desk**.** **DONE** (prior + this slice).
 68. **P0 — Settings must clearly distinguish configuration changes that affect existing plans from cosmetic preferences.
-69. **P1 — `Preferred default planner view` should be labeled by outcome: **Open Arc to** Day / Week / Month.
-70. **P1 — Year is absent from default-view choices without explanation.** Either support it or explain why not.
+69. **P1 — `Preferred default planner view` should be labeled by outcome: **Open Arc to** Day / Week / Month.** **DONE.**
+70. **P1 — Year is absent from default-view choices without explanation.** **DONE:** hint explains Year is not a home view yet.
 71. **P2 — `Show weekends in Week view` belongs with Week display preferences, not necessarily Desk Setup.
 72. **P1 — Object size controls should live inside Arrange Desk if size is primarily spatial, reducing duplicate adjustment paths.
-73. **P1 — `Planner (required)` as a disabled checkbox is odd interaction language.** Render it as fixed text, not a control that cannot change.
-74. **P1 — `Show on desk` should use the same labels as the objects themselves: IDEAS, To-dos, ArcTable, Notes.
-75. **P1 — `Must / Should / Could pad` competes with user-facing `TO-DOS`.** Pick one concept; likely TO-DOS externally, Must/Should/Could internally within it.
-76. **P2 — `Desk notes strip` is implementation-shaped wording.** Use **Day notes** or **Notes row** depending intended mental model.
+73. **P1 — `Planner (required)` as a disabled checkbox is odd interaction language.** **DONE:** fixed text **Planner — always on the desk**.
+74. **P1 — `Show on desk` should use the same labels as the objects themselves: IDEAS, To-dos, ArcTable, Notes.** **DONE** (Day notes).
+75. **P1 — `Must / Should / Could pad` competes with user-facing `TO-DOS`.** Pick one concept; likely TO-DOS externally, Must/Should/Could internally within it. **Partial:** arrange/settings use To-dos.
+76. **P2 — `Desk notes strip` is implementation-shaped wording.** **DONE:** **Day notes**.
 77. **P1 — Task Bar appears under `My teaching day`, but To-dos live as desk furniture.** Move task/to-do settings to a consistent location.
 78. **P0 — Settings subpages need a persistent way back to Settings with preserved scroll/focus.
 79. **P1 — Setup nav has Calendar / Terms / Courses / Teaching day / Units / Lessons / Import, while Settings group hierarchy differs.** Unify the information architecture.
@@ -118,11 +144,11 @@ Where an item describes current behavior, it is source-derived from the current 
 
 ## E. Desk, navigation, Week/Day/Month/Year
 
-86. **P0 — IDEAS vs TRAY duplicated mental model.** One user-facing concept only.
+86. **P0 — IDEAS vs TRAY duplicated mental model.** **DONE:** teacher-facing noun is IDEAS (internal ids may still say tray).
 87. **P0 — `PLANNING` is too broad for a tab in a planning app.** Rename to **Planning period** or remove as permanent navigation.
-88. **P0 — Header has hard-disabled previous/next arrows.** Remove until functional or implement them.
-89. **P1 — Search field has no visible scope.** Use **Find a lesson, unit, note…** when expanded.
-90. **P1 — `Enlarge` is implementation language.** Use **Open calendar** or an expand icon.
+88. **P0 — Header has hard-disabled previous/next arrows.** **DONE** (prior): removed until functional.
+89. **P1 — Search field has no visible scope.** **DONE** (prior): **Find a lesson, unit, note…**
+90. **P1 — `Enlarge` is implementation language.** **DONE** (prior): **Open** / Open calendar.
 91. **P0 — Today button, Today highlight, and selected date must remain visually distinct.
 92. **P1 — Active Day/Week/Month/Year tab should be recognizable without relying on color alone.
 93. **P1 — Settings active state should not look like another calendar view.
@@ -138,8 +164,8 @@ Where an item describes current behavior, it is source-derived from the current 
 
 ## F. Lessons, units, object interaction
 
-101. **P0 — Lesson title click opens while lesson-body click reveals actions.** Make the whole lesson object open; reserve contextual affordances for actions.
-102. **P0 — Touch users should not need a first tap merely to reveal actions unless the primary object behavior is still obvious.** Prefer open-on-tap and explicit More affordance.
+101. **P0 — Lesson title click opens while lesson-body click reveals actions.** **DONE** (prior gauntlet): whole lesson object opens; actions stay on controls.
+102. **P0 — Touch users should not need a first tap merely to reveal actions unless the primary object behavior is still obvious.** Prefer open-on-tap and explicit More affordance. **Partial:** open-on-tap landed with #101.
 103. **P1 — Lesson drag should be the obvious move gesture, with `Move to date…` retained as accessible alternative.
 104. **P0 — Lesson move must preview destination date/class and sequence effects before committing when more than one item is affected.
 105. **P1 — Important status needs a stable icon/mark that does not compete with delivery status.
@@ -163,7 +189,7 @@ Where an item describes current behavior, it is source-derived from the current 
 
 ## G. Capture, IDEAS, TO-DOS, notes
 
-121. **P0 — Remove `u/l/i/n` command syntax from primary Quick Capture placeholder/helper.** Keep it only as optional power-user help.
+121. **P0 — Remove `u/l/i/n` command syntax from primary Quick Capture placeholder/helper.** **DONE:** blank sticky says Enter→IDEAS; prefixes only optional in Help / after typed command.
 122. **P0 — A captured thought must remain one object/ID when represented on desk and in IDEAS unless user explicitly copies it.
 123. **P0 — Quick Capture confirmation that lasts ~1.4 seconds cannot be the only evidence of destination.** Keep a spatial/recent-action cue.
 124. **P1 — Rename `Quick capture` to **Jot** or test a more teacher-native label if Quick Capture feels product-y.
@@ -183,12 +209,12 @@ Where an item describes current behavior, it is source-derived from the current 
 
 ## H. Arrange Desk / furniture mode
 
-136. **P0 — Rename `Desk edit mode` to **Arrange desk**.
-137. **P0 — Rename primary exit `Pin it down` to **Done arranging**; brand-flavor language can remain secondary.
-138. **P1 — Replace internal `MSC size` with **To-dos size**.
-139. **P0 — Planning drag must visibly lock while arranging furniture, not merely be disabled in code.
+136. **P0 — Rename `Desk edit mode` to **Arrange desk**.** **DONE.**
+137. **P0 — Rename primary exit `Pin it down` to **Done arranging**; brand-flavor language can remain secondary.** **DONE.**
+138. **P1 — Replace internal `MSC size` with **To-dos size**.** **DONE** (+ IDEAS size).
+139. **P0 — Planning drag must visibly lock while arranging furniture, not merely be disabled in code.** **Partial:** toolbar copy states planning drag is paused.
 140. **P1 — Selected furniture needs a clear but calm outline plus object name.
-141. **P0 — Reset must say **Reset desk layout** and explain that content is not deleted.
+141. **P0 — Reset must say **Reset desk layout** and explain that content is not deleted.** **DONE** (button + title).
 142. **P0 — Reset should offer Undo after completion rather than a cryptic double-click confirmation pattern.
 143. **P1 — Arrow-key movement should announce destination/position changes for screen-reader users.
 144. **P1 — Dragging furniture should snap to understandable zones and preview the drop before commit.
@@ -243,18 +269,26 @@ Where an item describes current behavior, it is source-derived from the current 
 
 ## First repair wave: do these before micro-polish
 
-1. Resolve **IDEAS vs TRAY**.
-2. Resolve **Course / Class / Section vocabulary**.
-3. Separate **Settings** from Day/Week/Month/Year navigation.
-4. Fix **whole lesson object opens** behavior.
-5. Remove **Quick Capture command syntax** from default UI.
-6. Simplify **Settings information architecture**.
-7. Normalize **Arrange desk** language and recovery.
-8. Make onboarding steps/dependencies explicit and deferrable.
-9. Make move/shift/automatic schedule consequences visible + undoable.
-10. Re-tier ArcTable controls around live-class urgency.
-11. Add cross-surface focus/context restoration.
-12. Run the end-to-end journey tests in item 180 before visual lock.
+1. Resolve **IDEAS vs TRAY**. — **DONE** (teacher-facing)
+2. Resolve **Course / Class / Section vocabulary**. — open
+3. Separate **Settings** from Day/Week/Month/Year navigation. — **in flight / landed** (left copper tab); do not regress
+4. Fix **whole lesson object opens** behavior. — **DONE** (prior)
+5. Remove **Quick Capture command syntax** from default UI. — **DONE**
+6. Simplify **Settings information architecture**. — open (partial labels done)
+7. Normalize **Arrange desk** language and recovery. — **DONE** (Undo-after-reset still open #142)
+8. Make onboarding steps/dependencies explicit and deferrable. — **partial** (1–5, 8, 12 done; defer/cancel/draft still open)
+9. Make move/shift/automatic schedule consequences visible + undoable. — open / parallel work
+10. Re-tier ArcTable controls around live-class urgency. — open / parallel (timer, end-class, table settings)
+11. Add cross-surface focus/context restoration. — open
+12. Run the end-to-end journey tests in item 180 before visual lock. — open
+
+## Recommended next (after this slice)
+
+1. Onboarding #10–11, #14, #18 — Cancel/draft visibility + redirect explanation + return-complete status.
+2. Course/Class/Section vocabulary pass (#41–49) without colliding with Teaching Day class-times work.
+3. Arrange desk #142 Undo-after-reset + #139 stronger planning-lock visual.
+4. ArcTable live-class hierarchy (#146–160) coordinating with timer/end-class/table-settings agents.
+5. Journey tests (#180).
 
 ## Completion rule
 

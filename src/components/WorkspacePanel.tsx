@@ -112,7 +112,7 @@ export function WorkspacePanel(props: Props) {
     >
       <section aria-labelledby="workspace-captures-heading" className="workspace-captures-primary">
         <div className="workspace-captures-heading-row">
-          <h2 id="workspace-captures-heading">Tray</h2>
+          <h2 id="workspace-captures-heading">IDEAS</h2>
           {captureCount > 0 ? <span className="workspace-capture-count">{captureCount}</span> : null}
         </div>
         {captureCount === 0 ? (
@@ -357,7 +357,7 @@ function CaptureCard({ capture, units, defaultDate, selected, planningDragDisabl
         if (next) onMoveToDate(capture.id, next as ISODate)
       },
     })
-    menuItems.push({ id: 'tray', label: 'Move to Tray…', onSelect: () => { onMoveToDate(capture.id, null) } })
+    menuItems.push({ id: 'tray', label: 'Move to IDEAS…', onSelect: () => { onMoveToDate(capture.id, null) } })
   }
 
   const [lifting, setLifting] = useState(false)

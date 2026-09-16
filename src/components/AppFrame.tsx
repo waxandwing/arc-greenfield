@@ -673,7 +673,7 @@ export function AppFrame() {
 
   const fridgeContent = showPlanFurniture ? (
     <WorkspacePanel {...trayPanelProps} />
-  ) : <p className="b01-furniture-empty">Tray is available in Plan View.</p>
+  ) : <p className="b01-furniture-empty">IDEAS is available in Plan View.</p>
 
   const deskTrayCompact = showPlanFurniture && activeDeskPreferences.desk.showTray ? (
     <WorkspacePanel {...trayPanelProps} planningDragDisabled={deskEditActive} />

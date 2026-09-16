@@ -104,6 +104,16 @@
   color: color-mix(in srgb, var(--shell-frame-green) 55%, var(--soft-charcoal));
 }
 
+.desk-setup-fixed-object {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--field-elevated) 92%, var(--accent-blue-soft));
+  font: 650 13px/1.3 var(--font-ui);
+  color: var(--ink);
+}
+
 .b01-settings-group label {
   display: grid;
   gap: 6px;

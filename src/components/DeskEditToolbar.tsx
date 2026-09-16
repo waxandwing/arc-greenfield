@@ -32,7 +32,7 @@ export function DeskEditToolbar({
       </label>
     ) : selectedObject === 'tray' ? (
       <label className="desk-edit-size-control">
-        <span>Tray size</span>
+        <span>IDEAS size</span>
         <select value={sizes.tray} onChange={(event) => onSizeChange({ tray: event.target.value as TraySizePreset })}>
           <option value="standard">Standard</option>
           <option value="wide">Wide</option>
@@ -40,7 +40,7 @@ export function DeskEditToolbar({
       </label>
     ) : selectedObject === 'msc' ? (
       <label className="desk-edit-size-control">
-        <span>MSC size</span>
+        <span>To-dos size</span>
         <select value={sizes.msc} onChange={(event) => onSizeChange({ msc: event.target.value as MscSizePreset })}>
           <option value="compact">Compact</option>
           <option value="standard">Standard</option>
@@ -52,23 +52,23 @@ export function DeskEditToolbar({
     selectedObject === 'planner'
       ? 'Planner'
       : selectedObject === 'tray'
-        ? 'Tray'
+        ? 'IDEAS'
         : selectedObject === 'msc'
-          ? 'Must / Should / Could'
+          ? 'To-dos'
           : selectedObject === 'arctable'
             ? 'ArcTable'
             : 'Notes'
 
   return (
-    <div className="desk-edit-toolbar" role="region" aria-label="Desk edit mode" data-testid="desk-edit-toolbar">
+    <div className="desk-edit-toolbar" role="region" aria-label="Arrange desk" data-testid="desk-edit-toolbar">
       <div>
         <p className="desk-edit-toolbar-label">
-          Desk edit mode — select a piece, then move it.
+          Arrange desk — select a piece, then move it. Planning drag is paused.
         </p>
         <p className="desk-edit-toolbar-hint" data-testid="desk-edit-move-hint">
           {canMove
             ? `${selectedLabel}: drag it, or use the arrows / keyboard.`
-            : `${selectedLabel} stays put — pick Tray, ArcTable, Must/Should/Could, or Notes to move.`}
+            : `${selectedLabel} stays put — pick IDEAS, ArcTable, To-dos, or Notes to move.`}
         </p>
       </div>
       <div className="desk-edit-toolbar-actions">
@@ -82,11 +82,11 @@ export function DeskEditToolbar({
           </div>
         ) : null}
         {sizeField}
-        <button type="button" className="quiet-button" onClick={onReset}>
-          {resetNeedsConfirm ? 'Confirm reset desk' : 'Reset desk'}
+        <button type="button" className="quiet-button" onClick={onReset} title="Restores default positions. Your lessons and notes stay.">
+          {resetNeedsConfirm ? 'Confirm reset desk layout' : 'Reset desk layout'}
         </button>
         <button type="button" className="b01-settings-action b01-settings-action--primary" onClick={onDone}>
-          Pin it down
+          Done arranging
         </button>
       </div>
     </div>
