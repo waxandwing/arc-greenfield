@@ -68,6 +68,7 @@ export function SchoolYearDeskView({ calendar, anchorDate, today: todayProp, onS
         <div>
           <p className="section-label">School year</p>
           <h2 className="school-year-desk-title">{calendar.schoolYearLabel}</h2>
+          <p className="school-year-desk-hint">Click each past school day to mark that it happened.</p>
         </div>
         <div className="school-year-desk-controls">
           <div className="school-year-desk-zoom" aria-label="Year grid zoom">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import type { CalendarView } from '../navigation/calendarViews'
 import { calendarViewLabel } from '../navigation/calendarViews'
 import type { DeskLayoutState, DeskMoveDirection, DeskObjectKind, DeskViewportProfile } from '../navigation/deskLayout'
@@ -316,6 +316,7 @@ export function B01Furniture({
 
   function wrapDeskObject(object: DeskObjectKind, label: string, node: ReactNode | null) {
     if (!node) return null
+    const movable = deskEditMode && object !== 'planner' && Boolean(onMoveDeskObject)
     return (
       <div
         className={deskObjectClass(object, `arc-desk-object-slot${deskEditMode ? '' : ' arc-desk-object-slot--locked'}`)}
@@ -323,10 +324,51 @@ export function B01Furniture({
         data-desk-object={object}
         tabIndex={deskEditMode ? 0 : undefined}
         role={deskEditMode ? 'button' : undefined}
-        aria-label={deskEditMode ? `${label} desk object` : undefined}
+        aria-label={deskEditMode ? `${label} desk object${movable ? '. Drag or use arrow keys to move.' : ''}` : undefined}
         aria-pressed={deskEditMode && deskSelectedObject === object ? true : undefined}
         onFocus={() => deskEditMode && onSelectDeskObject?.(object)}
         onClick={() => deskEditMode && onSelectDeskObject?.(object)}
+        onPointerDown={(event: ReactPointerEvent<HTMLDivElement>) => {
+          if (!movable) return
+          if (event.button !== 0) return
+          const target = event.target as HTMLElement | null
+          if (target?.closest('button, a, input, textarea, select, [contenteditable="true"]')) return
+          onSelectDeskObject?.(object)
+          const startX = event.clientX
+          const startY = event.clientY
+          const pointerId = event.pointerId
+          const el = event.currentTarget
+          el.setPointerCapture(pointerId)
+          el.classList.add('arc-desk-edit-object--dragging')
+          let moved = false
+          function onMove(moveEvent: PointerEvent) {
+            const dx = moveEvent.clientX - startX
+            const dy = moveEvent.clientY - startY
+            if (!moved && Math.hypot(dx, dy) < 28) return
+            moved = true
+            const dominant = Math.abs(dx) >= Math.abs(dy)
+            if (dominant) onMoveDeskObject?.(dx > 0 ? 'right' : 'left')
+            else onMoveDeskObject?.(dy > 0 ? 'down' : 'up')
+            cleanup()
+          }
+          function onUp() {
+            cleanup()
+          }
+          function cleanup() {
+            el.classList.remove('arc-desk-edit-object--dragging')
+            try {
+              el.releasePointerCapture(pointerId)
+            } catch {
+              /* already released */
+            }
+            window.removeEventListener('pointermove', onMove)
+            window.removeEventListener('pointerup', onUp)
+            window.removeEventListener('pointercancel', onUp)
+          }
+          window.addEventListener('pointermove', onMove)
+          window.addEventListener('pointerup', onUp)
+          window.addEventListener('pointercancel', onUp)
+        }}
       >
         {node}
       </div>

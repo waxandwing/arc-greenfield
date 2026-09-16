@@ -221,15 +221,16 @@ function LessonFocus({
   }
 
   return (
-    <section className="lesson-focus" aria-label={`${source.title} lesson focus`} data-lesson-focus={source.id} data-important={source.important === true ? 'true' : 'false'}>
+    <section className="lesson-focus" aria-label={`${source.title} lesson focus`} data-lesson-focus={source.id} data-important={source.important === true ? 'true' : 'false'} data-delivery-status={projected.deliveryStatus}>
       {onReturnToPlanningPeriod ? <button type="button" className="plan-back-link" onClick={onReturnToPlanningPeriod}>Back to Planning period</button> : null}
       {onRetreat && !onReturnToPlanningPeriod ? <button type="button" className="plan-back-link" onClick={onRetreat}>Back to class</button> : null}
       <header className="lesson-focus-heading">
         {source.important === true ? <p className="lesson-focus-important-label" role="status">IMPORTANT</p> : null}
+        <h2>{source.title}</h2>
         <p className="day-continuity-lesson-meta lesson-focus-context">
           <span>{section.sectionName} · {courseTitle}</span>
           <span>{projected.unitTitle}</span>
-          <span>{humanizeStatus(projected.deliveryStatus)}</span>
+          <span className="lesson-focus-status" data-status={projected.deliveryStatus}>{humanizeStatus(projected.deliveryStatus)}</span>
           {projected.datePolicy === 'fixed' ? <span className="day-continuity-fixed">Fixed</span> : null}
           {projected.isSectionOverride ? <span>Shifted for this class</span> : null}
         </p>
@@ -241,7 +242,11 @@ function LessonFocus({
       {source.materials.length > 0 ? <LessonField label="Materials" items={source.materials} /> : null}
       {source.phases.length > 0 ? <LessonField label="Teaching phases" items={source.phases} /> : null}
       {source.directions.length === 0 && source.materials.length === 0 && source.phases.length === 0 ? (
-        <p className="day-continuity-empty lesson-focus-empty-body">No directions, materials, or phases yet.</p>
+        <p className="day-continuity-empty lesson-focus-empty-body">
+          {projected.deliveryStatus === 'skipped'
+            ? 'This lesson was skipped. Move it if you still want it on another day, or leave the record as-is.'
+            : 'No directions, materials, or phases yet.'}
+        </p>
       ) : null}
       <div className="day-continuity-lesson-actions plan-lesson-action-row">
         {onEditLesson ? (
@@ -254,10 +259,10 @@ function LessonFocus({
           <button type="button" className="text-button" onClick={() => onSetLessonImportant(source.id, !(source.important === true))}>{source.important ? 'Remove Important' : 'Mark Important'}</button>
         ) : null}
         {onBeginPlanLessonMove && projected.datePolicy !== 'fixed' ? (
-          <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: source.id, sectionId: section.sectionId, defaultDestination: projected.effectiveDate })}>Move</button>
+          <button type="button" className="text-button" data-testid="lesson-focus-move" onClick={() => onBeginPlanLessonMove({ lessonId: source.id, sectionId: section.sectionId, defaultDestination: projected.effectiveDate })}>Move</button>
         ) : null}
         {onBeginPlanLessonMove && projected.datePolicy === 'fixed' ? (
-          <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId: source.id, sectionId: section.sectionId, defaultDestination: projected.effectiveDate })}>Move fixed Lesson</button>
+          <button type="button" className="text-button" data-testid="lesson-focus-move" onClick={() => onBeginPlanLessonMove({ lessonId: source.id, sectionId: section.sectionId, defaultDestination: projected.effectiveDate })}>Move fixed Lesson</button>
         ) : null}
         {onOpenRecoveryForSection && projected.deliveryStatus === 'in-progress' ? (
           <button type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(section.sectionId)}>Review Shift</button>

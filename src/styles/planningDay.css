@@ -334,10 +334,33 @@ button.day-continuity-lesson-title-open:focus-visible{
 }
 
 .lesson-focus-heading h2 {
-  max-width: 19ch;
-  margin: 6px 0 12px;
-  font: 500 clamp(42px, 5vw, 58px)/.98 var(--font-editorial);
-  letter-spacing: -.035em;
+  max-width: 22ch;
+  margin: 6px 0 10px;
+  font: 500 clamp(28px, 4vw, 42px)/1.05 var(--font-editorial);
+  letter-spacing: -.03em;
+}
+
+.lesson-focus-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--soft-charcoal) 12%, transparent);
+  color: var(--ink);
+  font: 800 11px/1 var(--font-ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lesson-focus-status[data-status='skipped'] {
+  background: color-mix(in srgb, var(--terracotta) 18%, transparent);
+  color: var(--terracotta-text, var(--terracotta));
+}
+
+.lesson-focus-empty-body {
+  margin: 0;
+  max-width: 42ch;
 }
 
 .lesson-focus-field h3 {
