@@ -279,8 +279,8 @@ html:has(.arc-shell--desk) body {
 .arc-planner-physical-tabs--desk-edge {
   position: absolute;
   left: auto;
-  /* Hang past the green border onto the wood; ~10–12px root still overlaps the frame. */
-  right: -56px;
+  /* Hang onto the wood; only ~1px of each tab’s left edge tucks under the planner rim. */
+  right: -67px;
   top: 14%;
   bottom: 12%;
   transform: none;
@@ -346,8 +346,8 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-planner-physical-tabs.arc-planner-physical-tabs--desk-edge .arc-index-tab[aria-current='page'] {
-  /* Active tab protrudes further onto the desk (beats generic physical-tabs translateY). */
-  transform: translateX(6px);
+  /* Keep active aligned with inactive left edge (color/weight carry the state). */
+  transform: none;
   padding-right: 8px;
   color: #fffdf8;
   background: linear-gradient(90deg, color-mix(in srgb, var(--shell-frame-green) 88%, #1f3324), var(--shell-frame-green));
@@ -356,7 +356,7 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-planner-physical-tabs.arc-planner-physical-tabs--desk-edge .arc-index-tab:hover:not(:disabled) {
-  transform: translateX(3px);
+  transform: translateX(2px);
 }
 
 .arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab--desk-slice {
@@ -374,7 +374,7 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-planner-physical-tabs.arc-planner-physical-tabs--desk-edge[data-desk-slices='true'] .arc-index-tab.arc-index-tab--desk-slice-active {
-  transform: translateX(7px);
+  transform: none;
   color: #fffdf8;
   font-weight: 800;
   text-shadow: 0 1px 0 rgba(20, 36, 24, 0.4);
