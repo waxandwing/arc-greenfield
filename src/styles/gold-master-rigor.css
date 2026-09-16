@@ -12,6 +12,7 @@
 .gm-lesson strong,.gm-lesson span,.gm-lesson-course,.gm-neutral,.gm-lunch,.gm-day-card h2,.gm-day-card p,.gm-detail h2,.gm-detail p,.gm-sidepad label span,.gm-sidepad label small,.gm-unitbar strong,.gm-unitbar span,.gm-connections h2,.gm-connections p,.gm-month-day span,.gm-sequence,.gm-idea,.gm-task-lane,.gm-note{overflow-wrap:anywhere;word-break:normal}
 .gm-lesson strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .gm-lesson span,.gm-lesson-course{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gm-week .gm-lesson>span{display:none}
 .gm-month-day span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-right:0}
 .gm-detail{overflow:hidden}
 .gm-detail>div{min-width:0}
