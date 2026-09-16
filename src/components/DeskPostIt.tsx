@@ -14,6 +14,15 @@ export type DeskPostItDragEndInfo = {
   didMove: boolean
 }
 
+export type DeskPostItDragStartInfo = {
+  postItId: string
+  position: DeskPostItPosition
+  rect: DOMRect
+  clientX: number
+  clientY: number
+  pointerId: number
+}
+
 type Props = {
   tone?: DeskPostItTone
   /** Stable id for session position persistence + test hooks. */
@@ -23,6 +32,8 @@ type Props = {
   /** Controlled position — when set, parent owns placement (linked stacks). */
   position?: DeskPostItPosition
   onPositionChange?: (position: DeskPostItPosition) => void
+  /** Fired once when a desk drag arms (IDEAS → wood escape ghost). */
+  onDragStart?: (info: DeskPostItDragStartInfo) => void
   /** Fired while an armed desk drag is moving (for drop-target highlights). */
   onDragMove?: (info: { postItId: string; clientX: number; clientY: number; rect: DOMRect }) => void
   onDragEnd?: (info: DeskPostItDragEndInfo) => void
@@ -36,7 +47,8 @@ type Props = {
   lesson?: boolean
   /**
    * Drag percentage reference. Defaults to `.arc-desk-surface`.
-   * IDEAS tray stickies use the accent slot so in-tray drags stay local.
+   * IDEAS tray stickies use the accent slot so in-tray rearranges stay local;
+   * escape onto wood is owned by the parent via onDragStart + a document ghost.
    */
   dragSurfaceSelector?: string
   children?: ReactNode
@@ -102,6 +114,7 @@ export function DeskPostIt({
   defaultPosition,
   position: controlledPosition,
   onPositionChange,
+  onDragStart,
   onDragMove,
   onDragEnd,
   tiltDeg = -2.5,
@@ -124,6 +137,8 @@ export function DeskPostIt({
   positionRef.current = position
   const [dragging, setDragging] = useState(false)
   const dragRef = useRef<DragState | null>(null)
+  const onDragStartRef = useRef(onDragStart)
+  onDragStartRef.current = onDragStart
 
   const resolveDragSurface = useCallback((): HTMLElement | null => {
     const scoped = document.querySelector(dragSurfaceSelector)
@@ -150,7 +165,21 @@ export function DeskPostIt({
     setUncontrolledPosition(next)
   }, [isControlled, onPositionChange])
 
-  const armDrag = useCallback((pointerId: number) => {
+  const emitDragStart = useCallback((pointerId: number, clientX: number, clientY: number) => {
+    const node = nodeRef.current
+    const notify = onDragStartRef.current
+    if (!node || !notify) return
+    notify({
+      postItId,
+      position: positionRef.current,
+      rect: node.getBoundingClientRect(),
+      clientX,
+      clientY,
+      pointerId,
+    })
+  }, [postItId])
+
+  const armDrag = useCallback((pointerId: number, clientX?: number, clientY?: number) => {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== pointerId || drag.armed) return
     drag.deferred = false
@@ -165,7 +194,8 @@ export function DeskPostIt({
       /* ignore */
     }
     setDragging(true)
-  }, [])
+    emitDragStart(pointerId, clientX ?? drag.originX, clientY ?? drag.originY)
+  }, [emitDragStart])
 
   const onPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (!dragEnabled || event.button !== 0) return
@@ -190,9 +220,10 @@ export function DeskPostIt({
     if (!editTarget) {
       nodeRef.current.setPointerCapture(event.pointerId)
       setDragging(true)
+      emitDragStart(event.pointerId, event.clientX, event.clientY)
       event.preventDefault()
     }
-  }, [dragEnabled, position.leftPct, position.topPct, resolveDragSurface])
+  }, [dragEnabled, emitDragStart, position.leftPct, position.topPct, resolveDragSurface])
 
   const onPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current
@@ -201,7 +232,7 @@ export function DeskPostIt({
     if (drag.deferred && !drag.armed) {
       const dist = Math.hypot(event.clientX - drag.originX, event.clientY - drag.originY)
       if (dist < EDIT_DRAG_THRESHOLD_PX) return
-      armDrag(event.pointerId)
+      armDrag(event.pointerId, event.clientX, event.clientY)
       event.preventDefault()
     }
 
@@ -254,7 +285,7 @@ export function DeskPostIt({
       if (!drag || !drag.deferred || drag.armed || drag.pointerId !== event.pointerId) return
       const dist = Math.hypot(event.clientX - drag.originX, event.clientY - drag.originY)
       if (dist < EDIT_DRAG_THRESHOLD_PX) return
-      armDrag(event.pointerId)
+      armDrag(event.pointerId, event.clientX, event.clientY)
       event.preventDefault()
     }
     const onWindowPointerUp = (event: PointerEvent) => {
