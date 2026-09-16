@@ -76,6 +76,7 @@ const contracts = [
   'tests/generated/src/planning/quickCaptureCommand.contract.js',
   'tests/generated/src/planning/arcTableDeskAccess.contract.js',
   'tests/generated/src/planning/yearDeskProjection.contract.js',
+  'tests/generated/src/planning/yearDeskCaughtUp.contract.js',
   'tests/generated/src/planning/deskDrag.contract.js',
   'tests/generated/src/planning/planContextResolution.contract.js',
   'tests/generated/src/planning/planningPeriodAttention.contract.js',
