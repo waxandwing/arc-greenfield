@@ -1,0 +1,80 @@
+{
+  "ingestedAt": "2026-09-16T00:32:05.277020+00:00",
+  "agent": "kelly-ideas-todos-ingest-f42a",
+  "source": "Kelly chat upload 2026-09-16 \u2014 mustard well/rail, todos silver tab, blue-grey notch, ideas sage tray",
+  "processing": "Cropped transparent letterbox to content bbox (+2px pad). Split mustard composite into well + rail. No recolor.",
+  "originalUploads": {
+    "0ffc4e09-9cad-4c2b-b38a-3c4f111aec10.png": "Mustard tray well + beige rail/tab (composite)",
+    "f065dec0-271d-4076-9b4a-b6c81f8cb70f.png": "Silver brushed metal TODOs side tab",
+    "7ad07129-16fd-48c3-9067-8e317cc7c5fa.png": "Light blue-grey notched tray piece",
+    "cb692436-8441-4724-8bec-73ed5f76df6c.png": "Sage green IDEAS drawer with pull-tab text (primary ideas-tray)"
+  },
+  "outputs": [
+    {
+      "path": "/workspace/public/assets/desk/canonical/ideas-tray.png",
+      "size": [
+        807,
+        381
+      ],
+      "sha256": "5247ac9e23b96a4c8a8c63cd3055a894310cdfbf99022654486ce859915cee4b",
+      "bytes": 95325,
+      "role": "Primary IDEAS tray/drawer (sage green with IDEAS pull-tab)",
+      "sourceUpload": "cb692436-8441-4724-8bec-73ed5f76df6c.png"
+    },
+    {
+      "path": "/workspace/public/assets/desk/canonical/todos-tab.png",
+      "size": [
+        313,
+        506
+      ],
+      "sha256": "0e0a95a9df397386b929e3731d9db722e21e72b872833c4cd3a606e2b055381a",
+      "bytes": 107359,
+      "role": "Silver brushed metal TODOs side tab (USE)",
+      "sourceUpload": "f065dec0-271d-4076-9b4a-b6c81f8cb70f.png"
+    },
+    {
+      "path": "/workspace/public/assets/desk/canonical/tray-notch-blue-grey.png",
+      "size": [
+        345,
+        523
+      ],
+      "sha256": "a2aa65946c0d6d5662dd79770b31e443689b26df155dcceefdef783cc027b84c",
+      "bytes": 7874,
+      "role": "Light blue-grey notched tray piece (candidate; not wired)",
+      "sourceUpload": "7ad07129-16fd-48c3-9067-8e317cc7c5fa.png"
+    },
+    {
+      "path": "/workspace/public/assets/desk/canonical/mustard-tray-well.png",
+      "size": [
+        879,
+        413
+      ],
+      "sha256": "6cbbc7148525f41209568be2b1795c4cec7d603dbdda05684ed12f41f5f54813",
+      "bytes": 27979,
+      "role": "Mustard semicircle tray well",
+      "sourceUpload": "0ffc4e09-9cad-4c2b-b38a-3c4f111aec10.png"
+    },
+    {
+      "path": "/workspace/public/assets/desk/canonical/beige-tray-rail.png",
+      "size": [
+        875,
+        26
+      ],
+      "sha256": "9eb09fea37613e601597a7bad5aaa0e0d14406e78c95e473d40f337a4aaef44d",
+      "bytes": 4410,
+      "role": "Beige horizontal rail/tab",
+      "sourceUpload": "0ffc4e09-9cad-4c2b-b38a-3c4f111aec10.png"
+    },
+    {
+      "path": "/workspace/public/assets/desk/canonical/mustard-tray-well-rail.png",
+      "size": [
+        884,
+        475
+      ],
+      "sha256": "33b55c4c394806dc0d20b0952c400200edcb6f0977eb8e79fd6e3bed643dd477",
+      "bytes": 32692,
+      "role": "Composite reference: mustard well + beige rail",
+      "sourceUpload": "0ffc4e09-9cad-4c2b-b38a-3c4f111aec10.png"
+    }
+  ]
+}

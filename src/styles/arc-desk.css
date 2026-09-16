@@ -490,9 +490,9 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-green-folders-drawer[data-extended='false'] .arc-desk-green-drawer-art {
-  /* Hide drawer chrome when closed so only the tab reads on the wood */
-  opacity: 0;
-  visibility: hidden;
+  /* Kelly ideas-tray.png: keep chrome visible so the baked IDEAS pull-tab peeks */
+  opacity: 1;
+  visibility: visible;
   pointer-events: none;
 }
 
@@ -586,15 +586,16 @@ html:has(.arc-shell--desk) body {
   min-width: 7.5rem;
   min-height: 2.35rem;
   padding: 8px 16px 10px;
-  border: 1px solid color-mix(in srgb, var(--shell-frame-green) 55%, black);
+  border: 0;
   border-radius: 10px 10px 12px 12px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--shell-frame-green) 88%, white), var(--shell-frame-green));
-  color: #f7f3ea;
+  /* Hit target only — IDEAS label is baked into canonical/ideas-tray.png */
+  background: transparent;
+  color: transparent;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.14em;
   cursor: pointer;
-  box-shadow: 0 10px 22px -12px rgba(15, 35, 48, 0.65);
+  box-shadow: none;
   z-index: 2;
 }
 
@@ -2095,6 +2096,27 @@ html:has(.arc-shell--desk) body {
   top: 0 !important;
   object-fit: cover !important;
   z-index: 1 !important;
+}
+
+.arc-desk-todos-folder-tab--canonical {
+  position: absolute;
+  top: 22%;
+  right: -2%;
+  left: auto;
+  z-index: 4;
+  display: block;
+  width: clamp(2.1rem, 34%, 3.1rem);
+  height: auto;
+  max-height: 58%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  object-fit: contain;
+  object-position: right center;
+  pointer-events: none;
 }
 
 .arc-desk-todos-folder-body {

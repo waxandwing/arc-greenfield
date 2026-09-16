@@ -1,23 +1,48 @@
 import type { ReactNode } from 'react'
 import { deskCommittedRasterChromeEnabled } from '../desk/deskSliceRuntime'
+import { publicAssetUrl } from '../publicAssetUrl'
 import { DeskChromeSlice } from './DeskChromeSlice'
 
 type Props = { children: ReactNode }
 
-/** Physical TO-DOS denim folder left of planner (always visible — Kelly Teaching week). */
+const TODOS_TAB_URL = publicAssetUrl('assets/desk/canonical/todos-tab.png')
+
+/** Physical TO-DOS folder left of planner — Kelly silver `todos-tab.png` is the tab authority. */
 export function DeskTodosFolder({ children }: Props) {
   const slicesEnabled = deskCommittedRasterChromeEnabled()
   return (
-    <div className="arc-desk-todos-folder" data-testid="arc-desk-todos-folder" data-desk-slices={slicesEnabled ? 'true' : 'false'} data-extended="true">
+    <div
+      className="arc-desk-todos-folder"
+      data-testid="arc-desk-todos-folder"
+      data-desk-slices={slicesEnabled ? 'true' : 'false'}
+      data-extended="true"
+      data-todos-tab-authority="canonical-todos-tab"
+    >
       {slicesEnabled ? (
         <>
           <DeskChromeSlice sliceId="todos-folder-body" testId="desk-slice-todos-body" />
-          <DeskChromeSlice sliceId="todos-folder-tab" testId="desk-slice-todos-tab" />
+          <img
+            className="arc-desk-todos-folder-tab arc-desk-todos-folder-tab--canonical"
+            src={TODOS_TAB_URL}
+            alt=""
+            aria-hidden="true"
+            data-testid="desk-slice-todos-tab"
+            data-desk-canonical="todos-tab"
+            decoding="async"
+          />
         </>
       ) : (
         <>
           <div className="arc-desk-todos-folder-sheet" aria-hidden="true" data-testid="desk-source-todos-body" />
-          <p className="arc-desk-todos-folder-tab" aria-hidden="true" data-testid="desk-source-todos-tab">TO-DOS</p>
+          <img
+            className="arc-desk-todos-folder-tab arc-desk-todos-folder-tab--canonical"
+            src={TODOS_TAB_URL}
+            alt=""
+            aria-hidden="true"
+            data-testid="desk-source-todos-tab"
+            data-desk-canonical="todos-tab"
+            decoding="async"
+          />
         </>
       )}
       <p className="sr-only">TO-DOS priorities folder</p>

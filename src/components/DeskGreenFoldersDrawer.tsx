@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useId, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { deskCommittedRasterChromeEnabled, deskIdeasTrayUrl } from '../desk/deskSliceRuntime'
 import { DESK_IDEAS_OPEN_EVENT, requestDeskIdeasCleanUp } from '../desk/deskIdeasEvents'
 
 type Props = {
@@ -9,6 +8,10 @@ type Props = {
   defaultExtended?: boolean
 }
 
+/**
+ * IDEAS tray — Kelly `canonical/ideas-tray.png` is the visual authority
+ * (replaces interim cardboard/`green-folders-drawer` chrome + CSS green pill).
+ */
 export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Props) {
   const [extended, setExtended] = useState(defaultExtended)
   const [surfaceHost, setSurfaceHost] = useState<Element | null>(null)
@@ -35,9 +38,6 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     setSurfaceHost(document.querySelector('.arc-desk-surface'))
   }, [])
 
-  // Textured PNG chrome by default (same gate as TO-DOS / edge tabs); SVG only when raster off.
-  const slicesEnabled = deskCommittedRasterChromeEnabled()
-
   const cleanUpTab = (
     <button
       type="button"
@@ -56,36 +56,16 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
       aria-label="IDEAS tray"
       data-testid="arc-desk-tray-dock"
       data-extended={extended ? 'true' : 'false'}
-      data-desk-slices={slicesEnabled ? 'true' : 'false'}
+      data-desk-slices="false"
+      data-ideas-authority="canonical-ideas-tray"
     >
       <div className="arc-desk-green-drawer-shell">
         <div
           className="arc-desk-green-drawer-art"
           aria-hidden="true"
-          data-testid={slicesEnabled ? undefined : 'desk-source-ideas-drawer'}
-        >
-          {slicesEnabled ? (
-            <img
-              className="arc-desk-chrome-slice arc-desk-chrome-slice--ideas-tray"
-              src={deskIdeasTrayUrl()}
-              alt=""
-              aria-hidden="true"
-              data-desk-slice="ideas-drawer-chrome"
-              data-testid="desk-slice-ideas-drawer"
-              data-ideas-tray="canonical"
-              decoding="async"
-              draggable={false}
-            />
-          ) : (
-            <>
-              {/* Circular stone accents only — post-its are live DeskPostIt siblings on the desk surface. */}
-              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--mustard" />
-              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--terracotta" />
-              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--blue" />
-              <span className="arc-desk-green-drawer-token arc-desk-green-drawer-token--forest" />
-            </>
-          )}
-        </div>
+          data-testid="desk-source-ideas-drawer"
+          data-ideas-tray="canonical"
+        />
         <div
           id={panelId}
           className="arc-desk-green-drawer-well"
@@ -121,7 +101,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
           aria-controls={panelId}
           onClick={toggle}
         >
-          IDEAS
+          <span className="sr-only">IDEAS</span>
         </button>
       </div>
       {/* Portaled onto arc-desk-surface so year-expanded drawer transforms do not hide Clean up. */}

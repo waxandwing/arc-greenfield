@@ -109,6 +109,27 @@ Coordinate with batch 1 (`PROVENANCE-kelly-2026-09-16.json`) — do not overwrit
 | `todos-tab-alt.svg` | `TODOS tab.svg` | alternate/legacy TO-DOS reference | reference only | **BLOCKED** |
 | `ideas-tray-vector-alt.svg` | `Ideas Tray Vector.svg` | simplified/alternate tray | reference only | **BLOCKED** |
 
+
+## Kelly PNG chat ingest — IDEAS + TODOs (2026-09-16)
+
+Parallel ingest with other Kelly PNG drops. Source: chat uploads (not the 22 labeled SVG pack). Cropped to content bbox (+2px). Provenance: `PROVENANCE-kelly-ideas-todos-2026-09-16.json`.
+
+| Canonical file | Source upload | Role | Wire status |
+|---|---|---|---|
+| `ideas-tray.png` | `cb692436-8441-4724-8bec-73ed5f76df6c.png` | Sage IDEAS drawer with baked pull-tab text — **primary IDEAS authority** | **WIRED** — replaces `green-folders-drawer.*` + cardboard/green pill chrome |
+| `todos-tab.png` | `f065dec0-271d-4076-9b4a-b6c81f8cb70f.png` | Silver brushed metal TO-DOS side tab | **WIRED** — replaces `slices/todos-folder-tab.png` |
+| `tray-notch-blue-grey.png` | `7ad07129-16fd-48c3-9067-8e317cc7c5fa.png` | Light blue-grey notched tray piece | staged / not wired (role unclear) |
+| `mustard-tray-well.png` | `0ffc4e09-9cad-4c2b-b38a-3c4f111aec10.png` (split) | Mustard semicircle tray well | staged / not wired |
+| `beige-tray-rail.png` | same composite (split) | Beige horizontal rail/tab | staged / not wired |
+| `mustard-tray-well-rail.png` | same composite | Composite reference | staged / not wired |
+
+**Live controllers after this land:**
+
+- IDEAS: `--arc-desk-green-folders-drawer` / `--arc-desk-tray-texture` → `canonical/ideas-tray.png`
+- TO-DOS tab: `canonical/todos-tab.png` (img chrome on `DeskTodosFolder`)
+
+Labeled SVG rows for `ideas-tray.svg` / `todos-tab.svg` remain the eventual vector authority if the 22-file pack arrives; these PNGs are the current Kelly source-art stand-in until then.
+
 ## Live controllers still active (do not dual-wire)
 
 - Wood surface: `--arc-wood-surface-image` → `assets/arc/icarus/texture-wood.png`
@@ -116,7 +137,8 @@ Coordinate with batch 1 (`PROVENANCE-kelly-2026-09-16.json`) — do not overwrit
 - ArcTable / Start Class mark art: `assets/arctable/arctable-quadrant-mark.png` (Kelly PNG; AT-001 SVG for hits)
 - Blue magnet / blue post-it: canonical PNGs (batch 1)
 - Green magnet: `canonical/magnet-green.png` (batch 2)
-- IDEAS: `canonical/ideas-tray.png` (legacy `green-folders-drawer.*` retained on disk, unwired)
+- IDEAS: `canonical/ideas-tray.png` (Kelly PNG authority; legacy `green-folders-drawer.*` retained on disk, unwired)
+- TO-DOS tab: `canonical/todos-tab.png` (Kelly silver brushed metal)
 - Planner plate: `canonical/calendar-background.png`
 - Edge tabs: active → `canonical/calendar-tab.png`; inactive → `slices/planner-edge-tab-*.png`
 - Rainbow: `planner-rainbow-mark.png` / `.svg`
