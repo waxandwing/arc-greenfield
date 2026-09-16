@@ -812,16 +812,12 @@ try {
   assert(await page.getByTestId('arc-desk-arctable').getAttribute('data-interactions-disabled') === 'true', 'ArcTable quadrant clicks must disable while editing desk layout.')
   await shot(page, 'desk-edit-mode.png')
 
-  // Close SETTINGS if it still covers the arrange toolbar, then finish.
   await page.evaluate(() => {
-    const close = [...document.querySelectorAll('button')].find((b) => (b.textContent || '').trim() === 'Close Settings')
-    if (close && document.querySelector('.b01-settings-owner[data-state="open"]')) close.click()
+    const done = [...document.querySelectorAll('button')].find((b) => (b.textContent || '').trim() === 'Done arranging')
+    done?.click()
   })
-  await page.getByRole('button', { name: 'Done arranging', exact: true }).click()
-  await page.waitForFunction(() => {
-    const editing = document.querySelector('[data-desk-edit-mode="true"]')
-    return editing === null
-  }, null, { timeout: 8000 })
+  await page.getByTestId('desk-edit-toolbar').waitFor({ state: 'hidden', timeout: 8000 })
+  assert(await page.locator('[data-desk-edit-mode="false"]').count() >= 1, 'Done arranging must exit arrangement mode.')
   assert((await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() === returnTabLabel, 'Done arranging must return to the same planner view.')
 
   await page.evaluate(() => {
