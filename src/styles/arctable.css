@@ -58,9 +58,85 @@
   min-height:36px;
   padding:4px 2px;
 }
-.arctable--teacher .arctable-settings-button{
-  border-bottom-color:var(--mustard);
-  font-weight:750;
+/* Table settings: boxed classroom control — not quiet underline text, not copper SETTINGS tab. */
+.arctable--teacher .arctable-table-settings-button{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:36px;
+  padding:5px 11px 5px 9px;
+  border:1px solid color-mix(in srgb, var(--dusty-blue) 55%, var(--ink));
+  border-radius:3px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--dusty-blue) 18%, #fffdf8), #fffdf8);
+  color:var(--ink);
+  font:750 12px/1.1 var(--font-label),var(--font-ui);
+  letter-spacing:.02em;
+  cursor:pointer;
+  box-shadow:inset 0 -1px 0 color-mix(in srgb, var(--dusty-blue) 28%, transparent);
+}
+.arctable--teacher .arctable-table-settings-button.is-open,
+.arctable--teacher .arctable-table-settings-button[aria-expanded='true']{
+  background:color-mix(in srgb, var(--dusty-blue) 22%, #fffdf8);
+  border-color:color-mix(in srgb, var(--dusty-blue) 70%, var(--ink));
+}
+.arctable--teacher .arctable-table-settings-icon{
+  display:inline-grid;
+  place-items:center;
+  width:18px;
+  height:18px;
+  color:color-mix(in srgb, var(--dusty-blue) 72%, var(--ink));
+}
+.arctable--teacher .arctable-table-settings-label{white-space:nowrap}
+.arctable--teacher .arctable-table-settings-panel{
+  position:fixed;
+  z-index:45;
+  top:68px;
+  right:max(28px, calc((100vw - 1280px) / 2 + 28px));
+  width:min(420px, calc(100vw - 32px));
+  max-height:calc(100dvh - 96px);
+  overflow:auto;
+  padding:20px 22px 22px;
+  border:1px solid color-mix(in srgb, var(--dusty-blue) 35%, var(--ink));
+  border-radius:4px;
+  background:
+    linear-gradient(180deg, rgba(255,253,248,.96), rgba(248,244,236,.98)),
+    var(--arctable-paper-cream, url('/assets/arctable/paper-cream.png'));
+  box-shadow:0 28px 70px -30px rgba(44,46,46,.55);
+}
+.arctable--teacher .arctable-table-settings-heading-row{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;
+}
+.arctable--teacher .arctable-table-settings-heading-row h2{
+  margin:0;font:400 28px/1.05 'Instrument Serif',serif;letter-spacing:-.02em;
+}
+.arctable--teacher .arctable-table-settings-scope{
+  margin:0 0 16px;color:#5d574f;line-height:1.4;font-size:14px;
+}
+.arctable--teacher .arctable-table-settings-groups{display:grid;gap:16px}
+.arctable--teacher .arctable-table-settings-group{
+  display:grid;gap:10px;padding-top:14px;border-top:1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+.arctable--teacher .arctable-table-settings-group h3{
+  margin:0;font:750 12px/1.2 var(--font-label),var(--font-ui);letter-spacing:.06em;text-transform:uppercase;color:#6b6257;
+}
+.arctable--teacher .arctable-table-settings-group p{margin:0;color:#5d574f;line-height:1.4;font-size:14px}
+.arctable--teacher .arctable-table-settings-group label{display:grid;gap:5px;font-size:13px;font-weight:700}
+.arctable--teacher .arctable-table-settings-group input,
+.arctable--teacher .arctable-table-settings-group select{
+  min-height:40px;padding:7px 9px;border:1px solid color-mix(in srgb, var(--ink) 18%, transparent);border-radius:3px;background:#fffdf8;color:inherit;
+}
+.arctable--teacher .arctable-table-settings-actions{display:grid;gap:8px}
+.arctable--teacher .arctable-table-settings-actions button,
+.arctable--teacher .arctable-table-settings-toggle{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;width:100%;padding:10px 12px;
+  border:1px solid color-mix(in srgb, var(--ink) 14%, transparent);border-radius:3px;background:#fffdf8;color:var(--ink);font-weight:750;text-align:left;cursor:pointer;
+}
+.arctable--teacher .arctable-table-settings-toggle span{
+  color:#6b6257;font-size:12px;font-weight:750;text-transform:uppercase;letter-spacing:.04em;
+}
+@media(max-width:900px){
+  .arctable--teacher .arctable-table-settings-panel{top:78px;right:16px;left:16px;width:auto}
 }
 .arctable--teacher .arctable-live-chip{
   min-height:32px;

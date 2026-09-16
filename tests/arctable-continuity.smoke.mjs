@@ -112,7 +112,8 @@ try {
   assert(await headerMark.evaluate((img) => img.complete && img.naturalWidth > 0), 'Teacher Monitor header mark asset must load via publicAssetUrl.')
   const headerMarkSrc = await headerMark.getAttribute('src')
   assert(headerMarkSrc?.includes('assets/arctable/arctable-quadrant-mark.png'), 'Header mark must use Kelly ArcTable quadrant mark.')
-  assert(await page.getByTestId('arctable-settings').count() === 1, 'Teacher Monitor must expose a Settings control.')
+  assert(await page.getByTestId('arctable-settings').count() === 1, 'Teacher Monitor must expose a Table settings control.')
+  assert(await page.getByTestId('arctable-settings').innerText().then((text) => /table settings/i.test(text)), 'ArcTable control must say Table settings, not generic Settings.')
   const viewportFit = await page.evaluate(() => {
     const main = document.querySelector('.arctable--teacher')
     const board = document.querySelector('.arctable-board')
@@ -220,10 +221,13 @@ try {
   assert(JSON.parse(await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1'))).passes.passes.some((pass) => pass.id === 'hall-pass' && pass.status === 'active'), 'Active pass state must survive Plan View.')
 
   await page.getByTestId('arctable-settings').click()
-  assert(await page.locator('#b01-settings-surface').count() === 1, 'Settings from Teacher Monitor must open desk Settings furniture.')
-  assert(await page.getByRole('button', { name: /Return to ArcTable/ }).count() === 1, 'Opening Settings must land on Plan View with live return available.')
-  await page.getByRole('button', { name: /Return to ArcTable/ }).click()
-  assert(await page.getByRole('main').getAttribute('class').then((value) => value?.includes('arctable--teacher')), 'Return from Settings must restore Teacher Monitor.')
+  assert(await page.getByTestId('arctable-table-settings-surface').count() === 1, 'Table settings must open an ArcTable classroom panel, not leave the live class.')
+  assert(await page.locator('#b01-settings-surface').count() === 0, 'Table settings must not open plan #b01-settings-surface school-year furniture.')
+  assert(await page.getByRole('heading', { name: 'Table settings', exact: true }).count() === 1, 'Table settings panel must own its own heading.')
+  assert(await page.getByText(/School year, calendar, and courses stay in Plan/i).count() === 1, 'Table settings must explain the Plan SETTINGS ownership boundary.')
+  assert(await page.getByRole('main').getAttribute('class').then((value) => value?.includes('arctable--teacher')), 'Opening Table settings must keep Teacher Monitor mounted.')
+  await page.getByRole('button', { name: 'Close', exact: true }).click()
+  assert(await page.getByTestId('arctable-table-settings-surface').count() === 0, 'Closing Table settings must dismiss the classroom panel.')
 
   await page.keyboard.press('Escape')
   await page.getByRole('button', { name: 'Media', exact: true }).click()

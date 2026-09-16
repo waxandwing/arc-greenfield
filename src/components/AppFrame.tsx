@@ -756,10 +756,6 @@ export function AppFrame() {
       <ArcTableTeacherMonitor
         live={arcTable.live}
         onOpenPlan={arcTable.showPlan}
-        onOpenSettings={() => {
-          arcTable.showPlan()
-          setSettingsOpenToken((token) => token + 1)
-        }}
         onShowTeacher={arcTable.showTeacher}
         onShowStudent={arcTable.showStudent}
         onUpdate={arcTable.update}

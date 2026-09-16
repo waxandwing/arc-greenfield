@@ -27,6 +27,7 @@ import '../styles/arctable.css'
 type SharedProps = {
   live: ArcTableLiveState
   onOpenPlan: () => void
+  /** @deprecated Table settings stay on ArcTable; plan SETTINGS is a separate object. */
   onOpenSettings?: () => void
   onShowTeacher: () => void
   onShowStudent: () => void
@@ -35,11 +36,12 @@ type SharedProps = {
   onEnd: (outcome: ArcTableTeachingOutcome) => string | null
 }
 
-export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onShowStudent, onUpdate, onEnd }: SharedProps) {
+export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpdate, onEnd }: SharedProps) {
   const [ending, setEnding] = useState(false)
   const [resumeNote, setResumeNote] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [tool, setTool] = useState<'people' | 'passes' | 'media' | null>(null)
+  const [tableSettingsOpen, setTableSettingsOpen] = useState(false)
   const [personName, setPersonName] = useState('')
   const [mediaTitle, setMediaTitle] = useState('')
   const [mediaSource, setMediaSource] = useState('')
@@ -51,6 +53,8 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
   const timerDurationInputRef = useRef<HTMLInputElement>(null)
   const toolPanelRef = useRef<HTMLElement>(null)
   const toolRowRef = useRef<HTMLDivElement>(null)
+  const tableSettingsRef = useRef<HTMLElement>(null)
+  const tableSettingsButtonRef = useRef<HTMLButtonElement>(null)
   const now = useClock()
   const classElapsed = elapsedLiveMinutes(live, now)
   const timerRemaining = countdownRemaining(live.timer, now)
@@ -70,11 +74,15 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
     if (!timerCanEditDuration && editingTimerDuration) setEditingTimerDuration(false)
   }, [editingTimerDuration, timerCanEditDuration])
   useEffect(() => {
-    if (!tool) return
-    const closeTool = (event: KeyboardEvent) => { if (event.key === 'Escape') setTool(null) }
-    window.addEventListener('keydown', closeTool)
-    return () => window.removeEventListener('keydown', closeTool)
-  }, [tool])
+    if (!tool && !tableSettingsOpen) return
+    const closeOverlay = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (tableSettingsOpen) setTableSettingsOpen(false)
+      else setTool(null)
+    }
+    window.addEventListener('keydown', closeOverlay)
+    return () => window.removeEventListener('keydown', closeOverlay)
+  }, [tool, tableSettingsOpen])
   useEffect(() => {
     if (!tool) return
     function closeOnOutsidePointer(event: PointerEvent) {
@@ -86,6 +94,22 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
     document.addEventListener('pointerdown', closeOnOutsidePointer)
     return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
   }, [tool])
+  useEffect(() => {
+    if (!tableSettingsOpen) return
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target as Node
+      if (tableSettingsRef.current?.contains(target)) return
+      if (tableSettingsButtonRef.current?.contains(target)) return
+      setTableSettingsOpen(false)
+    }
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
+  }, [tableSettingsOpen])
+
+  function openClassroomTool(next: 'people' | 'passes' | 'media') {
+    setTableSettingsOpen(false)
+    setTool(next)
+  }
 
   useEffect(() => {
     const launch = consumeArcTableDeskLaunch()
@@ -132,9 +156,44 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
     if (passes !== live.passes) setPassLabel('')
   }
 
+  function beginBoardAuthoring(focus: 'directions' | 'materials' = 'directions') {
+    const patch: Partial<Omit<ArcTableLiveState, 'version' | 'session' | 'startedAt'>> = {}
+    if (live.boardLocked) patch.boardLocked = false
+    if (Object.keys(patch).length) onUpdate(patch)
+    setDraftDirections(live.directions.join('\n'))
+    setBoardAuthoring(true)
+    setEditingMaterials(focus === 'materials')
+    window.setTimeout(() => {
+      if (focus === 'materials') materialsFieldRef.current?.focus()
+      else directionsFieldRef.current?.focus()
+    }, 0)
+  }
+
+  function commitDirections(raw = draftDirections) {
+    const directions = raw.split('\n').map((line) => line.trim()).filter(Boolean)
+    onUpdate({ directions })
+    setDraftDirections(directions.join('\n'))
+  }
+
+  function finishBoardAuthoring() {
+    commitDirections()
+    setBoardAuthoring(false)
+    setEditingMaterials(false)
+  }
+
+  function addDirectionLine() {
+    beginBoardAuthoring('directions')
+    setDraftDirections((current) => {
+      const next = current.trim().length ? `${current.trimEnd()}\n` : ''
+      window.setTimeout(() => directionsFieldRef.current?.focus(), 0)
+      return next
+    })
+  }
+
   const timerDisplaySeconds = live.timer.status === 'idle' && timerRemaining === 0 && live.timer.durationSeconds > 0
     ? live.timer.durationSeconds
     : timerRemaining
+  const phaseFlow = live.session.phases.map((label) => label.trim()).filter(Boolean)
 
   return (
     <main className="arctable arctable--teacher">
@@ -154,15 +213,109 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
         <div><p className="arctable-kicker">Teacher Monitor</p><strong>{live.session.courseTitle} · {live.session.sectionName}</strong></div>
         <div className="arctable-header-actions">
           <button type="button" className="quiet-button" onClick={onOpenPlan}>Plan View</button>
-          {onOpenSettings ? (
-            <button type="button" className="quiet-button arctable-settings-button" data-testid="arctable-settings" onClick={onOpenSettings}>
-              Settings
-            </button>
-          ) : null}
+          <button
+            type="button"
+            ref={tableSettingsButtonRef}
+            className={`arctable-table-settings-button${tableSettingsOpen ? ' is-open' : ''}`}
+            data-testid="arctable-settings"
+            aria-expanded={tableSettingsOpen}
+            aria-controls="arctable-table-settings-surface"
+            onClick={() => {
+              setTool(null)
+              setTableSettingsOpen((open) => !open)
+            }}
+          >
+            <span className="arctable-table-settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20" width="14" height="14" focusable="false">
+                <path
+                  fill="currentColor"
+                  d="M8.2 1.6h3.6l.3 1.7a5.8 5.8 0 0 1 1.5.9l1.6-.7 1.8 1.8-.7 1.6c.4.5.7 1 .9 1.5l1.7.3v3.6l-1.7.3a5.8 5.8 0 0 1-.9 1.5l.7 1.6-1.8 1.8-1.6-.7a5.8 5.8 0 0 1-1.5.9l-.3 1.7H8.2l-.3-1.7a5.8 5.8 0 0 1-1.5-.9l-1.6.7-1.8-1.8.7-1.6a5.8 5.8 0 0 1-.9-1.5L1.1 11V7.4l1.7-.3c.2-.5.5-1 .9-1.5l-.7-1.6L4.8 2.2l1.6.7c.5-.4 1-.7 1.5-.9l.3-1.7Zm1.8 5.2a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"
+                />
+              </svg>
+            </span>
+            <span className="arctable-table-settings-label">Table settings</span>
+          </button>
           <span className="arctable-live-chip">Live · {classElapsed} min</span>
           <button type="button" className="quiet-button" onClick={() => setEnding(true)}>End Class</button>
         </div>
       </header>
+
+      {tableSettingsOpen ? (
+        <section
+          ref={tableSettingsRef}
+          id="arctable-table-settings-surface"
+          className="arctable-table-settings-panel"
+          data-testid="arctable-table-settings-surface"
+          aria-labelledby="arctable-table-settings-heading"
+        >
+          <div className="arctable-table-settings-heading-row">
+            <div>
+              <p className="arctable-kicker">This classroom</p>
+              <h2 id="arctable-table-settings-heading">Table settings</h2>
+            </div>
+            <button type="button" className="quiet-button" onClick={() => setTableSettingsOpen(false)}>Close</button>
+          </div>
+          <p className="arctable-table-settings-scope">
+            Tools and defaults for <strong>{live.session.sectionName}</strong> · {live.session.courseTitle}. School year, calendar, and courses stay in Plan → SETTINGS.
+          </p>
+          <div className="arctable-table-settings-groups">
+            <section className="arctable-table-settings-group" aria-labelledby="arctable-table-tools-heading">
+              <h3 id="arctable-table-tools-heading">Classroom tools</h3>
+              <div className="arctable-table-settings-actions">
+                <button type="button" onClick={() => openClassroomTool('people')}>People picker · {live.people.roster.length || 0}</button>
+                <button type="button" onClick={() => openClassroomTool('passes')}>Pass types · {live.passes.passes.length || 0}</button>
+                <button type="button" onClick={() => openClassroomTool('media')}>Media · {live.media.items.length || 0}</button>
+              </div>
+            </section>
+            <section className="arctable-table-settings-group" aria-labelledby="arctable-table-session-heading">
+              <h3 id="arctable-table-session-heading">Live class defaults</h3>
+              <label>
+                <span>Timer minutes</span>
+                <input
+                  aria-label="Table default timer minutes"
+                  type="number"
+                  min="1"
+                  max={ARC_TABLE_MAX_COUNTDOWN_SECONDS / 60}
+                  value={Math.ceil(live.timer.durationSeconds / 60)}
+                  onChange={(event) => onUpdate({ timer: setArcTableCountdownDuration(live.timer, Number(event.target.value) * 60) })}
+                />
+              </label>
+              <label>
+                <span>Cleanup minutes</span>
+                <input
+                  aria-label="Table default cleanup minutes"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={Math.ceil(live.cleanupTimer.durationSeconds / 60)}
+                  onChange={(event) => onUpdate({ cleanupTimer: setArcTableCountdownDuration(live.cleanupTimer, Number(event.target.value) * 60) })}
+                />
+              </label>
+              <label>
+                <span>Voice expectation</span>
+                <select
+                  aria-label="Table default voice expectation"
+                  value={live.voiceLevel}
+                  onChange={(event) => onUpdate({ voiceLevel: Number(event.target.value) as 1 | 2 | 3 })}
+                >
+                  <option value="1">Level 1</option>
+                  <option value="2">Level 2</option>
+                  <option value="3">Level 3</option>
+                </select>
+              </label>
+              <button type="button" className="arctable-table-settings-toggle" onClick={() => onUpdate({ boardLocked: !live.boardLocked })}>
+                <strong>Board</strong>
+                <span>{live.boardLocked ? 'Locked for students' : 'Editable'}</span>
+              </button>
+            </section>
+            <section className="arctable-table-settings-group" aria-labelledby="arctable-table-plan-boundary-heading">
+              <h3 id="arctable-table-plan-boundary-heading">Not school-year settings</h3>
+              <p>Calendar dates, courses, and desk setup live on the planner SETTINGS tab — a different object from this table.</p>
+              <button type="button" className="quiet-button" onClick={onOpenPlan}>Open Plan View</button>
+            </section>
+          </div>
+        </section>
+      ) : null}
 
       <div className="arctable-teacher-room">
         <div className="arctable-furniture-tabs" ref={toolRowRef} role="toolbar" aria-label="Classroom tools">
