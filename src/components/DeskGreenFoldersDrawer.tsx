@@ -39,7 +39,8 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     setSurfaceHost(document.querySelector('.arc-desk-surface'))
   }, [])
 
-  const cleanUpTab = (
+  /* Closed: one Clean up beside the IDEAS tab. Open: only the well toolbar Clean up (no duplicate). */
+  const cleanUpTab = !extended ? (
     <button
       type="button"
       className="arc-desk-clean-up arc-desk-clean-up--tab-side"
@@ -49,7 +50,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     >
       Clean up
     </button>
-  )
+  ) : null
 
   return (
     <aside
@@ -110,7 +111,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
         </button>
       </div>
       {/* Portaled onto arc-desk-surface so year-expanded drawer transforms do not hide Clean up. */}
-      {surfaceHost ? createPortal(cleanUpTab, surfaceHost) : cleanUpTab}
+      {cleanUpTab ? (surfaceHost ? createPortal(cleanUpTab, surfaceHost) : cleanUpTab) : null}
     </aside>
   )
 }

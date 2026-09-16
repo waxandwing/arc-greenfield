@@ -171,7 +171,7 @@ try {
     }
   })
   assert(closedIdeasPeek.peekPx <= 56, `Closed IDEAS must be a slim tab peek (peek=${closedIdeasPeek.peekPx}px), not a large dim panel.`)
-  assert(closedIdeasPeek.artVisibility === 'hidden', 'Closed IDEAS must hide drawer chrome art so only the tab peeks.')
+  assert(closedIdeasPeek.artVisibility === 'visible', 'Closed IDEAS must keep ideas-tray.png chrome so the baked IDEAS pull-tab peeks.')
   assert(await page.getByTestId('arc-desk-clean-up-tab').isVisible(), 'Clean up must sit beside the IDEAS tab on every desk view.')
   const woodMarkSrc = await page.getByTestId('arc-desk-wood-wordmark').getAttribute('src')
   assert(woodMarkSrc?.includes('arc-mark-stacked.png'), 'Wood wordmark must use Kelly original Arc stacked mark.')
@@ -462,6 +462,7 @@ try {
   await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
   assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true', 'IDEAS tab must open the tray after Clean up.')
   assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Open IDEAS well must expose Clean up.')
+  assert(await page.getByTestId('arc-desk-clean-up-tab').count() === 0, 'Open IDEAS must not duplicate the tab-side Clean up.')
   // Tray stickies stay normal paper accents (writable + lesson mark), not locked tray chrome.
   const trayBlue = page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-blue"]')
   assert(await trayBlue.evaluate((node) => node.classList.contains('arc-desk-post-it--accent')), 'IDEAS tray stickies must keep accent paper chrome.')

@@ -102,12 +102,13 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock {
   position: absolute;
-  /* Landscape IDEAS drawer: wider than tall, between TO-DOS and capture sticky */
-  left: 20.5%;
+  /* Landscape pull-out matched to Kelly ideas-tray.png (807×381) — height drives width. */
+  left: 21%;
   top: 0;
-  width: 58%;
-  /* Keep wider-than-tall even when expanded (vw caps track width) */
-  height: min(32%, 26vw, 280px);
+  height: min(30%, 250px);
+  width: auto;
+  aspect-ratio: 807 / 381;
+  max-width: min(54%, 720px);
   z-index: 12;
   pointer-events: none;
   transform-origin: top center;
@@ -122,8 +123,9 @@ html:has(.arc-shell--desk) body {
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='true'] {
-  /* Locked to top; expand down to cover calendar — still landscape */
-  height: min(54%, 40vw, 480px);
+  /* Physical pull-out: a bit larger, still tray-aspect so planner stays readable */
+  height: min(36%, 300px);
+  max-width: min(58%, 780px);
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock .arc-desk-green-drawer-well,
@@ -200,10 +202,11 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk.b01-furniture-composition--year-expanded
   .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock {
-  /* Keep IDEAS present on Year — do not override transform (that would kill the closed tab peek). */
+  /* Keep IDEAS present on Year — preserve aspect-ratio sizing (no forced width). */
   opacity: 1;
-  left: 21%;
-  width: 56%;
+  left: 22%;
+  width: auto;
+  max-width: min(54%, 700px);
 }
 
 /* Year: combine scale with the closed/open translateY so the slim IDEAS tab still peeks. */
@@ -574,15 +577,17 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-green-drawer-well {
   position: absolute;
-  left: 9%;
-  right: 9%;
-  top: 14%;
-  bottom: 14%;
+  /* Inset to the tray face above the baked IDEAS pull-tab — let ideas-tray.png read through. */
+  left: 6.5%;
+  right: 6.5%;
+  top: 7%;
+  bottom: 16%;
+  z-index: 2;
   overflow: auto;
-  padding: 6px 4px 10px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--shell-frame-green) 42%, rgba(8, 28, 22, 0.88));
-  box-shadow: inset 0 10px 24px -14px rgba(0, 0, 0, 0.55);
+  padding: 4px 6px 8px;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
   opacity: 1;
   transition: opacity 220ms ease;
 }
@@ -661,14 +666,14 @@ html:has(.arc-shell--desk) body {
 .arc-desk-ideas-well-toolbar {
   display: flex;
   justify-content: flex-end;
-  margin: 0 0 8px;
+  margin: 0 0 4px;
 }
 
 .arc-desk-ideas-accent-slot {
   position: relative;
   display: block;
-  min-height: 150px;
-  margin: 0 0 10px;
+  min-height: 112px;
+  margin: 0 0 6px;
   /* Free-place surface for in-tray stickies (same interactions as wood). */
 }
 
@@ -678,26 +683,106 @@ html:has(.arc-shell--desk) body {
   margin: 0;
 }
 
-/* IDEAS tray: keep accent sticky size + tilt; absolute within the slot. */
+/* IDEAS tray stickies: desk-scale paper (blue/cream PNGs), not oversized well blobs. */
 .arc-desk-post-it.arc-desk-post-it--in-drawer {
   position: absolute;
-  width: clamp(96px, 28%, 120px);
-  min-width: 96px;
-  max-width: 120px;
+  width: clamp(88px, 18%, 112px);
+  min-width: 88px;
+  max-width: 112px;
   z-index: 1;
+  box-shadow:
+    0 8px 18px -12px rgba(15, 35, 48, 0.55),
+    inset 0 1px 0 rgba(255, 253, 248, 0.45);
 }
 
 .arc-desk-post-it.arc-desk-post-it--in-drawer.arc-desk-post-it--accent {
-  width: clamp(96px, 28%, 120px);
-  min-width: 96px;
-  max-width: 120px;
+  width: clamp(88px, 18%, 112px);
+  min-width: 88px;
+  max-width: 112px;
+  padding: 12px;
+}
+
+.arc-desk-post-it.arc-desk-post-it--in-drawer.arc-desk-post-it--blue,
+.arc-desk-post-it.arc-desk-post-it--in-drawer.arc-desk-post-it--cream {
+  box-shadow: none;
 }
 
 .arc-desk-ideas-empty {
   margin: 0;
-  padding: 8px 4px;
-  color: color-mix(in srgb, #f7f3ea 78%, transparent);
-  font: 500 13px/1.35 var(--font-display);
+  padding: 6px 4px;
+  color: color-mix(in srgb, #f7f3ea 82%, transparent);
+  font: 500 12px/1.35 var(--font-display);
+}
+
+/* Captures inside the open IDEAS tray: compact paper slips, not wide SaaS list cards. */
+.arc-desk-green-drawer-well .b01-tray-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.arc-desk-green-drawer-well .workspace-captures-heading-row {
+  margin: 0 0 2px;
+  gap: 6px;
+}
+
+.arc-desk-green-drawer-well .workspace-captures-heading-row h2 {
+  margin: 0;
+  color: color-mix(in srgb, #f4efe4 88%, transparent);
+  font: 800 10px/1.2 var(--font-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.arc-desk-green-drawer-well .workspace-capture-count {
+  color: color-mix(in srgb, #f4efe4 70%, transparent);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.arc-desk-green-drawer-well .workspace-captures-primary {
+  margin-bottom: 0;
+}
+
+.arc-desk-green-drawer-well .workspace-capture-card {
+  margin: 0;
+  max-width: 16rem;
+  border: 0;
+  border-radius: 3px 7px 5px 3px;
+  background:
+    linear-gradient(165deg, #fffdf6 0%, #f4ebd2 55%, #ebe0c4 100%);
+  box-shadow:
+    0 6px 14px -10px rgba(15, 35, 48, 0.5),
+    inset 0 1px 0 rgba(255, 253, 248, 0.85);
+  transform: rotate(-0.5deg);
+}
+
+.arc-desk-green-drawer-well .workspace-capture-card + .workspace-capture-card {
+  transform: rotate(0.55deg);
+}
+
+.arc-desk-green-drawer-well .workspace-capture-card-select {
+  padding: 8px 10px 7px;
+  gap: 2px;
+}
+
+.arc-desk-green-drawer-well .workspace-capture-card-select strong {
+  color: color-mix(in srgb, var(--ink) 90%, transparent);
+  font: 650 13px/1.25 var(--font-display);
+}
+
+.arc-desk-green-drawer-well .workspace-capture-card-select span {
+  color: color-mix(in srgb, var(--ink) 52%, transparent);
+  font: 500 10px/1.3 var(--font-ui);
+}
+
+.arc-desk-green-drawer-well .workspace-capture-actions {
+  gap: 6px;
+  padding: 0 8px 8px;
+}
+
+.arc-desk-green-drawer-well .workspace-secondary-block {
+  display: none;
 }
 .arc-desk-folders-tab:hover {
   filter: brightness(1.06);
@@ -2889,10 +2974,12 @@ html:has(.arc-shell--desk) body {
   inset: 0;
   width: 100%;
   height: 100%;
+  /* Dock aspect matches ideas-tray.png — contain fills without letterbox modal gaps. */
   object-fit: contain;
-  object-position: center top;
+  object-position: center center;
   pointer-events: none;
   z-index: 1;
+  filter: drop-shadow(0 14px 22px -14px rgba(15, 35, 48, 0.55));
 }
 
 
