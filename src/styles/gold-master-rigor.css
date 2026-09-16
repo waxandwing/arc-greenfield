@@ -35,7 +35,7 @@
 .gm-drawing{max-width:100%;overflow:hidden}
 .gm-phone{overflow:hidden}
 .gm-phone *{max-width:100%}
-.gm-qa-nav{box-sizing:border-box;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+.gm-app .gm-qa-nav{display:none!important}
 .gm-inline-create,.gm-shift-panel{box-sizing:border-box;max-width:100%;min-width:0;overflow:hidden}
 
 /* Main planner remains the dominant object while utility surfaces stay independently scrollable. */
