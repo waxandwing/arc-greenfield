@@ -9,6 +9,11 @@ function assert(condition, message) {
   if (!condition) throw new Error(message)
 }
 
+async function assertNoDocumentOverflow(page, label) {
+  const geometry = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }))
+  assert(geometry.scroll <= geometry.client + 2, `${label}: unexpected document horizontal overflow (${geometry.scroll} > ${geometry.client})`)
+}
+
 const views = ['week','day','month','quarter','year','unit','ideas','connections','arctable','pocket','settings','onboarding','trust']
 
 const browser = await chromium.launch({ headless: true })
@@ -60,8 +65,29 @@ try {
 
   assert(errors.length === 0, `Gold Master runtime errors: ${errors.join(' | ')}`)
   await context.close()
+
+  const responsiveCases = [
+    { name: 'small-laptop', width: 1280, height: 800, view: 'week' },
+    { name: 'tablet', width: 1024, height: 768, view: 'week' },
+    { name: 'mobile-today', width: 430, height: 900, view: 'day' },
+    { name: 'mobile-pocket', width: 430, height: 900, view: 'pocket' },
+  ]
+
+  for (const responsive of responsiveCases) {
+    const responsiveContext = await browser.newContext({ viewport: { width: responsive.width, height: responsive.height }, deviceScaleFactor: 1 })
+    const responsivePage = await responsiveContext.newPage()
+    const responsiveErrors = []
+    responsivePage.on('pageerror', error => responsiveErrors.push(`pageerror: ${error.message}`))
+    responsivePage.on('console', message => { if (message.type() === 'error') responsiveErrors.push(`console: ${message.text()}`) })
+    await responsivePage.goto(`${baseUrl}/?gold=${responsive.view}`, { waitUntil: 'networkidle' })
+    assert(await responsivePage.locator('.gm-app').count() === 1, `${responsive.name}: Gold Master did not render`)
+    await assertNoDocumentOverflow(responsivePage, responsive.name)
+    await responsivePage.screenshot({ path: `${evidenceDir}${responsive.name}.png`, fullPage: true })
+    assert(responsiveErrors.length === 0, `${responsive.name}: runtime errors: ${responsiveErrors.join(' | ')}`)
+    await responsiveContext.close()
+  }
 } finally {
   await browser.close()
 }
 
-console.log(`Gold Master smoke passed: ${views.length + 3} fixture views rendered.`)
+console.log(`Gold Master smoke passed: ${views.length + 3} fixture views + 4 responsive states rendered.`)
