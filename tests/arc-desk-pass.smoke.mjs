@@ -181,7 +181,9 @@ try {
   assert(woodMarkSrc?.includes('arc-mark-stacked.png'), 'Wood wordmark must use Kelly original Arc stacked mark.')
   const woodMarkFilter = await page.getByTestId('arc-desk-wood-wordmark').evaluate((img) => getComputedStyle(img).filter)
   assert(!/sepia|grayscale|contrast|brightness/i.test(woodMarkFilter) || woodMarkFilter === 'none', 'Wood wordmark must not use wood-burn filters.')
-  assert(await page.getByTestId('desk-slice-ideas-drawer').count() === 1, 'IDEAS drawer must use ideas-drawer-chrome.png by default.')
+  assert(await page.getByTestId('desk-slice-ideas-drawer').count() === 1, 'IDEAS drawer must use canonical ideas-tray.png by default.')
+  assert((await page.getByTestId('desk-slice-ideas-drawer').getAttribute('data-ideas-tray')) === 'canonical', 'IDEAS drawer art must be tagged as canonical ideas-tray.')
+  assert((await page.getByTestId('desk-slice-ideas-drawer').getAttribute('src') || '').includes('ideas-tray.png'), 'IDEAS drawer src must point at ideas-tray.png.')
   assert(await page.getByTestId('desk-source-ideas-drawer').count() === 0, 'SVG IDEAS fallback must be off when committed rasters are default.')
   assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-desk-slices')) === 'true', 'IDEAS dock must opt into committed raster chrome.')
   const drawerSvg = await page.evaluate(async () => {

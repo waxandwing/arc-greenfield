@@ -49,9 +49,28 @@ const EDGE_TAB_LABEL_TO_SLICE: Record<string, DeskSliceId> = {
   YEAR: 'planner-edge-tab-year-inactive',
 }
 
-/** Figma crop for vertical planner edge tabs (active cream vs denim inactive). */
+/**
+ * Planner edge tab bodies.
+ * Active: Kelly 2026-09-16 green vertical `canonical/calendar-tab.png` when raster chrome is on.
+ * Inactive: existing slice crops until selected/unselected SVG pair lands.
+ */
 export function deskPlannerEdgeTabAssetUrl(label: string, active: boolean): string | null {
-  if (active) return deskSliceAssetUrl('planner-edge-tab-active')
+  if (active) {
+    if (deskCommittedRasterChromeEnabled()) {
+      return publicAssetUrl('assets/desk/canonical/calendar-tab.png')
+    }
+    return deskSliceAssetUrl('planner-edge-tab-active')
+  }
   const sliceId = EDGE_TAB_LABEL_TO_SLICE[label]
   return sliceId ? deskSliceAssetUrl(sliceId) : null
+}
+
+/** Kelly cream green-rim planner plate. */
+export function deskCalendarBackgroundUrl(): string {
+  return publicAssetUrl('assets/desk/canonical/calendar-background.png')
+}
+
+/** Kelly felt sage IDEAS tray (replaces green-folders-drawer authority). */
+export function deskIdeasTrayUrl(): string {
+  return publicAssetUrl('assets/desk/canonical/ideas-tray.png')
 }

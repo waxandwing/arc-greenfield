@@ -240,27 +240,22 @@ html:has(.arc-shell--desk) body {
   min-height: 0;
   flex: 1 1 auto;
   height: 100%;
-  /* Interim cream paper until Kelly calendar-background.svg lands — existing repo textures only. */
-  border: 2px solid color-mix(in srgb, var(--shell-frame-green) 78%, var(--ink));
-  border-radius: 6px;
-  /* Tabs hang mostly outside the green border; slim gutter so roots clear cream content. */
-  padding-right: 18px;
-  background-color: var(--field-elevated);
-  /* Fill: arctable/paper-cream.png; fiber: arc/texture-cream-paper.png (soft-light so tooth reads). */
-  background-image:
-    linear-gradient(
-      color-mix(in srgb, var(--field-elevated) 82%, transparent),
-      color-mix(in srgb, var(--field-elevated) 82%, transparent)
-    ),
-    var(--plan-surface-paper-texture),
-    var(--plan-surface-paper);
-  background-size: auto, 720px 480px, 512px 512px;
-  background-repeat: repeat;
-  background-blend-mode: normal, soft-light, normal;
+  /* Kelly 2026-09-16 cream green-rim planner plate (`canonical/calendar-background.png`). */
+  border: none;
+  border-radius: 10px;
+  /* Tabs hang mostly outside the plate; slim gutter so roots clear cream content. */
+  padding: 10px 18px 12px 12px;
+  background-color: transparent;
+  background-image: var(
+    --arc-desk-calendar-background,
+    url('/assets/desk/canonical/calendar-background.png')
+  );
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
   /* Paper/book on wood — not a floating dialog card */
-  box-shadow:
-    0 8px 22px -20px rgba(33, 29, 23, 0.32),
-    inset 0 1px 0 rgba(255, 253, 248, 0.45);
+  box-shadow: 0 8px 22px -20px rgba(33, 29, 23, 0.32);
+  filter: drop-shadow(0 18px 36px -24px rgba(33, 29, 23, 0.55));
 }
 
 .arc-planner-physical-tabs {
@@ -519,8 +514,8 @@ html:has(.arc-shell--desk) body {
   inset: 0;
   border-radius: 18px;
   background:
-    var(--arc-desk-green-folders-drawer, var(--arc-desk-tray-texture, url('/assets/desk/green-folders-drawer.png')))
-    center top / cover no-repeat;
+    var(--arc-desk-green-folders-drawer, var(--arc-desk-tray-texture, url('/assets/desk/canonical/ideas-tray.png')))
+    center top / contain no-repeat;
   pointer-events: none;
   overflow: hidden;
 }
@@ -705,7 +700,7 @@ html:has(.arc-shell--desk) body {
   border-radius: 14px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.06)),
-    var(--arc-desk-tray-texture, url('/assets/desk/green-folders-drawer.png')) center / cover no-repeat;
+    var(--arc-desk-tray-texture, url('/assets/desk/canonical/ideas-tray.png')) center / contain no-repeat;
   box-shadow: 0 20px 44px -24px rgba(33, 29, 23, 0.58);
   filter: drop-shadow(0 8px 16px -10px rgba(15, 35, 48, 0.35));
 }
@@ -2583,6 +2578,9 @@ html:has(.arc-shell--desk) body {
 .arc-desk-green-folders-drawer[data-desk-slices='true'] .arc-desk-green-drawer-art .arc-desk-chrome-slice {
   width: 100%;
   height: 100%;
+  /* Felt sage tray — contain, never stretch with fill. */
+  object-fit: contain;
+  object-position: center top;
 }
 
 .arc-desk-todos-folder[data-desk-slices='true'] .arc-desk-todos-folder-panel {

@@ -19,8 +19,13 @@ const DESK_ASSET_PATHS = {
   scheduleSetupWood: 'assets/desk/light-wood-desk.png',
   /** Legacy molded tray — superseded on live desk by green folders drawer PNG. */
   blueTray: 'assets/desk/blue-molded-tray.png',
-  /** Landscape textured IDEAS drawer (preferred over tall SVG fallback). */
-  greenFoldersDrawer: 'assets/desk/green-folders-drawer.png',
+  /**
+   * IDEAS tray chrome — Kelly 2026-09-16 felt sage tray (`canonical/ideas-tray.png`).
+   * Replaces wrong cardboard / green-folders-drawer raster as live authority.
+   */
+  greenFoldersDrawer: 'assets/desk/canonical/ideas-tray.png',
+  /** Planner plate / calendar physical background (Kelly cream green-rim card). */
+  calendarBackground: 'assets/desk/canonical/calendar-background.png',
   plannerTabMustard: 'assets/desk/planner-tab-mustard.png',
 } as const
 
@@ -46,6 +51,7 @@ export function applyPublicAssetCssUrls(): void {
   root.setProperty('--arc-schedule-setup-wood', publicAssetCssUrl(DESK_ASSET_PATHS.scheduleSetupWood))
   root.setProperty('--arc-desk-tray-texture', publicAssetCssUrl(DESK_ASSET_PATHS.greenFoldersDrawer))
   root.setProperty('--arc-desk-green-folders-drawer', publicAssetCssUrl(DESK_ASSET_PATHS.greenFoldersDrawer))
+  root.setProperty('--arc-desk-calendar-background', publicAssetCssUrl(DESK_ASSET_PATHS.calendarBackground))
   root.setProperty('--arc-desk-planner-tab-mustard', publicAssetCssUrl(DESK_ASSET_PATHS.plannerTabMustard))
   root.setProperty('--arctable-paper-cream', publicAssetCssUrl(ARCTABLE_ASSET_PATHS.paperCream))
   root.setProperty('--arctable-progress-rail', publicAssetCssUrl(ARCTABLE_ASSET_PATHS.progressRail))

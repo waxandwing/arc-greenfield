@@ -57,9 +57,28 @@ Kelly selected `.arc-desk-surface` on Planning Period and asked to find correct 
 
 **No P0 wires shipped** for Planning Period furniture (rule: do not CSS-fake). Object → asset map: `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md` § Planning Period view.
 
+Planning Period blockers: `TODO tab (use).svg`, `tray image (use).svg`, `Settings tab (USE).svg`, `calendar selected tab view.svg`, `unselected calendar states.svg`, `Wood Background Light.svg`, `calendar background.svg`.
+
+## Kelly PNG upload session (2026-09-16) — batch 2 wired
+
+Kelly uploaded four more desk PNGs (empty chat message) after batch 1 (Arc mark / ArcTable mark / blue magnet / blue post-it).
+
+**Do not invent** the remaining labeled SVG pack. PNG paths below are provisional authority until matching SVGs arrive; they do **not** claim labeled-SVG status.
+
+| Canonical PNG | Source upload UUID | Role | Wire |
+|---|---|---|---|
+| `calendar-background.png` | `5cba6dc1-…` | cream green-rim planner plate | `--arc-desk-calendar-background` on `.arc-calendar-spread--desk` |
+| `calendar-tab.png` | `9896585d-…` | green vertical edge tab body | active planner edge tabs via `deskPlannerEdgeTabAssetUrl` |
+| `magnet-green.png` | `4ef86817-…` | olive speckled magnet | `deskMagnetAssets` preferred + `magnets/magnet-green.png` mirror |
+| `ideas-tray.png` | `25dc87d8-…` | felt sage tray + pull tab (**USE**) | replaces `green-folders-drawer.*` CSS + IDEAS drawer `<img>` |
+
+Provenance: `PROVENANCE-kelly-2026-09-16-batch2-tray-tab-magnet-paper.json`.
+
+Coordinate with batch 1 (`PROVENANCE-kelly-2026-09-16.json`) — do not overwrite those paths.
+
 ## Binary handoff status
 
-**PARTIAL** — four Kelly PNGs wired 2026-09-16; remaining labeled SVG binaries still missing.
+**PARTIAL** — batch 1 + batch 2 Kelly PNGs wired 2026-09-16; remaining labeled SVG binaries still missing.
 
 | Canonical file | Original labeled source | Intended role | Authority | Wire status |
 |---|---|---|---|---|
@@ -67,18 +86,22 @@ Kelly selected `.arc-desk-surface` on Planning Period and asked to find correct 
 | `arctable-mark.png` | Kelly chat PNG 2026-09-16 (quadrant sticker) | ArcTable identity | **Kelly PNG** (vs AT-001) | **WIRED** → `ARC_TABLE_MARK_ASSET` |
 | `magnet-blue.png` | Kelly chat PNG 2026-09-16 | blue physical magnet | **Kelly PNG** | **WIRED** |
 | `postit-blue.png` | Kelly chat PNG 2026-09-16 | blue Post-it object | **Kelly PNG** | **WIRED** |
+| `calendar-background.png` | Kelly chat PNG 2026-09-16 batch 2 | planner plate | **Kelly PNG** | **WIRED** |
+| `calendar-tab.png` | Kelly chat PNG 2026-09-16 batch 2 | active edge tab body | **Kelly PNG** | **WIRED** (active) |
+| `magnet-green.png` | Kelly chat PNG 2026-09-16 batch 2 | green physical magnet | **Kelly PNG** | **WIRED** |
+| `ideas-tray.png` | Kelly chat PNG 2026-09-16 batch 2 | IDEAS tray/drawer | **Kelly PNG / USE** | **WIRED** (replaces `green-folders-drawer.*`) |
 | `wood-background-light.svg` | `Wood Background Light.svg` | light wood desk surface | canonical candidate | **BLOCKED** |
-| `ideas-tray.svg` | `tray image (use).svg` | IDEAS tray/drawer | **USE / canonical** | **BLOCKED** |
+| `ideas-tray.svg` | `tray image (use).svg` | IDEAS tray/drawer | **USE / canonical** | **BLOCKED** SVG — live PNG `ideas-tray.png` |
 | `settings-tab.svg` | `Settings tab (USE).svg` | SETTINGS physical tab | **USE / canonical** | **BLOCKED** |
 | `todos-tab.svg` | `TODO tab (use).svg` | TO-DOS physical tab | **USE / canonical** | **BLOCKED** |
-| `calendar-tab-selected.svg` | `calendar selected tab view.svg` | selected planner-view tab body | canonical | **BLOCKED** |
+| `calendar-tab-selected.svg` | `calendar selected tab view.svg` | selected planner-view tab body | canonical | **BLOCKED** SVG — active uses PNG `calendar-tab.png` |
 | `calendar-tab-unselected.svg` | `unselected calendar states.svg` | inactive planner-view tab body | canonical | **BLOCKED** |
-| `calendar-background.svg` | `calendar background.svg` | planner/calendar physical background | canonical candidate | **BLOCKED** |
+| `calendar-background.svg` | `calendar background.svg` | planner/calendar physical background | canonical candidate | **BLOCKED** SVG — live PNG `calendar-background.png` |
 | `calendar-date-rainbow.svg` | `to left of date on calendar rainbow icon.svg` | accent left of calendar date | canonical | **BLOCKED** |
 | `today-button.svg` | `today button.svg` | Today physical control | canonical | **BLOCKED** |
 | `today-highlight.svg` | `today highlighter icon.svg` | Today marker/highlighter | canonical | **BLOCKED** |
 | `start-class-mark.svg` | `start class arctable logo.svg` | Start Class desk control | canonical | **BLOCKED** (PNG lockup may exist separately) |
-| `magnet-green.svg` | `green icon magnet.svg` | green physical magnet | canonical | **BLOCKED** |
+| `magnet-green.svg` | `green icon magnet.svg` | green physical magnet | canonical | **BLOCKED** SVG — live PNG `magnet-green.png` |
 | `magnet-mustard.svg` | `magnet vector yellow.svg` | mustard physical magnet | canonical | **BLOCKED** |
 | `magnet-terracotta.svg` | `red icon magnet.svg` | terracotta/red physical magnet | canonical | **BLOCKED** |
 | `postit-stack.svg` | `Post it stack.svg` | stacked paper/Post-it object | canonical candidate | **BLOCKED** |
@@ -91,9 +114,11 @@ Kelly selected `.arc-desk-surface` on Planning Period and asked to find correct 
 - Wood surface: `--arc-wood-surface-image` → `assets/arc/icarus/texture-wood.png`
 - Arc mark on wood / planner: `assets/arc/arc-mark-stacked.png` (Kelly PNG; no pyrography)
 - ArcTable / Start Class mark art: `assets/arctable/arctable-quadrant-mark.png` (Kelly PNG; AT-001 SVG for hits)
-- Blue magnet / blue post-it: canonical PNGs above
-- IDEAS: `green-folders-drawer.svg` / `.png`
-- Edge tabs: `public/assets/desk/slices/planner-edge-tab-*.png`
+- Blue magnet / blue post-it: canonical PNGs (batch 1)
+- Green magnet: `canonical/magnet-green.png` (batch 2)
+- IDEAS: `canonical/ideas-tray.png` (legacy `green-folders-drawer.*` retained on disk, unwired)
+- Planner plate: `canonical/calendar-background.png`
+- Edge tabs: active → `canonical/calendar-tab.png`; inactive → `slices/planner-edge-tab-*.png`
 - Rainbow: `planner-rainbow-mark.png` / `.svg`
 - Schedule-setup wood only: `light-wood-desk.png`
 

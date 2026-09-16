@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useId, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { deskCommittedRasterChromeEnabled } from '../desk/deskSliceRuntime'
+import { deskCommittedRasterChromeEnabled, deskIdeasTrayUrl } from '../desk/deskSliceRuntime'
 import { DESK_IDEAS_OPEN_EVENT, requestDeskIdeasCleanUp } from '../desk/deskIdeasEvents'
-import { DeskChromeSlice } from './DeskChromeSlice'
 
 type Props = {
   children: ReactNode
@@ -66,7 +65,17 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
           data-testid={slicesEnabled ? undefined : 'desk-source-ideas-drawer'}
         >
           {slicesEnabled ? (
-            <DeskChromeSlice sliceId="ideas-drawer-chrome" testId="desk-slice-ideas-drawer" />
+            <img
+              className="arc-desk-chrome-slice arc-desk-chrome-slice--ideas-tray"
+              src={deskIdeasTrayUrl()}
+              alt=""
+              aria-hidden="true"
+              data-desk-slice="ideas-drawer-chrome"
+              data-testid="desk-slice-ideas-drawer"
+              data-ideas-tray="canonical"
+              decoding="async"
+              draggable={false}
+            />
           ) : (
             <>
               {/* Circular stone accents only — post-its are live DeskPostIt siblings on the desk surface. */}

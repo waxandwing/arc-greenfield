@@ -4,19 +4,20 @@ export type DeskMagnetColor = 'blue' | 'green' | 'mustard' | 'terracotta'
 
 /**
  * Prefer Kelly source art when present.
- * Blue/slate face: Kelly PNG upload 2026-09-16 (not the interim CSS disc SVG).
- * Other colors still wait on labeled SVG binaries.
+ * Blue/slate + green faces: Kelly PNG upload session 2026-09-16 (not interim CSS disc SVGs).
+ * Mustard/terracotta still wait on labeled SVG binaries (or later PNG drops).
+ * UnitMagnetBadge probes preferred then falls back — missing files do not flash broken.
  */
 const MAGNET_SRC: Record<DeskMagnetColor, string> = {
   blue: '/assets/desk/canonical/magnet-blue.png',
-  green: '/assets/desk/canonical/magnet-green.svg',
-  mustard: '/assets/desk/canonical/magnet-mustard.svg',
-  terracotta: '/assets/desk/canonical/magnet-terracotta.svg',
+  green: '/assets/desk/canonical/magnet-green.png',
+  mustard: '/assets/desk/canonical/magnet-mustard.png',
+  terracotta: '/assets/desk/canonical/magnet-terracotta.png',
 }
 
 const MAGNET_FALLBACK: Record<DeskMagnetColor, string> = {
   blue: '/assets/desk/magnets/magnet-blue.svg',
-  green: '/assets/desk/magnets/magnet-green.svg',
+  green: '/assets/desk/magnets/magnet-green.png',
   mustard: '/assets/desk/magnets/magnet-mustard.svg',
   terracotta: '/assets/desk/magnets/magnet-terracotta.svg',
 }

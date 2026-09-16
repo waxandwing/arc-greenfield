@@ -1,0 +1,71 @@
+{
+  "ingestedAt": "2026-09-16T00:31:23.695001+00:00",
+  "batch": 2,
+  "agent": "bc-e501028a-fc96-583e-afa2-22a104706308",
+  "source": "Kelly chat upload (empty message), session 2026-09-16 \u2014 four more desk PNGs (tray/tab/magnet-green/paper card)",
+  "coordinatesWith": "Batch 1 PROVENANCE-kelly-2026-09-16.json (Arc mark, ArcTable mark, blue magnet, blue post-it) \u2014 do not overwrite those paths",
+  "originalUploads": {
+    "5cba6dc1-38f3-46bb-858d-7f65d0fb766e.png": "Cream green-rim paper card \u2192 planner plate / calendar background",
+    "9896585d-f392-4c0f-9e2a-1093fc2d7af9.png": "Green vertical edge tab body \u2192 calendar-tab",
+    "4ef86817-23cc-4949-bc75-599845bb7361.png": "Olive speckled circular magnet \u2192 magnet-green",
+    "25dc87d8-5668-4495-b459-f1bd31c97ad4.png": "Felt sage tray with pull tab \u2192 ideas-tray (REPLACE green-folders drawer)"
+  },
+  "processing": "Cropped transparent letterbox to content bbox (+2px pad). No recolor, no invent of other labeled SVGs.",
+  "outputs": [
+    {
+      "path": "/tmp/kelly-png-batch2-6308/public/assets/desk/canonical/calendar-background.png",
+      "canonicalName": "calendar-background.png",
+      "size": [
+        729,
+        507
+      ],
+      "sha256": "c0ea36145d38b0fae16c9a0979b6ca2dbfc090dab4143d74f7b1d07ccc20eb93",
+      "bytes": 269093,
+      "role": "Cream green-rim paper card \u2192 planner plate / calendar background"
+    },
+    {
+      "path": "/tmp/kelly-png-batch2-6308/public/assets/desk/canonical/calendar-tab.png",
+      "canonicalName": "calendar-tab.png",
+      "size": [
+        271,
+        494
+      ],
+      "sha256": "e54cd72de29e7e9c24d5680f32b1066924ff999c65261eab84046c409bcaa573",
+      "bytes": 6058,
+      "role": "Green vertical edge tab body \u2192 calendar-tab"
+    },
+    {
+      "path": "/tmp/kelly-png-batch2-6308/public/assets/desk/canonical/magnet-green.png",
+      "canonicalName": "magnet-green.png",
+      "size": [
+        423,
+        420
+      ],
+      "sha256": "802f9698f8132477db6c96bd7a3339acc385075c4f6f49e8dd08f982e736d027",
+      "bytes": 121034,
+      "role": "Olive speckled circular magnet \u2192 magnet-green"
+    },
+    {
+      "path": "/tmp/kelly-png-batch2-6308/public/assets/desk/magnets/magnet-green.png",
+      "canonicalName": "magnets/magnet-green.png",
+      "size": [
+        423,
+        420
+      ],
+      "sha256": "802f9698f8132477db6c96bd7a3339acc385075c4f6f49e8dd08f982e736d027",
+      "bytes": 121034,
+      "role": "mirror for interim magnet folder"
+    },
+    {
+      "path": "/tmp/kelly-png-batch2-6308/public/assets/desk/canonical/ideas-tray.png",
+      "canonicalName": "ideas-tray.png",
+      "size": [
+        622,
+        383
+      ],
+      "sha256": "f229e2e888fde6492b2752e22b8733e3b134193dffe052e301d167030a05f2f8",
+      "bytes": 26721,
+      "role": "Felt sage tray with pull tab \u2192 ideas-tray (REPLACE green-folders drawer)"
+    }
+  ]
+}
