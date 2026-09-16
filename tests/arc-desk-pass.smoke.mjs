@@ -229,11 +229,34 @@ try {
   assert(!drawerPngHasStickyFills, 'Landscape IDEAS PNG must not bake yellow/pink/blue sticky fills — post-its are live React objects.')
   assert(await page.getByTestId('desk-slice-todos-body').count() === 1, 'TO-DOS folder must use committed slice PNG assets by default.')
   assert(await page.getByTestId('desk-source-todos-body').count() === 0, 'CSS TO-DOS fallback must be off when committed rasters are default.')
-  assert(await page.getByTestId('desk-slice-todos-tab').count() === 1, 'TO-DOS side tab slice must render on denim folder edge.')
-  assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-extended')) === 'true', 'TO-DOS denim folder stays visible.')
-  assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render inside denim TO-DOS folder.')
+  assert(await page.getByTestId('desk-slice-todos-tab').count() === 1, 'TO-DOS Kelly plate (todos-tab.png) must render as the folder surface.')
+  assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-extended')) === 'true', 'TO-DOS folder stays visible.')
+  assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-todos-plate')) === 'kelly-todos-tab', 'TO-DOS plate authority must be Kelly todos-tab.png.')
+  assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render on top of the Kelly TODOs plate.')
   assert(await page.getByTestId('desk-slice-todos-tab').getAttribute('data-desk-kelly-asset') === 'todos-tab', 'TO-DOS tab must use Kelly canonical todos-tab.png.')
   assert((await page.getByTestId('desk-slice-todos-tab').getAttribute('src') || '').includes('todos-tab.png'), 'TO-DOS tab src must be canonical todos-tab.png.')
+  const todosLayering = await page.evaluate(() => {
+    const plate = document.querySelector('[data-testid="desk-slice-todos-tab"]')
+    const body = document.querySelector('[data-testid="arc-desk-todos-folder-body"]')
+    const folder = document.querySelector('[data-testid="arc-desk-todos-folder"]')
+    if (!(plate instanceof HTMLElement) || !(body instanceof HTMLElement) || !(folder instanceof HTMLElement)) {
+      return { ok: false, reason: 'missing nodes' }
+    }
+    const plateZ = Number.parseInt(getComputedStyle(plate).zIndex, 10)
+    const bodyZ = Number.parseInt(getComputedStyle(body).zIndex, 10)
+    const bg = getComputedStyle(folder).backgroundImage
+    const label = document.querySelector('[data-testid="desk-priority-lane-must"] h3')
+    const labelVisible = label instanceof HTMLElement && getComputedStyle(label).visibility !== 'hidden'
+      && getComputedStyle(label).clip === 'auto'
+    return {
+      ok: Number.isFinite(plateZ) && Number.isFinite(bodyZ) && bodyZ > plateZ && bg === 'none' && labelVisible,
+      plateZ,
+      bodyZ,
+      bg,
+      labelVisible,
+    }
+  })
+  assert(todosLayering.ok, `Kelly plate must sit behind live MSC lanes without denim chrome (got ${JSON.stringify(todosLayering)}).`)
   const padHit = await page.getByTestId('desk-priority-pad').evaluate((el) => getComputedStyle(el).pointerEvents)
   assert(padHit === 'auto', `TO-DOS pad must accept pointer events (got ${padHit}).`)
   // MUST / SHOULD / COULD must accept add + complete (pointer-events on folder body).
@@ -246,6 +269,12 @@ try {
   const mustComplete = page.getByTestId('desk-priority-lane-must').locator('input[type="checkbox"]').last()
   await mustComplete.check()
   assert(await page.getByTestId('desk-priority-lane-must').locator('[data-completed="true"]').count() >= 1, 'MUST tasks must be completable.')
+  // Rename must keep working on the plate surface.
+  await mustTask.click()
+  const mustEdit = page.getByTestId(/desk-priority-edit-/).last()
+  await mustEdit.fill('Kelly must renamed')
+  await mustEdit.press('Enter')
+  assert(await page.getByTestId('desk-priority-lane-must').getByRole('button', { name: /Edit task Kelly must renamed/ }).count() === 1, 'MUST tasks must be renameable on the Kelly plate.')
   // Accent post-its sit near the top edge; DOM click avoids pointer intercept on the slim tab.
   await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
   assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in IDEAS/tray dock when extended.')
@@ -513,14 +542,80 @@ try {
     assert(await trayUnit.evaluate((node) => node.classList.contains('arc-desk-post-it--accent')), 'Unit items in IDEAS must function as normal paper stickies.')
     assert(await trayUnit.locator('[data-desk-unit-magnet="true"]').count() === 1, 'Unit-associated tray sticky must show a magnet.')
   }
-  // Collapse again so later tray-utility assertions match a closed IDEAS dock.
-  await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  // Drag mustard + pink accents out of IDEAS onto the exterior desk/planner surface.
+  assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true', 'IDEAS must stay open to drag stickies out.')
+  const surfaceBox = await page.locator('.arc-desk-surface').boundingBox()
+  assert(surfaceBox, 'Desk surface must expose a box for exterior drop.')
+  for (const tone of ['mustard', 'pink']) {
+    const traySticky = page.getByTestId('arc-desk-ideas-accent-slot').getByTestId(`arc-desk-post-it-accent-${tone}`)
+    const grip = traySticky.getByTestId(`arc-desk-post-it-accent-${tone}-grip`)
+    const start = await grip.boundingBox()
+    assert(start, `${tone} in-drawer grip must be draggable.`)
+    const dropX = surfaceBox.x + surfaceBox.width * (tone === 'mustard' ? 0.72 : 0.82)
+    const dropY = surfaceBox.y + surfaceBox.height * 0.58
+    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(dropX, dropY, { steps: 20 })
+    await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'attached', timeout: 3000 })
+    assert(await page.locator('.arc-desk-surface.arc-desk-postit-drop-target--desk-park').count() === 1, `${tone} drag-out must highlight the exterior desk park target.`)
+    await page.mouse.up()
+    await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {})
+    assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator(`[data-desk-post-it="accent-${tone}"]`).count() === 0, `${tone} must leave the IDEAS accent slot after exterior drop.`)
+    const deskSticky = page.locator(`.arc-desk-surface > [data-desk-post-it="accent-${tone}"]`)
+    assert(await deskSticky.count() === 1, `${tone} must park as a free desk post-it on the exterior surface.`)
+    assert(await deskSticky.evaluate((node) => !node.classList.contains('arc-desk-post-it--in-drawer')), `${tone} on desk must not keep in-drawer chrome.`)
+  }
+  const drawerMembership = await page.evaluate(() => sessionStorage.getItem('arc.desk-postit-in-drawer.v1'))
+  assert(drawerMembership && drawerMembership.includes('"accent-mustard":false') && drawerMembership.includes('"accent-pink":false'),
+    'Drag-out must persist in-drawer=false for mustard + pink.')
+
+  // Drop pink back into the open IDEAS tray — return path.
+  const pinkOnDesk = page.locator('.arc-desk-surface > [data-desk-post-it="accent-pink"]')
+  const pinkGrip = pinkOnDesk.getByTestId('arc-desk-post-it-accent-pink-grip')
+  const pinkStart = await pinkGrip.boundingBox()
+  const slotBox = await page.getByTestId('arc-desk-ideas-accent-slot').boundingBox()
+  assert(pinkStart && slotBox, 'Pink desk sticky + IDEAS slot needed for return drop.')
+  await page.mouse.move(pinkStart.x + pinkStart.width / 2, pinkStart.y + pinkStart.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 14 })
+  const trayParkLit = await page.locator('.arc-desk-tray-dock.arc-desk-postit-drop-target--ideas').count()
+  assert(trayParkLit === 1, 'Return drag must highlight the IDEAS tray drop target.')
+  await page.mouse.up()
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'Dropping pink onto IDEAS must return it to the tray.')
+  // Leave mustard on wood; pull pink back out so later accent assertions see both loose.
+  const pinkReturned = page.getByTestId('arc-desk-ideas-accent-slot').getByTestId('arc-desk-post-it-accent-pink')
+  const pinkReturnedGrip = pinkReturned.getByTestId('arc-desk-post-it-accent-pink-grip')
+  const pinkReturnedStart = await pinkReturnedGrip.boundingBox()
+  assert(pinkReturnedStart, 'Returned pink must be draggable out again.')
+  await page.mouse.move(pinkReturnedStart.x + pinkReturnedStart.width / 2, pinkReturnedStart.y + pinkReturnedStart.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(surfaceBox.x + surfaceBox.width * 0.8, surfaceBox.y + surfaceBox.height * 0.62, { steps: 14 })
+  await page.mouse.up()
+  assert(await page.locator('.arc-desk-surface > [data-desk-post-it="accent-pink"]').count() === 1, 'Pink must leave IDEAS again onto the exterior desk.')
+
+  // Clean up still gathers desk post-its back into IDEAS.
+  await page.getByTestId('arc-desk-clean-up').click()
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-mustard"]').count() === 1, 'Clean up must gather mustard back into IDEAS after drag-out.')
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'Clean up must gather pink back into IDEAS after drag-out.')
   // Pull accents back onto the wood for later accent assertions that expect loose stickies.
-  await page.evaluate(() => {
-    sessionStorage.removeItem('arc.desk-postit-in-drawer.v1')
-  })
-  await page.reload({ waitUntil: 'networkidle' })
-  await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
+  if ((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) !== 'true') {
+    await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  }
+  for (const tone of ['mustard', 'pink', 'blue']) {
+    const traySticky = page.getByTestId('arc-desk-ideas-accent-slot').getByTestId(`arc-desk-post-it-accent-${tone}`)
+    if (await traySticky.count() === 0) continue
+    const grip = traySticky.getByTestId(`arc-desk-post-it-accent-${tone}-grip`)
+    const start = await grip.boundingBox()
+    if (!start) continue
+    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(surfaceBox.x + surfaceBox.width * (0.68 + (tone === 'pink' ? 0.08 : tone === 'blue' ? 0.14 : 0)), surfaceBox.y + surfaceBox.height * 0.55, { steps: 12 })
+    await page.mouse.up()
+  }
+  // Collapse again so later tray-utility assertions match a closed IDEAS dock.
+  if ((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true') {
+    await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  }
 
   await page.evaluate(() => {
     const tray = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--workspace')
@@ -646,8 +741,8 @@ try {
   const editWorkspace = page.getByRole('button', { name: 'Arrange desk', exact: true })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   assert(await page.getByRole('heading', { name: 'Desk setup' }).isVisible(), 'Settings must expose Desk setup IA.')
-  const deskNotesToggle = page.getByRole('checkbox', { name: /Desk notes strip/i })
-  assert(await deskNotesToggle.count() === 1, 'Desk setup must keep optional Desk notes strip toggle.')
+  const deskNotesToggle = page.getByRole('checkbox', { name: /Day notes/i })
+  assert(await deskNotesToggle.count() === 1, 'Desk setup must keep optional Day notes strip toggle.')
   await shot(page, '15-settings-home-desk.png')
   await deskNotesToggle.check()
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click()
@@ -696,7 +791,7 @@ try {
     if (!header || !firstCourse) return false
     return firstCourse.getBoundingClientRect().top - header.getBoundingClientRect().bottom < 48
   })
-  assert(noLeftoverGap, 'Turning Desk notes strip off must remove the band without leaving a large gap.')
+  assert(noLeftoverGap, 'Turning Day notes strip off must remove the band without leaving a large gap.')
   await page.evaluate(() => {
     const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
     settings?.click()

@@ -5,6 +5,7 @@
 .b01-fridge-date{display:grid;gap:6px;font-weight:700}
 .b01-fridge-date input{min-height:44px;width:100%;box-sizing:border-box;border:1px solid rgba(44,46,46,.24);border-radius:6px;background:rgba(255,255,255,.72);padding:8px 10px;font:inherit;color:inherit}
 .b01-fridge-card{display:grid;gap:8px;padding:14px 0 16px;border:0;border-bottom:1px solid rgba(44,46,46,.16);background:transparent;box-shadow:none;transform:none}
+.b01-fridge-card--revealed{background:rgba(124,156,173,.12);padding-inline:10px;margin-inline:-10px;border-radius:6px}
 .b01-fridge-card:nth-of-type(even){transform:none}
 .b01-fridge-card--unit{border-radius:0;background:transparent;transform:none}
 .b01-fridge-content .quiet-button{min-height:44px;border:1px solid rgba(44,46,46,.22);border-radius:6px;background:rgba(255,255,255,.62);padding:8px 10px;font:700 12px/1.2 var(--font-ui);color:inherit;cursor:pointer}

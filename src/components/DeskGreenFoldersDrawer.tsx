@@ -191,6 +191,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
       data-extended={extended ? 'true' : 'false'}
       data-desk-slices="true"
       data-ideas-authority="canonical-ideas-tray"
+      data-desk-postit-drop="ideas-tray"
       data-tray-park-top={String(parkTopPct)}
       style={{ ['--arc-desk-tray-park-top' as string]: `${parkTopPct}%` }}
     >
@@ -232,6 +233,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
             <div
               className="arc-desk-ideas-accent-slot"
               data-testid="arc-desk-ideas-accent-slot"
+              data-desk-postit-drop="ideas-tray"
               aria-label="Post-its in IDEAS"
             />
             {children}

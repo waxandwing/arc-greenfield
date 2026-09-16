@@ -11,7 +11,9 @@ import { useTaskBar } from '../app/useTaskBar'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
 import { useWorkspaceMode } from '../app/useWorkspaceMode'
 import {
+  isRetiredSetupWorkspaceMode,
   isSetupWorkspaceMode,
+  SETUP_FALLBACK_SECTION,
   type OnboardingSectionId,
   type SetupSectionId,
 } from '../app/setupSections'
@@ -90,6 +92,7 @@ import { readDeskPreviewSeededSession, shouldForceDeskShell } from '../demo/desk
 import { buildKellyDeskDemoBundle } from '../demo/kellyDeskDemo'
 import { GAUNTLET_DEMO_CALENDAR_ID } from '../demo/gauntletDemo'
 import { deskPreviewBuildEnabled } from '../buildInfo'
+import { requestDeskIdeasOpen } from '../desk/deskIdeasEvents'
 
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
@@ -105,9 +108,12 @@ export function AppFrame() {
   const deskYearLandingNormalized = useRef(false)
   const deskMonthHomeNormalized = useRef(false)
   const deskMonthPrefsMigrated = useRef(false)
+  /** Settings / fridge / edit Lesson may open Units or Lessons; bare setup landings redirect away. */
+  const allowUnitLessonLibraryRef = useRef(false)
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
   const [lessonSetupFocusId, setLessonSetupFocusId] = useState<string | null>(null)
+  const [revealUnscheduledLessonId, setRevealUnscheduledLessonId] = useState<string | null>(null)
   const [workspaceLayout, setWorkspaceLayout] = useState<WorkspaceLayoutState>(loadWorkspaceLayout)
   const [stackWorkspace, setStackWorkspace] = useState<StackWorkspace | null>(null)
   const [deskEditSession, setDeskEditSession] = useState<{
@@ -252,6 +258,11 @@ export function AppFrame() {
     workspaceMode.close()
   }
 
+  function openUnitLessonLibrary(mode: 'units' | 'lessons') {
+    allowUnitLessonLibraryRef.current = true
+    workspaceMode.open(mode)
+  }
+
   function returnToSettings() {
     setLessonSetupFocusId(null)
     workspaceMode.close()
@@ -260,7 +271,16 @@ export function AppFrame() {
 
   function openLessonForEdit(lessonId: string) {
     setLessonSetupFocusId(lessonId)
-    workspaceMode.open('lessons')
+    openUnitLessonLibrary('lessons')
+  }
+
+  function showUnscheduledInIdeas(lessonId: string) {
+    setRevealUnscheduledLessonId(lessonId)
+    workspaceMode.close()
+    setLessonSetupFocusId(null)
+    openWorkspaceOverlay(true)
+    requestDeskIdeasOpen()
+    workspace.setStorageNotice('Lesson is in Unscheduled lessons in IDEAS. Teaching history was preserved.')
   }
 
   function openSetupSection(id: SetupSectionId) {
@@ -270,6 +290,16 @@ export function AppFrame() {
   function openOnboardingSection(id: OnboardingSectionId) {
     updateOnboarding({ ...onboardingDraft, stage: id })
   }
+
+  useEffect(() => {
+    if (isRetiredSetupWorkspaceMode(workspaceMode.mode)) {
+      if (!allowUnitLessonLibraryRef.current) {
+        workspaceMode.open(SETUP_FALLBACK_SECTION)
+      }
+      return
+    }
+    allowUnitLessonLibraryRef.current = false
+  }, [workspaceMode.mode])
 
   const workspaceBusy = workspaceMode.mode !== 'calendar' || !workspace.calendar || !workspace.anchorDate
   const unscheduledUnits = workspace.unitWorkspace?.units.filter((unit) => unit.placement === null) ?? []
@@ -297,11 +327,7 @@ export function AppFrame() {
     const disabled = new Set<SetupSectionId>()
     if (!workspace.hasClasses) {
       disabled.add('teaching-day')
-      disabled.add('units')
-      disabled.add('lessons')
       disabled.add('import')
-    } else if (!workspace.hasUnits) {
-      disabled.add('lessons')
     }
     return disabled
   })()
@@ -449,11 +475,17 @@ export function AppFrame() {
   }
 
   function selectView(view: CalendarView) {
+    // Explicit tab/pop-out selection owns the view. One-shot desk landing
+    // normalizers must not remap the first YEAR/MONTH click back to Week.
+    deskYearLandingNormalized.current = true
+    deskMonthHomeNormalized.current = true
     workspace.setActiveView(view)
     updateViewPreferences({ ...recordLastUsedView(viewPreferences, view), desk: viewPreferences.desk })
   }
 
   function deepenTo(date: ISODate, view: CalendarView) {
+    deskYearLandingNormalized.current = true
+    deskMonthHomeNormalized.current = true
     workspace.setActiveView(view, date)
     updateViewPreferences({ ...recordLastUsedView(viewPreferences, view), desk: viewPreferences.desk })
   }
@@ -503,6 +535,10 @@ export function AppFrame() {
     if (!nextShift) return
     workspace.useLessons(result.lessons, result.lessons, nextShift)
     setFridgeUndo(result.undo)
+    setRevealUnscheduledLessonId(lessonId)
+    openWorkspaceOverlay(true)
+    requestDeskIdeasOpen()
+    workspace.setStorageNotice('Lesson moved to Unscheduled lessons in IDEAS. Teaching history was preserved.')
   }
 
   function scheduleLessonFromFridge(lessonId: string, plannedDate: ISODate) {
@@ -659,6 +695,7 @@ export function AppFrame() {
     defaultDate: workspace.anchorDate,
     undoAvailable: Boolean(fridgeUndo),
     stackWorkspace,
+    revealUnscheduledLessonId,
     onAddCapture: workspace.addCapture,
     onDeleteCapture: workspace.removeCapture,
     onSetCaptureImportant: workspace.setCaptureImportant,
@@ -667,7 +704,7 @@ export function AppFrame() {
     onScheduleLesson: scheduleLessonFromFridge,
     onUnplaceLesson: sendLessonBackToFridge,
     onUndo: undoLastFridgeMove,
-    onOpenUnits: () => workspaceMode.open('units'),
+    onOpenUnits: () => openUnitLessonLibrary('units'),
     onOpenImport: () => workspaceMode.open('import'),
     onCombineCaptures: combineCaptures,
     onRemoveCaptureFromStack: removeCaptureFromStack,
@@ -721,12 +758,21 @@ export function AppFrame() {
     setWorkspaceOverlayOpen(open)
   }
 
+  // Demo/seed can land the desk on Year Map; nudge once to home Week.
+  // Mark the one-shot done when desk is ready on any other view so a later
+  // intentional YEAR tab click is not remapped (Kelly: first click → Week).
   useEffect(() => {
     if (deskYearLandingNormalized.current) return
     if (!deskEnabled || !workspace.calendar || !workspace.anchorDate) return
-    if (workspace.activeView !== 'Year Map') return
+    if (workspace.activeView !== 'Year Map') {
+      deskYearLandingNormalized.current = true
+      return
+    }
     const demoDeskLanding = forceDeskShell && readDeskPreviewSeededSession(deskPreviewBuild)
-    if (!demoDeskLanding && workspace.viewWasPersisted) return
+    if (!demoDeskLanding && workspace.viewWasPersisted) {
+      deskYearLandingNormalized.current = true
+      return
+    }
     deskYearLandingNormalized.current = true
     workspace.setActiveView(resolveAvailableHomeDeskView(viewPreferences, workspace.viewAvailability))
   }, [
@@ -740,10 +786,15 @@ export function AppFrame() {
     workspace.viewWasPersisted,
   ])
 
+  // forceDeskShell demo home is Teaching week; remap an accidental Month land once.
+  // Complete the one-shot when not on Month so intentional MONTH tab clicks stick.
   useEffect(() => {
     if (deskMonthHomeNormalized.current) return
     if (!deskEnabled || !workspace.calendar || !workspace.anchorDate) return
-    if (workspace.activeView !== 'Month' || !forceDeskShell) return
+    if (!forceDeskShell || workspace.activeView !== 'Month') {
+      deskMonthHomeNormalized.current = true
+      return
+    }
     deskMonthHomeNormalized.current = true
     workspace.setActiveView('Week', kellyDemoWeekAnchor ?? workspace.anchorDate ?? undefined)
   }, [
@@ -795,10 +846,10 @@ export function AppFrame() {
       onOpenClasses={() => workspaceMode.open('classes')}
       onOpenTeachingDay={() => workspaceMode.open('teaching-day')}
       onOpenImport={() => workspaceMode.open('import')}
-      onOpenUnits={() => workspaceMode.open('units')}
+      onOpenUnits={() => openUnitLessonLibrary('units')}
       onOpenLessons={() => {
         setLessonSetupFocusId(null)
-        workspaceMode.open('lessons')
+        openUnitLessonLibrary('lessons')
       }}
       onOpenTaskBar={() => setTasksOverlayOpen(true)}
       onEditWorkspace={enterEditWorkspaceMode}
@@ -878,6 +929,7 @@ export function AppFrame() {
       recoveryFocusSectionId={recoveryFocusSectionId}
       onEditLesson={openLessonForEdit}
       focusLessonId={lessonSetupFocusId}
+      onShowUnscheduledInIdeas={showUnscheduledInIdeas}
     />
   )
 
@@ -970,7 +1022,18 @@ export function AppFrame() {
                     </div>
                   ) : null}
                   {workspace.storageNotice ? (
-                    <p className="storage-notice" role="status">{workspace.storageNotice}</p>
+                    <div className="storage-notice storage-notice--with-action" role="status">
+                      <p>{workspace.storageNotice}</p>
+                      {revealUnscheduledLessonId ? (
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() => showUnscheduledInIdeas(revealUnscheduledLessonId)}
+                        >
+                          Show unplaced
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
                 </>
               ) : (
@@ -1018,7 +1081,18 @@ export function AppFrame() {
                     } : null}
                   />
                   {workspace.storageNotice ? (
-                    <p className="storage-notice" role="status">{workspace.storageNotice}</p>
+                    <div className="storage-notice storage-notice--with-action" role="status">
+                      <p>{workspace.storageNotice}</p>
+                      {revealUnscheduledLessonId ? (
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() => showUnscheduledInIdeas(revealUnscheduledLessonId)}
+                        >
+                          Show unplaced
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
                 </>
               )

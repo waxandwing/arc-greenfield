@@ -23,6 +23,7 @@ type Props = {
   defaultDate: ISODate | null
   undoAvailable: boolean
   stackWorkspace: StackWorkspace | null
+  revealUnscheduledLessonId?: string | null
   onAddCapture: (text: string) => string | null
   onDeleteCapture: (captureId: string) => void
   onSetCaptureImportant?: (captureId: string, important: boolean) => boolean
@@ -46,7 +47,9 @@ export function WorkspacePanel(props: Props) {
   const [expandedStackId, setExpandedStackId] = useState<string | null>(null)
   const [draggingCaptureId, setDraggingCaptureId] = useState<string | null>(null)
   const [dwellTargetId, setDwellTargetId] = useState<string | null>(null)
+  const [unscheduledOpen, setUnscheduledOpen] = useState(false)
   const dwellTimer = useRef<number | null>(null)
+  const unscheduledLessonRefs = useRef<Record<string, HTMLElement | null>>({})
   const unscheduledLessons = props.lessons.filter((lesson) => lesson.plannedDate === null)
   const scheduledLessons = props.lessons.filter((lesson) => lesson.plannedDate !== null)
   const captureCount = props.captures?.captures.length ?? 0
@@ -66,6 +69,16 @@ export function WorkspacePanel(props: Props) {
   useEffect(() => () => {
     if (dwellTimer.current !== null) window.clearTimeout(dwellTimer.current)
   }, [])
+
+  useEffect(() => {
+    const lessonId = props.revealUnscheduledLessonId
+    if (!lessonId) return
+    if (!props.lessons.some((lesson) => lesson.id === lessonId && lesson.plannedDate === null)) return
+    setUnscheduledOpen(true)
+    window.requestAnimationFrame(() => {
+      unscheduledLessonRefs.current[lessonId]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    })
+  }, [props.revealUnscheduledLessonId, props.lessons])
 
   function clearDwell() {
     if (dwellTimer.current !== null) {
@@ -179,11 +192,20 @@ export function WorkspacePanel(props: Props) {
 
       {props.undoAvailable ? <button type="button" className="quiet-button" onClick={props.onUndo}>Undo last tray move</button> : null}
 
-      <details className="workspace-secondary-block">
+      <details
+        className="workspace-secondary-block"
+        open={unscheduledOpen}
+        onToggle={(event) => setUnscheduledOpen((event.currentTarget as HTMLDetailsElement).open)}
+      >
         <summary>Unscheduled lessons ({unscheduledLessons.length})</summary>
         <label className="b01-fridge-date"><span>Lesson destination</span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
         {unscheduledLessons.length === 0 ? <p className="b01-furniture-empty">No loose Lessons.</p> : unscheduledLessons.map((lesson) => (
-          <article className="b01-fridge-card" key={lesson.id}>
+          <article
+            className={`b01-fridge-card${props.revealUnscheduledLessonId === lesson.id ? ' b01-fridge-card--revealed' : ''}`}
+            key={lesson.id}
+            ref={(node) => { unscheduledLessonRefs.current[lesson.id] = node }}
+            data-unscheduled-lesson={lesson.id}
+          >
             <strong>{lesson.title}</strong>
             <button type="button" className="quiet-button" disabled={!date} onClick={() => props.onScheduleLesson(lesson.id, date as ISODate)}>Place on date</button>
           </article>

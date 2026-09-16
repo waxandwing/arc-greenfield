@@ -46,7 +46,7 @@ await page.addInitScript((liveState) => {
 
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
 await page.waitForSelector('.arctable--teacher')
-await page.getByRole('button', { name: /Student preview|Open projected view/i }).first().click()
+await page.getByTestId('arctable-mode-projected').click()
 await page.waitForSelector('.arctable--student')
 await page.waitForSelector('[data-testid="arctable-student-parts"]')
 

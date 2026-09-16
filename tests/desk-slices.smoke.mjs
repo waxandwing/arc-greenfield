@@ -41,6 +41,27 @@ try {
   assert(dayBg.includes('planner-edge-tab-active'), 'Active DAY tab must use active slice raster, not inactive crop.')
   assert(!dayBg.includes('planner-edge-tab-day-inactive'), 'DAY must not keep inactive artwork when selected.')
 
+  // One click on YEAR must enter Year Map immediately (not Week-then-Year).
+  const yearTab = edgeTabs.getByRole('button', { name: 'YEAR', exact: true })
+  await yearTab.evaluate((el) => el.click())
+  assert(await yearTab.getAttribute('aria-current') === 'page', 'YEAR must be aria-current=page after one click.')
+  assert(
+    await page.locator('.b01-furniture-composition--desk').getAttribute('data-year-expanded') === 'true',
+    'One YEAR click must expand the year desk stage (not land on Week first).',
+  )
+  const yearPlanView = await page.locator('[data-plan-view="Year Map"]').count()
+  assert(yearPlanView >= 1 || (await page.locator('.plan-state-header').getAttribute('data-plan-view')) === 'Year Map', 'One YEAR click must set plan view to Year Map.')
+
+  // DAY/WEEK/MONTH must still select cleanly after Year.
+  await dayTab.evaluate((el) => el.click())
+  assert(await dayTab.getAttribute('aria-current') === 'page', 'DAY must still select after Year.')
+  const weekTabAfter = edgeTabs.getByRole('button', { name: 'WEEK', exact: true })
+  await weekTabAfter.evaluate((el) => el.click())
+  assert(await weekTabAfter.getAttribute('aria-current') === 'page', 'WEEK must still select after Year.')
+  const monthTab = edgeTabs.getByRole('button', { name: 'MONTH', exact: true })
+  await monthTab.evaluate((el) => el.click())
+  assert(await monthTab.getAttribute('aria-current') === 'page', 'MONTH must still select after Year.')
+
   await page.getByTestId('calendar-enlarge').evaluate((el) => el.click())
   await page.getByTestId('desk-calendar-popout').waitFor({ state: 'visible' })
   await page.keyboard.press('Escape')

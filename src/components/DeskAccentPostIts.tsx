@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import {
   DeskPostIt,
   type DeskPostItDragEndInfo,
+  type DeskPostItDragStartInfo,
   type DeskPostItPosition,
   type DeskPostItTone,
 } from './DeskPostIt'
@@ -26,8 +27,11 @@ import {
 import {
   clearDeskPostItDropHighlights,
   hitTestDeskPostItDrop,
+  hitTestDeskPostItPark,
   highlightDeskPostItDropTarget,
+  highlightDeskPostItParkTarget,
   pointFromRectCenter,
+  pointInElement,
 } from '../planning/deskPostItDrop'
 import { DESK_IDEAS_CLEAN_UP_EVENT } from '../desk/deskIdeasEvents'
 import {
@@ -106,6 +110,19 @@ type LinkPrompt = {
   a: string
   b: string
   anchor: DeskPostItPosition
+}
+
+type EscapeGhost = {
+  postItId: string
+  tone: DeskPostItTone
+  tiltDeg: number
+  left: number
+  top: number
+  width: number
+  height: number
+  grabOffsetX: number
+  grabOffsetY: number
+  text: string
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -254,12 +271,6 @@ function isInUnitContext(
   return stack.memberIds.some((id) => isUnitSpec(byId.get(id)))
 }
 
-function pointInElement(clientX: number, clientY: number, el: Element | null): boolean {
-  if (!el) return false
-  const box = el.getBoundingClientRect()
-  return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom
-}
-
 function UnitMagnetBadge({
   tone,
   testId,
@@ -332,10 +343,13 @@ type AccentPostItProps = AccentSpec & {
   lesson: boolean
   onLessonChange: (lesson: boolean) => void
   onPositionChange: (position: DeskPostItPosition) => void
+  onDragStart?: (info: DeskPostItDragStartInfo) => void
   onDragMove: (info: { postItId: string; clientX: number; clientY: number; rect: DOMRect }) => void
   onDragEnd: (info: DeskPostItDragEndInfo) => void
   onTextChange: (postItId: string, text: string) => void
   onEnterSave?: (postItId: string, text: string) => void
+  /** True while a document-level escape ghost follows the pointer. */
+  ghosting?: boolean
 }
 
 function DeskAccentPostIt({
@@ -356,10 +370,12 @@ function DeskAccentPostIt({
   lesson,
   onLessonChange,
   onPositionChange,
+  onDragStart,
   onDragMove,
   onDragEnd,
   onTextChange,
   onEnterSave,
+  ghosting = false,
 }: AccentPostItProps) {
   const [text, setText] = useState(() => (spawnBlank ? '' : readStoredNote(postItId)))
   const noteRef = useRef<HTMLTextAreaElement>(null)
@@ -421,6 +437,7 @@ function DeskAccentPostIt({
       defaultPosition={defaultPosition}
       position={position}
       onPositionChange={onPositionChange}
+      onDragStart={onDragStart}
       onDragMove={onDragMove}
       onDragEnd={onDragEnd}
       tiltDeg={tiltDeg}
@@ -430,6 +447,7 @@ function DeskAccentPostIt({
         inDrawer ? 'arc-desk-post-it--in-drawer' : '',
         assigned ? 'arc-desk-post-it--assigned' : '',
         showUnitMagnet ? 'arc-desk-post-it--in-unit' : '',
+        ghosting ? 'arc-desk-post-it--ghost-source' : '',
       ].filter(Boolean).join(' ')}
       testId={testId}
       aria-label={showUnitMagnet ? `${label} (in unit)` : label}
@@ -528,6 +546,9 @@ export function DeskAccentPostIts() {
   const [drawerSlot, setDrawerSlot] = useState<Element | null>(null)
   const [links, setLinks] = useState<DeskPostItLinkWorkspace>(() => loadDeskPostItLinks())
   const [prompt, setPrompt] = useState<LinkPrompt | null>(null)
+  const [escapeGhost, setEscapeGhost] = useState<EscapeGhost | null>(null)
+  const escapeGhostRef = useRef<EscapeGhost | null>(null)
+  escapeGhostRef.current = escapeGhost
   const dismissedPairsRef = useRef(new Set<string>())
   const positionsRef = useRef(positions)
   positionsRef.current = positions
@@ -678,6 +699,48 @@ export function DeskAccentPostIts() {
     })
   }, [])
 
+  const pushToDrawer = useCallback((postItId: string, slotPosition?: DeskPostItPosition) => {
+    setInDrawer((prev) => {
+      const stack = deskPostItStackForMember(linksRef.current, postItId)
+      const next = { ...prev }
+      if (stack) {
+        for (const memberId of stack.memberIds) next[memberId] = true
+      } else {
+        next[postItId] = true
+      }
+      return next
+    })
+    setPositions((prev) => {
+      const stack = deskPostItStackForMember(linksRef.current, postItId)
+      const base = slotPosition ?? {
+        leftPct: clamp(4 + (Object.keys(prev).length % 3) * 30, 2, 68),
+        topPct: clamp(6, 2, 62),
+      }
+      if (!stack) return { ...prev, [postItId]: base }
+      const updated = { ...prev }
+      let index = 0
+      for (const memberId of stack.memberIds) {
+        updated[memberId] = {
+          leftPct: clamp(base.leftPct + index * 28, 2, 68),
+          topPct: clamp(base.topPct + Math.floor(index / 3) * 8, 2, 62),
+        }
+        index += 1
+      }
+      return updated
+    })
+  }, [])
+
+  const positionInAccentSlot = useCallback((clientX: number, clientY: number): DeskPostItPosition | null => {
+    const slot = document.querySelector('[data-testid="arc-desk-ideas-accent-slot"]')
+    if (!(slot instanceof HTMLElement)) return null
+    const box = slot.getBoundingClientRect()
+    if (box.width <= 0 || box.height <= 0) return null
+    return {
+      leftPct: clamp(((clientX - box.left) / box.width) * 100 - 4, 0, 92),
+      topPct: clamp(((clientY - box.top) / box.height) * 100 - 4, 0, 88),
+    }
+  }, [])
+
   const hitPointForDrag = useCallback((info: { postItId: string; rect: DOMRect }) => {
     const stack = deskPostItStackForMember(linksRef.current, info.postItId)
     if (!stack) return pointFromRectCenter(info.rect)
@@ -695,9 +758,56 @@ export function DeskAccentPostIts() {
     return union ? pointFromRectCenter(union) : pointFromRectCenter(info.rect)
   }, [])
 
+  const onDragStart = useCallback((info: DeskPostItDragStartInfo) => {
+    if (!inDrawerRef.current[info.postItId]) return
+    const spec = catalogRef.current.find((item) => item.postItId === info.postItId)
+    if (!spec) return
+    const ghost: EscapeGhost = {
+      postItId: info.postItId,
+      tone: spec.tone,
+      tiltDeg: spec.tiltDeg,
+      left: info.rect.left,
+      top: info.rect.top,
+      width: info.rect.width,
+      height: info.rect.height,
+      grabOffsetX: info.clientX - info.rect.left,
+      grabOffsetY: info.clientY - info.rect.top,
+      text: textsRef.current[info.postItId] ?? readStoredNote(info.postItId),
+    }
+    escapeGhostRef.current = ghost
+    setEscapeGhost(ghost)
+    const park = hitTestDeskPostItPark(info.clientX, info.clientY)
+    highlightDeskPostItParkTarget(park.type === 'empty' ? { type: 'desk-park', element: document.querySelector('.arc-desk-surface') ?? document.body } : park)
+  }, [])
+
   const onDragMove = useCallback((info: { postItId: string; clientX: number; clientY: number; rect: DOMRect }) => {
+    const ghost = escapeGhostRef.current
+    if (ghost && ghost.postItId === info.postItId) {
+      const next = {
+        ...ghost,
+        left: info.clientX - ghost.grabOffsetX,
+        top: info.clientY - ghost.grabOffsetY,
+      }
+      escapeGhostRef.current = next
+      setEscapeGhost(next)
+      const park = hitTestDeskPostItPark(info.clientX, info.clientY)
+      if (park.type === 'empty') {
+        const surface = document.querySelector('.arc-desk-surface')
+        if (surface) highlightDeskPostItParkTarget({ type: 'desk-park', element: surface })
+        else clearDeskPostItDropHighlights()
+      } else {
+        highlightDeskPostItParkTarget(park)
+      }
+      return
+    }
     if (inDrawerRef.current[info.postItId]) {
       clearDeskPostItDropHighlights()
+      return
+    }
+    // Desk stickies: prefer assign targets; also advertise IDEAS return when over the tray.
+    const park = hitTestDeskPostItPark(info.clientX, info.clientY)
+    if (park.type === 'ideas-tray') {
+      highlightDeskPostItParkTarget(park)
       return
     }
     const point = hitPointForDrag(info)
@@ -795,12 +905,45 @@ export function DeskAccentPostIts() {
   }, [])
 
   const onDragEnd = useCallback((info: DeskPostItDragEndInfo) => {
+    const ghost = escapeGhostRef.current
+    const usingGhost = Boolean(ghost && ghost.postItId === info.postItId)
+    if (usingGhost && ghost) {
+      const centerX = ghost.left + ghost.width / 2
+      const centerY = ghost.top + ghost.height / 2
+      const park = hitTestDeskPostItPark(centerX, centerY)
+      escapeGhostRef.current = null
+      setEscapeGhost(null)
+      clearDeskPostItDropHighlights()
+      const overIdeas = park.type === 'ideas-tray' || (
+        pointInElement(centerX, centerY, document.querySelector('[data-testid="arc-desk-tray-dock"]'))
+        || pointInElement(centerX, centerY, document.querySelector('[data-testid="arc-desk-ideas-accent-slot"]'))
+      )
+      if (overIdeas) {
+        // Stay in IDEAS — rearrange + link like wood stickies.
+        const slotPos = positionInAccentSlot(centerX, centerY)
+        if (slotPos) {
+          setPositions((prev) => ({ ...prev, [info.postItId]: slotPos }))
+        }
+        promptLinkFromRects({
+          ...info,
+          rect: new DOMRect(ghost.left, ghost.top, ghost.width, ghost.height),
+          position: slotPos ?? info.position,
+        }, true)
+        return
+      }
+      const drop = positionFromSurfacePoint(centerX, centerY) ?? info.position
+      pullFromDrawer(info.postItId, drop)
+      setPrompt(null)
+      return
+    }
+
     if (!info.didMove) {
       clearDeskPostItDropHighlights()
       return
     }
 
     if (inDrawerRef.current[info.postItId]) {
+      // Fallback without ghost (should be rare): use clamped rect.
       const centerX = info.rect.left + info.rect.width / 2
       const centerY = info.rect.top + info.rect.height / 2
       const tray = document.querySelector('[data-testid="arc-desk-tray-dock"]')
@@ -808,14 +951,26 @@ export function DeskAccentPostIts() {
       const stillInTray = pointInElement(centerX, centerY, tray) || pointInElement(centerX, centerY, slot)
       clearDeskPostItDropHighlights()
       if (stillInTray) {
-        // Stay in IDEAS — rearrange + link like wood stickies.
         promptLinkFromRects(info, true)
         return
       }
-      const drop =
-        positionFromSurfacePoint(centerX, centerY)
-        ?? info.position
+      const drop = positionFromSurfacePoint(centerX, centerY) ?? info.position
       pullFromDrawer(info.postItId, drop)
+      setPrompt(null)
+      return
+    }
+
+    // Drop back into IDEAS from the exterior desk / planner surface.
+    const centerX = info.rect.left + info.rect.width / 2
+    const centerY = info.rect.top + info.rect.height / 2
+    const park = hitTestDeskPostItPark(centerX, centerY)
+    if (park.type === 'ideas-tray') {
+      const slotPos = positionInAccentSlot(centerX, centerY) ?? {
+        leftPct: clamp(4, 2, 68),
+        topPct: clamp(6, 2, 62),
+      }
+      pushToDrawer(info.postItId, slotPos)
+      clearDeskPostItDropHighlights()
       setPrompt(null)
       return
     }
@@ -827,7 +982,7 @@ export function DeskAccentPostIts() {
     }
 
     promptLinkFromRects(info, false)
-  }, [promptLinkFromRects, pullFromDrawer, tryAssignDrop])
+  }, [positionInAccentSlot, promptLinkFromRects, pullFromDrawer, pushToDrawer, tryAssignDrop])
 
   const onEnterSave = useCallback((postItId: string, raw: string) => {
     const parsed = parseQuickCaptureCommand(raw)
@@ -887,10 +1042,12 @@ export function DeskAccentPostIts() {
         lesson={lesson}
         onLessonChange={(next) => toggleLesson(accent.postItId, next)}
         onPositionChange={(next) => moveLinkedGroup(accent.postItId, next)}
+        onDragStart={onDragStart}
         onDragMove={onDragMove}
         onDragEnd={onDragEnd}
         onTextChange={(id, text) => { textsRef.current[id] = text }}
         onEnterSave={onEnterSave}
+        ghosting={escapeGhost?.postItId === accent.postItId}
       />
     )
   }
@@ -903,6 +1060,30 @@ export function DeskAccentPostIts() {
       {deskAccents.map((accent) => renderAccent(accent, false))}
       {drawerSlot && drawerAccents.length > 0
         ? createPortal(drawerAccents.map((accent) => renderAccent(accent, true)), drawerSlot)
+        : null}
+      {escapeGhost
+        ? createPortal(
+          <div
+            className={`arc-desk-post-it arc-desk-post-it--${escapeGhost.tone} arc-desk-post-it--accent arc-desk-post-it--dragging arc-desk-post-it--drag-ghost`}
+            data-testid="arc-desk-post-it-drag-ghost"
+            data-desk-post-it-ghost={escapeGhost.postItId}
+            aria-hidden="true"
+            style={{
+              position: 'fixed',
+              left: `${escapeGhost.left}px`,
+              top: `${escapeGhost.top}px`,
+              width: `${escapeGhost.width}px`,
+              height: `${escapeGhost.height}px`,
+              transform: `rotate(${escapeGhost.tiltDeg}deg)`,
+              pointerEvents: 'none',
+              zIndex: 9999,
+            }}
+          >
+            <div className="arc-desk-post-it-grip" aria-hidden="true" />
+            <div className="arc-desk-post-it-note arc-desk-post-it-note--ghost">{escapeGhost.text || 'Write…'}</div>
+          </div>,
+          document.body,
+        )
         : null}
       {prompt ? (
         <div

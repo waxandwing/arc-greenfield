@@ -28,6 +28,7 @@ const storage = {
 }
 
 const live = createArcTableLiveState(session, new Date('2026-10-16T15:20:00.000Z'))
+if (live.boardLocked !== false) throw new Error('New live classes must default to Editable (board unlocked) in Teacher Monitor.')
 live.timer = pauseArcTableCountdown(startArcTableCountdown(live.timer, new Date('2026-10-16T15:21:00.000Z')), new Date('2026-10-16T15:22:30.000Z'))
 live.cleanupTimer = startArcTableCountdown(live.cleanupTimer, new Date('2026-10-16T15:23:00.000Z'))
 live.people = addArcTablePerson(live.people, 'Maya Chen')

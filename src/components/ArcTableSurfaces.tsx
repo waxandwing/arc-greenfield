@@ -170,7 +170,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
       setMediaSource('')
       setMediaError(null)
     } else {
-      setMediaError(mediaKind === 'slides' ? 'Use a valid Google Slides presentation URL.' : 'Use a valid image URL/path. Inline images larger than 100 KB are not stored.')
+      setMediaError(mediaKind === 'slides' ? 'Use a valid Google Slides presentation URL.' : 'Need a valid image URL · over 100 KB isn’t stored.')
     }
   }
 
@@ -327,7 +327,13 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
                   <option value="3">Level 3</option>
                 </select>
               </label>
-              <button type="button" className="arctable-table-settings-toggle" onClick={() => onUpdate({ boardLocked: !live.boardLocked })}>
+              <button
+                type="button"
+                className="arctable-table-settings-toggle"
+                data-testid="arctable-settings-board-lock"
+                aria-pressed={!live.boardLocked}
+                onClick={() => onUpdate({ boardLocked: !live.boardLocked })}
+              >
                 <strong>Board</strong>
                 <span>{live.boardLocked ? 'Locked for students' : 'Editable'}</span>
               </button>
@@ -576,8 +582,25 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
               <div className="arctable-control-row"><strong>Phase</strong><div className="arctable-stepper"><button type="button" aria-label="Previous phase" disabled={live.phase === 1} onClick={() => onUpdate({ phase: live.phase - 1 })}>−</button><span>{live.phase} / {live.phaseCount}</span><button type="button" aria-label="Next phase" disabled={live.phase === live.phaseCount} onClick={() => onUpdate({ phase: live.phase + 1 })}>+</button></div></div>
               <label className="arctable-control-field"><strong>Materials</strong><input value={live.materials} onChange={(event) => onUpdate({ materials: event.target.value })} /></label>
               <label className="arctable-control-field"><strong>Voice expectation</strong><select value={live.voiceLevel} onChange={(event) => onUpdate({ voiceLevel: Number(event.target.value) as 1 | 2 | 3 })}><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option></select></label>
-              <button type="button" className="arctable-control-row" onClick={() => onUpdate({ boardLocked: !live.boardLocked })}><strong>Board</strong><span>{live.boardLocked ? 'Locked' : 'Editable'}</span></button>
-              <button type="button" className="arctable-control-row" onClick={onShowStudent}><strong>Student preview</strong><span>Open projected view</span></button>
+              <button
+                type="button"
+                className={`arctable-control-row${!live.boardLocked ? ' is-mode-active' : ''}`}
+                data-testid="arctable-mode-editable"
+                aria-pressed={!live.boardLocked}
+                onClick={() => {
+                  if (live.boardLocked) onUpdate({ boardLocked: false })
+                }}
+              >
+                <span>Editable</span>
+              </button>
+              <button
+                type="button"
+                className="arctable-control-row"
+                data-testid="arctable-mode-projected"
+                onClick={onShowStudent}
+              >
+                <span>Projected view</span>
+              </button>
               <section className={`arctable-cleanup-control${cleanupActive ? ' is-active' : ''}`} aria-labelledby="cleanup-heading">
                 <div><strong id="cleanup-heading">Cleanup countdown</strong><span>{cleanupActive ? `${live.cleanupTimer.status} · ${formatDuration(cleanupRemaining)}` : 'Ready when you are'}</span></div>
                 <label><span>Minutes</span><input aria-label="Cleanup duration in minutes" type="number" min="1" max="30" value={Math.ceil(live.cleanupTimer.durationSeconds / 60)} onChange={(event) => onUpdate({ cleanupTimer: setArcTableCountdownDuration(live.cleanupTimer, Number(event.target.value) * 60) })} /></label>
@@ -612,10 +635,40 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
           {tool === 'media' ? (
             <section ref={toolPanelRef} className="arctable-tool-panel arctable-media-panel" aria-labelledby="media-tools-heading">
               <h2 id="media-tools-heading">Media · {live.session.sectionName}</h2>
-              <form onSubmit={addMedia}><label><span>Title</span><input value={mediaTitle} onChange={(event) => setMediaTitle(event.target.value)} /></label><label><span>Source URL or path</span><input value={mediaSource} onChange={(event) => setMediaSource(event.target.value)} /></label><label><span>Type</span><select value={mediaKind} onChange={(event) => setMediaKind(event.target.value as 'image' | 'slides')}><option value="image">Artwork / image</option><option value="slides">Presentation / slides</option></select></label><button type="submit">Add media</button></form>
-              {mediaError ? <p role="alert" className="arctable-tool-error">{mediaError}</p> : null}
-              {live.media.items.length === 0 ? <p>No media selected. The lesson board stays intentionally quiet.</p> : live.media.items.map((item) => <button type="button" className={item.id === live.media.activeId ? 'is-active' : ''} key={item.id} onClick={() => onUpdate({ media: { ...live.media, activeId: item.id, projected: false } })}>{item.title} · {item.kind}</button>)}
-              <button type="button" disabled={!activeMedia} onClick={() => onUpdate({ media: { ...live.media, projected: !live.media.projected } })}>{live.media.projected ? 'Stop projecting media' : 'Project active media'}</button>
+              <form className="arctable-media-add" onSubmit={addMedia}>
+                <label><span>Title</span><input value={mediaTitle} onChange={(event) => setMediaTitle(event.target.value)} /></label>
+                <label><span>Source URL or path</span><input value={mediaSource} onChange={(event) => setMediaSource(event.target.value)} /></label>
+                <label><span>Type</span><select value={mediaKind} onChange={(event) => setMediaKind(event.target.value as 'image' | 'slides')}><option value="image">Artwork / image</option><option value="slides">Presentation / slides</option></select></label>
+                <button type="submit">Add media</button>
+              </form>
+              {mediaError ? <p role="alert" className="arctable-media-notice">{mediaError}</p> : null}
+              <div className="arctable-media-list">
+                {live.media.items.length === 0 ? (
+                  <p className="arctable-media-empty">No media yet. The board stays quiet.</p>
+                ) : (
+                  live.media.items.map((item) => (
+                    <button
+                      type="button"
+                      className={item.id === live.media.activeId ? 'is-active' : ''}
+                      key={item.id}
+                      onClick={() => onUpdate({ media: { ...live.media, activeId: item.id, projected: false } })}
+                    >
+                      {item.title} · {item.kind}
+                    </button>
+                  ))
+                )}
+              </div>
+              <div className="arctable-media-project">
+                <button
+                  type="button"
+                  className="arctable-media-project-btn"
+                  disabled={!activeMedia}
+                  aria-disabled={!activeMedia}
+                  onClick={() => onUpdate({ media: { ...live.media, projected: !live.media.projected } })}
+                >
+                  {live.media.projected ? 'Stop projecting media' : 'Project active media'}
+                </button>
+              </div>
             </section>
           ) : null}
         </div>
@@ -795,6 +848,13 @@ function MediaSurface({
 
 function EndClassDialog({ live, resumeNote, error, onResumeNote, onFinish, onCancel }: { live: ArcTableLiveState; resumeNote: string; error: string | null; onResumeNote: (value: string) => void; onFinish: (outcome: ArcTableTeachingOutcome) => void; onCancel: () => void }) {
   const neverStarted = live.session.deliveryStatus === 'not-started' && elapsedLiveMinutes(live) === 0 && live.phase === 1 && live.timer.status === 'idle' && live.cleanupTimer.status === 'idle'
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onCancel()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onCancel])
   return <div className="arctable-end-layer" role="dialog" aria-modal="true" aria-labelledby="end-class-title"><form className="arctable-end-card" onSubmit={(event) => { event.preventDefault(); if (resumeNote.trim()) onFinish({ kind: 'stopped', resumeNote }) }}><p className="arctable-kicker">Instructional outcome</p><h2 id="end-class-title">Where did this class land?</h2><p>Ending is different from opening Plan View. This updates only {live.session.sectionName} and closes its live tools.</p>{error ? <p className="setup-errors" role="alert">{error}</p> : null}<button type="button" className="primary-button" onClick={() => onFinish({ kind: 'completed' })}>Complete lesson</button><label><span>Stop here + required resume note</span><textarea required value={resumeNote} onChange={(event) => onResumeNote(event.target.value)} /></label><button type="submit" className="quiet-button">Save stop point</button>{neverStarted ? <button type="button" className="text-button" onClick={() => onFinish({ kind: 'skipped' })}>Skip — lesson never started</button> : null}<button type="button" className="text-button" onClick={onCancel}>Keep class running</button></form></div>
 }
 
