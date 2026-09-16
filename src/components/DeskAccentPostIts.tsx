@@ -78,7 +78,7 @@ const ACCENTS: AccentSpec[] = [
   {
     postItId: 'accent-mustard',
     tone: 'mustard',
-    defaultPosition: { leftPct: 31.5, topPct: 8.5 },
+    defaultPosition: { leftPct: 31.5, topPct: 5.2 },
     tiltDeg: -6,
     testId: 'arc-desk-post-it-accent-mustard',
     label: 'Mustard post-it',
@@ -86,7 +86,7 @@ const ACCENTS: AccentSpec[] = [
   {
     postItId: 'accent-pink',
     tone: 'pink',
-    defaultPosition: { leftPct: 41.5, topPct: 7.8 },
+    defaultPosition: { leftPct: 41.5, topPct: 4.6 },
     tiltDeg: 4,
     testId: 'arc-desk-post-it-accent-pink',
     label: 'Pink post-it',
@@ -94,7 +94,7 @@ const ACCENTS: AccentSpec[] = [
   {
     postItId: 'accent-blue',
     tone: 'blue',
-    defaultPosition: { leftPct: 51.5, topPct: 8.6 },
+    defaultPosition: { leftPct: 51.5, topPct: 5.4 },
     // Kelly postit-blue PNG is already tilted; keep CSS rotation at 0.
     tiltDeg: 0,
     testId: 'arc-desk-post-it-accent-blue',

@@ -144,6 +144,11 @@ html:has(.arc-shell--desk) body {
   pointer-events: none !important;
 }
 
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='false'] .arc-desk-folders-tab {
+  position: relative;
+  z-index: 19;
+}
+
 /* Locked to planner left edge (planner left = 13.5%). Open = extend left; closed = tab only. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
   position: absolute;
@@ -1385,7 +1390,12 @@ html:has(.arc-shell--desk) body {
 /* Live desk post-its — never bake these into IDEAS tray SVG/PNG chrome. */
 .arc-desk-post-it {
   position: absolute;
+  /* Above planner paper (16) and closed IDEAS chrome (15) so wood stickies stay draggable. */
+  z-index: 17;
+
+.arc-desk-surface:not([data-layout-grid='true']):has(> .arc-desk-tray-dock[data-extended='true']) > .arc-desk-post-it {
   z-index: 14;
+}
   width: 4.6%;
   aspect-ratio: 1 / 0.92;
   min-width: 36px;
