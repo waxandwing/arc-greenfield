@@ -169,20 +169,24 @@ html:has(.arc-shell--desk) body {
   z-index: 2;
 }
 
-/* Modest corner lockup — clear of planner right edge (~89.5%) so calendar keeps space. */
+/* Lower ArcTable / start-class mark — readable brand lockup on wood, clear of planner (~89.5%),
+   SETTINGS, edge tabs, and help (?). Original asset — no glow / wood-burn filters. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor {
   position: absolute;
-  right: 2.2%;
-  bottom: 3.4%;
-  width: 6.6%;
-  max-width: 88px;
+  right: 3.2%;
+  bottom: 4.8%;
+  width: auto;
+  max-width: 132px;
   aspect-ratio: auto;
-  z-index: 6;
+  z-index: 18;
   left: auto;
   pointer-events: none;
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
+  filter: none;
+  mix-blend-mode: normal;
+  opacity: 1;
 }
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-capture-sticky {
@@ -1965,9 +1969,12 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor .arc-desk-mark-svg,
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor .arc-desk-start-class-mark {
-  width: 100%;
-  max-width: 88px;
+  width: clamp(96px, 9.2vw, 128px);
+  max-width: 128px;
   height: auto;
+  filter: none;
+  mix-blend-mode: normal;
+  opacity: 1;
 }
 
 .arc-desk-arctable-context {
@@ -1976,12 +1983,12 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-arctable-script {
   margin: 0;
-  max-width: 8.5rem;
+  max-width: 14rem;
   font-family: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', var(--font-display), serif;
   font-style: italic;
   font-weight: 600;
-  font-size: clamp(0.82rem, 1.05vw, 1.02rem);
-  line-height: 1.15;
+  font-size: clamp(1.05rem, 1.35vw, 1.35rem);
+  line-height: 1.2;
   letter-spacing: 0.01em;
   text-transform: lowercase;
   text-align: center;
@@ -2162,10 +2169,13 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .arc-desk-start-class-mark {
   display: block;
-  width: clamp(52px, 5.4vw, 78px);
+  width: clamp(96px, 9.2vw, 128px);
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 8px 16px -12px rgba(33, 29, 23, 0.42));
+  /* Kelly: original ArcTable / start-class mark — no glow, wood-burn, or blend filters. */
+  filter: none;
+  mix-blend-mode: normal;
+  opacity: 1;
   pointer-events: none;
 }
 
@@ -3471,11 +3481,12 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .arc-desk-arctable-script { order:-1; }
 .b01-furniture-composition--desk .arc-planner-object { filter: drop-shadow(0 16px 34px -24px rgba(33, 29, 23, 0.4)); }
 
-/* Quiet desk help — paper note on wood (not native dialog chrome). */
+/* Quiet desk help — paper note on wood (not native dialog chrome).
+   Keep ? help left of the lower ArcTable / start-class mark. */
 .arc-desk-help {
   position: absolute;
-  right: 15.5%;
-  bottom: 4.2%;
+  right: 16.5%;
+  bottom: 5.2%;
   top: auto;
   z-index: 21;
   pointer-events: auto;
