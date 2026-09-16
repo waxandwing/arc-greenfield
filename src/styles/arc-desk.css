@@ -534,6 +534,19 @@ html:has(.arc-shell--desk) body {
   padding: 0;
 }
 
+/* Narrow top chrome strip for vertical park when the well covers the tray face. */
+.arc-desk-ideas-tray-park-grip {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 0;
+  height: 12%;
+  z-index: 4;
+  cursor: ns-resize;
+  touch-action: none;
+  pointer-events: auto;
+}
+
 .arc-desk-green-drawer-art {
   position: absolute;
   inset: 0;

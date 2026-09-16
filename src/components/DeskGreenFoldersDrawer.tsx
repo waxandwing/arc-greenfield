@@ -194,53 +194,63 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
       data-tray-park-top={String(parkTopPct)}
       style={{ ['--arc-desk-tray-park-top' as string]: `${parkTopPct}%` }}
     >
-      <div className="arc-desk-green-drawer-shell">
         <div
-          className="arc-desk-green-drawer-art"
-          aria-hidden="true"
-          data-desk-kelly-asset="ideas-tray"
-          data-testid="arc-desk-ideas-tray-park-handle"
+          className="arc-desk-green-drawer-shell"
+          data-testid="arc-desk-ideas-tray-park-surface"
           onPointerDown={(event) => beginParkDrag(event, false)}
         >
-          <img
-            className="arc-desk-ideas-tray-art"
-            src={deskCanonicalPngUrl('ideasTray')}
-            alt=""
-            decoding="async"
-            data-testid="desk-slice-ideas-drawer"
-            data-ideas-tray="canonical"
-            draggable={false}
-          />
-        </div>
-        <div
-          id={panelId}
-          className="arc-desk-green-drawer-well"
-          role="region"
-          aria-labelledby={tabId}
-          aria-hidden={extended ? undefined : true}
-        >
           <div
-            className="arc-desk-ideas-accent-slot"
-            data-testid="arc-desk-ideas-accent-slot"
-            aria-label="Post-its in IDEAS"
+            className="arc-desk-green-drawer-art"
+            aria-hidden="true"
+            data-desk-kelly-asset="ideas-tray"
+            data-testid="arc-desk-ideas-tray-park-handle"
+          >
+            <img
+              className="arc-desk-ideas-tray-art"
+              src={deskCanonicalPngUrl('ideasTray')}
+              alt=""
+              decoding="async"
+              data-testid="desk-slice-ideas-drawer"
+              data-ideas-tray="canonical"
+              draggable={false}
+            />
+          </div>
+          {/* Top lip park grip — sits above the well so vertical drag always has a chrome hit target. */}
+          <div
+            className="arc-desk-ideas-tray-park-grip"
+            data-testid="arc-desk-ideas-tray-park-grip"
+            aria-hidden="true"
+            onPointerDown={(event) => beginParkDrag(event, false)}
           />
-          {children}
+          <div
+            id={panelId}
+            className="arc-desk-green-drawer-well"
+            role="region"
+            aria-labelledby={tabId}
+            aria-hidden={extended ? undefined : true}
+          >
+            <div
+              className="arc-desk-ideas-accent-slot"
+              data-testid="arc-desk-ideas-accent-slot"
+              aria-label="Post-its in IDEAS"
+            />
+            {children}
+          </div>
+          {cleanUpLip}
+          <button
+            id={tabId}
+            type="button"
+            className="arc-desk-folders-tab arc-desk-ideas-tab"
+            data-testid="arc-desk-folders-tab"
+            data-ideas-tab="true"
+            aria-expanded={extended}
+            aria-controls={panelId}
+            onPointerDown={(event) => beginParkDrag(event, true)}
+            onClick={onTabClick}
+          >
+            <span className="sr-only">IDEAS</span>
+          </button>
         </div>
-        {cleanUpLip}
-        <button
-          id={tabId}
-          type="button"
-          className="arc-desk-folders-tab arc-desk-ideas-tab"
-          data-testid="arc-desk-folders-tab"
-          data-ideas-tab="true"
-          aria-expanded={extended}
-          aria-controls={panelId}
-          onPointerDown={(event) => beginParkDrag(event, true)}
-          onClick={onTabClick}
-        >
-          <span className="sr-only">IDEAS</span>
-        </button>
-      </div>
     </aside>
   )
 }
