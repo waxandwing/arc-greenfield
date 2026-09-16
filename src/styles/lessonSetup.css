@@ -5,6 +5,7 @@
 .lesson-list-item::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;background:transparent}
 .lesson-list-item strong{font-size:15px}
 .lesson-list-item span{font-size:12px;color:var(--soft-charcoal)}
+.lesson-list-item--unscheduled span{color:var(--dusty-blue)}
 .lesson-list-item:hover{background:rgba(243,235,221,.55)}
 .lesson-list-item[aria-current='true']{background:rgba(228,179,61,.12)}
 .lesson-list-item[aria-current='true']::before{background:var(--mustard)}

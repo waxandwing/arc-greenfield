@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ISODate, SchoolCalendar } from '../calendar'
 import {
   createLesson,
@@ -25,6 +25,11 @@ import {
   type UnitWorkspace,
 } from '../planning'
 
+type ActionNotice = {
+  message: string
+  unplacedLessonId?: string
+}
+
 type Props = {
   calendar: SchoolCalendar
   planning: PlanningWorkspace
@@ -32,11 +37,13 @@ type Props = {
   shiftState: ShiftPersistenceInput | null
   initialValue: LessonWorkspaceInput | null
   focusLessonId?: string | null
-  onSave: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => void
+  onSave: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => boolean | void
   onCancel: () => void
+  /** Open IDEAS / Workspace on Unscheduled lessons after Save (recovery from Unplace). */
+  onShowUnscheduledInIdeas?: (lessonId: string) => void
 }
 
-export function LessonSetup({ calendar, planning, units, shiftState, initialValue, focusLessonId = null, onSave, onCancel }: Props) {
+export function LessonSetup({ calendar, planning, units, shiftState, initialValue, focusLessonId = null, onSave, onCancel, onShowUnscheduledInIdeas }: Props) {
   const [lessons, setLessons] = useState<Lesson[]>(() => initialValue?.lessons.map((lesson) => ({ ...lesson })) ?? [])
   const [deliveryStates, setDeliveryStates] = useState<LessonDeliveryState[]>(() => initialValue?.deliveryStates.map((state) => ({ ...state })) ?? [])
   const [overrides, setOverrides] = useState(() => shiftState?.overrides.map((override) => ({ ...override })) ?? [])
@@ -46,7 +53,10 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
     return initialValue?.lessons[0]?.id ?? null
   })
   const [errors, setErrors] = useState<string[]>([])
-  const [actionNotice, setActionNotice] = useState<string | null>(null)
+  const [actionNotice, setActionNotice] = useState<ActionNotice | null>(null)
+  const [pendingIdeasRevealId, setPendingIdeasRevealId] = useState<string | null>(null)
+  const plannedDateInputRef = useRef<HTMLInputElement | null>(null)
+  const lessonListItemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
 
   const selectedLesson = lessons.find((lesson) => lesson.id === selectedLessonId) ?? null
   const selectedUnit = selectedLesson ? units.units.find((unit) => unit.id === selectedLesson.unitId) ?? null : null
@@ -83,6 +93,7 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
     setSelectedLessonId(lesson.id)
     setErrors([])
     setActionNotice(null)
+    setPendingIdeasRevealId(null)
   }
 
   function changeUnit(lessonId: string, unitId: string) {
@@ -103,6 +114,7 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
 
     setErrors([])
     setActionNotice(null)
+    setPendingIdeasRevealId(null)
     setLessons((current) => current.map((item) => item.id === lessonId ? {
       ...item,
       unitId: unit.id,
@@ -128,7 +140,8 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
       setLessons(next.lessons)
       setDeliveryStates(next.deliveryStates)
       setErrors([])
-      setActionNotice('Lesson moved. Identity and teaching history were preserved.')
+      setPendingIdeasRevealId(null)
+      setActionNotice({ message: 'Lesson moved. Identity and teaching history were preserved.' })
     } catch (error) {
       reportActionError(error)
     }
@@ -142,16 +155,32 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
       setOverrides(result.overrides)
       if (result.removedOverrides.length > 0) setShiftChanged(true)
       setErrors([])
+      setPendingIdeasRevealId(lessonId)
+      setSelectedLessonId(lessonId)
 
       if (result.removedOverrides.length === 0) {
-        setActionNotice('Lesson unplaced. The Lesson and its teaching history were preserved.')
+        setActionNotice({
+          message: 'Lesson moved to Unscheduled lessons in IDEAS. The Lesson and its teaching history were preserved.',
+          unplacedLessonId: lessonId,
+        })
       } else {
         const sectionNames = result.removedOverrides.map((override) => planning.sections.find((section) => section.id === override.sectionId)?.name ?? override.sectionId)
-        setActionNotice(`Lesson unplaced. Section-specific dates were also removed for: ${sectionNames.join(', ')}. Teaching history was preserved.`)
+        setActionNotice({
+          message: `Lesson moved to Unscheduled lessons in IDEAS. Section-specific dates were also removed for: ${sectionNames.join(', ')}. Teaching history was preserved.`,
+          unplacedLessonId: lessonId,
+        })
       }
     } catch (error) {
       reportActionError(error)
     }
+  }
+
+  function showUnplacedLesson(lessonId: string) {
+    setSelectedLessonId(lessonId)
+    window.requestAnimationFrame(() => {
+      lessonListItemRefs.current[lessonId]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      plannedDateInputRef.current?.focus()
+    })
   }
 
   function deleteDraftLesson(lessonId: string) {
@@ -161,7 +190,8 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
       setDeliveryStates(next.deliveryStates)
       if (selectedLessonId === lessonId) setSelectedLessonId(next.lessons[0]?.id ?? null)
       setErrors([])
-      setActionNotice('Lesson deleted. No dependent teaching history or Section schedule remained.')
+      setPendingIdeasRevealId(null)
+      setActionNotice({ message: 'Lesson deleted. No dependent teaching history or Section schedule remained.' })
     } catch (error) {
       reportActionError(error)
     }
@@ -173,7 +203,8 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
       setLessons(result.workspace.lessons)
       setSelectedLessonId(result.copy.id)
       setErrors([])
-      setActionNotice('Lesson copied into Workspace with a new identity. The original Lesson and class history were not changed.')
+      setPendingIdeasRevealId(null)
+      setActionNotice({ message: 'Lesson copied into Workspace with a new identity. The original Lesson and class history were not changed.' })
     } catch (error) {
       reportActionError(error)
     }
@@ -222,7 +253,10 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
         undo: shiftChanged ? null : shiftState?.undo ?? null,
       }
       setErrors([])
-      onSave(input, workspace, nextShiftState)
+      const saved = onSave(input, workspace, nextShiftState)
+      if (saved !== false && pendingIdeasRevealId && onShowUnscheduledInIdeas) {
+        onShowUnscheduledInIdeas(pendingIdeasRevealId)
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message.replace(/^Cannot use Lessons\.\s*/, '') : String(error)
       setErrors(message.split(/(?<=\.)\s+/).filter(Boolean))
@@ -235,12 +269,34 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
     <div className="lesson-setup">
       <div className="calendar-setup-intro"><p className="section-label">Lessons</p><h2>One plan. Different places.</h2><p>Build the shared Lesson once. Then record where each class actually is without changing the plan for everyone else.</p></div>
       {errors.length > 0 && <div className="setup-errors" role="alert"><strong>Check the Lessons.</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div>}
-      {actionNotice && <p className="storage-notice" role="status">{actionNotice}</p>}
+      {actionNotice && (
+        <div className="storage-notice storage-notice--with-action" role="status">
+          <p>{actionNotice.message}</p>
+          {actionNotice.unplacedLessonId ? (
+            <button type="button" className="text-button" onClick={() => showUnplacedLesson(actionNotice.unplacedLessonId!)}>
+              Show unplaced
+            </button>
+          ) : null}
+        </div>
+      )}
       <div className="lesson-workspace-grid">
         <aside className="lesson-list" aria-label="Lessons">
           {lessons.map((lesson) => {
             const unit = units.units.find((candidate) => candidate.id === lesson.unitId)
-            return <button key={lesson.id} type="button" className="lesson-list-item" aria-current={lesson.id === selectedLessonId ? 'true' : undefined} onClick={() => setSelectedLessonId(lesson.id)}><strong>{lesson.title || 'Untitled Lesson'}</strong><span>{unit?.title ?? 'Missing Unit'}</span></button>
+            const unscheduled = lesson.plannedDate === null
+            return (
+              <button
+                key={lesson.id}
+                type="button"
+                className={`lesson-list-item${unscheduled ? ' lesson-list-item--unscheduled' : ''}`}
+                aria-current={lesson.id === selectedLessonId ? 'true' : undefined}
+                ref={(node) => { lessonListItemRefs.current[lesson.id] = node }}
+                onClick={() => setSelectedLessonId(lesson.id)}
+              >
+                <strong>{lesson.title || 'Untitled Lesson'}</strong>
+                <span>{unit?.title ?? 'Missing Unit'}{unscheduled ? ' · Unscheduled in IDEAS' : ''}</span>
+              </button>
+            )
           })}
           <button type="button" className="quiet-button lesson-add-button" onClick={addLesson}>Add Lesson</button>
         </aside>
@@ -252,7 +308,7 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
                 <label><span>Lesson title</span><input value={selectedLesson.title} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, title: event.target.value } : lesson))} /></label>
                 <label><span>Unit</span><select value={selectedLesson.unitId} onChange={(event) => changeUnit(selectedLesson.id, event.target.value)}>{units.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.title}</option>)}</select></label>
                 <label><span>Order</span><input type="number" min="1" step="1" value={selectedLesson.sequence} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, sequence: Number(event.target.value) } : lesson))} /></label>
-                <label><span>Planned date</span><input type="date" disabled={!selectedUnit?.placement} min={selectedUnit?.placement?.startDate} max={selectedUnit?.placement?.endDate} value={selectedLesson.plannedDate ?? ''} onChange={(event) => changePlannedDate(selectedLesson.id, event.target.value)} /></label>
+                <label><span>Planned date</span><input ref={plannedDateInputRef} type="date" disabled={!selectedUnit?.placement} min={selectedUnit?.placement?.startDate} max={selectedUnit?.placement?.endDate} value={selectedLesson.plannedDate ?? ''} onChange={(event) => changePlannedDate(selectedLesson.id, event.target.value)} /></label>
                 <label><span>Date behavior</span><select value={selectedLesson.datePolicy} disabled={!selectedLesson.plannedDate} onChange={(event) => setLessons((current) => current.map((lesson) => lesson.id === selectedLesson.id ? { ...lesson, datePolicy: event.target.value as LessonDatePolicy } : lesson))}><option value="flexible">Flexible</option><option value="fixed">Fixed</option></select></label>
               </div>
               <p className="lesson-date-policy-note">Flexible dates may be surfaced for recovery review. Fixed dates are anchors: Arc may show a collision, but it will not move them automatically.</p>

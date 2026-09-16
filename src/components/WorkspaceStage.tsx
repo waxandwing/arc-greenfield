@@ -82,6 +82,7 @@ type WorkspaceStageProps = {
   recoveryFocusSectionId?: string | null
   onEditLesson?: (lessonId: string) => void
   focusLessonId?: string | null
+  onShowUnscheduledInIdeas?: (lessonId: string) => void
 }
 
 export function WorkspaceStage(props: WorkspaceStageProps) {
@@ -139,6 +140,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     recoveryFocusSectionId,
     onEditLesson,
     focusLessonId = null,
+    onShowUnscheduledInIdeas,
   } = props
 
   const needsCalendarSetup = !calendar || !anchorDate || mode === 'calendar-setup'
@@ -214,6 +216,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         focusLessonId={focusLessonId}
         onSave={onUseLessons}
         onCancel={onReturnToSettings}
+        onShowUnscheduledInIdeas={onShowUnscheduledInIdeas}
       />
     )
   }

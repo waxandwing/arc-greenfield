@@ -90,6 +90,7 @@ import { readDeskPreviewSeededSession, shouldForceDeskShell } from '../demo/desk
 import { buildKellyDeskDemoBundle } from '../demo/kellyDeskDemo'
 import { GAUNTLET_DEMO_CALENDAR_ID } from '../demo/gauntletDemo'
 import { deskPreviewBuildEnabled } from '../buildInfo'
+import { requestDeskIdeasOpen } from '../desk/deskIdeasEvents'
 
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
@@ -108,6 +109,7 @@ export function AppFrame() {
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
   const [lessonSetupFocusId, setLessonSetupFocusId] = useState<string | null>(null)
+  const [revealUnscheduledLessonId, setRevealUnscheduledLessonId] = useState<string | null>(null)
   const [workspaceLayout, setWorkspaceLayout] = useState<WorkspaceLayoutState>(loadWorkspaceLayout)
   const [stackWorkspace, setStackWorkspace] = useState<StackWorkspace | null>(null)
   const [deskEditSession, setDeskEditSession] = useState<{
@@ -257,6 +259,15 @@ export function AppFrame() {
   function openLessonForEdit(lessonId: string) {
     setLessonSetupFocusId(lessonId)
     workspaceMode.open('lessons')
+  }
+
+  function showUnscheduledInIdeas(lessonId: string) {
+    setRevealUnscheduledLessonId(lessonId)
+    workspaceMode.close()
+    setLessonSetupFocusId(null)
+    openWorkspaceOverlay(true)
+    requestDeskIdeasOpen()
+    workspace.setStorageNotice('Lesson is in Unscheduled lessons in IDEAS. Teaching history was preserved.')
   }
 
   function openSetupSection(id: SetupSectionId) {
@@ -505,6 +516,10 @@ export function AppFrame() {
     if (!nextShift) return
     workspace.useLessons(result.lessons, result.lessons, nextShift)
     setFridgeUndo(result.undo)
+    setRevealUnscheduledLessonId(lessonId)
+    openWorkspaceOverlay(true)
+    requestDeskIdeasOpen()
+    workspace.setStorageNotice('Lesson moved to Unscheduled lessons in IDEAS. Teaching history was preserved.')
   }
 
   function scheduleLessonFromFridge(lessonId: string, plannedDate: ISODate) {
@@ -661,6 +676,7 @@ export function AppFrame() {
     defaultDate: workspace.anchorDate,
     undoAvailable: Boolean(fridgeUndo),
     stackWorkspace,
+    revealUnscheduledLessonId,
     onAddCapture: workspace.addCapture,
     onDeleteCapture: workspace.removeCapture,
     onSetCaptureImportant: workspace.setCaptureImportant,
@@ -898,6 +914,7 @@ export function AppFrame() {
       recoveryFocusSectionId={recoveryFocusSectionId}
       onEditLesson={openLessonForEdit}
       focusLessonId={lessonSetupFocusId}
+      onShowUnscheduledInIdeas={showUnscheduledInIdeas}
     />
   )
 
@@ -990,7 +1007,18 @@ export function AppFrame() {
                     </div>
                   ) : null}
                   {workspace.storageNotice ? (
-                    <p className="storage-notice" role="status">{workspace.storageNotice}</p>
+                    <div className="storage-notice storage-notice--with-action" role="status">
+                      <p>{workspace.storageNotice}</p>
+                      {revealUnscheduledLessonId ? (
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() => showUnscheduledInIdeas(revealUnscheduledLessonId)}
+                        >
+                          Show unplaced
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
                 </>
               ) : (
@@ -1038,7 +1066,18 @@ export function AppFrame() {
                     } : null}
                   />
                   {workspace.storageNotice ? (
-                    <p className="storage-notice" role="status">{workspace.storageNotice}</p>
+                    <div className="storage-notice storage-notice--with-action" role="status">
+                      <p>{workspace.storageNotice}</p>
+                      {revealUnscheduledLessonId ? (
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() => showUnscheduledInIdeas(revealUnscheduledLessonId)}
+                        >
+                          Show unplaced
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
                 </>
               )
