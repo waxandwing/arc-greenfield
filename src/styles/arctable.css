@@ -679,7 +679,8 @@
   left:96px;
   right:auto;
   top:78px;
-  width:min(380px, calc(100vw - 140px));
+  width:min(340px, 32vw);
+  max-height:calc(100dvh - 110px);
 }
 .arctable--teacher .arctable-tool-row{display:none}
 

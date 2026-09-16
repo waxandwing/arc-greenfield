@@ -344,7 +344,7 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onSyncLive, onUpda
                     type="button"
                     className={current ? 'is-current' : undefined}
                     aria-current={current ? 'step' : undefined}
-                    aria-label={current ? `Current part: ${label}` : `Preview part: ${label}`}
+                    aria-label={current ? `Current part: ${label}` : `Go to part: ${label}`}
                     onClick={() => {
                       if (current && followingTeacher) return
                       setLocalPhase(partNumber)
