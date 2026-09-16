@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AppFrame } from './components/AppFrame'
 import { DeskBuildStamp } from './components/DeskBuildStamp'
 import { GoldMasterGallery } from './components/GoldMasterGallery'
+import { GoldMasterIndex } from './components/GoldMasterIndex'
 import { GoldMasterShiftPreview, GoldMasterWeekEdit } from './components/GoldMasterStates'
 import { IcarusEntryFlow } from './entry/IcarusEntryFlow'
 import { isEntryComplete } from './entry/entryAccess'
@@ -18,6 +19,11 @@ function goldMasterRequested() {
 
 export default function App() {
   const [entryComplete, setEntryComplete] = useState(() => isEntryComplete())
+  const params = new URLSearchParams(window.location.search)
+
+  if (params.get('gallery') === 'gold-master') {
+    return <GoldMasterIndex />
+  }
 
   if (goldMasterView() === 'week-edit') {
     return <GoldMasterWeekEdit />
