@@ -83,11 +83,16 @@ export function hitTestDeskPostItDrop(clientX: number, clientY: number): DeskPos
 export function hitTestDeskPostItPark(clientX: number, clientY: number): DeskPostItParkTarget {
   if (typeof document === 'undefined') return { type: 'empty' }
 
-  // Prefer geometry for the open IDEAS tray so a dragged sticky (same z as the tray)
-  // cannot mask the return target in elementsFromPoint.
+  // Prefer geometry for the open IDEAS face (shell/well/slot) so a dragged sticky
+  // cannot mask the return target — use the visible tray face, not the oversized dock box.
   const trayDock = document.querySelector('[data-testid="arc-desk-tray-dock"]')
   if (trayDock instanceof HTMLElement && trayDock.getAttribute('data-extended') === 'true') {
-    const box = trayDock.getBoundingClientRect()
+    const face =
+      trayDock.querySelector('[data-testid="arc-desk-ideas-accent-slot"]')
+      ?? trayDock.querySelector('.arc-desk-green-drawer-well')
+      ?? trayDock.querySelector('[data-testid="arc-desk-ideas-tray-park-surface"]')
+      ?? trayDock
+    const box = face.getBoundingClientRect()
     if (clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom) {
       return { type: 'ideas-tray', element: trayDock }
     }

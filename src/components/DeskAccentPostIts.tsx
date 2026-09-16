@@ -914,10 +914,11 @@ export function DeskAccentPostIts() {
       escapeGhostRef.current = null
       setEscapeGhost(null)
       clearDeskPostItDropHighlights()
-      const overIdeas = park.type === 'ideas-tray' || (
-        pointInElement(centerX, centerY, document.querySelector('[data-testid="arc-desk-tray-dock"]'))
-        || pointInElement(centerX, centerY, document.querySelector('[data-testid="arc-desk-ideas-accent-slot"]'))
-      )
+      const ideasFace =
+        document.querySelector('[data-testid="arc-desk-ideas-accent-slot"]')
+        ?? document.querySelector('.arc-desk-green-drawer-well')
+        ?? document.querySelector('[data-testid="arc-desk-ideas-tray-park-surface"]')
+      const overIdeas = park.type === 'ideas-tray' || pointInElement(centerX, centerY, ideasFace)
       if (overIdeas) {
         // Stay in IDEAS — rearrange + link like wood stickies.
         const slotPos = positionInAccentSlot(centerX, centerY)
@@ -946,9 +947,11 @@ export function DeskAccentPostIts() {
       // Fallback without ghost (should be rare): use clamped rect.
       const centerX = info.rect.left + info.rect.width / 2
       const centerY = info.rect.top + info.rect.height / 2
-      const tray = document.querySelector('[data-testid="arc-desk-tray-dock"]')
-      const slot = document.querySelector('[data-testid="arc-desk-ideas-accent-slot"]')
-      const stillInTray = pointInElement(centerX, centerY, tray) || pointInElement(centerX, centerY, slot)
+      const ideasFace =
+        document.querySelector('[data-testid="arc-desk-ideas-accent-slot"]')
+        ?? document.querySelector('.arc-desk-green-drawer-well')
+        ?? document.querySelector('[data-testid="arc-desk-ideas-tray-park-surface"]')
+      const stillInTray = pointInElement(centerX, centerY, ideasFace)
       clearDeskPostItDropHighlights()
       if (stillInTray) {
         promptLinkFromRects(info, true)
