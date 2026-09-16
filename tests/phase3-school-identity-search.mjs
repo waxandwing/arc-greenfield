@@ -54,6 +54,14 @@ await page.route('**/api/nces?**', async (route) => {
 await page.goto(baseUrl, { waitUntil: 'networkidle' })
 assert(await page.getByRole('heading', { name: 'Find and load your school’s official identity.' }).count() === 1, 'School identity search is missing from first-time calendar setup.')
 assert(await page.getByTestId('school-load').count() === 1, 'School load region must be present.')
+const schoolMoreInfo = page.locator('.school-identity-search-heading details.calendar-setup-more-info')
+assert(await schoolMoreInfo.count() === 1, 'School identity help must use a More info disclosure.')
+assert(await schoolMoreInfo.evaluate((node) => !node.open), 'More info must start collapsed.')
+assert(await schoolMoreInfo.locator('summary').innerText() === 'More info', 'Disclosure summary must read More info.')
+assert(
+  await schoolMoreInfo.locator('p').innerText().then((text) => /Google Places/i.test(text) && /NCES/i.test(text)),
+  'Expanded More info must keep the Google Places / NCES explanation.',
+)
 
 await page.getByRole('button', { name: 'Load school' }).click()
 assert(await page.getByRole('alert').count() === 1, 'Invalid identity search did not surface an accessible error.')

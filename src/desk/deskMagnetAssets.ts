@@ -15,7 +15,7 @@ const MAGNET_SRC: Record<DeskMagnetColor, string> = {
 }
 
 const MAGNET_FALLBACK: Record<DeskMagnetColor, string> = {
-  blue: '/assets/desk/magnets/magnet-blue.svg',
+  blue: '/assets/desk/magnets/magnet-blue.png',
   green: '/assets/desk/magnets/magnet-green.png',
   mustard: '/assets/desk/magnets/magnet-mustard.png',
   terracotta: '/assets/desk/magnets/magnet-terracotta.png',
