@@ -2196,7 +2196,7 @@ html:has(.arc-shell--desk) body {
   height: 100%;
   max-height: 100%;
   overflow: hidden;
-  --planning-col-divider: 1px solid color-mix(in srgb, var(--shell-frame-green) 32%, var(--line-subtle));
+  --planning-col-divider: 1px solid color-mix(in srgb, var(--shell-frame-green) 48%, var(--line-subtle));
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) > .planning-date-header,
@@ -2916,11 +2916,11 @@ html:has(.arc-shell--desk) body {
   font-family: 'Instrument Serif', var(--font-display), Georgia, serif;
   font-style: italic;
   font-weight: 700;
-  font-size: clamp(1.25rem, 1.8vw, 1.6rem);
-  letter-spacing: -0.015em;
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  letter-spacing: -0.02em;
   text-transform: none;
   color: var(--ink);
-  line-height: 1.05;
+  line-height: 1;
   padding-inline: 8px 10px;
 }
 .b01-furniture-composition--desk .arc-desk-arctable-script-detail { display:none !important; }
