@@ -29,6 +29,9 @@ const DESK_ASSET_PATHS = {
   /** TO-DOS side tab — Kelly silver brushed metal (`canonical/todos-tab.png`). */
   todosTab: 'assets/desk/canonical/todos-tab.png',
   plannerTabMustard: 'assets/desk/planner-tab-mustard.png',
+  /** Kelly post-it paper faces (no yellow/pink PNGs in canonical yet). */
+  postitBlue: 'assets/desk/canonical/postit-blue.png',
+  postitCream: 'assets/desk/canonical/postit-cream.png',
 } as const
 
 export { DESK_ASSET_PATHS }
@@ -58,6 +61,8 @@ export function applyPublicAssetCssUrls(): void {
   root.setProperty('--arc-desk-calendar-background', publicAssetCssUrl(DESK_ASSET_PATHS.calendarBackground))
   root.setProperty('--arc-desk-todos-tab', publicAssetCssUrl(DESK_ASSET_PATHS.todosTab))
   root.setProperty('--arc-desk-planner-tab-mustard', publicAssetCssUrl(DESK_ASSET_PATHS.plannerTabMustard))
+  root.setProperty('--arc-desk-postit-blue', publicAssetCssUrl(DESK_ASSET_PATHS.postitBlue))
+  root.setProperty('--arc-desk-postit-cream', publicAssetCssUrl(DESK_ASSET_PATHS.postitCream))
   root.setProperty('--arctable-paper-cream', publicAssetCssUrl(ARCTABLE_ASSET_PATHS.paperCream))
   root.setProperty('--arctable-progress-rail', publicAssetCssUrl(ARCTABLE_ASSET_PATHS.progressRail))
   root.setProperty('--arctable-board-panel', publicAssetCssUrl(ARCTABLE_ASSET_PATHS.boardPanel))
