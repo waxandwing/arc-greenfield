@@ -806,13 +806,22 @@ try {
   })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   await editWorkspace.click()
+  await page.locator('[data-settings-open="false"]').waitFor({ state: 'attached', timeout: 8000 })
   assert(await page.getByTestId('desk-edit-toolbar').isVisible(), 'Arrange desk must enter arrangement mode on the real desk.')
   assert(await page.locator('[data-desk-edit-mode="true"]').count() === 1, 'Desk edit mode flag must be set.')
   assert(await page.getByTestId('arc-desk-arctable').getAttribute('data-interactions-disabled') === 'true', 'ArcTable quadrant clicks must disable while editing desk layout.')
   await shot(page, 'desk-edit-mode.png')
 
+  // Close SETTINGS if it still covers the arrange toolbar, then finish.
+  await page.evaluate(() => {
+    const close = [...document.querySelectorAll('button')].find((b) => (b.textContent || '').trim() === 'Close Settings')
+    if (close && document.querySelector('.b01-settings-owner[data-state="open"]')) close.click()
+  })
   await page.getByRole('button', { name: 'Done arranging', exact: true }).click()
-  await page.waitForFunction(() => document.querySelector('[data-desk-edit-mode="true"]') === null, null, { timeout: 8000 })
+  await page.waitForFunction(() => {
+    const editing = document.querySelector('[data-desk-edit-mode="true"]')
+    return editing === null
+  }, null, { timeout: 8000 })
   assert((await page.locator('.arc-index-tab[aria-current="page"]').first().textContent())?.trim() === returnTabLabel, 'Done arranging must return to the same planner view.')
 
   await page.evaluate(() => {
