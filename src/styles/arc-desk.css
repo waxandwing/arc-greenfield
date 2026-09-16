@@ -138,6 +138,13 @@ html:has(.arc-shell--desk) body {
   pointer-events: auto;
 }
 
+/* Closed: only the IDEAS pull-tab is interactive — well/Clean up must not steal wood post-it hits. */
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='false'] .arc-desk-green-drawer-well,
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='false'] .arc-desk-clean-up,
+.arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-tray-dock[data-extended='false'] .arc-desk-ideas-tray-park-grip {
+  pointer-events: none;
+}
+
 /* Locked to planner left edge (planner left = 13.5%). Open = extend left; closed = tab only. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-priority-dock {
   position: absolute;
