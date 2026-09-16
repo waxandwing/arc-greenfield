@@ -1,7 +1,8 @@
 # Agent work queue — desk visual
 
 **Updated:** 2026-09-16 — Kelly re-audit **YELLOW/RED** (improved from RED); **blocker = 22 labeled SVG binaries**  
-**North star:** `docs/overnight/MASTER-DESK-VISUAL-GOAL.md`  
+**Behavior contract (gates visual work):** `docs/overnight/ARC-HARD-UI-AUDIT-INTUITIVE-HELPFUL-2026-09-15.md` — see `docs/overnight/README.md` (six teacher scenarios A–F)  
+**North star (visual):** `docs/overnight/MASTER-DESK-VISUAL-GOAL.md`  
 **Audit ↔ build loop:** `docs/overnight/ARC-BUILD-AUDIT-LOOP.md` (ArcBuild audit agent requirements → implementation handback SHA)
 
 ## ArcBuild audit lane (Kelly routing)

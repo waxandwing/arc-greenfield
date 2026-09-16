@@ -39,6 +39,8 @@ Prefer a structured message each iteration:
 
 Reference docs: `docs/overnight/AUDIT-RULES-FROM-DRIVE.md`, `DESK-RUTHLESS-AUDIT-PASS-2026-09-15.md`, `MASTER-DESK-VISUAL-GOAL.md`, `AGENT-WORK-QUEUE.md`, `TEACHING-WEEK-ZIP-INCORPORATION.md`.
 
+**Behavior contract (while fidelity continues):** `ARC-HARD-UI-AUDIT-INTUITIVE-HELPFUL-2026-09-15.md` — pointer + six scenario acceptance checks in `docs/overnight/README.md`. Visual PRs must not regress teacher comprehension / recovery.
+
 ## Handback packet (implementation → ArcBuild audit agent)
 
 After changes, reply with this block (copy-paste for auditor):
