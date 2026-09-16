@@ -172,7 +172,9 @@ try {
   })
   assert(closedIdeasPeek.peekPx <= 56, `Closed IDEAS must be a slim tab peek (peek=${closedIdeasPeek.peekPx}px), not a large dim panel.`)
   assert(closedIdeasPeek.artVisibility === 'visible', 'Closed IDEAS must keep ideas-tray.png chrome so the baked IDEAS pull-tab peeks.')
-  assert(await page.getByTestId('arc-desk-clean-up-tab').isVisible(), 'Clean up must sit beside the IDEAS tab on every desk view.')
+  assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Clean up lip must sit on the IDEAS tray top chrome on every desk view.')
+  assert(await page.locator('[data-testid="arc-desk-clean-up"]').count() === 1, 'Clean up must be a single affordance (no duplicate pills).')
+  assert(await page.getByTestId('arc-desk-clean-up').evaluate((el) => el.classList.contains('arc-desk-clean-up--lip')), 'Clean up must be the stamped lip control, not a planning pill.')
   const woodMarkSrc = await page.getByTestId('arc-desk-wood-wordmark').getAttribute('src')
   assert(woodMarkSrc?.includes('arc-mark-stacked.png'), 'Wood wordmark must use Kelly original Arc stacked mark.')
   const woodMarkFilter = await page.getByTestId('arc-desk-wood-wordmark').evaluate((img) => getComputedStyle(img).filter)
@@ -438,7 +440,7 @@ try {
   await selectView(page, 'Year')
   assert(await page.locator('[data-year-expanded="true"]').count() === 1, 'Year view must mark furniture year-expanded.')
   assert(await page.getByTestId('arc-desk-tray-dock').isVisible(), 'IDEAS tray must remain on Year view.')
-  assert(await page.getByTestId('arc-desk-clean-up-tab').isVisible(), 'Clean up must remain available on Year view.')
+  assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Clean up lip must remain available on Year view.')
   const yearIdeasPeek = await page.getByTestId('arc-desk-tray-dock').evaluate((el) => {
     const surface = el.closest('.arc-desk-surface')
     const rect = el.getBoundingClientRect()
@@ -453,16 +455,17 @@ try {
   await selectView(page, 'Week')
 
   // Clean up gathers loose accent post-its into the closed IDEAS tray (must not auto-open).
-  await page.getByTestId('arc-desk-clean-up-tab').click()
+  await page.getByTestId('arc-desk-clean-up').click()
   assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'false', 'Clean up must keep the IDEAS tray closed.')
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-mustard"]').count() === 1, 'Clean up must move mustard accent into IDEAS.')
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'Clean up must move pink accent into IDEAS.')
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-blue"]').count() === 1, 'Clean up must move blue accent into IDEAS.')
-  // Open tray only via IDEAS tab to inspect the well / in-drawer Clean up control.
+  // Open tray only via IDEAS tab; Clean up remains the single top-lip affordance (not a well toolbar pill).
   await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
   assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true', 'IDEAS tab must open the tray after Clean up.')
-  assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Open IDEAS well must expose Clean up.')
-  assert(await page.getByTestId('arc-desk-clean-up-tab').count() === 0, 'Open IDEAS must not duplicate the tab-side Clean up.')
+  assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Open IDEAS must keep the stamped Clean up lip visible.')
+  assert(await page.locator('.arc-desk-ideas-well-toolbar .arc-desk-clean-up').count() === 0, 'Open IDEAS well must not duplicate Clean up as a toolbar button.')
+  assert(await page.getByTestId('arc-desk-clean-up-tab').count() === 0, 'Open IDEAS must not keep a second tab-side Clean up.')
   // Tray stickies stay normal paper accents (writable + lesson mark), not locked tray chrome.
   const trayBlue = page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-blue"]')
   assert(await trayBlue.evaluate((node) => node.classList.contains('arc-desk-post-it--accent')), 'IDEAS tray stickies must keep accent paper chrome.')
