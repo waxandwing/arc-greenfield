@@ -44,6 +44,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
   const [tableSettingsOpen, setTableSettingsOpen] = useState(false)
   const [boardComposing, setBoardComposing] = useState(false)
   const [boardDraft, setBoardDraft] = useState('')
+  const [editingMaterials, setEditingMaterials] = useState(false)
   const [personName, setPersonName] = useState('')
   const [mediaTitle, setMediaTitle] = useState('')
   const [mediaSource, setMediaSource] = useState('')
@@ -58,6 +59,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
   const tableSettingsRef = useRef<HTMLElement>(null)
   const tableSettingsButtonRef = useRef<HTMLButtonElement>(null)
   const boardDraftRef = useRef<HTMLInputElement>(null)
+  const materialsFieldRef = useRef<HTMLInputElement>(null)
   const now = useClock()
   const classElapsed = elapsedLiveMinutes(live, now)
   const timerRemaining = countdownRemaining(live.timer, now)
@@ -77,7 +79,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
     if (!timerCanEditDuration && editingTimerDuration) setEditingTimerDuration(false)
   }, [editingTimerDuration, timerCanEditDuration])
   useEffect(() => {
-    if (!tool && !tableSettingsOpen && !boardComposing) return
+    if (!tool && !tableSettingsOpen && !boardComposing && !editingMaterials) return
     const closeOverlay = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       if (boardComposing) {
@@ -85,16 +87,25 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
         setBoardDraft('')
         return
       }
+      if (editingMaterials) {
+        setEditingMaterials(false)
+        return
+      }
       if (tableSettingsOpen) setTableSettingsOpen(false)
       else setTool(null)
     }
     window.addEventListener('keydown', closeOverlay)
     return () => window.removeEventListener('keydown', closeOverlay)
-  }, [tool, tableSettingsOpen, boardComposing])
+  }, [tool, tableSettingsOpen, boardComposing, editingMaterials])
   useEffect(() => {
     if (!boardComposing) return
     boardDraftRef.current?.focus()
   }, [boardComposing])
+  useEffect(() => {
+    if (!editingMaterials) return
+    materialsFieldRef.current?.focus()
+    materialsFieldRef.current?.select()
+  }, [editingMaterials])
   useEffect(() => {
     if (!tool) return
     function closeOnOutsidePointer(event: PointerEvent) {
@@ -120,6 +131,8 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
 
   function openClassroomTool(next: 'people' | 'passes' | 'media') {
     setTableSettingsOpen(false)
+    setBoardComposing(false)
+    setEditingMaterials(false)
     setTool(next)
   }
 
@@ -168,28 +181,43 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
     if (passes !== live.passes) setPassLabel('')
   }
 
-  function beginBoardCompose() {
-    if (live.boardLocked) return
+  function beginBoardCompose(focus: 'direction' | 'materials' = 'direction') {
+    if (live.boardLocked) onUpdate({ boardLocked: false })
     setTableSettingsOpen(false)
     setTool(null)
+    if (focus === 'materials') {
+      setBoardComposing(false)
+      setBoardDraft('')
+      setEditingMaterials(true)
+      return
+    }
+    setEditingMaterials(false)
     setBoardComposing(true)
   }
 
   function commitBoardDirection() {
     const next = boardDraft.trim()
-    if (!next || live.boardLocked) {
+    if (!next) {
       setBoardComposing(false)
       setBoardDraft('')
       return
     }
-    onUpdate({ directions: [...live.directions, next] })
+    onUpdate({ directions: [...live.directions, next], boardLocked: false })
     setBoardDraft('')
     setBoardComposing(true)
+  }
+
+  function openBoardMedia() {
+    if (live.boardLocked) onUpdate({ boardLocked: false })
+    setBoardComposing(false)
+    setEditingMaterials(false)
+    openClassroomTool('media')
   }
 
   const timerDisplaySeconds = live.timer.status === 'idle' && timerRemaining === 0 && live.timer.durationSeconds > 0
     ? live.timer.durationSeconds
     : timerRemaining
+  const phaseFlow = live.session.phases.map((label) => label.trim()).filter(Boolean)
 
   return (
     <main className="arctable arctable--teacher">
@@ -329,21 +357,34 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
         <div className="arctable-teacher-stage-shell">
           <div className="arctable-arc-crop" aria-hidden="true" />
           <div className="arctable-teacher-layout" data-testid="arctable-teacher-layout">
-            <section
+                        <section
               className={`arctable-board${live.boardLocked ? ' is-locked' : ' is-editable'}`}
               aria-labelledby="arctable-lesson-title"
               data-testid="arctable-board"
               onClick={(event) => {
-                if (live.boardLocked || boardComposing) return
+                if (boardComposing || editingMaterials) return
                 const target = event.target as HTMLElement
-                if (target.closest('button, a, input, textarea, ol, li, h1, .arctable-board-footer, .arctable-progress')) return
-                beginBoardCompose()
+                if (target.closest('button, a, input, textarea, label, ol, li, h1, .arctable-board-footer, .arctable-progress, .arctable-board-flow, .arctable-board-add-elements')) return
+                beginBoardCompose('direction')
               }}
             >
               <div className="arctable-progress" aria-label={`Phase ${live.phase} of ${live.phaseCount}`}><span style={{ width: `${(live.phase / live.phaseCount) * 100}%` }} /></div>
-              <div className="arctable-board-stack">
+              <div className="arctable-board-stack" data-testid="arctable-board-stack">
                 <p className="arctable-kicker">Phase {live.phase} of {live.phaseCount}{live.session.phases[live.phase - 1] ? ` · ${live.session.phases[live.phase - 1]}` : ''}</p>
                 <h1 id="arctable-lesson-title">{live.session.lessonTitle}</h1>
+                {phaseFlow.length > 1 ? (
+                  <ol className="arctable-board-flow" aria-label="Today's flow" data-testid="arctable-board-flow">
+                    {phaseFlow.map((label, index) => {
+                      const step = index + 1
+                      return (
+                        <li key={`${step}-${label}`} className={step === live.phase ? 'is-current' : undefined}>
+                          <span className="arctable-board-flow-index">{step}</span>
+                          <strong>{label}</strong>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                ) : null}
                 {live.directions.length > 0 ? (
                   <ol className="arctable-directions">{live.directions.map((direction, index) => <li key={`${direction}-${index}`}>{direction}</li>)}</ol>
                 ) : !boardComposing ? (
@@ -351,16 +392,15 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
                     type="button"
                     className="arctable-board-empty-add"
                     data-testid="arctable-board-add-direction"
-                    disabled={live.boardLocked}
                     onClick={(event) => {
                       event.stopPropagation()
-                      beginBoardCompose()
+                      beginBoardCompose('direction')
                     }}
                   >
-                    {live.boardLocked ? 'Board locked — unlock in Table settings to add directions.' : 'Click to add a direction'}
+                    Click to add a direction
                   </button>
                 ) : null}
-                {boardComposing && !live.boardLocked ? (
+                {boardComposing ? (
                   <form
                     className="arctable-board-compose"
                     data-testid="arctable-board-compose"
@@ -400,24 +440,37 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
                     </div>
                   </form>
                 ) : null}
-                {!live.boardLocked && live.directions.length > 0 && !boardComposing ? (
-                  <button
-                    type="button"
-                    className="arctable-board-add-more"
-                    data-testid="arctable-board-add-more"
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      beginBoardCompose()
-                    }}
-                  >
-                    Add direction
-                  </button>
-                ) : null}
+                <div className="arctable-board-add-elements" role="toolbar" aria-label="Add board elements" data-testid="arctable-board-add-elements">
+                  <button type="button" data-testid="arctable-board-add-more" onClick={(event) => { event.stopPropagation(); beginBoardCompose('direction') }}>+ Direction</button>
+                  <button type="button" data-testid="arctable-board-add-media" onClick={(event) => { event.stopPropagation(); openBoardMedia() }}>+ Media</button>
+                  <button type="button" data-testid="arctable-board-add-materials" onClick={(event) => { event.stopPropagation(); beginBoardCompose('materials') }}>+ Materials</button>
+                </div>
               </div>
               <div className="arctable-board-footer">
                 <div className="arctable-materials-band" data-testid="arctable-materials-band">
                   <span className="arctable-kicker">Materials</span>
-                  <strong>{live.materials || 'No materials listed'}</strong>
+                  {editingMaterials ? (
+                    <label className="arctable-materials-edit">
+                      <span className="sr-only">Materials for this phase</span>
+                      <input
+                        ref={materialsFieldRef}
+                        value={live.materials}
+                        placeholder="Sketchbooks · pencils · glue"
+                        onChange={(event) => onUpdate({ materials: event.target.value, boardLocked: false })}
+                        onBlur={() => setEditingMaterials(false)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === 'Escape') {
+                            event.preventDefault()
+                            setEditingMaterials(false)
+                          }
+                        }}
+                      />
+                    </label>
+                  ) : (
+                    <button type="button" className="arctable-materials-hit" onClick={(event) => { event.stopPropagation(); beginBoardCompose('materials') }}>
+                      <strong>{live.materials || 'Click to add materials'}</strong>
+                    </button>
+                  )}
                 </div>
                 <div className="arctable-student-facts">
                   <span>Voice {live.voiceLevel}</span>
@@ -426,7 +479,8 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
               </div>
             </section>
 
-            <section className="arctable-stage" aria-label="Center stage" data-testid="arctable-stage">
+            
+<section className="arctable-stage" aria-label="Center stage" data-testid="arctable-stage">
               <p className="arctable-kicker">Center stage</p>
               <MediaSurface media={live.media} onOpenMedia={() => setTool('media')} onPreviewStudent={onShowStudent} />
               {live.people.projected && selectedPerson ? (
