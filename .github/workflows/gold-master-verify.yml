@@ -29,7 +29,7 @@ jobs:
         run: |
           npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.55.0
           npx playwright install --with-deps chromium
-      - name: Render every Gold Master state
+      - name: Render every Gold Master and handoff-authority state
         run: |
           npm run preview -- --host 127.0.0.1 > /tmp/arc-gold-preview.log 2>&1 &
           PREVIEW_PID=$!
@@ -40,6 +40,7 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:4173/?gold=week > /dev/null
           ARC_BASE_URL=http://127.0.0.1:4173 npm run test:gold-master
+          ARC_BASE_URL=http://127.0.0.1:4173 npm run test:gold-handoff
           ARC_BASE_URL=http://127.0.0.1:4173 node tests/gold-master-layout-rigor.mjs
       - name: Publish Gold Master screenshots
         if: always()
@@ -49,5 +50,6 @@ jobs:
           path: |
             docs/overnight/evidence/gold-master/*.png
             docs/overnight/evidence/gold-master-rigor/*.png
+            docs/overnight/evidence/gold-handoff/*.png
           if-no-files-found: warn
           retention-days: 14
