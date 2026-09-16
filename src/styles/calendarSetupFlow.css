@@ -122,17 +122,21 @@
 
 .calendar-setup-class-times-list {
   display: grid;
-  gap: 8px;
+  gap: 6px;
+  max-height: min(42vh, 360px);
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-gutter: stable;
 }
 
 .calendar-setup-class-time-row {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) 7.5rem auto 7.5rem auto;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  padding: 10px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--line-subtle);
-  border-radius: 10px;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--surface-paper) 92%, white);
 }
 

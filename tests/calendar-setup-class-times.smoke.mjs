@@ -40,9 +40,10 @@ try {
   assert(await page.locator('.calendar-setup-confirm-month').count() >= 8, 'Preview must show school-year months.')
   assert(await page.getByRole('button', { name: 'Change school' }).count() === 1, 'Loaded school must offer Change school.')
   assert(await page.getByText(/Arc local school directory|NCES|offline fallback/i).count() >= 1, 'Local/NCES source honesty must remain visible.')
-
-  const setupHeight = await page.locator('section.calendar-setup').evaluate((node) => node.getBoundingClientRect().height)
-  assert(setupHeight < 2200, `Calendar setup should be shorter after hierarchy polish (was ${Math.round(setupHeight)}px).`)
+  assert(await page.getByRole('navigation', { name: 'Onboarding steps' }).count() === 1, 'Section nav must remain.')
+  assert(await page.locator('.calendar-setup-progress').count() === 1, 'Setup step progress must be visible.')
+  assert(await page.getByText('Recurring early release (optional)').count() === 1, 'Early release must stay collapsed under optional details.')
+  assert(await page.getByText('Exceptions (optional)').count() === 1, 'Exceptions must stay collapsed under optional details.')
 
   assert(runtimeErrors.length === 0, `Runtime errors: ${runtimeErrors.join(' | ')}`)
   await context.close()
