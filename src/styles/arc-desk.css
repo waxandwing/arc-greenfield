@@ -286,15 +286,15 @@ html:has(.arc-shell--desk) body {
 .arc-planner-physical-tabs--desk-edge {
   position: absolute;
   left: auto;
-  /* Hang onto the wood; only ~1px of each tab’s left edge tucks under the planner rim. */
-  right: -67px;
+  /* Tuck a few more px under the green rim; still hang proud onto the wood. */
+  right: -63px;
   top: 14%;
   bottom: 12%;
   transform: none;
   flex-flow: column nowrap;
   align-items: stretch;
   justify-content: flex-start;
-  gap: 5px;
+  gap: 2px;
   width: 68px;
   max-width: none;
   z-index: 45;
@@ -321,8 +321,8 @@ html:has(.arc-shell--desk) body {
   border-radius: 0 12px 12px 0;
   border: 1px solid color-mix(in srgb, var(--line-subtle) 65%, transparent);
   border-left: 0;
-  font: 800 9px/1 var(--font-label);
-  letter-spacing: 0.1em;
+  font: 800 11px/1 var(--font-label);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--ink) 88%, #2a4a66);
   background: linear-gradient(90deg, color-mix(in srgb, var(--field-elevated) 92%, #e8dcc4), var(--field-elevated));

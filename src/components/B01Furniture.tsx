@@ -339,7 +339,7 @@ export function B01Furniture({
         {VIEW_TABS.map(({ view, label, tabClass }) => {
           const availability = indexNav.availabilityFor(view)
           const unavailable = !availability.available
-          const isCurrent = !indexNav.planningIndexActive && view === indexNav.activeView && !workspaceIsOpen && !open.settings && !tasksIsOpen
+          const isCurrent = view === indexNav.activeView && !workspaceIsOpen && !open.settings && !tasksIsOpen
           const tabArt = edgeTabSlices ? deskPlannerEdgeTabAssetUrl(label, isCurrent) : null
           return (
             <button
@@ -372,7 +372,7 @@ export function B01Furniture({
         <button
           type="button"
           className="arc-index-tab arc-index-tab--planning"
-          aria-current={indexNav.planningIndexActive && !workspaceIsOpen && !open.settings && !tasksIsOpen ? 'page' : undefined}
+          aria-pressed={indexNav.planningIndexActive && !workspaceIsOpen && !open.settings && !tasksIsOpen ? true : undefined}
           disabled={indexNav.viewSelectionDisabled}
           onClick={openPlanningTab}
         >
@@ -411,7 +411,7 @@ export function B01Furniture({
         {VIEW_TABS.map(({ view, label, tabClass }) => {
           const availability = indexNav.availabilityFor(view)
           const unavailable = !availability.available
-          const isCurrent = !indexNav.planningIndexActive && view === indexNav.activeView && !workspaceIsOpen && !open.settings && !tasksIsOpen
+          const isCurrent = view === indexNav.activeView && !workspaceIsOpen && !open.settings && !tasksIsOpen
           return (
             <button
               key={view}
@@ -430,7 +430,7 @@ export function B01Furniture({
         <button
           type="button"
           className="arc-index-tab arc-index-tab--planning"
-          aria-current={indexNav.planningIndexActive && !workspaceIsOpen && !open.settings && !tasksIsOpen ? 'page' : undefined}
+          aria-pressed={indexNav.planningIndexActive && !workspaceIsOpen && !open.settings && !tasksIsOpen ? true : undefined}
           disabled={indexNav.viewSelectionDisabled}
           onClick={openPlanningTab}
         >

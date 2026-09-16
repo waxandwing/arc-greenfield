@@ -70,7 +70,7 @@ import { ArcTableStudentSurface, ArcTableTeacherMonitor } from './ArcTableSurfac
 import { WorkspacePanel } from './WorkspacePanel'
 import { ArcOnboarding, resolveOnboardingStage } from './ArcOnboarding'
 import { CaptureCoachMark } from './CaptureCoachMark'
-import { GlobalCaptureAffordance, captureAnchorFromPlan } from './GlobalCaptureAffordance'
+import { captureAnchorFromPlan } from './GlobalCaptureAffordance'
 import { PlannerShellBar } from './PlannerShellBar'
 import { ArcTableDeskFixture } from './ArcTableDeskFixture'
 import { DeskPriorityPad } from './DeskPriorityPad'
@@ -968,19 +968,8 @@ export function AppFrame() {
                         <span>Return to ArcTable</span>
                       </button>
                     ) : null}
-                    capture={globalCaptureEnabled ? (
-                      <>
-                        <GlobalCaptureAffordance
-                          disabled={workspaceBusy}
-                          units={workspace.unitWorkspace}
-                          defaultUnitId={workspace.planContext?.unitId ?? null}
-                          onSave={saveGlobalCapture}
-                        />
-                        {minimumPlanningSetupEstablished(setupCapabilities) && showCaptureCoachMark && !onboardingDraft.firstCapturePromptDismissed ? (
-                          <CaptureCoachMark onDismiss={dismissCaptureCoachMark} />
-                        ) : null}
-                      </>
-                    ) : null}
+                    {/* + Capture is desk-only (mustard sticky). Hide on login/setup shell. */}
+                    capture={null}
                   />
                   <CalendarStageHeader
                     activeView={workspace.activeView}

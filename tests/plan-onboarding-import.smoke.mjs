@@ -97,15 +97,17 @@ try {
   assert(await page.getByRole('heading', { level: 1, name: 'My Teaching Day' }).isVisible(), 'Onboarding did not land in the real Day view.')
   assert(await page.getByText('Teaching Day', { exact: true }).first().isVisible(), 'Plan state header must show Teaching Day on first landing.')
   assert(await page.getByRole('button', { name: 'Planning, planning time' }).count() === 1, 'Day did not project the explicit Planning block.')
-  assert(await page.getByTestId('global-capture-trigger').isVisible(), 'Global + Capture must appear after onboarding lands in Day.')
+  assert(await page.getByTestId('global-capture-trigger').count() === 0, 'Planner shell + Capture must stay hidden after onboarding (desk sticky only).')
+  assert(await page.getByTestId('arc-desk-quick-capture-note').isVisible(), 'Desk Quick Capture sticky must appear after onboarding lands.')
   assert(await page.getByText('Try Capture', { exact: true }).count() === 0, 'Permanent Try Capture banner must not return on Day.')
   await shot(page, '06-first-day.png')
 
-  // 8 — first Capture via global affordance persists without opening Workspace
-  await page.getByTestId('global-capture-trigger').click()
-  await page.locator('.arc-capture-dialog input').fill('Pull comparison prints for P4')
-  await page.locator('.arc-capture-dialog button.primary-button').click()
-  await page.getByText('Captured.', { exact: true }).waitFor({ timeout: 3000 })
+  // 8 — first Capture via desk sticky persists without opening Workspace
+  const qc = page.getByTestId('arc-desk-quick-capture-note')
+  await qc.click()
+  await qc.fill('Pull comparison prints for P4')
+  await qc.press('Enter')
+  await page.getByTestId('arc-desk-quick-capture-notice').waitFor({ timeout: 3000 })
   const captures = JSON.parse(await page.evaluate(() => localStorage.getItem('arc.captures.v1')))
   assert(captures.workspace.captures.some((capture) => capture.text === 'Pull comparison prints for P4'), 'First Capture did not persist immediately.')
   assert(await page.getByRole('button', { name: 'TRAY', exact: true }).getAttribute('aria-expanded') !== 'true', 'Capture save must not open Tray.')

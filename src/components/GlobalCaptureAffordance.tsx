@@ -10,8 +10,8 @@ type Props = {
 }
 
 /**
- * Non-desk planner shell capture (+ Capture → modal).
- * Desk path uses DeskQuickCaptureSticky only — never this dialog.
+ * Legacy + Capture modal affordance.
+ * Desk path uses DeskQuickCaptureSticky only; planner shell / login-setup hide this control.
  */
 export function GlobalCaptureAffordance({ disabled = false, units, defaultUnitId, onSave }: Props) {
   const [open, setOpen] = useState(false)
