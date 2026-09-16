@@ -121,6 +121,10 @@ assert(await page.locator('.arctable-pass-panel').count() === 1, 'pass panel ope
 await page.locator('.arctable-board').click({ position: { x: 20, y: 20 } })
 assert(await page.locator('.arctable-pass-panel').count() === 0, 'pass panel outside click')
 
+assert(await page.locator('[data-testid="arctable-materials-band"]').count() === 1, 'materials band missing')
+assert(await page.locator('.arctable-furniture-tabs').count() === 1, 'furniture tabs missing')
+assert(await page.locator('.arctable-teacher-stage-shell').count() === 1, 'stage shell missing')
+
 await page.getByTestId('arctable-settings').click()
 await page.waitForSelector('#b01-settings-surface')
 assert(await page.getByRole('button', { name: /Return to ArcTable/ }).count() === 1, 'settings opens plan with return')
