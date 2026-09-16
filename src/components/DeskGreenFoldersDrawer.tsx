@@ -42,6 +42,36 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     setSurfaceHost(document.querySelector('.arc-desk-surface'))
   }, [])
 
+  /*
+   * When the tabletop is vertically centered in .arc-desk-viewport, surface top sits
+   * below the view panel. Nudge the tray (and Clean up lip) up so the open shell’s
+   * top edge is flush with the viewport — not floating mid-panel or clipped oddly.
+   */
+  useEffect(() => {
+    const surface = document.querySelector('.arc-desk-surface')
+    const viewport = document.querySelector('.arc-desk-viewport')
+    if (!(surface instanceof HTMLElement) || !(viewport instanceof HTMLElement)) return
+
+    const syncViewportFlush = () => {
+      const nudge = Math.max(
+        0,
+        Math.round(surface.getBoundingClientRect().top - viewport.getBoundingClientRect().top),
+      )
+      surface.style.setProperty('--arc-desk-ideas-viewport-flush', `${nudge}px`)
+    }
+
+    syncViewportFlush()
+    const observer = new ResizeObserver(syncViewportFlush)
+    observer.observe(viewport)
+    observer.observe(surface)
+    window.addEventListener('resize', syncViewportFlush)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('resize', syncViewportFlush)
+      surface.style.removeProperty('--arc-desk-ideas-viewport-flush')
+    }
+  }, [])
+
   /* Portaled onto arc-desk-surface so year-expanded drawer transforms do not hide Clean up.
    * Positioned as a stamped lip on the IDEAS tray top chrome (see .arc-desk-clean-up--lip). */
   const cleanUpLip = (

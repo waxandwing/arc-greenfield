@@ -104,7 +104,8 @@ html:has(.arc-shell--desk) body {
   position: absolute;
   /* Landscape pull-out matched to Kelly ideas-tray.png (807×381) — height drives width. */
   left: 21%;
-  top: 0;
+  /* Flush to .arc-desk-viewport top even when the tabletop is vertically centered. */
+  top: calc(0px - var(--arc-desk-ideas-viewport-flush, 0px));
   height: min(30%, 250px);
   width: auto;
   aspect-ratio: 807 / 381;
@@ -648,9 +649,9 @@ html:has(.arc-shell--desk) body {
 
 .arc-desk-clean-up--lip {
   position: absolute;
-  /* Align with tray dock (left 20.5% / width 58%) — sit on the top chrome lip. */
+  /* Align with tray dock — sit on the top chrome lip (tracks viewport flush nudge). */
   left: 24.5%;
-  top: 0.35%;
+  top: calc(0.35% - var(--arc-desk-ideas-viewport-flush, 0px));
   z-index: 16;
   min-height: 1.35rem;
   padding: 0.2rem 0.1rem 0.35rem;
