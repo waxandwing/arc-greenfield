@@ -76,6 +76,14 @@ Provenance: `PROVENANCE-kelly-2026-09-16-batch2-tray-tab-magnet-paper.json`.
 
 Coordinate with batch 1 (`PROVENANCE-kelly-2026-09-16.json`) — do not overwrite those paths.
 
+## Kelly pass 2026-09-16 — IDEAS cleanup / MSC / SETTINGS edge tab
+
+- **IDEAS tray PNG** (`ideas-tray.png`): wired (batch 2 + IDEAS/TODOs ingest). Labeled SVG still outstanding.
+- **Clean up:** gathers loose accent post-its into the IDEAS tray **without** auto-opening the tray.
+- **MUST / SHOULD / COULD:** denim folder pad accepts add / rename / complete (pointer-events on folder body).
+- **SETTINGS tab USE** (`Settings tab (USE).svg` → `settings-tab.svg`): still **BLOCKED**. Desk exposes a **physical SETTINGS edge tab** on the planner (interim CSS/glyph chrome only — not claimed as Kelly labeled authority).
+- **Do not invent** Kelly USE SVGs from crops or CSS gradients.
+
 ## Binary handoff status
 
 **PARTIAL** — batch 1 + batch 2 Kelly PNGs wired 2026-09-16; remaining labeled SVG binaries still missing.

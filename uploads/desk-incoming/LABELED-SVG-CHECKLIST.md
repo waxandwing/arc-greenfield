@@ -80,3 +80,7 @@ Copy sources → `public/assets/desk/canonical/` using the rename map. Update pr
 **Hard rules:** no `object-fit: fill` on tactile SVG art; no destructive SVG optimize/re-trace; archive old controllers only after side-by-side evidence; never claim Kelly labeled authority from invented or cropped stand-ins.
 
 **Presence check:** `npm run check:canonical-desk-svgs` lists expected filenames; fails (`--strict` or partial land) if code claims canonical wires without files present.
+
+## Agent note (2026-09-16 Kelly desk pass)
+
+SETTINGS USE SVG still missing (interim planner edge tab shipped). IDEAS tray + TO-DOS tab PNGs are wired; labeled SVGs still outstanding. Drop remaining labeled SVGs here to unblock P0 wires.
