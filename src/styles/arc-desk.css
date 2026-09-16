@@ -3483,7 +3483,7 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .arc-planner-object { filter: drop-shadow(0 16px 34px -24px rgba(33, 29, 23, 0.4)); }
 
 /* Quiet desk help — paper note on wood (not native dialog chrome). */
-/* Keep ? help left of the tucked lower ArcTable / start-class mark (~104px). */
+/* Keep ? help left of the tucked lower ArcTable / start-class mark (~100px). */
 .arc-desk-help {
   position: absolute;
   right: 15.2%;
