@@ -52,7 +52,8 @@ export function createArcTableLiveState(session: ArcTableSession, now = new Date
     directions: [...(session.directions ?? [])],
     materials: (session.materials ?? []).join(' · '),
     voiceLevel: 2,
-    boardLocked: true,
+    // Teacher Monitor defaults to Editable so live authoring works without an unlock dig.
+    boardLocked: false,
     timer: createArcTableCountdown(600),
     cleanupTimer: createArcTableCountdown(300),
     people,

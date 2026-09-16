@@ -327,7 +327,13 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
                   <option value="3">Level 3</option>
                 </select>
               </label>
-              <button type="button" className="arctable-table-settings-toggle" onClick={() => onUpdate({ boardLocked: !live.boardLocked })}>
+              <button
+                type="button"
+                className="arctable-table-settings-toggle"
+                data-testid="arctable-settings-board-lock"
+                aria-pressed={!live.boardLocked}
+                onClick={() => onUpdate({ boardLocked: !live.boardLocked })}
+              >
                 <strong>Board</strong>
                 <span>{live.boardLocked ? 'Locked for students' : 'Editable'}</span>
               </button>
@@ -576,8 +582,25 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
               <div className="arctable-control-row"><strong>Phase</strong><div className="arctable-stepper"><button type="button" aria-label="Previous phase" disabled={live.phase === 1} onClick={() => onUpdate({ phase: live.phase - 1 })}>−</button><span>{live.phase} / {live.phaseCount}</span><button type="button" aria-label="Next phase" disabled={live.phase === live.phaseCount} onClick={() => onUpdate({ phase: live.phase + 1 })}>+</button></div></div>
               <label className="arctable-control-field"><strong>Materials</strong><input value={live.materials} onChange={(event) => onUpdate({ materials: event.target.value })} /></label>
               <label className="arctable-control-field"><strong>Voice expectation</strong><select value={live.voiceLevel} onChange={(event) => onUpdate({ voiceLevel: Number(event.target.value) as 1 | 2 | 3 })}><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option></select></label>
-              <button type="button" className="arctable-control-row" onClick={() => onUpdate({ boardLocked: !live.boardLocked })}><strong>Board</strong><span>{live.boardLocked ? 'Locked' : 'Editable'}</span></button>
-              <button type="button" className="arctable-control-row" onClick={onShowStudent}><strong>Student preview</strong><span>Open projected view</span></button>
+              <button
+                type="button"
+                className={`arctable-control-row${!live.boardLocked ? ' is-mode-active' : ''}`}
+                data-testid="arctable-mode-editable"
+                aria-pressed={!live.boardLocked}
+                onClick={() => {
+                  if (live.boardLocked) onUpdate({ boardLocked: false })
+                }}
+              >
+                <span>Editable</span>
+              </button>
+              <button
+                type="button"
+                className="arctable-control-row"
+                data-testid="arctable-mode-projected"
+                onClick={onShowStudent}
+              >
+                <span>Projected view</span>
+              </button>
               <section className={`arctable-cleanup-control${cleanupActive ? ' is-active' : ''}`} aria-labelledby="cleanup-heading">
                 <div><strong id="cleanup-heading">Cleanup countdown</strong><span>{cleanupActive ? `${live.cleanupTimer.status} · ${formatDuration(cleanupRemaining)}` : 'Ready when you are'}</span></div>
                 <label><span>Minutes</span><input aria-label="Cleanup duration in minutes" type="number" min="1" max="30" value={Math.ceil(live.cleanupTimer.durationSeconds / 60)} onChange={(event) => onUpdate({ cleanupTimer: setArcTableCountdownDuration(live.cleanupTimer, Number(event.target.value) * 60) })} /></label>

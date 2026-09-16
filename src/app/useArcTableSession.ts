@@ -64,11 +64,16 @@ export function useArcTableSession() {
   }
 
   function showTeacher() {
-    if (live) setSurface('teacher')
+    if (!live) return
+    // Returning to Teacher Monitor lands in Editable — projected view is the student-facing lock.
+    setLive((current) => (current && current.boardLocked ? { ...current, boardLocked: false } : current))
+    setSurface('teacher')
   }
 
   function showStudent() {
-    if (live) setSurface('student')
+    if (!live) return
+    setLive((current) => (current && !current.boardLocked ? { ...current, boardLocked: true } : current))
+    setSurface('student')
   }
 
   function finish() {
