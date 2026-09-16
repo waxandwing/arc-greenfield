@@ -73,6 +73,7 @@ export function CalendarSetupClassTimes({ schoolNcesId }: Props) {
                 value={row.label}
                 onChange={(event) => updateRow(row.id, { label: event.target.value })}
                 aria-label={`Class time ${index + 1} label`}
+                data-testid={index === 0 ? 'calendar-setup-class-time-label' : undefined}
               />
             </label>
             <label>

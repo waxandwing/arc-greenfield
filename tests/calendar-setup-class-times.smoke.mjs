@@ -32,13 +32,13 @@ try {
 
   assert(await page.getByText('School loaded', { exact: false }).count() >= 1, 'School loaded status must appear.')
   assert(await page.getByTestId('calendar-setup-class-times').count() === 1, 'Class times must appear after school load.')
-  assert(await page.getByText('Period 1').count() >= 1, 'Oak Ridge class times must include Period 1.')
+  assert(await page.getByTestId('calendar-setup-class-time-label').inputValue() === 'Period 1', 'Oak Ridge class times must include Period 1.')
   assert(await page.locator('#first-school-day').inputValue() === '2026-08-11', 'First day must prefill from OCPS suggestion.')
   assert(await page.locator('#last-school-day').inputValue() === '2027-05-26', 'Last day must prefill from OCPS suggestion.')
   assert(await page.getByTestId('calendar-setup-preview').count() === 1, 'Calendar preview must be present.')
   assert(await page.getByRole('heading', { name: /This is what your calendar looks like/i }).count() === 1, 'Prefilled calendar preview title must show.')
   assert(await page.locator('.calendar-setup-confirm-month').count() >= 8, 'Preview must show school-year months.')
-  assert(await page.getByRole('button', { name: 'Load school' }).count() === 0, 'Load school form stays collapsed while school is loaded.')
+  assert(await page.getByRole('button', { name: 'Change school' }).count() === 1, 'Loaded school must offer Change school.')
   assert(await page.getByText(/Arc local school directory|NCES|offline fallback/i).count() >= 1, 'Local/NCES source honesty must remain visible.')
 
   const setupHeight = await page.locator('section.calendar-setup').evaluate((node) => node.getBoundingClientRect().height)

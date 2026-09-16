@@ -58,6 +58,7 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
   function chooseSchool(candidate: OfficialSourceCandidate) {
     setSelected(candidate)
     setShowSearchAgain(false)
+    setResult({ status: 'idle' })
     onSchoolIdentitySelected?.(candidate)
   }
 
