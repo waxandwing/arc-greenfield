@@ -3,6 +3,7 @@ set -euo pipefail
 
 # One-shot Arc branch cleanup from the 2026-09-15 exhaustive repository audit.
 # Keeps only origin/main as a branch. Historically useful donor tips are preserved as tags first.
+# Compatible with the Bash 3.2 version bundled with macOS.
 
 EXPECTED_REPO='waxandwing/arc-greenfield'
 AUDIT_BASE='b1a3a6f55130bb12b318550e221bc7f9f4f195a8'
@@ -23,7 +24,10 @@ if ! git merge-base --is-ancestor "$AUDIT_BASE" origin/main; then
   exit 1
 fi
 
-mapfile -t newer_branches < <(
+newer_branches=()
+while IFS= read -r branch; do
+  [[ -n "$branch" ]] && newer_branches+=("$branch")
+done < <(
   git for-each-ref --format='%(refname:short)|%(committerdate:unix)' refs/remotes/origin/ \
     | awk -F'|' -v cutoff="$AUDIT_CUTOFF_EPOCH" '$1 != "origin/main" && $1 != "origin/HEAD" && $2 > cutoff { print $1 }'
 )
@@ -88,7 +92,10 @@ if (( ${#archive_tags[@]} > 0 )); then
   git push origin "${archive_tags[@]}"
 fi
 
-mapfile -t branches_to_delete < <(
+branches_to_delete=()
+while IFS= read -r branch; do
+  [[ -n "$branch" ]] && branches_to_delete+=("$branch")
+done < <(
   git for-each-ref --format='%(refname:short)' refs/remotes/origin/ \
     | sed 's#^origin/##' \
     | grep -v '^HEAD$' \
