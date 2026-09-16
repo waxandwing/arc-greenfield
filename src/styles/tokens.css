@@ -53,11 +53,11 @@
     0 6px 18px -4px rgba(15, 35, 28, 0.35),
     inset 0 0 0 1px rgba(31, 75, 58, 0.22);
 
-  /* Main desk viewport + tabletop — Icarus texture-wood (Kelly desk visual law) */
-  --arc-wood-surface-image: url('/assets/arc/icarus/texture-wood.png');
-  /* Schedule setup / onboarding calendar-on-wood — not canonical desk surface */
-  --arc-schedule-setup-wood: url('/assets/desk/light-wood-desk.png');
-  --arc-wood-surface-base: #e8dcc8;
+  /* Singular desk wood — Kelly wood-background-light (replaces Icarus texture-wood + light-wood-desk) */
+  --arc-wood-surface-image: url('/assets/desk/canonical/wood-background-light.png');
+  /* Schedule setup / onboarding — same singular wood authority */
+  --arc-schedule-setup-wood: url('/assets/desk/canonical/wood-background-light.png');
+  --arc-wood-surface-base: #d7af79;
   --arc-desk-wood-field: color-mix(in srgb, var(--arc-wood-surface-base) 62%, var(--field-elevated));
   --arc-desk-wood-highlight: color-mix(in srgb, var(--field-elevated) 52%, transparent);
   --arc-desk-wood-shadow-tint: color-mix(in srgb, var(--arc-wood-surface-base) 10%, transparent);

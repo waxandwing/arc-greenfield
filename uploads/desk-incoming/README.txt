@@ -32,6 +32,8 @@ Files in this folder (update this list when you add assets):
   KELLY-DROP-22-LABELED-SVGS-HERE.txt — plain-English drop instructions (READ FIRST)
   LABELED-SVG-CHECKLIST.md — exact 22 filenames + wiring order
   kelly-desk-v3-preview-repair-2026-08-03.png — CURRENT APP DISPLAY baseline only (not visual target)
+  kelly-2026-09-16-wood-background-light-source.png — Kelly light wood grain (P0 singular desk wood; canonical copy LIVE)
+  kelly-2026-09-16-todos-tab-alt-source.png — cream vertical folder/tab with right-side pull (reference / todos-tab-alt)
 
 Teaching week zip (Teaching_week__1__01fd.zip) — extracted to teaching-week-1/:
   Only 1.png (full comp) + 2.png (blank). Comp crops are opt-in only.

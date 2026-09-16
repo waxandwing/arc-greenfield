@@ -30,7 +30,7 @@ Screenshot audit of Planning Period desk furniture. **Correct source = Kelly lab
 
 | Visible desk object (screenshot) | Wrong live controller now | Correct labeled source | Canonical target | Status |
 |----------------------------------|---------------------------|------------------------|------------------|--------|
-| Wood desk surface (`.arc-desk-surface`) | `assets/arc/icarus/texture-wood.png` | `Wood Background Light.svg` | `wood-background-light.svg` | **MISSING** |
+| Wood desk surface (`.arc-desk-surface`) | ~~`assets/arc/icarus/texture-wood.png`~~ → **LIVE** `canonical/wood-background-light.png` | `Wood Background Light.svg` (PNG chat stand-in landed) | `wood-background-light.png` | **LIVE** (SVG pack still optional) |
 | Left MUST/SHOULD/COULD tray (photographic cardboard/denim strip) | `slices/todos-folder-body.png` + `todos-folder-tab.png` | `TODO tab (use).svg` (+ `TODOS tab.svg` ref) | `todos-tab.svg` | **MISSING** |
 | IDEAS green pill / drawer | `green-folders-drawer.svg` / `.png` | `tray image (use).svg` (+ `Ideas Tray Vector.svg` ref) | `ideas-tray.svg` | **MISSING** |
 | SETTINGS pill / tab | CSS / non-USE tab chrome | `Settings tab (USE).svg` | `settings-tab.svg` | **MISSING** |
@@ -82,7 +82,7 @@ Copy sources → `public/assets/desk/canonical/` using the rename map. Update pr
 
 | Step | Wire target | Live controller to archive **after** visual evidence |
 |------|-------------|------------------------------------------------------|
-| 1 | Wood → `canonical/wood-background-light.svg` | Icarus `texture-wood.png` (+ keep `light-wood-desk.png` only if schedule-setup still needs it) |
+| 1 | Wood → `canonical/wood-background-light.png` (**LIVE** singular authority; cover; no recolor) | Archive Icarus `texture-wood.png` + `light-wood-desk.png` (do not re-wire) |
 | 2 | IDEAS tray → `ideas-tray.svg` | `green-folders-drawer.svg` / `.png` |
 | 3 | Settings + TO-DOS tabs → `settings-tab.svg`, `todos-tab.svg` | CSS / non-USE tab chrome; `todos-folder-tab.png` slice |
 | 4 | Calendar edge tabs → `calendar-tab-selected.svg` / `calendar-tab-unselected.svg` | `public/assets/desk/slices/planner-edge-tab-*.png` |

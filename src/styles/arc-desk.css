@@ -1,23 +1,17 @@
 /* ARC Desk — physical tabletop composition (Figma ref 1696×1254, wood field 1440×1024). */
 
-/* Full-viewport wood via --arc-wood-surface-image (icarus/texture-wood.png); schedule setup uses --arc-schedule-setup-wood. */
+/* Full-viewport wood via --arc-wood-surface-image (canonical/wood-background-light.png). Cover only; no recolor filters. */
 .arc-shell.arc-shell--desk {
   height: 100dvh;
   min-height: 100dvh;
   overflow: hidden;
-  background-color: var(--arc-desk-wood-field);
-  background-image:
-    linear-gradient(
-      180deg,
-      var(--arc-desk-wood-highlight) 0%,
-      transparent 42%,
-      var(--arc-desk-wood-shadow-tint) 100%
-    ),
-    var(--arc-wood-surface-image);
+  background-color: var(--arc-wood-surface-base);
+  background-image: var(--arc-wood-surface-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-blend-mode: normal;
+  filter: none;
 }
 
 .arc-desk-viewport {
@@ -1213,11 +1207,11 @@ html:has(.arc-shell--desk) body {
     inset 0 1px 0 rgba(255, 253, 248, 0.6);
 }
 
-.arc-desk-post-it--mustard {
+.arc-desk-post-it--mustard:not(.arc-desk-post-it--magnet) {
   background: linear-gradient(165deg, #f5e083 0%, #e8c84a 48%, #d9b63a 100%);
 }
 
-.arc-desk-post-it--pink {
+.arc-desk-post-it--pink:not(.arc-desk-post-it--magnet) {
   background: linear-gradient(165deg, #f6d0d4 0%, #e8a8b0 55%, #d48992 100%);
 }
 
@@ -1232,8 +1226,39 @@ html:has(.arc-shell--desk) body {
   box-shadow: none;
 }
 
+.arc-desk-post-it--cream:not(.arc-desk-post-it--magnet) {
+  /* Kelly postit-cream paper (tilted stack) — prefer over CSS gradient fill. */
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/postit-cream.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Kelly magnet faces — replace CSS gradient discs for unit magnets. */
+.arc-desk-post-it--magnet.arc-desk-post-it--mustard {
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/magnet-mustard.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: none;
+}
+
+.arc-desk-post-it--magnet.arc-desk-post-it--pink {
+  /* Pink tone maps to terracotta magnet (deskMagnetColorForTone). */
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/magnet-terracotta.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: none;
+}
+
 .arc-desk-post-it--magnet.arc-desk-post-it--blue {
-  /* Kelly slate-blue speckled magnet face. */
+  /* Kelly slate-blue speckled magnet face (batch 1). */
   background-color: transparent;
   background-image: url('/assets/desk/canonical/magnet-blue.png');
   background-repeat: no-repeat;
@@ -1242,8 +1267,14 @@ html:has(.arc-shell--desk) body {
   box-shadow: none;
 }
 
-.arc-desk-post-it--cream {
-  background: linear-gradient(165deg, #fff9ef 0%, #f3e6cf 55%, #e6d4b4 100%);
+.arc-desk-post-it--magnet.arc-desk-post-it--cream {
+  /* Cream units map to green magnet (batch 2). */
+  background-color: transparent;
+  background-image: url('/assets/desk/canonical/magnet-green.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-shadow: none;
 }
 
 /* Accent stickies — readable sticky size (~100–140px), writable note body.
