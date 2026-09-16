@@ -1359,7 +1359,8 @@ html:has(.arc-shell--desk) body {
   color: var(--ink, #2c2e2e);
   outline: none;
   box-sizing: border-box;
-  overflow-wrap: break-word;
+  /* Wrap only at spaces; overlong words force the font search to shrink. */
+  overflow-wrap: normal;
   word-break: normal;
   white-space: pre-wrap;
   cursor: text;
