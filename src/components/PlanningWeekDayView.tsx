@@ -463,23 +463,48 @@ function LessonProgressiveActions({
     ) : null,
   ].filter(Boolean)
 
-  if (!onBeginPlanLessonMove && !canStartClass && extras.length === 0) return null
+  const hasSecondary = Boolean(onBeginPlanLessonMove || extras.length > 0)
+  if (!canStartClass && !startClassBlockedReason && !hasSecondary) return null
 
   return (
-    <div className={`planning-lesson-actions${moreOpen ? ' is-expanded' : ''}`}>
+    <>
       {canStartClass && onStartClass ? (
-        <button type="button" className="day-start-class" onClick={() => onStartClass(sectionId, lessonId, liveDate)}>{inProgress ? 'Resume' : 'Start class'}</button>
+        <div className="planning-lesson-primary-action">
+          <button
+            type="button"
+            className="day-start-class"
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              onStartClass(sectionId, lessonId, liveDate)
+            }}
+          >
+            {inProgress ? 'Resume' : 'Start class'}
+          </button>
+        </div>
       ) : startClassBlockedReason ? (
-        <span className="planning-lesson-start-hint" role="note">{startClassBlockedReason}</span>
+        <div className="planning-lesson-primary-action">
+          <span className="planning-lesson-start-hint" role="note">{startClassBlockedReason}</span>
+        </div>
       ) : null}
-      {onBeginPlanLessonMove ? (
-        <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId, sectionId, defaultDestination: effectiveDate })}>Move</button>
+      {hasSecondary ? (
+        <div className={`planning-lesson-actions${moreOpen ? ' is-expanded' : ''}`}>
+          {onBeginPlanLessonMove ? (
+            <button type="button" className="text-button" onClick={(event) => {
+              event.stopPropagation()
+              onBeginPlanLessonMove({ lessonId, sectionId, defaultDestination: effectiveDate })
+            }}>Move</button>
+          ) : null}
+          {extras.length > 0 ? (
+            <button type="button" className="text-button planning-lesson-more-toggle" aria-expanded={moreOpen} onClick={(event) => {
+              event.stopPropagation()
+              setMoreOpen((value) => !value)
+            }}>More</button>
+          ) : null}
+          {moreOpen && extras.length > 0 ? <div className="planning-lesson-more-panel">{extras}</div> : null}
+        </div>
       ) : null}
-      {extras.length > 0 ? (
-        <button type="button" className="text-button planning-lesson-more-toggle" aria-expanded={moreOpen} onClick={() => setMoreOpen((value) => !value)}>More</button>
-      ) : null}
-      {moreOpen && extras.length > 0 ? <div className="planning-lesson-more-panel">{extras}</div> : null}
-    </div>
+    </>
   )
 }
 
