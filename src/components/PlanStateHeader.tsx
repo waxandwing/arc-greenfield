@@ -38,6 +38,7 @@ export function PlanStateHeader(props: {
       data-plan-course={props.courseId ?? ''}
       data-plan-section={props.sectionId ?? ''}
       data-plan-lesson={props.lessonId ?? ''}
+      data-plan-block-type={props.blockType ?? ''}
       aria-label={`${primary}${secondary ? `, ${secondary}` : ''}${contextLine ? `, ${contextLine}` : ''}`}
     >
       {showKicker ? <p className="plan-state-kicker">{props.overlay === 'workspace' ? 'Workspace' : kickerLine(props)}</p> : null}
@@ -59,7 +60,8 @@ function kickerLine(props: {
   if (props.focus === 'lesson') {
     return [props.sectionName, props.courseTitle].filter(Boolean).join(' · ') || 'Lesson'
   }
-  if (props.focus === 'class' && props.blockType === 'planning') return 'Planning period'
+  // Keep planning kicker as the cross-prep cue (desk hides context lines).
+  if (props.focus === 'class' && props.blockType === 'planning') return 'Across my preps'
   if (props.focus === 'class' && props.blockType === 'non-teaching') return props.blockLabel ?? 'Non-teaching time'
   if (props.focus === 'class') return [props.sectionName, props.courseTitle].filter(Boolean).join(' · ') || 'Class'
   return 'Teaching Day'
@@ -118,10 +120,10 @@ function secondaryLine(props: {
   return dateLabel
 }
 
-function contextLineFor(props: {
+function contextLineFor(_props: {
   focus: PlanFocus
   blockType?: 'teaching' | 'planning' | 'non-teaching' | null
 }) {
-  if (props.focus === 'class' && props.blockType === 'planning') return 'Across my preps'
+  // Planning cue lives in the kicker so desk chrome (which hides context) still shows it.
   return null
 }
