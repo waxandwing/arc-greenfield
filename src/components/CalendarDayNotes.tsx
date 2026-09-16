@@ -74,8 +74,10 @@ export function CalendarDayNotes({
               }
             }}
           />
-          <button type="button" disabled={!draft.trim()} onClick={saveNote}>Save</button>
-          <button type="button" className="quiet-button" onClick={() => { setComposerOpen(false); setDraft('') }}>Cancel</button>
+          <div className="calendar-day-note-composer-actions">
+            <button type="button" className="quiet-button" disabled={!draft.trim()} onClick={saveNote}>Save</button>
+            <button type="button" className="quiet-button" onClick={() => { setComposerOpen(false); setDraft('') }}>Cancel</button>
+          </div>
         </div>
       ) : null}
     </div>
