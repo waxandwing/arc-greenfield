@@ -12,7 +12,7 @@
 .arctable-timer-control label,.arctable-cleanup-control label,.arctable-tool-panel label{display:grid;gap:5px;font-size:13px;font-weight:700}.arctable-timer-control input,.arctable-cleanup-control input,.arctable-tool-panel input,.arctable-tool-panel select{min-height:40px;padding:7px 9px;border:1px solid color-mix(in srgb,var(--ink) 18%, transparent);border-radius:8px;background:#fffdf8;color:inherit}
 .arctable-presets,.arctable-timer-actions,.arctable-cleanup-control>div:last-child{display:flex;flex-wrap:wrap;gap:8px}.arctable-presets{justify-content:center}.arctable-presets button,.arctable-timer-actions button,.arctable-cleanup-control button,.arctable-tool-panel button{min-height:40px;padding:8px 12px;border:1px solid color-mix(in srgb,var(--ink) 18%, transparent);border-radius:999px;background:#fffdf8;color:var(--ink);font-weight:750;cursor:pointer}.arctable-timer-primary,.arctable-timer-actions .arctable-timer-primary,.arctable-cleanup-control>div:last-child button:first-child{background:var(--terracotta);color:#fff;border-color:transparent}.arctable-timer-reset{border:0!important;background:transparent!important;text-decoration:underline;text-underline-offset:3px;color:var(--ink)}
 .arctable-tool-row{grid-template-columns:repeat(3,1fr)}.arctable-tool-row button[aria-expanded='true']{box-shadow:inset 0 0 0 3px rgba(255,255,255,.62)}
-.arctable-tool-panel{position:relative;overflow:hidden}.arctable-tool-panel>*{position:relative;z-index:1}.arctable-tool-panel h2{margin:0;font:400 25px/1.1 'Instrument Serif',serif}.arctable-tool-panel form{display:grid;gap:8px}.arctable-tool-panel p{margin:0;color:#5d574f;line-height:1.35}.arctable-people-panel{background:rgba(225,233,213,.95) var(--arctable-people-surface, url('/assets/arctable/people-surface-open.png')) right top/46% auto no-repeat}.arctable-picker-result{min-height:42px;padding:12px;border-radius:10px;background:#fffdf8;font-weight:800}.arctable-pass{display:grid;gap:8px;align-content:start;padding:13px 14px;border-radius:12px;overflow:hidden;background-color:#fffdf8;background-image:var(--arctable-pass-plate-available, url('/assets/arctable/pass-plate-available.png'));background-position:center;background-size:100% 100%;background-repeat:no-repeat}.arctable-pass--active{background-color:#c44d43;background-image:var(--arctable-pass-plate-active, url('/assets/arctable/pass-plate-active.png'));color:#fff}.arctable-pass--active>div:first-child{padding-right:48px}.arctable-pass--active>div:first-child span{max-width:48%}.arctable-pass--requested{background-color:#ead7a8}.arctable-pass>div:first-child{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}.arctable-pass>div:first-child strong{min-width:0;overflow-wrap:anywhere}.arctable-pass>div:first-child span{flex:0 1 auto;text-align:right;text-transform:capitalize;opacity:.92}.arctable-pass label{min-width:0}.arctable-pass>div:last-child{display:flex;flex-wrap:wrap;gap:6px}.arctable-pass--active label>span{color:rgba(255,255,255,.92)}.arctable-pass--active select{color:#3a241f;background:#fffdf8}.arctable-pass--active button{background:#fff;color:#7d261f}.arctable-media-panel>button.is-active{background:var(--ink);color:#fff}
+.arctable-tool-panel{position:relative;overflow:hidden}.arctable-tool-panel>*{position:relative;z-index:1}.arctable-tool-panel h2{margin:0;font:400 25px/1.1 'Instrument Serif',serif}.arctable-tool-panel form{display:grid;gap:8px}.arctable-tool-panel p{margin:0;color:#5d574f;line-height:1.35}.arctable-people-panel{background:rgba(225,233,213,.95) var(--arctable-people-surface, url('/assets/arctable/people-surface-open.png')) right top/46% auto no-repeat}.arctable-picker-result{min-height:42px;padding:12px;border-radius:10px;background:#fffdf8;font-weight:800}.arctable-pass{display:grid;gap:8px;align-content:start;padding:13px 14px;border-radius:12px;overflow:hidden;background-color:#fffdf8;background-image:var(--arctable-pass-plate-available, url('/assets/arctable/pass-plate-available.png'));background-position:center;background-size:100% 100%;background-repeat:no-repeat}.arctable-pass--active{background-color:#c44d43;background-image:var(--arctable-pass-plate-active, url('/assets/arctable/pass-plate-active.png'));color:#fff}.arctable-pass--active>div:first-child{padding-right:48px}.arctable-pass--active>div:first-child span{max-width:48%}.arctable-pass--requested{background-color:#ead7a8}.arctable-pass>div:first-child{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0}.arctable-pass>div:first-child strong{min-width:0;overflow-wrap:anywhere}.arctable-pass>div:first-child span{flex:0 1 auto;text-align:right;text-transform:capitalize;opacity:.92}.arctable-pass label{min-width:0}.arctable-pass>div:last-child{display:flex;flex-wrap:wrap;gap:6px}.arctable-pass--active label>span{color:rgba(255,255,255,.92)}.arctable-pass--active select{color:#3a241f;background:#fffdf8}.arctable-pass--active button{background:#fff;color:#7d261f}.arctable-media-panel button.is-active{background:var(--ink);color:#fff}
 .arctable-cleanup-control.is-active{background:#f6d68d var(--arctable-cleanup-corner, url('/assets/arctable/cleanup-corner-accent.png')) right bottom/110px no-repeat;border-color:#b78024}
 .arctable-media{display:grid;gap:10px;align-content:center}.arctable-media--empty span{color:#5d574f}.arctable-media--active{padding:30px;background:#171a18 var(--arctable-media-apparatus, url('/assets/arctable/media-apparatus-frame.png')) center/100% 100%;color:#fff}.arctable-media--active img,.arctable-media--active iframe{display:block;width:100%;height:min(48vh,460px);border:0;border-radius:8px;object-fit:contain;background:#0c0d0c}.arctable-media.is-projected{margin-top:44px;min-height:320px}
 .arctable-student-class-time{margin-left:auto;font-size:13px;font-weight:750;text-transform:uppercase}.arctable-student-header time{margin-left:0}.arctable-student-session{display:grid;gap:2px;min-width:0}.arctable-student-session strong{font:750 15px/1.2 var(--font-label),var(--font-ui)}.arctable-student-session span{opacity:.72;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.arctable-student-header-actions{display:flex;align-items:center;gap:10px;margin-left:auto;flex:0 0 auto}.arctable-sync-button,.arctable-projection-exit{min-height:40px;padding:8px 13px;border:1px solid rgba(255,255,255,.45);border-radius:999px;background:transparent;color:#fff;font-weight:750;cursor:pointer}.arctable-sync-button{border-color:rgba(255,255,255,.28)}.arctable-projection-exit{background:rgba(255,255,255,.08)}.arctable-projected-person{margin:34px 0 0;padding:24px 30px;border-radius:16px;background:color-mix(in srgb,var(--mustard-soft) 70%, var(--field-elevated));font:400 clamp(30px,4vw,56px)/1.05 'Instrument Serif',serif;text-align:center}
@@ -1103,4 +1103,69 @@
   background:transparent;
   font:650 16px/1.3 var(--font-label),var(--font-ui);
   color:var(--ink);
+}
+
+/* Media tool panel — People/Pass furniture rhythm: add → list → project */
+.arctable-media-panel{
+  align-content:start;
+  gap:14px;
+}
+.arctable-media-panel .arctable-media-add{
+  gap:10px;
+  margin:0;
+  padding-bottom:14px;
+  border-bottom:1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+}
+.arctable-media-panel .arctable-media-add button[type='submit']{
+  width:100%;
+  justify-self:stretch;
+}
+.arctable-media-notice{
+  margin:-4px 0 0;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#756b5f!important;
+  font-size:12px;
+  font-weight:600;
+  line-height:1.4;
+}
+.arctable-media-list{
+  display:grid;
+  gap:8px;
+  margin:0;
+}
+.arctable-media-empty{
+  margin:0;
+  padding:2px 0 4px;
+  color:#756b5f;
+  font-size:13px;
+  line-height:1.4;
+}
+.arctable-media-list > button{
+  width:100%;
+  justify-self:stretch;
+  text-align:left;
+}
+.arctable-media-project{
+  display:grid;
+  gap:8px;
+  margin-top:4px;
+}
+.arctable-media-project-btn{
+  width:100%;
+}
+.arctable-tool-panel button:disabled{
+  opacity:.48;
+  cursor:not-allowed;
+  color:#756b5f;
+  background:color-mix(in srgb, #fffdf8 55%, #d4cec4);
+}
+.arctable-media-panel .arctable-media-project-btn:not(:disabled){
+  background:var(--ink);
+  color:#fff;
+  border-color:transparent;
+}
+.arctable-media-panel .arctable-media-project-btn:not(:disabled):hover{
+  background:color-mix(in srgb, var(--ink) 88%, #fff);
 }

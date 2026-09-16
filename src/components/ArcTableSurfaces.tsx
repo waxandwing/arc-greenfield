@@ -170,7 +170,7 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
       setMediaSource('')
       setMediaError(null)
     } else {
-      setMediaError(mediaKind === 'slides' ? 'Use a valid Google Slides presentation URL.' : 'Use a valid image URL/path. Inline images larger than 100 KB are not stored.')
+      setMediaError(mediaKind === 'slides' ? 'Use a valid Google Slides presentation URL.' : 'Need a valid image URL · over 100 KB isn’t stored.')
     }
   }
 
@@ -612,10 +612,40 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpda
           {tool === 'media' ? (
             <section ref={toolPanelRef} className="arctable-tool-panel arctable-media-panel" aria-labelledby="media-tools-heading">
               <h2 id="media-tools-heading">Media · {live.session.sectionName}</h2>
-              <form onSubmit={addMedia}><label><span>Title</span><input value={mediaTitle} onChange={(event) => setMediaTitle(event.target.value)} /></label><label><span>Source URL or path</span><input value={mediaSource} onChange={(event) => setMediaSource(event.target.value)} /></label><label><span>Type</span><select value={mediaKind} onChange={(event) => setMediaKind(event.target.value as 'image' | 'slides')}><option value="image">Artwork / image</option><option value="slides">Presentation / slides</option></select></label><button type="submit">Add media</button></form>
-              {mediaError ? <p role="alert" className="arctable-tool-error">{mediaError}</p> : null}
-              {live.media.items.length === 0 ? <p>No media selected. The lesson board stays intentionally quiet.</p> : live.media.items.map((item) => <button type="button" className={item.id === live.media.activeId ? 'is-active' : ''} key={item.id} onClick={() => onUpdate({ media: { ...live.media, activeId: item.id, projected: false } })}>{item.title} · {item.kind}</button>)}
-              <button type="button" disabled={!activeMedia} onClick={() => onUpdate({ media: { ...live.media, projected: !live.media.projected } })}>{live.media.projected ? 'Stop projecting media' : 'Project active media'}</button>
+              <form className="arctable-media-add" onSubmit={addMedia}>
+                <label><span>Title</span><input value={mediaTitle} onChange={(event) => setMediaTitle(event.target.value)} /></label>
+                <label><span>Source URL or path</span><input value={mediaSource} onChange={(event) => setMediaSource(event.target.value)} /></label>
+                <label><span>Type</span><select value={mediaKind} onChange={(event) => setMediaKind(event.target.value as 'image' | 'slides')}><option value="image">Artwork / image</option><option value="slides">Presentation / slides</option></select></label>
+                <button type="submit">Add media</button>
+              </form>
+              {mediaError ? <p role="alert" className="arctable-media-notice">{mediaError}</p> : null}
+              <div className="arctable-media-list">
+                {live.media.items.length === 0 ? (
+                  <p className="arctable-media-empty">No media yet. The board stays quiet.</p>
+                ) : (
+                  live.media.items.map((item) => (
+                    <button
+                      type="button"
+                      className={item.id === live.media.activeId ? 'is-active' : ''}
+                      key={item.id}
+                      onClick={() => onUpdate({ media: { ...live.media, activeId: item.id, projected: false } })}
+                    >
+                      {item.title} · {item.kind}
+                    </button>
+                  ))
+                )}
+              </div>
+              <div className="arctable-media-project">
+                <button
+                  type="button"
+                  className="arctable-media-project-btn"
+                  disabled={!activeMedia}
+                  aria-disabled={!activeMedia}
+                  onClick={() => onUpdate({ media: { ...live.media, projected: !live.media.projected } })}
+                >
+                  {live.media.projected ? 'Stop projecting media' : 'Project active media'}
+                </button>
+              </div>
             </section>
           ) : null}
         </div>
