@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { deskCanonicalPngUrl } from '../desk/deskCanonicalPng'
 import { DESK_IDEAS_OPEN_EVENT, requestDeskIdeasCleanUp } from '../desk/deskIdeasEvents'
 
 type Props = {
@@ -56,16 +57,20 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
       aria-label="IDEAS tray"
       data-testid="arc-desk-tray-dock"
       data-extended={extended ? 'true' : 'false'}
-      data-desk-slices="false"
+      data-desk-slices="true"
       data-ideas-authority="canonical-ideas-tray"
     >
       <div className="arc-desk-green-drawer-shell">
-        <div
-          className="arc-desk-green-drawer-art"
-          aria-hidden="true"
-          data-testid="desk-source-ideas-drawer"
-          data-ideas-tray="canonical"
-        />
+        <div className="arc-desk-green-drawer-art" aria-hidden="true" data-desk-kelly-asset="ideas-tray">
+          <img
+            className="arc-desk-ideas-tray-art"
+            src={deskCanonicalPngUrl('ideasTray')}
+            alt=""
+            decoding="async"
+            data-testid="desk-slice-ideas-drawer"
+            data-ideas-tray="canonical"
+          />
+        </div>
         <div
           id={panelId}
           className="arc-desk-green-drawer-well"
