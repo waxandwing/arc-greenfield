@@ -20,6 +20,7 @@ import { DeskTodosFolder } from './DeskTodosFolder'
 import {
   deskCommittedRasterChromeEnabled,
   deskPlannerEdgeTabAssetUrl,
+  deskSettingsTabUrl,
 } from '../desk/deskSliceRuntime'
 import { DeskPlannerFrameSlices } from './DeskPlannerFrameSlices'
 
@@ -108,7 +109,7 @@ const EDGE_TAB_ICONS: Record<string, ReactNode> = {
       <path d="M6 17V11M12 17V8M18 17V5" fill="none" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" />
     </svg>
   ),
-  // Interim edge-tab glyph only — Kelly `settings-tab.svg` (USE) remains BLOCKED until binary lands.
+  // Fallback glyph when raster chrome is off — Kelly copper `settings-tab.png` is the default face.
   SETTINGS: (
     <svg className="arc-index-tab-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.75" />
@@ -377,19 +378,38 @@ export function B01Furniture({
         <button
           ref={settingsButton}
           type="button"
-          className={`arc-index-tab arc-index-tab--settings${edgeTabSlices ? ' arc-index-tab--desk-slice' : ''}${open.settings && edgeTabSlices ? ' arc-index-tab--desk-slice-active' : ''}`}
+          className={`arc-index-tab arc-index-tab--settings${edgeTabSlices ? ' arc-index-tab--desk-slice' : ''}${open.settings && edgeTabSlices ? ' arc-index-tab--desk-slice-active' : ''}${deskCommittedRasterChromeEnabled() ? ' arc-index-tab--settings-physical' : ''}`}
           data-testid="arc-planner-settings-edge-tab"
           data-desk-slice-tab="settings"
           aria-expanded={open.settings}
           aria-controls="b01-settings-surface"
           aria-current={open.settings ? 'page' : undefined}
+          aria-label="SETTINGS"
           title="Settings"
           onClick={() => toggle('settings')}
         >
-          <span className="arc-index-tab-face" aria-hidden="true">
-            {EDGE_TAB_ICONS.SETTINGS}
-          </span>
-          <span className="arc-index-tab-label">SETTINGS</span>
+          {deskCommittedRasterChromeEnabled() ? (
+            <>
+              <img
+                className="arc-settings-tab-face"
+                src={deskSettingsTabUrl()}
+                alt=""
+                width={48}
+                height={82}
+                aria-hidden="true"
+                decoding="async"
+                data-testid="arc-desk-settings-tab-face"
+              />
+              <span className="arc-settings-tab-label">SETTINGS</span>
+            </>
+          ) : (
+            <>
+              <span className="arc-index-tab-face" aria-hidden="true">
+                {EDGE_TAB_ICONS.SETTINGS}
+              </span>
+              <span className="arc-index-tab-label">SETTINGS</span>
+            </>
+          )}
         </button>
       </nav>
     )
