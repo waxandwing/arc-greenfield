@@ -26,12 +26,17 @@
   --dusty-pink: #C99A9E;
   --lavender: #AAA0B8;
   --kraft: #C6A77D;
-  --pine-live: #1F4B3A;
-  --pine-live-soft: rgba(31, 75, 58, 0.12);
+  /* Icarus experiment /table pine (arc-design-audit-prototype + greenpp) */
+  --pine-live: #1c4030;
+  --pine-live-soft: rgba(28, 64, 48, 0.12);
+  --arc-forest: #1c4030;
+  --arc-cover: #1c4030;
+  --arc-env-bg: #faf7f0;
+  --arc-env-bg-deep: #ebe4d4;
 
-  /* Plan shell frame (Stage 7.2.2 visibility lock) */
-  --shell-frame-green: #1F4B3A;
-  /* Light cream field + faded Arc pattern (Kelly / Photoroom AT-PATTERN remakes) */
+  /* Plan shell frame — experiment forest cover */
+  --shell-frame-green: #1c4030;
+  /* Light cream field + Arc geometric pattern from experiment git */
   --shell-exterior-base: var(--paper);
   --shell-pattern-wash: color-mix(in srgb, var(--shell-exterior-base) 88%, transparent);
   --shell-frame-inset: 22px;
@@ -39,11 +44,19 @@
   --shell-frame-border: 5px;
   --shell-planner-border: 3px;
   --shell-spread-gutter-width: 1px;
-  --shell-pattern: url('/assets/arc/pattern-grid-tile-2048.png');
+  --shell-pattern: url('/assets/arc/pattern-arc-geometric.png');
+  --shell-pattern-grid: url('/assets/arc/pattern-grid-tile-2048.png');
   --shell-pattern-dots: url('/assets/arc/patterns/at-pattern-06-small-dots-512.png');
   --shell-pattern-legacy-breezeblock: url('/assets/arctable/breezeblock-tile.png');
   --shell-pattern-size: 560px;
   --shell-pattern-size-mobile: 380px;
+  /* Experiment furniture / thematic surfaces */
+  --arc-settings-folder-cream: url('/assets/arc/experiment/settings-folder-cream.png');
+  --arc-taskbar-folder-mustard: url('/assets/arc/experiment/taskbar-folder-mustard.png');
+  --arc-fridge-open-surface: url('/assets/arc/experiment/fridge-open-surface.png');
+  --arc-calendar-open-planner: url('/assets/arc/experiment/calendar-open-planner.png');
+  --arc-onboarding-day-art: url('/assets/arc/experiment/onboarding-tell-us-about-your-day-wide.webp');
+  --arc-year-catch-marks: url('/assets/arc/marks/year-x-1.png');
   --shell-frame-outer-shadow:
     0 0 0 1px rgba(44, 46, 46, 0.12),
     0 36px 80px -24px rgba(44, 46, 46, 0.22),
@@ -118,11 +131,12 @@
   --calendar-spread-header-block: calc(var(--calendar-spread-header-padding-block) + 76px + 1px);
   --shell-workspace-fridge-top: calc(var(--shell-spread-surface-top) + var(--calendar-spread-header-block));
 
-  /* —— Typography —— */
-  --font-display: 'Instrument Serif', Georgia, 'Source Serif 4', 'Newsreader', serif;
+  /* —— Typography (Icarus experiment: Fraunces + Nunito Sans) —— */
+  --font-display: 'Fraunces', 'Instrument Serif', Georgia, serif;
   --font-editorial: var(--font-display);
-  --font-ui: 'Inter', 'League Spartan', system-ui, sans-serif;
-  --font-label: 'League Spartan', var(--font-ui);
+  --font-ui: 'Nunito Sans', 'League Spartan', system-ui, sans-serif;
+  --font-label: 'Nunito Sans', 'League Spartan', var(--font-ui);
+  --font-hand: 'Caveat', cursive;
   --type-kicker: 800 11px/1 var(--font-label);
   --type-section: 800 12px/1 var(--font-label);
   --type-view-title: 500 clamp(34px, 4.2vw, 42px)/1.06 var(--font-display);
