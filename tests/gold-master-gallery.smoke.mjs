@@ -27,6 +27,17 @@ try {
     await page.screenshot({ path: `${evidenceDir}${view}.png`, fullPage: true })
   }
 
+  await page.goto(`${baseUrl}/?gold=week-edit`, { waitUntil: 'networkidle' })
+  assert(await page.locator('.gm-inline-create').isVisible(), 'Selected lesson / inline-create state did not render')
+  assert(await page.getByDisplayValue('Gallery Walk').isVisible(), 'Inline lesson title field missing')
+  await page.screenshot({ path: `${evidenceDir}week-edit.png`, fullPage: true })
+
+  await page.goto(`${baseUrl}/?gold=shift`, { waitUntil: 'networkidle' })
+  assert(await page.locator('.gm-shift-panel').isVisible(), 'Shift consequence preview did not render')
+  assert(await page.getByText('STAYS FIXED', { exact: true }).isVisible(), 'Shift preview does not expose fixed items')
+  assert(await page.getByText('Nothing is overwritten. Taught history does not move.', { exact: false }).isVisible(), 'Shift preview does not communicate protected history')
+  await page.screenshot({ path: `${evidenceDir}shift.png`, fullPage: true })
+
   await page.goto(`${baseUrl}/?gold=week`, { waitUntil: 'networkidle' })
   assert(await page.getByText('October 20 – 24, 2025', { exact: true }).isVisible(), 'Week date range missing')
   assert(await page.getByText('Renaissance Context', { exact: true }).first().isVisible(), 'Week fixture lesson missing')
@@ -48,4 +59,4 @@ try {
   await browser.close()
 }
 
-console.log(`Gold Master smoke passed: ${views.length} fixture views rendered.`)
+console.log(`Gold Master smoke passed: ${views.length + 2} fixture views rendered.`)
