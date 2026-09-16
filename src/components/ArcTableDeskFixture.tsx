@@ -13,7 +13,11 @@ import {
   quadrantLauncherMeetsA11y,
   type ArcTableDeskAccess,
 } from '../planning/arcTableDeskAccess'
-import { deskSliceUsesEnabled } from '../desk/deskSliceRuntime'
+import {
+  deskCommittedRasterChromeEnabled,
+  deskSliceUsesEnabled,
+  deskStartClassMarkUrl,
+} from '../desk/deskSliceRuntime'
 import { ArcTableDeskMarkSvg } from './ArcTableDeskMarkSvg'
 import { DeskChromeSlice } from './DeskChromeSlice'
 
@@ -121,24 +125,51 @@ export function ArcTableDeskFixture({
   const scriptLine = resolveDeskActionLabel('startOrResume', liveActive)
   const displayScript = hoverLabel ?? scriptLine
   const displayDetail = !hoverLabel ? contextLine : null
+  const useStartClassMark = deskCommittedRasterChromeEnabled() && !deskSliceUsesEnabled()
+  const startClassAria =
+    access === 'paid-live'
+      ? liveActive
+        ? 'Resume class in ArcTable'
+        : 'Start class in ArcTable'
+      : 'Preview Start class in ArcTable'
 
   return (
     <>
       <div
-        className={`arc-desk-arctable ${stateClass}${interactionsDisabled ? ' arc-desk-arctable--interactions-off' : ''}`}
+        className={`arc-desk-arctable ${stateClass}${interactionsDisabled ? ' arc-desk-arctable--interactions-off' : ''}${useStartClassMark ? ' arc-desk-arctable--start-class-mark' : ''}`}
         data-testid="arc-desk-arctable"
         data-access={access}
         data-quadrant-mode={quadrantMode ? 'true' : 'false'}
         data-live={liveActive ? 'true' : 'false'}
         data-interactions-disabled={interactionsDisabled ? 'true' : 'false'}
         data-desk-slices={deskSliceUsesEnabled() ? 'true' : 'false'}
+        data-start-class-mark={useStartClassMark ? 'true' : 'false'}
       >
         {deskSliceUsesEnabled() ? (
           <DeskChromeSlice sliceId="start-class-frame" testId="desk-slice-start-class-frame" />
         ) : null}
         {liveActive ? <span className="arc-desk-arctable-live-badge">Live</span> : null}
         <div className="arc-desk-arctable-mark-wrap">
-          {quadrantMode ? (
+          {useStartClassMark ? (
+            <button
+              type="button"
+              className="arc-desk-arctable-single arc-desk-start-class-mark-btn"
+              disabled={interactionsDisabled}
+              aria-label={startClassAria}
+              onClick={singleEntry}
+              data-testid="arc-desk-start-class-mark"
+            >
+              <img
+                className="arc-desk-start-class-mark"
+                src={deskStartClassMarkUrl()}
+                alt=""
+                width={markSize}
+                height={Math.round(markSize * (539 / 444))}
+                decoding="async"
+                aria-hidden="true"
+              />
+            </button>
+          ) : quadrantMode ? (
             <ArcTableDeskMarkSvg
               size={markSize}
               interactive={!interactionsDisabled}
@@ -166,12 +197,14 @@ export function ArcTableDeskFixture({
             </button>
           )}
         </div>
-        {displayScript ? (
+        {!useStartClassMark && displayScript ? (
           <p className="arc-desk-arctable-script" aria-live="polite">
             {displayScript}
           </p>
         ) : null}
-        {displayDetail ? <p className="arc-desk-arctable-script-detail">{displayDetail}</p> : null}
+        {!useStartClassMark && displayDetail ? (
+          <p className="arc-desk-arctable-script-detail">{displayDetail}</p>
+        ) : null}
       </div>
 
       {previewCopy

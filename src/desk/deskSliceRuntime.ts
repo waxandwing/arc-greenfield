@@ -27,10 +27,30 @@ export function deskCommittedRasterChromeEnabled(): boolean {
   return import.meta.env.VITE_ARC_DESK_RASTER !== 'false'
 }
 
-/** Week title cluster mark — Kelly Teaching week rainbow PNG (default); vector arches when ?deskRaster=0. */
+/** Kelly canonical desk PNGs under `public/assets/desk/canonical/`. */
+export function deskCanonicalAssetUrl(file: string): string {
+  return publicAssetUrl(`assets/desk/canonical/${file.replace(/^\//, '')}`)
+}
+
+/** Copper brushed SETTINGS physical tab (Kelly 2026-09-16 PNG). */
+export function deskSettingsTabUrl(): string {
+  return deskCanonicalAssetUrl('settings-tab.png')
+}
+
+/** Cursive start class + ArcTable quadrant mark (Kelly 2026-09-16 PNG). */
+export function deskStartClassMarkUrl(): string {
+  return deskCanonicalAssetUrl('start-class-mark.png')
+}
+
+/** Cream paper tray / post-it stack base (Kelly 2026-09-16 PNG) — staged for tray stack wire. */
+export function deskPostitStackBaseUrl(): string {
+  return deskCanonicalAssetUrl('postit-stack-base.png')
+}
+
+/** Week title cluster mark — Kelly calendar-date-rainbow PNG (default); interim / vector fallbacks when ?deskRaster=0. */
 export function deskPlannerTitleMarkUrl(): string {
   if (deskSliceUsesEnabled() || deskCommittedRasterChromeEnabled()) {
-    return publicAssetUrl('assets/desk/planner-rainbow-mark.png')
+    return deskCanonicalAssetUrl('calendar-date-rainbow.png')
   }
   // Prefer dedicated rainbow arches — not AT-001 (green square + quadrant fill).
   return publicAssetUrl('assets/desk/planner-rainbow-mark.svg')
