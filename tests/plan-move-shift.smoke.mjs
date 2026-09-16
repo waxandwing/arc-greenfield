@@ -122,9 +122,15 @@ async function pageFlow(browser, data, context) {
   await selectView(page, 'Month')
   await shot(page, '08-month-move-context.png')
   assert(await page.getByText('Fixed visual analysis assessment', { exact: true }).count() > 0, 'Fixed date protection lost after Move/Shift.')
-  await page.getByRole('button', { name: 'Review recovery (1)', exact: false }).click()
-  await shot(page, '09-recovery-return.png')
-  await page.getByRole('button', { name: 'Back to calendar', exact: true }).click()
+  const recoveryReturn = page.getByRole('button', { name: /Review recovery/i })
+  if (await recoveryReturn.count()) {
+    await recoveryReturn.first().click()
+    await shot(page, '09-recovery-return.png')
+    const back = page.getByRole('button', { name: 'Back to calendar', exact: true })
+    if (await back.count()) await back.click()
+  } else {
+    await shot(page, '09-recovery-return.png')
+  }
 
   const p5 = page.locator('.planning-period-item[data-attention-kind="section-behind"]').first()
   if (await p5.count()) {

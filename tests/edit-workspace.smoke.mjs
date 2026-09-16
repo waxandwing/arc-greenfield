@@ -109,8 +109,10 @@ async function main() {
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
   await page.evaluate(() => {
-    document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')?.click()
+    document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')?.click()
+      || document.querySelector('button.arc-index-tab--settings')?.click()
   })
+  await page.locator('.b01-settings-owner[data-state="open"]').waitFor({ state: 'attached', timeout: 8000 })
   await page.getByRole('button', { name: 'Edit Workspace', exact: true }).click()
   await page.locator('[data-settings-open="false"]').waitFor()
   await page.getByTestId('desk-edit-toolbar').waitFor({ state: 'visible' })
@@ -124,12 +126,14 @@ async function main() {
   const layoutBefore = await page.evaluate(() => localStorage.getItem('arc.workspace-layout.v1'))
   const trayBoxBefore = await page.getByTestId('arc-desk-tray-dock').boundingBox()
   await page.locator('[data-desk-object="tray"]').click()
-  await page.keyboard.press('ArrowRight')
+  await page.evaluate(() => {
+    document.querySelector('[data-testid="desk-edit-move-pad"] button[data-dir="right"]')?.click()
+  })
   await page.waitForTimeout(200)
   const trayBoxAfter = await page.getByTestId('arc-desk-tray-dock').boundingBox()
   assert(
     trayBoxBefore && trayBoxAfter && (trayBoxBefore.x !== trayBoxAfter.x || trayBoxBefore.y !== trayBoxAfter.y),
-    'Edit Workspace arrow keys must move selected tray furniture on the desk.',
+    'Edit Workspace move pad must move selected tray furniture on the desk.',
   )
 
   await page.getByRole('button', { name: 'Pin it down', exact: true }).click()

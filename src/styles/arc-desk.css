@@ -1931,6 +1931,8 @@ html:has(.arc-shell--desk) body {
 }
 
 .desk-edit-toolbar {
+  position: relative;
+  z-index: 30;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1941,6 +1943,12 @@ html:has(.arc-shell--desk) body {
   border-radius: 10px;
   background: color-mix(in srgb, var(--mustard-soft) 70%, white);
   border: 1px solid rgba(44, 46, 46, 0.12);
+  pointer-events: auto;
+}
+
+.b01-furniture-composition--desk-edit .arc-desk-tray-dock {
+  /* Keep IDEAS from eating Edit Workspace move-pad clicks. */
+  pointer-events: none !important;
 }
 
 .desk-edit-toolbar-label {
