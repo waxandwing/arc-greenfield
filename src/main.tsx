@@ -37,6 +37,7 @@ import './styles/repair-pass-3-chrome.css'
 import './styles/interaction-laws.css'
 import './styles/arc-desk.css'
 import './styles/gold-master.css'
+import './styles/gold-master-states.css'
 
 maybeApplyDemoSeed(window.location, window.localStorage, {
   envDemo: import.meta.env.VITE_ARC_DEMO === 'true',
