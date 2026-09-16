@@ -40,6 +40,7 @@ import {
   parseQuickCaptureCommand,
   type QuickCaptureKind,
 } from '../planning/quickCaptureCommand'
+import { fitMagnetNoteFont } from '../desk/fitMagnetNoteFont'
 
 const NOTE_STORAGE_KEY = 'arc.desk-postit-notes.v1'
 const POSITION_STORAGE_KEY = 'arc.desk-postit-positions.v1'
@@ -286,6 +287,30 @@ function DeskAccentPostIt({
     const timer = window.setTimeout(() => noteRef.current?.focus(), 40)
     return () => window.clearTimeout(timer)
   }, [spawnBlank])
+
+  // Unit magnets: scale hand lettering to fill the circular writing area.
+  useEffect(() => {
+    if (form !== 'magnet') return
+    const el = noteRef.current
+    if (!el) return
+
+    const refit = () => {
+      fitMagnetNoteFont(el)
+    }
+    refit()
+
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(refit) : null
+    ro?.observe(el)
+    // Fonts (Caveat) may load after first paint — refit when ready.
+    const fontsReady = document.fonts?.ready
+    void fontsReady?.then(() => {
+      if (noteRef.current === el) refit()
+    })
+
+    return () => {
+      ro?.disconnect()
+    }
+  }, [form, text])
 
   const onChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setText(event.target.value)

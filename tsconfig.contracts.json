@@ -13,6 +13,8 @@
     "src/calendar/**/*.ts",
     "src/navigation/**/*.ts",
     "src/planning/**/*.ts",
+    "src/desk/fitMagnetNoteFont.ts",
+    "src/desk/fitMagnetNoteFont.contract.ts",
     "src/demo/**/*.ts",
     "src/app/setupSections.ts",
     "src/app/setupSections.contract.ts",
