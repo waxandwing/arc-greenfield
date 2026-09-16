@@ -949,6 +949,8 @@ export function AppFrame() {
                   ...(patch.tray ? { traySize: patch.tray } : {}),
                   ...(patch.msc ? { mscSize: patch.msc } : {}),
                 })}
+                onMove={moveSelectedDeskObject}
+                canMove={deskSelectedObject !== 'planner'}
                 onDone={() => completeDeskEdit(true)}
                 onReset={resetDeskLayoutDraft}
                 resetNeedsConfirm={deskResetArmed}

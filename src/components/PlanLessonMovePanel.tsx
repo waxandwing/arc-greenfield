@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { ISODate, SchoolCalendar } from '../calendar'
 import {
   createLessonMovePreview,
@@ -39,15 +40,28 @@ export function PlanLessonMovePanel({
   const [destination, setDestination] = useState(defaultDestination ?? lesson?.plannedDate ?? '')
   const [preview, setPreview] = useState<LessonMovePreview | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const titleId = useId()
+  const panelRef = useRef<HTMLDivElement | null>(null)
 
-  if (!lesson) {
-    return (
-      <div className="plan-move-panel" role="dialog" aria-label="Move Lesson">
-        <p className="recovery-blocked" role="status">That Lesson is no longer available.</p>
-        <button type="button" className="quiet-button" onClick={onCancel}>Cancel</button>
-      </div>
-    )
-  }
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const focusable = panelRef.current?.querySelector<HTMLElement>(
+        'input, button:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
+      )
+      focusable?.focus()
+    })
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onCancel()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      cancelAnimationFrame(frame)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [onCancel])
 
   function runPreview() {
     setError(null)
@@ -80,11 +94,31 @@ export function PlanLessonMovePanel({
 
   const sectionName = sectionId ? planning.sections.find((row) => row.id === sectionId)?.name ?? null : null
 
-  return (
-    <div className="plan-move-panel" role="dialog" aria-label={`Move ${lesson.title}`} data-plan-move-lesson={lessonId}>
+  const body = !lesson ? (
+    <div
+      ref={panelRef}
+      className="plan-move-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Move Lesson"
+      data-testid="plan-move-panel"
+    >
+      <p className="recovery-blocked" role="status">That Lesson is no longer available.</p>
+      <button type="button" className="quiet-button" onClick={onCancel}>Cancel</button>
+    </div>
+  ) : (
+    <div
+      ref={panelRef}
+      className="plan-move-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      data-plan-move-lesson={lessonId}
+      data-testid="plan-move-panel"
+    >
       <header className="plan-move-panel-heading">
         <p className="section-label">Move Lesson</p>
-        <h2>{lesson.title}</h2>
+        <h2 id={titleId}>{lesson.title}</h2>
         {sectionName ? <p className="plan-move-panel-context">{sectionName} · shared Course plan date</p> : <p className="plan-move-panel-context">Shared Course plan date</p>}
       </header>
 
@@ -141,5 +175,20 @@ export function PlanLessonMovePanel({
         </section>
       ) : null}
     </div>
+  )
+
+  if (typeof document === 'undefined') return body
+
+  return createPortal(
+    <div
+      className="plan-move-panel-layer"
+      data-testid="plan-move-panel-layer"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onCancel()
+      }}
+    >
+      {body}
+    </div>,
+    document.body,
   )
 }

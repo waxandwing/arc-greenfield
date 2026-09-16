@@ -172,12 +172,14 @@ html:has(.arc-shell--desk) body {
 /* Modest corner lockup — clear of planner right edge (~89.5%) so calendar keeps space. */
 .arc-desk-surface:not([data-layout-grid='true']) > .arc-desk-arctable-anchor {
   position: absolute;
+  /* Sit on the wood gutter below/right of the planner — not under the paper. */
   right: 2.2%;
   bottom: 3.4%;
   width: 6.6%;
   max-width: 88px;
+  height: auto;
   aspect-ratio: auto;
-  z-index: 6;
+  z-index: 16;
   left: auto;
   pointer-events: none;
   display: flex;
@@ -1288,6 +1290,40 @@ html:has(.arc-shell--desk) body {
   filter: brightness(0.97);
 }
 
+.school-year-mini-day--past {
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+.school-year-mini-day--happened {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--mustard) 22%, transparent),
+    transparent 55%
+  );
+}
+
+.school-year-mini-day--happened .school-year-mini-day-x {
+  color: color-mix(in srgb, var(--ink) 82%, var(--mustard));
+}
+
+.school-year-desk-legend-swatch--happened {
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--mustard) 55%, white),
+    color-mix(in srgb, var(--mustard) 55%, white) 3px,
+    transparent 3px,
+    transparent 6px
+  );
+}
+
+.school-year-desk-hint {
+  margin: 6px 0 0;
+  max-width: 36ch;
+  color: color-mix(in srgb, var(--ink) 70%, var(--soft-charcoal));
+  font-size: 13px;
+  line-height: 1.35;
+}
+
 .planning-year-progression {
   margin-top: 24px;
   padding-top: 12px;
@@ -1859,10 +1895,39 @@ html:has(.arc-shell--desk) body {
     repeating-linear-gradient(0deg, rgba(44, 46, 46, 0.06) 0 1px, transparent 1px 50%);
 }
 
+.arc-desk-edit-object {
+  cursor: grab;
+}
+
 .arc-desk-edit-object--selected {
   z-index: 2;
   outline: 3px solid var(--mustard);
   outline-offset: 2px;
+  cursor: grab;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--mustard) 22%, transparent);
+}
+
+.arc-desk-edit-object--selected::after {
+  content: 'Drag or use arrows';
+  position: absolute;
+  left: 50%;
+  top: -1.55rem;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--field-elevated);
+  font: 700 10px/1.2 var(--font-ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.arc-desk-edit-object--dragging {
+  cursor: grabbing;
+  opacity: 0.92;
 }
 
 .desk-edit-toolbar {
@@ -1884,11 +1949,51 @@ html:has(.arc-shell--desk) body {
   font-weight: 700;
 }
 
+.desk-edit-toolbar-hint {
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--ink) 72%, var(--soft-charcoal));
+}
+
 .desk-edit-toolbar-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
+
+.desk-edit-move-pad {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 28px);
+  grid-template-rows: repeat(3, 28px);
+  gap: 2px;
+  align-items: center;
+  justify-items: center;
+}
+
+.desk-edit-move-pad .desk-edit-move-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid rgba(44, 46, 46, 0.2);
+  border-radius: 6px;
+  background: var(--field-elevated);
+  color: var(--ink);
+  font: 800 14px/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.desk-edit-move-pad .desk-edit-move-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.desk-edit-move-pad .desk-edit-move-btn[data-dir='up'] { grid-column: 2; grid-row: 1; }
+.desk-edit-move-pad .desk-edit-move-btn[data-dir='left'] { grid-column: 1; grid-row: 2; }
+.desk-edit-move-pad .desk-edit-move-btn[data-dir='right'] { grid-column: 3; grid-row: 2; }
+.desk-edit-move-pad .desk-edit-move-btn[data-dir='down'] { grid-column: 2; grid-row: 3; }
+.desk-edit-move-pad .desk-edit-move-spacer { grid-column: 2; grid-row: 2; }
 
 /* Desk Settings sheet — opaque paper card over the wood (not a frosted rail). */
 .b01-furniture-composition--desk .b01-settings-surface,
@@ -2130,10 +2235,12 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .arc-desk-arctable--start-class-mark {
   gap: 0;
+  width: 100%;
 }
 
 .b01-furniture-composition--desk .arc-desk-start-class-mark-btn {
   display: block;
+  width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
@@ -2142,11 +2249,17 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .arc-desk-start-class-mark {
   display: block;
-  width: clamp(52px, 5.4vw, 78px);
+  width: 100%;
+  max-width: clamp(52px, 5.4vw, 78px);
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 8px 16px -12px rgba(33, 29, 23, 0.42));
   pointer-events: none;
+}
+
+.b01-furniture-composition--desk .arc-desk-object-slot[data-desk-object='arctable'],
+.b01-furniture-composition--desk .arc-desk-arctable-anchor {
+  z-index: 16;
 }
 
 /* Teaching week / desk authority: Quick Capture is a wood sticky (upper-right), not a chat widget.
@@ -3602,4 +3715,24 @@ html:has(.arc-shell--desk) body {
   .arc-desk-help-dialog-inner {
     padding: 0.95rem 1rem 1rem;
   }
+}
+
+/* Desk Day / lesson focus — keep Move + Skipped lesson usable in short planner body. */
+.b01-furniture-composition--desk .lesson-focus {
+  min-height: 0;
+  padding: 18px 20px 16px;
+  gap: 14px;
+}
+
+.b01-furniture-composition--desk .lesson-focus-heading h2 {
+  font-size: clamp(22px, 2.8vw, 32px);
+  margin: 4px 0 6px;
+}
+
+.b01-furniture-composition--desk .day-continuity[data-plan-focus='lesson'] {
+  min-height: 0;
+}
+
+.desk-calendar-popout-body .lesson-focus {
+  min-height: 0;
 }

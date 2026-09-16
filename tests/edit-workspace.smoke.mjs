@@ -115,6 +115,10 @@ async function main() {
   await page.locator('[data-settings-open="false"]').waitFor()
   await page.getByTestId('desk-edit-toolbar').waitFor({ state: 'visible' })
   assert(await page.locator('[data-desk-edit-mode="true"]').count() === 1, 'Edit mode must be active on the desk.')
+  assert(await page.getByTestId('desk-edit-move-hint').isVisible(), 'Edit mode must explain how to move furniture.')
+  await page.locator('[data-desk-object="tray"]').click()
+  assert(await page.getByTestId('desk-edit-move-pad').isVisible(), 'Selected movable object must show arrow move pad.')
+
   assert(await page.locator('.b01-calendar-owner--workspace-edit').count() === 1, 'Planning canvas must de-emphasize during edit.')
 
   const layoutBefore = await page.evaluate(() => localStorage.getItem('arc.workspace-layout.v1'))
