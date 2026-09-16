@@ -607,6 +607,54 @@ button.planning-lesson-title--open:focus-visible{
   font-size:14px;
 }
 
+.planning-day-slot--addable{
+  position:relative;
+}
+
+.planning-day-slot-add{
+  display:grid;
+  justify-items:start;
+  align-content:start;
+  gap:4px;
+  width:100%;
+  min-height:44px;
+  margin:0;
+  padding:8px 6px;
+  border:1px dashed color-mix(in srgb, var(--dusty-blue) 45%, transparent);
+  border-radius:4px;
+  background:transparent;
+  color:var(--soft-charcoal);
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+
+.planning-day-slot-add:hover,
+.planning-day-slot-add:focus-visible{
+  border-color:var(--dusty-blue);
+  background:rgba(255,255,255,.35);
+  outline:2px solid color-mix(in srgb, var(--dusty-blue) 55%, transparent);
+  outline-offset:1px;
+}
+
+.planning-day-slot-add--off{
+  border-style:dashed;
+  border-color:color-mix(in srgb, var(--soft-charcoal) 35%, transparent);
+}
+
+.planning-day-slot-add-off{
+  font:700 11px/1.2 var(--font-label);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--soft-charcoal);
+}
+
+.planning-day-slot-add-label{
+  font-size:13px;
+  font-weight:650;
+  color:var(--ink);
+}
+
 .planning-grid--day{
   min-width:0;
 }

@@ -8,7 +8,9 @@ import { UnitSetup } from './UnitSetup'
 import { TeachingDaySetup } from './TeachingDaySetup'
 import { CurriculumImport } from './CurriculumImport'
 import { PlanLessonMovePanel } from './PlanLessonMovePanel'
+import { PlanPlaceLessonPanel } from './PlanPlaceLessonPanel'
 import type { LessonMovePreview } from '../planning'
+import type { PlanPlaceLessonIntent, LessonCreateSeed } from '../planning/planPlaceLesson'
 import type { CalendarHydrationInput, ISODate, OfficialSourceCandidate, PlanNavigationContext, SchoolCalendar } from '../calendar'
 import type { CalendarView } from '../navigation/calendarViews'
 import type { WorkspaceMode } from '../app/useWorkspaceMode'
@@ -78,6 +80,13 @@ type WorkspaceStageProps = {
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onCancelPlanLessonMove?: () => void
   onConfirmPlanLessonMove?: (destination: ISODate, preview: LessonMovePreview) => void
+  planPlaceIntent?: PlanPlaceLessonIntent | null
+  onBeginPlanPlaceLesson?: (intent: PlanPlaceLessonIntent) => void
+  onCancelPlanPlaceLesson?: () => void
+  onCreateLessonFromSlot?: (acknowledgedOffDay: boolean) => void
+  onPlaceUnscheduledFromSlot?: (lessonId: string) => void
+  lessonCreateSeed?: LessonCreateSeed | null
+  onConsumeLessonCreateSeed?: () => void
   onOpenRecoveryForSection?: (sectionId: string) => void
   recoveryFocusSectionId?: string | null
   onEditLesson?: (lessonId: string) => void
@@ -136,6 +145,13 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onBeginPlanLessonMove,
     onCancelPlanLessonMove,
     onConfirmPlanLessonMove,
+    planPlaceIntent,
+    onBeginPlanPlaceLesson,
+    onCancelPlanPlaceLesson,
+    onCreateLessonFromSlot,
+    onPlaceUnscheduledFromSlot,
+    lessonCreateSeed = null,
+    onConsumeLessonCreateSeed,
     onOpenRecoveryForSection,
     recoveryFocusSectionId,
     onEditLesson,
@@ -214,6 +230,8 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         shiftState={shiftState}
         initialValue={lessonInput}
         focusLessonId={focusLessonId}
+        createSeed={lessonCreateSeed}
+        onConsumeCreateSeed={onConsumeLessonCreateSeed}
         onSave={onUseLessons}
         onCancel={onReturnToSettings}
         onShowUnscheduledInIdeas={onShowUnscheduledInIdeas}
@@ -261,6 +279,20 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
           onCancel={onCancelPlanLessonMove}
         />
       ) : null}
+      {planPlaceIntent && planningWorkspace && onCancelPlanPlaceLesson && onCreateLessonFromSlot && onPlaceUnscheduledFromSlot ? (
+        <PlanPlaceLessonPanel
+          intent={planPlaceIntent}
+          planning={planningWorkspace}
+          lessons={lessonWorkspace?.lessons ?? []}
+          courseTitle={
+            planningWorkspace.courses.find((course) => course.id === planPlaceIntent.courseId)?.title
+            ?? 'Course'
+          }
+          onCreateNew={onCreateLessonFromSlot}
+          onPlaceUnscheduled={onPlaceUnscheduledFromSlot}
+          onCancel={onCancelPlanPlaceLesson}
+        />
+      ) : null}
       <CalendarProjectionView
         view={activeView}
         showWeekends={showWeekends}
@@ -283,6 +315,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         showDeskNotes={showDeskNotes}
         onSetLessonImportant={onSetLessonImportant}
         onBeginPlanLessonMove={onBeginPlanLessonMove}
+        onAddLessonToSlot={onBeginPlanPlaceLesson}
         onOpenRecoveryForSection={onOpenRecoveryForSection}
         onMoveCaptureToDate={_moveCaptureToDate}
         onEditLesson={onEditLesson}

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ISODate, SchoolCalendar } from '../calendar'
 import {
   createLesson,
@@ -24,6 +24,7 @@ import {
   type ShiftPersistenceInput,
   type UnitWorkspace,
 } from '../planning'
+import { createLessonFromSeed, type LessonCreateSeed } from '../planning/planPlaceLesson'
 
 type ActionNotice = {
   message: string
@@ -37,13 +38,15 @@ type Props = {
   shiftState: ShiftPersistenceInput | null
   initialValue: LessonWorkspaceInput | null
   focusLessonId?: string | null
+  createSeed?: LessonCreateSeed | null
+  onConsumeCreateSeed?: () => void
   onSave: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => boolean | void
   onCancel: () => void
   /** Open IDEAS / Workspace on Unscheduled lessons after Save (recovery from Unplace). */
   onShowUnscheduledInIdeas?: (lessonId: string) => void
 }
 
-export function LessonSetup({ calendar, planning, units, shiftState, initialValue, focusLessonId = null, onSave, onCancel, onShowUnscheduledInIdeas }: Props) {
+export function LessonSetup({ calendar, planning, units, shiftState, initialValue, focusLessonId = null, createSeed = null, onConsumeCreateSeed, onSave, onCancel, onShowUnscheduledInIdeas }: Props) {
   const [lessons, setLessons] = useState<Lesson[]>(() => initialValue?.lessons.map((lesson) => ({ ...lesson })) ?? [])
   const [deliveryStates, setDeliveryStates] = useState<LessonDeliveryState[]>(() => initialValue?.deliveryStates.map((state) => ({ ...state })) ?? [])
   const [overrides, setOverrides] = useState(() => shiftState?.overrides.map((override) => ({ ...override })) ?? [])
@@ -55,12 +58,38 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
   const [errors, setErrors] = useState<string[]>([])
   const [actionNotice, setActionNotice] = useState<ActionNotice | null>(null)
   const [pendingIdeasRevealId, setPendingIdeasRevealId] = useState<string | null>(null)
+  const [offDayNotice, setOffDayNotice] = useState<string | null>(createSeed?.offDayNotice ?? null)
   const plannedDateInputRef = useRef<HTMLInputElement | null>(null)
   const lessonListItemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+  const seedAppliedRef = useRef(false)
 
   const selectedLesson = lessons.find((lesson) => lesson.id === selectedLessonId) ?? null
   const selectedUnit = selectedLesson ? units.units.find((unit) => unit.id === selectedLesson.unitId) ?? null : null
   const selectedSections = selectedLesson ? planning.sections.filter((section) => section.courseId === selectedLesson.courseId) : []
+
+  useEffect(() => {
+    if (!createSeed || seedAppliedRef.current) return
+    seedAppliedRef.current = true
+    setLessons((current) => {
+      const seeded = createLessonFromSeed({
+        calendarId: calendar.id,
+        units,
+        existingLessons: current,
+        seed: createSeed,
+      })
+      if (!seeded) {
+        setErrors(['Set up a Unit for this Course before adding a Lesson from the week grid.'])
+        return current
+      }
+      setSelectedLessonId(seeded.id)
+      setOffDayNotice(createSeed.offDayNotice)
+      setErrors([])
+      setActionNotice(null)
+      setPendingIdeasRevealId(null)
+      return [...current, seeded]
+    })
+    onConsumeCreateSeed?.()
+  }, [calendar.id, createSeed, onConsumeCreateSeed, units])
 
   function currentWorkspace(): LessonWorkspace {
     return { calendarId: calendar.id, lessons, deliveryStates }
@@ -269,6 +298,11 @@ export function LessonSetup({ calendar, planning, units, shiftState, initialValu
     <div className="lesson-setup">
       <div className="calendar-setup-intro"><p className="section-label">Lessons</p><h2>One plan. Different places.</h2><p>Build the shared Lesson once. Then record where each class actually is without changing the plan for everyone else.</p></div>
       {errors.length > 0 && <div className="setup-errors" role="alert"><strong>Check the Lessons.</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div>}
+      {offDayNotice ? (
+        <div className="lesson-off-day-notice" role="status" data-testid="lesson-setup-off-day-notice">
+          <p>{offDayNotice}</p>
+        </div>
+      ) : null}
       {actionNotice && (
         <div className="storage-notice storage-notice--with-action" role="status">
           <p>{actionNotice.message}</p>

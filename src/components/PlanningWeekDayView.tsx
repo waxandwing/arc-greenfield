@@ -29,6 +29,14 @@ type SelectLessonHandler = (lesson: {
 
 type SelectUnitHandler = (input: { date: ISODate; courseId: string; unitId: string }) => void
 
+type AddLessonToSlotHandler = (input: {
+  courseId: string
+  sectionId: string
+  date: ISODate
+  dayKind: ProjectedDay['kind']
+  dayLabel: string | null
+}) => void
+
 export function PlanningWeekDayView({
   days,
   planning,
@@ -38,6 +46,7 @@ export function PlanningWeekDayView({
   onSelectDate,
   onSelectLesson,
   onSelectUnit,
+  onAddLessonToSlot,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
   onSetLessonImportant,
@@ -53,6 +62,7 @@ export function PlanningWeekDayView({
   onSelectDate?: (date: ISODate) => void
   onSelectLesson?: SelectLessonHandler
   onSelectUnit?: SelectUnitHandler
+  onAddLessonToSlot?: AddLessonToSlotHandler
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
@@ -111,6 +121,7 @@ export function PlanningWeekDayView({
             onToggleMinimize={allowMinimize ? () => toggleCourseRow(course) : undefined}
             onSelectLesson={onSelectLesson}
             onSelectUnit={onSelectUnit}
+            onAddLessonToSlot={onAddLessonToSlot}
             onBeginPlanLessonMove={onBeginPlanLessonMove}
             onOpenRecoveryForSection={onOpenRecoveryForSection}
             onSetLessonImportant={onSetLessonImportant}
@@ -203,6 +214,7 @@ function PlanningCourse({
   onToggleMinimize,
   onSelectLesson,
   onSelectUnit,
+  onAddLessonToSlot,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
   onSetLessonImportant,
@@ -219,6 +231,7 @@ function PlanningCourse({
   onToggleMinimize?: () => void
   onSelectLesson?: SelectLessonHandler
   onSelectUnit?: SelectUnitHandler
+  onAddLessonToSlot?: AddLessonToSlotHandler
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
@@ -295,16 +308,24 @@ function PlanningCourse({
                 <strong>{row.section.name}</strong>
               </div>
               {row.days.map((slot, index) => {
-                const dayKind = days[index]?.kind ?? 'unknown'
+                const day = days[index]
+                const dayKind = day?.kind ?? 'unknown'
+                const dayLabel = day?.label ?? null
                 const offDay = !isPlannableDayKind(dayKind)
+                const empty = slot.lessons.length === 0
+                const offKindLabel = dayLabel || humanizeKind(dayKind)
+                const addLabel = empty && onAddLessonToSlot
+                  ? `Add lesson for ${row.section.name}, ${formatLongDate(slot.date)}${offDay ? `. ${offKindLabel}` : ''}`
+                  : null
                 return (
                 <div
                   key={slot.date}
-                  className={`planning-day-slot planning-day-slot--${dayKind}${offDay ? ' planning-day-slot--off' : ''}${slot.date === focusDate ? ' planning-day-slot--focus' : ''}`}
-                  aria-label={`${row.section.name}, ${formatLongDate(slot.date)}${offDay ? `. ${days[index]?.label || humanizeKind(dayKind)}` : ''}`}
+                  className={`planning-day-slot planning-day-slot--${dayKind}${offDay ? ' planning-day-slot--off' : ''}${slot.date === focusDate ? ' planning-day-slot--focus' : ''}${empty && onAddLessonToSlot ? ' planning-day-slot--addable' : ''}`}
+                  aria-label={`${row.section.name}, ${formatLongDate(slot.date)}${offDay ? `. ${offKindLabel}` : ''}${empty && onAddLessonToSlot ? '. Empty — add lesson' : ''}`}
                   data-desk-postit-drop="date"
                   data-desk-postit-date={slot.date}
                   data-date={slot.date}
+                  data-plan-place-empty={empty ? 'true' : undefined}
                 >
                   {slot.lessons.map((lesson) => (
                     <LessonTile
@@ -322,7 +343,26 @@ function PlanningCourse({
                       onStartClass={onStartClass}
                     />
                   ))}
-                  {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
+                  {empty && onAddLessonToSlot && addLabel ? (
+                    <button
+                      type="button"
+                      className={`planning-day-slot-add${offDay ? ' planning-day-slot-add--off' : ''}`}
+                      aria-label={addLabel}
+                      data-testid={`planning-day-slot-add-${row.section.id}-${slot.date}`}
+                      onClick={() => onAddLessonToSlot({
+                        courseId: course.course.id,
+                        sectionId: row.section.id,
+                        date: slot.date,
+                        dayKind,
+                        dayLabel,
+                      })}
+                    >
+                      {offDay ? <span className="planning-day-slot-add-off">{offKindLabel}</span> : null}
+                      <span className="planning-day-slot-add-label">{single ? 'Place a lesson' : 'Add lesson'}</span>
+                    </button>
+                  ) : single && empty ? (
+                    <span className="planning-day-empty">No Lesson placed</span>
+                  ) : null}
                 </div>
                 )
               })}
