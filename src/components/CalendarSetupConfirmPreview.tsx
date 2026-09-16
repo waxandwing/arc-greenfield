@@ -2,6 +2,7 @@ import {
   eachCalendarDay,
   hydrateSchoolCalendar,
   instructionalDaysBetween,
+  isPlannableDayKind,
   sundayFirstWeekdayIndex,
   validateHydrationInput,
   type CalendarHydrationInput,
@@ -9,7 +10,7 @@ import {
   type SchoolCalendar,
 } from '../calendar'
 
-const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
 type Props = {
   input: CalendarHydrationInput
@@ -57,6 +58,24 @@ export function CalendarSetupConfirmPreview({ input, sourceBackedEdit = false }:
           {instructionalCount} instructional day{instructionalCount === 1 ? '' : 's'}
           {sourceBackedEdit ? ' · edits stay linked to your reviewed source' : ''}
         </p>
+        <ul className="calendar-setup-confirm-legend" aria-label="Day color key">
+          <li>
+            <span className="calendar-setup-confirm-swatch calendar-setup-confirm-swatch--school" aria-hidden="true" />
+            School days
+          </li>
+          <li>
+            <span className="calendar-setup-confirm-swatch calendar-setup-confirm-swatch--break" aria-hidden="true" />
+            Breaks
+          </li>
+          <li>
+            <span className="calendar-setup-confirm-swatch calendar-setup-confirm-swatch--weekend" aria-hidden="true" />
+            Weekends / no school
+          </li>
+          <li>
+            <span className="calendar-setup-confirm-swatch calendar-setup-confirm-swatch--workday" aria-hidden="true" />
+            Teacher workdays
+          </li>
+        </ul>
       </div>
       <div className="calendar-setup-confirm-months">
         {monthKeys.map((monthKey) => (
@@ -116,8 +135,10 @@ function SetupMonthMiniGrid({
   return (
     <article className="calendar-setup-confirm-month" aria-label={`${label} preview`}>
       <h4 className="calendar-setup-confirm-month-label">{label}</h4>
-      <div className="source-calendar-weekdays" aria-hidden="true">
-        {WEEKDAY_LABELS.map((token) => <span key={token}>{token}</span>)}
+      <div className="source-calendar-weekdays calendar-setup-confirm-weekdays" aria-hidden="true">
+        {WEEKDAY_LABELS.map((token, index) => (
+          <span key={`${token}-${index}`}>{token}</span>
+        ))}
       </div>
       <div className="source-calendar-grid calendar-setup-confirm-grid" role="grid" aria-label={`${label} school days`}>
         {cells.map((date, index) => {
@@ -127,11 +148,12 @@ function SetupMonthMiniGrid({
           const day = calendar.days[date]
           const dateNumber = Number(date.slice(-2))
           const kindLabel = day.kind.replace(/-/g, ' ')
+          const tone = dayToneClass(day.kind)
           const aria = `${date}: ${kindLabel}${day.label ? `, ${day.label}` : ''}`
           return (
             <span
               key={date}
-              className={`source-calendar-day is-${day.kind}`}
+              className={`source-calendar-day calendar-setup-confirm-day is-${day.kind}${tone}`}
               role="gridcell"
               aria-label={aria}
               title={aria}
@@ -145,7 +167,15 @@ function SetupMonthMiniGrid({
   )
 }
 
+function dayToneClass(kind: SchoolCalendar['days'][string]['kind']): string {
+  if (isPlannableDayKind(kind)) return ' is-school-day'
+  if (kind === 'break' || kind === 'holiday') return ' is-break-day'
+  if (kind === 'no-school') return ' is-weekend-day'
+  if (kind === 'teacher-workday') return ' is-workday'
+  return ''
+}
+
 function monthLabel(isoDate: ISODate): string {
   const date = new Date(`${isoDate}T12:00:00Z`)
-  return date.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+  return date.toLocaleString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })
 }
