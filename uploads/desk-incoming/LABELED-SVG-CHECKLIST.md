@@ -50,3 +50,7 @@ Copy sources → `public/assets/desk/canonical/` using the rename map above. Upd
 | 9 | Rainbow + Today → `calendar-date-rainbow.svg`, `today-button.svg`, `today-highlight.svg` | `planner-rainbow-mark.*` + CSS Today control |
 
 **Hard rules:** no `object-fit: fill` on tactile SVG art; no destructive SVG optimize/re-trace; archive old controllers only after side-by-side evidence; never claim Kelly labeled authority from invented or cropped stand-ins.
+
+## Agent note (2026-09-16 Kelly desk pass)
+
+IDEAS tray + SETTINGS USE binaries still missing. Behavior shipped with live controllers; drop labeled SVGs here to unblock P0-4 / P0-6 wires.

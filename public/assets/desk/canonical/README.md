@@ -26,6 +26,13 @@ Aggressive second hunt confirmed **no** Kelly labeled SVG binaries. Searched:
 
 Do **not** invent replacements from screenshot crops, CSS gradients, tiny generated magnet SVGs, or previously wired approximations and claim Kelly labeled authority.
 
+
+## Kelly pass 2026-09-16 — IDEAS tray / SETTINGS USE hunt
+
+- **IDEAS tray USE** (`tray image (use).svg` → `ideas-tray.svg`): still **BLOCKED** — not in `uploads/desk-incoming/` or `public/assets/desk/canonical/`. Live controller remains `green-folders-drawer.svg` / `.png` (+ optional `ideas-drawer-chrome` slice).
+- **SETTINGS tab USE** (`Settings tab (USE).svg` → `settings-tab.svg`): still **BLOCKED**. Desk now exposes a **physical SETTINGS edge tab** on the planner (interim CSS/glyph chrome only — not claimed as Kelly labeled authority).
+- **Do not invent** Kelly USE SVGs from crops or CSS gradients.
+
 ## Binary handoff status
 
 **BLOCKED — binaries not in repo.** Branch `asset-reconciliation-labeled-svgs` ships only this README (filename → canonical map). P0 wires 1–9 remain stubs until the 22 originals land in `uploads/desk-incoming/`.

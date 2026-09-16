@@ -108,6 +108,19 @@ const EDGE_TAB_ICONS: Record<string, ReactNode> = {
       <path d="M6 17V11M12 17V8M18 17V5" fill="none" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" />
     </svg>
   ),
+  // Interim edge-tab glyph only — Kelly `settings-tab.svg` (USE) remains BLOCKED until binary lands.
+  SETTINGS: (
+    <svg className="arc-index-tab-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" strokeWidth="1.75" />
+      <path
+        d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6.1 6.1l1.6 1.6M16.3 16.3l1.6 1.6M6.1 17.9l1.6-1.6M16.3 7.7l1.6-1.6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  ),
 }
 
 export function B01Furniture({
@@ -361,6 +374,23 @@ export function B01Furniture({
             </button>
           )
         })}
+        <button
+          ref={settingsButton}
+          type="button"
+          className={`arc-index-tab arc-index-tab--settings${edgeTabSlices ? ' arc-index-tab--desk-slice' : ''}${open.settings && edgeTabSlices ? ' arc-index-tab--desk-slice-active' : ''}`}
+          data-testid="arc-planner-settings-edge-tab"
+          data-desk-slice-tab="settings"
+          aria-expanded={open.settings}
+          aria-controls="b01-settings-surface"
+          aria-current={open.settings ? 'page' : undefined}
+          title="Settings"
+          onClick={() => toggle('settings')}
+        >
+          <span className="arc-index-tab-face" aria-hidden="true">
+            {EDGE_TAB_ICONS.SETTINGS}
+          </span>
+          <span className="arc-index-tab-label">SETTINGS</span>
+        </button>
       </nav>
     )
   }
@@ -388,17 +418,6 @@ export function B01Furniture({
           onClick={() => toggle('workspace')}
         >
           {workspaceTabLabel}
-        </button>
-        <button
-          ref={settingsButton}
-          type="button"
-          className="arc-index-tab arc-index-tab--settings"
-          aria-expanded={open.settings}
-          aria-controls="b01-settings-surface"
-          aria-current={open.settings ? 'page' : undefined}
-          onClick={() => toggle('settings')}
-        >
-          SETTINGS
         </button>
       </nav>
     )
