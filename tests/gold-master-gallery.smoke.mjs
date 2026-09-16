@@ -19,6 +19,11 @@ try {
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`))
   page.on('console', message => { if (message.type() === 'error') errors.push(`console: ${message.text()}`) })
 
+  await page.goto(`${baseUrl}/?gallery=gold-master`, { waitUntil: 'networkidle' })
+  assert(await page.getByText('23.3 interface × Greenfield brain', { exact: true }).isVisible(), 'Gold Master QA index missing')
+  assert(await page.getByText('Arc ≠ ArcTable identity', { exact: true }).isVisible(), 'Gold Master brand rule missing from QA index')
+  await page.screenshot({ path: `${evidenceDir}index.png`, fullPage: true })
+
   for (const view of views) {
     await page.goto(`${baseUrl}/?gold=${view}`, { waitUntil: 'networkidle' })
     assert(await page.locator('.gm-app').count() === 1, `${view}: gold master shell did not render`)
@@ -59,4 +64,4 @@ try {
   await browser.close()
 }
 
-console.log(`Gold Master smoke passed: ${views.length + 2} fixture views rendered.`)
+console.log(`Gold Master smoke passed: ${views.length + 3} fixture views rendered.`)
