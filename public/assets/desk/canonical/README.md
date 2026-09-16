@@ -120,7 +120,7 @@ Agent `bc-f777bf61`. Provenance: `PROVENANCE-kelly-settings-start-rainbow-2026-0
 
 | Canonical PNG | Upload UUID | Role | Wire |
 |---|---|---|---|
-| `settings-tab.png` | `56d5f05f-…` | Copper brushed SETTINGS physical tab | **WIRED** — planner edge SETTINGS face (`arc-planner-settings-edge-tab`) |
+| `settings-tab.png` | `56d5f05f-…` | Copper brushed SETTINGS physical tab | **WIRED** — left-of-journal SETTINGS face (`arc-desk-settings-tab`) |
 | `start-class-mark.png` | `406826ec-…` | Cursive “start class” + ArcTable quadrant | **WIRED** — ArcTable desk Start Class control (+ `public/assets/arctable/start-class-mark.png`) |
 | `calendar-date-rainbow.png` | `83aed162-…` | Teaching week header rainbow | **WIRED** — replaces interim `planner-rainbow-mark.png` |
 | `postit-stack-base.png` (+ alias `paper-tray.png`) | `da2d1234-…` | Cream paper tray / post-it stack base | **STAGED** — binary landed; tray-stack wire pending |

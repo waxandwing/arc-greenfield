@@ -511,7 +511,7 @@ try {
     })
   })
   assert(edgeTabMetrics.filter((tab) => ['DAY', 'WEEK', 'MONTH', 'YEAR'].includes(tab.name)).length === 4, 'Edge tabs must expose DAY/WEEK/MONTH/YEAR.')
-  assert(edgeTabMetrics.some((tab) => tab.name === 'SETTINGS'), 'SETTINGS must be a physical planner edge tab.')
+  assert(!edgeTabMetrics.some((tab) => tab.name === 'SETTINGS'), 'SETTINGS must not sit in the right-edge DAY/WEEK stack.')
   assert(
     edgeTabMetrics.every((tab) => tab.writingMode === 'horizontal-tb'),
     `Edge tabs must stay upright horizontal (got ${edgeTabMetrics.map((t) => t.writingMode).join(',')}).`,
@@ -522,8 +522,32 @@ try {
     monthTab.labelHeight <= 18 && monthTab.labelWidth >= 36,
     `MONTH label must stay one line (got ${monthTab.labelWidth}×${monthTab.labelHeight}).`,
   )
-  const settingsTab = page.getByTestId('arc-planner-settings-edge-tab')
+  const settingsTab = page.getByTestId('arc-desk-settings-tab')
   assert(await settingsTab.isVisible(), 'SETTINGS must protrude from the planner as a physical edge tab.')
+  assert(await settingsTab.evaluate((el) => el.classList.contains('arc-index-tab--settings-physical')), 'SETTINGS must use the physical copper tab face.')
+  assert(await page.getByTestId('arc-desk-settings-tab-face').count() === 1, 'SETTINGS face must be Kelly settings-tab.png.')
+  const settingsPlacement = await page.evaluate(() => {
+    const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
+    const planner = document.querySelector('.arc-planner-object')
+    const utility = document.querySelector('[data-testid="arc-desk-utility-tabs"] .arc-index-tab--settings')
+    if (!(settings instanceof HTMLElement) || !(planner instanceof HTMLElement)) {
+      return { ok: false, reason: 'missing nodes' }
+    }
+    const s = settings.getBoundingClientRect()
+    const p = planner.getBoundingClientRect()
+    const gripsLeft = s.left < p.left + 8 && s.right > p.left - 4
+    const verticallyOnPlanner = s.top >= p.top - 20 && s.bottom <= p.bottom + 20
+    return {
+      ok: gripsLeft && verticallyOnPlanner && !utility,
+      gripsLeft,
+      verticallyOnPlanner,
+      utilityPresent: Boolean(utility),
+      settingsLeft: Math.round(s.left),
+      plannerLeft: Math.round(p.left),
+    }
+  })
+  assert(settingsPlacement.ok, `SETTINGS must grip the journal left edge (got ${JSON.stringify(settingsPlacement)}).`)
+  assert(await page.locator('[data-testid="arc-desk-utility-tabs"] .arc-index-tab--settings').count() === 0, 'No duplicate SETTINGS in wood utility tabs.')
   const titleMark = page.getByTestId('desk-planner-rainbow-mark')
   const titleMarkSource = await titleMark.getAttribute('data-desk-mark-source')
   assert(titleMarkSource === 'canonical-calendar-date-rainbow', 'Week title mark must use Kelly calendar-date-rainbow.png.')
@@ -551,7 +575,7 @@ try {
   await shot(page, '01-desk-layout.png')
 
   await page.evaluate(() => {
-    const settings = document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')
+    const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
     settings?.click()
   })
   assert(await page.locator('.b01-settings-owner[data-state="open"]').count() === 1, 'SETTINGS edge tab must land on main Settings furniture.')
@@ -595,7 +619,7 @@ try {
   assert(dateCentered, 'Week date headers must center the date under the weekday.')
 
   await page.evaluate(() => {
-    const settings = document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')
+    const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
     settings?.click()
   })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
@@ -610,7 +634,7 @@ try {
   })
   assert(noLeftoverGap, 'Turning Desk notes strip off must remove the band without leaving a large gap.')
   await page.evaluate(() => {
-    const settings = document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')
+    const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
     settings?.click()
   })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
@@ -619,7 +643,7 @@ try {
   await page.getByTestId('planning-desk-notes-strip').waitFor({ state: 'visible', timeout: 8000 })
 
   await page.evaluate(() => {
-    const settings = document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')
+    const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
     settings?.click()
   })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })

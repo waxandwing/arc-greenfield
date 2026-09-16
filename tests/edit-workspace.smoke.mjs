@@ -109,8 +109,12 @@ async function main() {
   await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
 
   await page.evaluate(() => {
+<<<<<<< HEAD
     document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')?.click()
       || document.querySelector('button.arc-index-tab--settings')?.click()
+=======
+    document.querySelector('[data-testid="arc-desk-settings-tab"]')?.click()
+>>>>>>> 7e16c25 (fix(desk): seat SETTINGS copper tab on journal left edge)
   })
   await page.locator('.b01-settings-owner[data-state="open"]').waitFor({ state: 'attached', timeout: 8000 })
   await page.getByRole('button', { name: 'Edit Workspace', exact: true }).click()
