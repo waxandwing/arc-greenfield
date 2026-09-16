@@ -69,6 +69,42 @@ export function teachingDayHasBellTimes(schedule: TeachingDaySchedule | undefine
   return Boolean(schedule?.blocks.length && schedule.blocks.every((block) => block.startTime && block.endTime))
 }
 
+/**
+ * Pull start/end from class labels like "P1 • 8:05–9:00" or "Period 5 12:35-1:30".
+ * Returns 24-hour HH:MM for `<input type="time">`, or null when the label has no range.
+ */
+export function bellTimesFromSectionLabel(label: string): { startTime: string; endTime: string } | null {
+  const match = label.match(/(\d{1,2}:\d{2})\s*(am|pm)?\s*[–—-]\s*(\d{1,2}:\d{2})\s*(am|pm)?/i)
+  if (!match) return null
+  const startTime = toTwentyFourHour(match[1], match[2])
+  let endTime = toTwentyFourHour(match[3], match[4])
+  if (!startTime || !endTime) return null
+  // "12:35–1:30" with no meridiem: treat end as afternoon when it would otherwise precede start.
+  if (!match[2] && !match[4] && endTime <= startTime) {
+    const [hour, minute] = endTime.split(':').map(Number)
+    if (hour > 0 && hour < 12) {
+      endTime = `${String(hour + 12).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+    }
+  }
+  if (startTime >= endTime) return null
+  return { startTime, endTime }
+}
+
+function toTwentyFourHour(clock: string, meridiem?: string): string | null {
+  const parts = clock.match(/^(\d{1,2}):([0-5]\d)$/)
+  if (!parts) return null
+  let hour = Number(parts[1])
+  const minute = parts[2]
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return null
+  const suffix = meridiem?.toLowerCase()
+  if (suffix === 'am' || suffix === 'pm') {
+    if (hour < 1 || hour > 12) return null
+    if (suffix === 'am') hour = hour === 12 ? 0 : hour
+    else hour = hour === 12 ? 12 : hour + 12
+  }
+  return `${String(hour).padStart(2, '0')}:${minute}`
+}
+
 function validTime(value: string): boolean {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(value)
 }
