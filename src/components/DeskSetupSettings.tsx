@@ -33,7 +33,7 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
       {layoutCustomized ? <p className="desk-setup-hint" role="status">Your desk layout is customized.</p> : null}
 
       <label>
-        <span>Preferred default planner view</span>
+        <span>Open Arc to</span>
         <select
           value={preferences.desk.homeDeskPlannerView}
           onChange={(event) => patchDesk({ homeDeskPlannerView: event.target.value as HomeDeskPlannerView })}
@@ -41,6 +41,7 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
           {DESK_VIEWS.map((view) => <option key={view} value={view}>{HOME_DESK_PLANNER_VIEW_LABELS[view]}</option>)}
         </select>
       </label>
+      <p className="desk-setup-hint">Year is not a home view yet — Day, Week, and Month keep the teaching sequence front and center.</p>
 
       <label className="view-preferences-check">
         <input
@@ -78,10 +79,7 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
 
       <fieldset className="desk-setup-visibility">
         <legend>Show on desk</legend>
-        <label className="view-preferences-check">
-          <input type="checkbox" checked disabled aria-readonly />
-          <span>Planner (required)</span>
-        </label>
+        <p className="desk-setup-fixed-object">Planner — always on the desk</p>
         <label className="view-preferences-check">
           <input type="checkbox" checked={preferences.desk.showTray} onChange={(event) => patchDesk({ showTray: event.target.checked })} />
           <span>IDEAS</span>
@@ -96,7 +94,7 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
         </label>
         <label className="view-preferences-check">
           <input type="checkbox" checked={preferences.desk.showDeskNotes} onChange={(event) => patchDesk({ showDeskNotes: event.target.checked })} />
-          <span>Desk notes strip</span>
+          <span>Day notes</span>
         </label>
       </fieldset>
     </section>

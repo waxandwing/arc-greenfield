@@ -21,7 +21,7 @@ try {
 
   assert(await page.getByRole('heading', { name: 'Arc is where your plan lives when the plan changes.' }).isVisible(), 'First run did not begin in current Arc onboarding.')
   await shot(page, '01-welcome.png')
-  await page.getByRole('button', { name: 'Set up my teaching day' }).click()
+  await page.getByRole('button', { name: 'Set up my school year' }).click()
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-01')
   await page.locator('#last-school-day').fill('2027-05-28')

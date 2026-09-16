@@ -153,7 +153,7 @@ try {
     localStorage.removeItem('arc.captures.v1')
   })
   await page.reload({ waitUntil: 'networkidle' })
-  await page.getByRole('button', { name: 'Set up my teaching day' }).click()
+  await page.getByRole('button', { name: 'Set up my school year' }).click()
   await page.locator('#school-year-label').fill('2026–27')
   await page.locator('#first-school-day').fill('2026-09-01')
   await page.locator('#last-school-day').fill('2027-05-28')

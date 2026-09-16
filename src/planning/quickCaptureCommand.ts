@@ -54,9 +54,10 @@ export function quickCaptureDestinationLabel(kind: QuickCaptureKind): string {
 
 export function quickCaptureHintForDraft(raw: string): string {
   const trimmed = raw.trimStart()
-  if (/^u(\s|$)/i.test(trimmed)) return 'Enter saves as unit · next sticky ready'
-  if (/^l(\s|$)/i.test(trimmed)) return 'Enter saves as lesson · next sticky ready'
-  if (/^n(\s|$)/i.test(trimmed)) return 'Enter saves as note · next sticky ready'
-  if (/^i(\s|$)/i.test(trimmed)) return 'Enter saves to IDEAS · next sticky ready'
+  // Only reveal prefix destinations after the teacher has started a recognized command.
+  if (/^u\s+/i.test(trimmed)) return 'Enter saves as unit · next sticky ready'
+  if (/^l\s+/i.test(trimmed)) return 'Enter saves as lesson · next sticky ready'
+  if (/^n\s+/i.test(trimmed)) return 'Enter saves as note · next sticky ready'
+  if (/^i\s+/i.test(trimmed)) return 'Enter saves to IDEAS · next sticky ready'
   return 'Enter saves to IDEAS'
 }

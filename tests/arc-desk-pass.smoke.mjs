@@ -172,9 +172,24 @@ try {
   })
   assert(closedIdeasPeek.peekPx <= 56, `Closed IDEAS must be a slim tab peek (peek=${closedIdeasPeek.peekPx}px), not a large dim panel.`)
   assert(closedIdeasPeek.artVisibility === 'visible', 'Closed IDEAS must keep ideas-tray.png chrome so the baked IDEAS pull-tab peeks.')
-  assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Clean up lip must sit on the IDEAS tray top chrome on every desk view.')
+  assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Clean up lip must sit on the IDEAS tray lower-right chrome on every desk view.')
   assert(await page.locator('[data-testid="arc-desk-clean-up"]').count() === 1, 'Clean up must be a single affordance (no duplicate pills).')
   assert(await page.getByTestId('arc-desk-clean-up').evaluate((el) => el.classList.contains('arc-desk-clean-up--lip')), 'Clean up must be the stamped lip control, not a planning pill.')
+  const cleanUpLipBox = await page.getByTestId('arc-desk-clean-up').evaluate((el) => {
+    const style = getComputedStyle(el)
+    return {
+      left: style.left,
+      right: style.right,
+      top: style.top,
+      bottom: style.bottom,
+      boxShadow: style.boxShadow,
+      parentIsTray: Boolean(el.closest('[data-testid="arc-desk-tray-dock"]')),
+    }
+  })
+  assert(cleanUpLipBox.parentIsTray, 'Clean up must live on the IDEAS tray so park/drag keeps it attached.')
+  assert(cleanUpLipBox.left === 'auto' || Number.parseFloat(cleanUpLipBox.right) >= 0, 'Clean up must sit on the right side of the tray lip.')
+  assert(!/inset/.test(cleanUpLipBox.boxShadow), 'Clean up lip must not keep the underline stamp.')
+  assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-tray-park-top')) === '0', 'IDEAS tray must default parked at the top edge.')
   const woodMarkSrc = await page.getByTestId('arc-desk-wood-wordmark').getAttribute('src')
   assert(woodMarkSrc?.includes('arc-mark-stacked.png'), 'Wood wordmark must use Kelly original Arc stacked mark.')
   const woodMarkFilter = await page.getByTestId('arc-desk-wood-wordmark').evaluate((img) => getComputedStyle(img).filter)
@@ -526,6 +541,26 @@ try {
   assert(await settingsTab.isVisible(), 'SETTINGS must protrude from the planner as a physical edge tab.')
   assert(await settingsTab.evaluate((el) => el.classList.contains('arc-index-tab--settings-physical')), 'SETTINGS must use the physical copper tab face.')
   assert(await page.getByTestId('arc-desk-settings-tab-face').count() === 1, 'SETTINGS face must be Kelly settings-tab.png.')
+  const settingsClosedStack = await page.evaluate(() => {
+    const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
+    const planner = document.querySelector('.arc-planner-object')
+    const face = document.querySelector('[data-testid="arc-desk-settings-tab-face"]')
+    if (!(settings instanceof HTMLElement) || !(planner instanceof HTMLElement) || !(face instanceof HTMLElement)) {
+      return { ok: false, reason: 'missing nodes' }
+    }
+    const sZ = Number.parseInt(getComputedStyle(settings).zIndex, 10)
+    const pZ = Number.parseInt(getComputedStyle(planner).zIndex, 10)
+    const faceW = face.getBoundingClientRect().width
+    const expanded = settings.getAttribute('aria-expanded')
+    return {
+      ok: expanded === 'false' && Number.isFinite(sZ) && Number.isFinite(pZ) && sZ < pZ && faceW >= 52,
+      sZ,
+      pZ,
+      faceW: Math.round(faceW),
+      expanded,
+    }
+  })
+  assert(settingsClosedStack.ok, `Closed SETTINGS must tuck under planner (z) and read larger (got ${JSON.stringify(settingsClosedStack)}).`)
   const settingsPlacement = await page.evaluate(() => {
     const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
     const planner = document.querySelector('.arc-planner-object')
@@ -579,6 +614,15 @@ try {
     settings?.click()
   })
   assert(await page.locator('.b01-settings-owner[data-state="open"]').count() === 1, 'SETTINGS edge tab must land on main Settings furniture.')
+  const settingsOpenStack = await page.evaluate(() => {
+    const settings = document.querySelector('[data-testid="arc-desk-settings-tab"]')
+    const planner = document.querySelector('.arc-planner-object')
+    if (!(settings instanceof HTMLElement) || !(planner instanceof HTMLElement)) return { ok: false }
+    const sZ = Number.parseInt(getComputedStyle(settings).zIndex, 10)
+    const pZ = Number.parseInt(getComputedStyle(planner).zIndex, 10)
+    return { ok: settings.getAttribute('aria-expanded') === 'true' && sZ > pZ, sZ, pZ }
+  })
+  assert(settingsOpenStack.ok, `Open SETTINGS must come forward of planner (got ${JSON.stringify(settingsOpenStack)}).`)
   const editWorkspace = page.getByRole('button', { name: 'Arrange desk', exact: true })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
   assert(await page.getByRole('heading', { name: 'Desk setup' }).isVisible(), 'Settings must expose Desk setup IA.')

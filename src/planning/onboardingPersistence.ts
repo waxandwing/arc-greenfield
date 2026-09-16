@@ -10,7 +10,7 @@ export type OnboardingDraft = {
   schoolNcesId?: string
   calendarDraft?: CalendarHydrationInput
   planningDraft?: PlanningWorkspaceInput
-  intent?: 'guided' | 'import'
+  intent?: 'guided' | 'import' | 'simple'
 }
 
 const DEFAULT_DRAFT: OnboardingDraft = {
@@ -38,7 +38,14 @@ export function deserializeOnboardingDraft(raw: string): OnboardingDraft | null 
         : undefined,
       calendarDraft: isCalendarDraft(parsed.draft.calendarDraft) ? parsed.draft.calendarDraft : undefined,
       planningDraft: isPlanningDraft(parsed.draft.planningDraft) ? parsed.draft.planningDraft : undefined,
-      intent: parsed.draft.intent === 'import' ? 'import' : parsed.draft.intent === 'guided' ? 'guided' : undefined,
+      intent:
+        parsed.draft.intent === 'import'
+          ? 'import'
+          : parsed.draft.intent === 'guided'
+            ? 'guided'
+            : parsed.draft.intent === 'simple'
+              ? 'simple'
+              : undefined,
     }
   } catch {
     return null
