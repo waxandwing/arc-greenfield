@@ -2,7 +2,7 @@
   flex: 1;
   min-width: 0;
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-2);
   align-content: start;
 }
 
@@ -12,7 +12,7 @@
 
 .calendar-setup-confirm-copy {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   max-width: 42rem;
 }
 
@@ -29,7 +29,7 @@
 
 .calendar-setup-confirm-title {
   margin: 0;
-  font: 500 clamp(1.2rem, 1rem + 0.7vw, 1.55rem) / 1.15 var(--font-display);
+  font: 500 clamp(1.1rem, 0.95rem + 0.55vw, 1.4rem) / 1.15 var(--font-display);
   letter-spacing: -0.02em;
   color: var(--ink);
 }
@@ -40,20 +40,20 @@
 .calendar-setup-confirm-hint {
   margin: 0;
   max-width: 42rem;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  line-height: 1.45;
+  line-height: 1.4;
   color: color-mix(in srgb, var(--soft-charcoal) 88%, var(--ink));
 }
 
 .calendar-setup-confirm-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 14px;
-  margin: 2px 0 0;
+  gap: 6px 12px;
+  margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 650;
   letter-spacing: 0.02em;
   color: color-mix(in srgb, var(--soft-charcoal) 90%, var(--ink));
@@ -62,12 +62,12 @@
 .calendar-setup-confirm-legend li {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .calendar-setup-confirm-swatch {
-  width: 11px;
-  height: 11px;
+  width: 9px;
+  height: 9px;
   border-radius: 2px;
   border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
   flex: 0 0 auto;
@@ -90,31 +90,36 @@
   background: color-mix(in srgb, var(--dusty-blue) 28%, var(--paper));
 }
 
-/* Full school year visible at once — dense mini months, no in-panel scroll. */
+/*
+ * Full school year in one panel (~742×308 confirm frame).
+ * auto-fill + ~108px min → ~6 columns at frame width (2 rows for 10–12 months).
+ * No in-panel scroll; wrap densely instead.
+ */
 .calendar-setup-confirm-months {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px 10px;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 5px 6px;
   align-content: start;
-  overflow: visible;
-  margin-top: var(--space-1);
-  padding-top: var(--space-3);
+  overflow-x: hidden;
+  overflow-y: visible;
+  margin-top: 2px;
+  padding-top: var(--space-2);
   border-top: 1px solid var(--line-subtle);
 }
 
 .calendar-setup-confirm-month {
-  padding: 6px 7px 8px;
+  padding: 3px 4px 4px;
   border: 1px solid var(--line-subtle);
-  border-radius: 8px;
+  border-radius: 6px;
   background: color-mix(in srgb, var(--surface-paper) 92%, white);
   min-width: 0;
 }
 
 .calendar-setup-confirm-month-label,
 .calendar-setup-confirm-month h4 {
-  margin: 0 0 4px;
-  font: 700 10px/1.2 var(--font-label);
-  letter-spacing: 0.04em;
+  margin: 0 0 2px;
+  font: 700 0.58rem/1.15 var(--font-label);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--ink) 82%, var(--soft-charcoal));
 }
@@ -126,8 +131,9 @@
 
 .calendar-setup-confirm-weekdays span {
   padding: 0;
-  font-size: 0.58rem;
-  line-height: 1.1;
+  font-size: 0.5rem;
+  line-height: 1;
+  font-weight: 700;
   color: color-mix(in srgb, var(--soft-charcoal) 80%, var(--ink));
 }
 
@@ -136,16 +142,18 @@
   gap: 1px;
 }
 
+/* Override shared .source-calendar-day min-height:42px on ALL cells (incl. blanks). */
+.calendar-setup-confirm-grid .source-calendar-day,
 .calendar-setup-confirm-day.source-calendar-day {
   min-height: 0;
   aspect-ratio: 1;
   padding: 0;
   display: grid;
   place-items: center;
-  font-size: 0.58rem;
+  font-size: 0.5rem;
   font-weight: 650;
   line-height: 1;
-  border-radius: 2px;
+  border-radius: 1px;
 }
 
 .calendar-setup-confirm-day.is-school-day {
@@ -183,6 +191,7 @@
   border-color: color-mix(in srgb, var(--dusty-blue) 45%, var(--line-subtle));
 }
 
+.calendar-setup-confirm-grid .source-calendar-day.is-blank,
 .calendar-setup-confirm-day.is-blank {
   border-color: transparent;
   background: transparent;
@@ -192,20 +201,8 @@
   align-self: stretch;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 420px) {
   .calendar-setup-confirm-months {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 860px) {
-  .calendar-setup-confirm-months {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 560px) {
-  .calendar-setup-confirm-months {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   }
 }

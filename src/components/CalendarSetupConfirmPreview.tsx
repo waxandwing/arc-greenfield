@@ -143,7 +143,13 @@ function SetupMonthMiniGrid({
       <div className="source-calendar-grid calendar-setup-confirm-grid" role="grid" aria-label={`${label} school days`}>
         {cells.map((date, index) => {
           if (!date) {
-            return <span key={`blank-${index}`} className="source-calendar-day is-blank" role="presentation" />
+            return (
+              <span
+                key={`blank-${index}`}
+                className="source-calendar-day calendar-setup-confirm-day is-blank"
+                role="presentation"
+              />
+            )
           }
           const day = calendar.days[date]
           const dateNumber = Number(date.slice(-2))
