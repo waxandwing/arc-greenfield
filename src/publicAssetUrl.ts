@@ -19,10 +19,17 @@ const DESK_ASSET_PATHS = {
   scheduleSetupWood: 'assets/desk/light-wood-desk.png',
   /** Legacy molded tray — superseded on live desk by green folders drawer PNG. */
   blueTray: 'assets/desk/blue-molded-tray.png',
-  /** Landscape textured IDEAS drawer (preferred over tall SVG fallback). */
-  greenFoldersDrawer: 'assets/desk/green-folders-drawer.png',
+  /**
+   * IDEAS tray authority — Kelly sage drawer with baked IDEAS pull-tab
+   * (`canonical/ideas-tray.png`). Supersedes interim `green-folders-drawer.*`.
+   */
+  greenFoldersDrawer: 'assets/desk/canonical/ideas-tray.png',
+  /** TO-DOS side tab — Kelly silver brushed metal (`canonical/todos-tab.png`). */
+  todosTab: 'assets/desk/canonical/todos-tab.png',
   plannerTabMustard: 'assets/desk/planner-tab-mustard.png',
 } as const
+
+export { DESK_ASSET_PATHS }
 
 const ARCTABLE_ASSET_PATHS = {
   paperCream: 'assets/arctable/paper-cream.png',
@@ -46,6 +53,7 @@ export function applyPublicAssetCssUrls(): void {
   root.setProperty('--arc-schedule-setup-wood', publicAssetCssUrl(DESK_ASSET_PATHS.scheduleSetupWood))
   root.setProperty('--arc-desk-tray-texture', publicAssetCssUrl(DESK_ASSET_PATHS.greenFoldersDrawer))
   root.setProperty('--arc-desk-green-folders-drawer', publicAssetCssUrl(DESK_ASSET_PATHS.greenFoldersDrawer))
+  root.setProperty('--arc-desk-todos-tab', publicAssetCssUrl(DESK_ASSET_PATHS.todosTab))
   root.setProperty('--arc-desk-planner-tab-mustard', publicAssetCssUrl(DESK_ASSET_PATHS.plannerTabMustard))
   root.setProperty('--arctable-paper-cream', publicAssetCssUrl(ARCTABLE_ASSET_PATHS.paperCream))
   root.setProperty('--arctable-progress-rail', publicAssetCssUrl(ARCTABLE_ASSET_PATHS.progressRail))
