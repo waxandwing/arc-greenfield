@@ -685,7 +685,9 @@ export function AppFrame() {
       planningDragDisabled={deskEditActive}
       folderChrome={showPlanFurniture && workspaceMode.mode === 'calendar'}
       onAdd={taskBar.add}
+      onRename={taskBar.rename}
       onMove={taskBar.move}
+      onSetCompleted={taskBar.setCompleted}
       onPromoteCaptureText={promoteCaptureToPriorityLane}
     />
   ) : null

@@ -89,6 +89,13 @@ Provenance: `PROVENANCE-kelly-2026-09-16-batch2-tray-tab-magnet-paper.json`.
 
 Coordinate with batch 1 (`PROVENANCE-kelly-2026-09-16.json`) — do not overwrite those paths.
 
+## Kelly pass 2026-09-16 — IDEAS cleanup / MSC / SETTINGS edge tab
+
+- **IDEAS tray PNG** (`ideas-tray.png`): wired (batch 2 + IDEAS/TODOs ingest). Labeled SVG still outstanding.
+- **Clean up:** gathers loose accent post-its into the IDEAS tray **without** auto-opening the tray.
+- **MUST / SHOULD / COULD:** denim folder pad accepts add / rename / complete (pointer-events on folder body).
+- **SETTINGS:** physical **planner edge tab** (not wood utility). Copper `settings-tab.png` is the face authority; labeled SVG still outstanding.
+- **Do not invent** Kelly USE SVGs from crops or CSS gradients.
 ## Kelly PNG ingest batch 3 (2026-09-16) — mustard / terracotta magnets + cream paper + side-open tray
 
 Agent `bc-eba92442` · branch `cursor/desk-magnet-tray-ingest-3e6e` · provenance `PROVENANCE-kelly-2026-09-16-batch3-magnets-tray.json`
@@ -113,7 +120,7 @@ Agent `bc-f777bf61`. Provenance: `PROVENANCE-kelly-settings-start-rainbow-2026-0
 
 | Canonical PNG | Upload UUID | Role | Wire |
 |---|---|---|---|
-| `settings-tab.png` | `56d5f05f-…` | Copper brushed SETTINGS physical tab | **WIRED** — desk utility SETTINGS face |
+| `settings-tab.png` | `56d5f05f-…` | Copper brushed SETTINGS physical tab | **WIRED** — planner edge SETTINGS face (`arc-planner-settings-edge-tab`) |
 | `start-class-mark.png` | `406826ec-…` | Cursive “start class” + ArcTable quadrant | **WIRED** — ArcTable desk Start Class control (+ `public/assets/arctable/start-class-mark.png`) |
 | `calendar-date-rainbow.png` | `83aed162-…` | Teaching week header rainbow | **WIRED** — replaces interim `planner-rainbow-mark.png` |
 | `postit-stack-base.png` (+ alias `paper-tray.png`) | `da2d1234-…` | Cream paper tray / post-it stack base | **STAGED** — binary landed; tray-stack wire pending |

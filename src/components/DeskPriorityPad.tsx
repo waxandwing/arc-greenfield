@@ -12,14 +12,25 @@ const LANES: Array<{ priority: TaskPriority; label: string; short: string; folde
 type Props = {
   workspace: TaskBarWorkspace
   onAdd: (priority: TaskPriority, text: string) => void
+  onRename: (taskId: string, text: string) => void
   onMove: (taskId: string, priority: TaskPriority) => void
+  onSetCompleted: (taskId: string, completed: boolean) => void
   onPromoteCaptureText?: (captureId: string, priority: TaskPriority) => boolean
   planningDragDisabled?: boolean
   /** Kelly TO-DOS folder: vertical MUST DO / SHOULD DO / COULD DO labels only. */
   folderChrome?: boolean
 }
 
-export function DeskPriorityPad({ workspace, onAdd, onMove, onPromoteCaptureText, planningDragDisabled = false, folderChrome = false }: Props) {
+export function DeskPriorityPad({
+  workspace,
+  onAdd,
+  onRename,
+  onMove,
+  onSetCompleted,
+  onPromoteCaptureText,
+  planningDragDisabled = false,
+  folderChrome = false,
+}: Props) {
   return (
     <section
       className={`desk-priority-pad${folderChrome ? ' desk-priority-pad--folder' : ''}`}
@@ -41,7 +52,9 @@ export function DeskPriorityPad({ workspace, onAdd, onMove, onPromoteCaptureText
             tasks={tasksForPriority(workspace, lane.priority)}
             planningDragDisabled={planningDragDisabled}
             onAdd={onAdd}
+            onRename={onRename}
             onMove={onMove}
+            onSetCompleted={onSetCompleted}
             onPromoteCaptureText={onPromoteCaptureText}
           />
         ))}
@@ -50,7 +63,19 @@ export function DeskPriorityPad({ workspace, onAdd, onMove, onPromoteCaptureText
   )
 }
 
-function DeskPriorityLane({ priority, label, folderLabel, folderChrome = false, tasks, planningDragDisabled = false, onAdd, onMove, onPromoteCaptureText }: {
+function DeskPriorityLane({
+  priority,
+  label,
+  folderLabel,
+  folderChrome = false,
+  tasks,
+  planningDragDisabled = false,
+  onAdd,
+  onRename,
+  onMove,
+  onSetCompleted,
+  onPromoteCaptureText,
+}: {
   priority: TaskPriority
   label: string
   folderLabel?: string
@@ -58,7 +83,9 @@ function DeskPriorityLane({ priority, label, folderLabel, folderChrome = false, 
   tasks: TaskBarItem[]
   planningDragDisabled?: boolean
   onAdd: Props['onAdd']
+  onRename: Props['onRename']
   onMove: Props['onMove']
+  onSetCompleted: Props['onSetCompleted']
   onPromoteCaptureText?: Props['onPromoteCaptureText']
 }) {
   const [draft, setDraft] = useState('')
@@ -104,17 +131,28 @@ function DeskPriorityLane({ priority, label, folderLabel, folderChrome = false, 
       <h3 id={`desk-lane-${priority}`}>{folderChrome && folderLabel ? folderLabel : label}</h3>
       <ul className="desk-priority-list" aria-labelledby={`desk-lane-${priority}`}>
         {tasks.map((task) => (
-          <DeskPriorityTask key={task.id} task={task} planningDragDisabled={planningDragDisabled} onMove={onMove} />
+          <DeskPriorityTask
+            key={task.id}
+            task={task}
+            planningDragDisabled={planningDragDisabled}
+            onRename={onRename}
+            onMove={onMove}
+            onSetCompleted={onSetCompleted}
+          />
         ))}
       </ul>
       <label className="desk-priority-add">
         <span className="sr-only">Add to {label}</span>
         <input
+          data-testid={`desk-priority-add-${priority}`}
           value={draft}
           placeholder={`+ ${label}`}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === 'Enter') { event.preventDefault(); commitDraft() }
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              commitDraft()
+            }
           }}
         />
       </label>
@@ -122,29 +160,97 @@ function DeskPriorityLane({ priority, label, folderLabel, folderChrome = false, 
   )
 }
 
-function DeskPriorityTask({ task, planningDragDisabled = false, onMove }: { task: TaskBarItem; planningDragDisabled?: boolean; onMove: (taskId: string, priority: TaskPriority) => void }) {
+function DeskPriorityTask({
+  task,
+  planningDragDisabled = false,
+  onRename,
+  onMove,
+  onSetCompleted,
+}: {
+  task: TaskBarItem
+  planningDragDisabled?: boolean
+  onRename: (taskId: string, text: string) => void
+  onMove: (taskId: string, priority: TaskPriority) => void
+  onSetCompleted: (taskId: string, completed: boolean) => void
+}) {
   const [lifting, setLifting] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(task.text)
+
+  function finishEdit() {
+    const text = draft.trim()
+    if (text && text !== task.text) onRename(task.id, text)
+    else setDraft(task.text)
+    setEditing(false)
+  }
 
   return (
     <li
-      className={`desk-priority-task${lifting ? ' desk-priority-task--lift' : ''}${task.important ? ' desk-priority-task--important' : ''}`}
-      draggable={!planningDragDisabled}
+      className={`desk-priority-task${lifting ? ' desk-priority-task--lift' : ''}${task.important ? ' desk-priority-task--important' : ''}${task.completed ? ' desk-priority-task--completed' : ''}`}
+      data-testid={`desk-priority-task-${task.id}`}
+      data-completed={task.completed ? 'true' : 'false'}
+      draggable={!planningDragDisabled && !editing}
       onDragStart={(event) => {
-        if (planningDragDisabled) {
+        if (planningDragDisabled || editing) {
           event.preventDefault()
           return
         }
         setLifting(true)
         event.dataTransfer.effectAllowed = 'move'
-        event.dataTransfer.setData(DESK_PRIORITY_DRAG_MIME, encodeDeskPriorityDrag({
-          kind: 'task',
-          taskId: task.id,
-          fromPriority: task.priority ?? 'could',
-        }))
+        event.dataTransfer.setData(
+          DESK_PRIORITY_DRAG_MIME,
+          encodeDeskPriorityDrag({
+            kind: 'task',
+            taskId: task.id,
+            fromPriority: task.priority ?? 'could',
+          }),
+        )
       }}
       onDragEnd={() => setLifting(false)}
     >
-      <span>{task.text}</span>
+      <label className="desk-priority-complete">
+        <input
+          type="checkbox"
+          data-testid={`desk-priority-complete-${task.id}`}
+          checked={task.completed}
+          onChange={(event) => onSetCompleted(task.id, event.target.checked)}
+        />
+        <span className="sr-only">
+          {task.completed ? 'Mark task not complete' : 'Mark task complete'}: {task.text}
+        </span>
+      </label>
+      {editing ? (
+        <input
+          className="desk-priority-edit-input"
+          data-testid={`desk-priority-edit-${task.id}`}
+          autoFocus
+          value={draft}
+          aria-label={`Edit task ${task.text}`}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={finishEdit}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              finishEdit()
+            }
+            if (event.key === 'Escape') {
+              event.preventDefault()
+              setDraft(task.text)
+              setEditing(false)
+            }
+          }}
+        />
+      ) : (
+        <button
+          type="button"
+          className="desk-priority-task-text"
+          data-testid={`desk-priority-task-text-${task.id}`}
+          onClick={() => setEditing(true)}
+          aria-label={`Edit task ${task.text}`}
+        >
+          <span>{task.text}</span>
+        </button>
+      )}
       <select
         className="desk-priority-task-move sr-only-focusable"
         value={task.priority ?? 'could'}
