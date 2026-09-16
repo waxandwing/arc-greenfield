@@ -36,13 +36,20 @@ Aggressive hunt confirmed **no** Kelly labeled SVG binaries (Drive/Gmail/git/`up
 
 Do **not** invent replacements from screenshot crops, CSS gradients, tiny generated magnet SVGs, or previously wired approximations and claim Kelly labeled authority.
 
-## Planning Period desk audit (2026-09-16) — still BLOCKED
+## Planning Period desk audit (2026-09-16)
 
-Kelly selected `.arc-desk-surface` on Planning Period and asked to find correct assets. Third hunt (uploads / Drive / Gmail / branches / zips / worktrees) again found **zero** of the 22 labeled SVG binaries.
+Labeled **SVG** pack still absent. Kelly chat **PNG** ingest landed in this folder (see `PROVENANCE-kelly-ideas-todos-2026-09-16.json`):
 
-**No P0 wires shipped** for this view (rule: do not CSS-fake). Object → asset map + blocking filenames: `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md` § Planning Period view.
+| File | Role | Wire |
+|---|---|---|
+| `todos-tab.png` | Silver TODOs side tab (USE-intent PNG) | Wire as TO-DOS tab face |
+| `ideas-tray.png` | Sage IDEAS drawer with pull-tab | Wire as IDEAS tray art |
+| `settings-tab.png` | SETTINGS physical tab | Wire as planner SETTINGS edge tab |
 
-Planning Period blockers: `TODO tab (use).svg`, `tray image (use).svg`, `Settings tab (USE).svg`, `calendar selected tab view.svg`, `unselected calendar states.svg`, `Wood Background Light.svg`, `calendar background.svg`.
+Behavior (this pass): Clean up keeps IDEAS closed; MUST/SHOULD/COULD add/edit/complete; SETTINGS is a planner edge tab landing on main Settings. Do **not** claim SVG labeled authority from these PNGs.
+
+SVG blockers remain: `TODO tab (use).svg`, `tray image (use).svg`, `Settings tab (USE).svg`, calendar tab SVGs, wood SVG, etc.
+
 ## Binary handoff status
 
 **BLOCKED — binaries not in repo.** Only this README (filename → canonical map) ships here until the 22 originals land in `uploads/desk-incoming/` and are copied into this folder.
@@ -50,10 +57,10 @@ Planning Period blockers: `TODO tab (use).svg`, `tray image (use).svg`, `Setting
 | Canonical file | Original labeled source | Intended role | Authority | Wire status |
 |---|---|---|---|---|
 | `wood-background-light.svg` | `Wood Background Light.svg` | light wood desk surface | canonical candidate | **BLOCKED** — binary missing |
-| `ideas-tray.svg` | `tray image (use).svg` | IDEAS tray/drawer | **USE / canonical** | **BLOCKED** — binary missing |
+| `ideas-tray.svg` | `tray image (use).svg` | IDEAS tray/drawer | **USE / canonical** | **BLOCKED** — SVG missing; **PNG interim** `ideas-tray.png` wired |
 | `ideas-tray-vector-alt.svg` | `Ideas Tray Vector.svg` | simplified/alternate tray | reference only | **BLOCKED** — binary missing |
-| `settings-tab.svg` | `Settings tab (USE).svg` | SETTINGS physical tab | **USE / canonical** | **BLOCKED** — binary missing |
-| `todos-tab.svg` | `TODO tab (use).svg` | TO-DOS physical tab | **USE / canonical** | **BLOCKED** — binary missing |
+| `settings-tab.svg` | `Settings tab (USE).svg` | SETTINGS physical tab | **USE / canonical** | **BLOCKED** — SVG missing; **PNG interim** `settings-tab.png` wired |
+| `todos-tab.svg` | `TODO tab (use).svg` | TO-DOS physical tab | **USE / canonical** | **BLOCKED** — SVG missing; **PNG interim** `todos-tab.png` wired |
 | `todos-tab-alt.svg` | `TODOS tab.svg` | alternate/legacy TO-DOS reference | reference only | **BLOCKED** — binary missing |
 | `calendar-tab-selected.svg` | `calendar selected tab view.svg` | selected planner-view tab body | canonical | **BLOCKED** — binary missing |
 | `calendar-tab-unselected.svg` | `unselected calendar states.svg` | inactive planner-view tab body | canonical | **BLOCKED** — binary missing |

@@ -217,6 +217,16 @@ try {
   assert(await page.getByTestId('desk-slice-todos-tab').count() === 1, 'TO-DOS side tab slice must render on denim folder edge.')
   assert((await page.getByTestId('arc-desk-todos-folder').getAttribute('data-extended')) === 'true', 'TO-DOS denim folder stays visible.')
   assert(await page.getByTestId('desk-priority-pad').isVisible(), 'MSC pad must render inside denim TO-DOS folder.')
+  // MUST / SHOULD / COULD must accept add + complete (pointer-events on folder body).
+  const mustAdd = page.getByTestId('desk-priority-add-must')
+  assert(await mustAdd.isVisible(), 'MUST lane add input must be interactive.')
+  await mustAdd.fill('Kelly must demo task')
+  await mustAdd.press('Enter')
+  const mustTask = page.getByTestId('desk-priority-lane-must').getByRole('button', { name: /Edit task Kelly must demo task/ })
+  assert(await mustTask.count() === 1, 'MUST lane must accept added tasks.')
+  const mustComplete = page.getByTestId('desk-priority-lane-must').locator('input[type="checkbox"]').last()
+  await mustComplete.check()
+  assert(await page.getByTestId('desk-priority-lane-must').locator('[data-completed="true"]').count() >= 1, 'MUST tasks must be completable.')
   // Accent post-its sit near the top edge; DOM click avoids pointer intercept on the slim tab.
   await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
   assert(await page.getByTestId('arc-desk-tray-dock').locator('.workspace-capture-card', { hasText: 'Field trip idea' }).count() === 1, 'Capture must appear in IDEAS/tray dock when extended.')
@@ -440,12 +450,15 @@ try {
   assert(yearIdeasPeek.peekPx <= 64, `Year IDEAS closed peek must stay a slim tab (peek=${yearIdeasPeek.peekPx}px).`)
   await selectView(page, 'Week')
 
-  // Clean up gathers loose accent post-its back into the IDEAS drawer well.
+  // Clean up gathers loose accent post-its into the closed IDEAS tray (must not auto-open).
   await page.getByTestId('arc-desk-clean-up-tab').click()
-  assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true', 'Clean up must open the IDEAS drawer.')
+  assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'false', 'Clean up must keep the IDEAS tray closed.')
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-mustard"]').count() === 1, 'Clean up must move mustard accent into IDEAS.')
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'Clean up must move pink accent into IDEAS.')
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-blue"]').count() === 1, 'Clean up must move blue accent into IDEAS.')
+  // Open tray only via IDEAS tab to inspect the well / in-drawer Clean up control.
+  await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true', 'IDEAS tab must open the tray after Clean up.')
   assert(await page.getByTestId('arc-desk-clean-up').isVisible(), 'Open IDEAS well must expose Clean up.')
   // Tray stickies stay normal paper accents (writable + lesson mark), not locked tray chrome.
   const trayBlue = page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-blue"]')
@@ -491,7 +504,8 @@ try {
       }
     })
   })
-  assert(edgeTabMetrics.length === 4, 'Edge tabs must expose DAY/WEEK/MONTH/YEAR.')
+  assert(edgeTabMetrics.filter((tab) => ['DAY', 'WEEK', 'MONTH', 'YEAR'].includes(tab.name)).length === 4, 'Edge tabs must expose DAY/WEEK/MONTH/YEAR.')
+  assert(edgeTabMetrics.some((tab) => tab.name === 'SETTINGS'), 'SETTINGS must be a physical planner edge tab.')
   assert(
     edgeTabMetrics.every((tab) => tab.writingMode === 'horizontal-tb'),
     `Edge tabs must stay upright horizontal (got ${edgeTabMetrics.map((t) => t.writingMode).join(',')}).`,
@@ -502,8 +516,11 @@ try {
     monthTab.labelHeight <= 18 && monthTab.labelWidth >= 36,
     `MONTH label must stay one line (got ${monthTab.labelWidth}×${monthTab.labelHeight}).`,
   )
-  const settingsTab = page.getByTestId('arc-desk-utility-tabs').getByRole('button', { name: 'SETTINGS', exact: true })
-  assert(await settingsTab.isVisible(), 'SETTINGS must stay visible on wood, away from edge tabs.')
+  const settingsTab = page.getByTestId('arc-planner-settings-edge-tab')
+  assert(await settingsTab.isVisible(), 'SETTINGS must protrude from the planner as a physical edge tab.')
+  await settingsTab.click()
+  assert(await page.locator('.b01-settings-owner[data-state="open"]').count() === 1, 'SETTINGS edge tab must land on main Settings furniture.')
+  await page.locator('.b01-settings-owner[data-state="open"] button[aria-label="Close Settings"]').click()
   const titleMark = page.getByTestId('desk-planner-rainbow-mark')
   const titleMarkSource = await titleMark.getAttribute('data-desk-mark-source')
   assert(titleMarkSource === 'committed-png', 'Week title mark must use committed planner-rainbow-mark.png.')
@@ -531,7 +548,7 @@ try {
   await shot(page, '01-desk-layout.png')
 
   await page.evaluate(() => {
-    const settings = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')
+    const settings = document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')
     settings?.click()
   })
   const editWorkspace = page.getByRole('button', { name: 'Edit Workspace', exact: true })
@@ -574,7 +591,7 @@ try {
   assert(dateCentered, 'Week date headers must center the date under the weekday.')
 
   await page.evaluate(() => {
-    const settings = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')
+    const settings = document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')
     settings?.click()
   })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
@@ -589,7 +606,7 @@ try {
   })
   assert(noLeftoverGap, 'Turning Desk notes strip off must remove the band without leaving a large gap.')
   await page.evaluate(() => {
-    const settings = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')
+    const settings = document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')
     settings?.click()
   })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
@@ -598,7 +615,7 @@ try {
   await page.getByTestId('planning-desk-notes-strip').waitFor({ state: 'visible', timeout: 8000 })
 
   await page.evaluate(() => {
-    const settings = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--settings')
+    const settings = document.querySelector('[data-testid="arc-planner-settings-edge-tab"]')
     settings?.click()
   })
   await editWorkspace.waitFor({ state: 'visible', timeout: 8000 })
