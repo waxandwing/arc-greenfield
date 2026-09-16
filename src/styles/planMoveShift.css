@@ -33,6 +33,29 @@
 .plan-move-grid section:first-child{border-left:0}
 .plan-move-fixed{color:var(--terracotta);font-weight:700}
 .plan-move-confirm{margin-top:var(--space-5)}
+.plan-place-off-notice{
+  display:grid;
+  gap:var(--space-3);
+  margin-top:var(--space-5);
+  padding:var(--space-4);
+  border-left:3px solid var(--dusty-blue);
+  background:color-mix(in srgb, var(--accent-blue-soft) 70%, #fff);
+}
+.plan-place-off-notice p{margin:0;line-height:1.45}
+.plan-place-actions{flex-wrap:wrap}
+.plan-place-library{margin-top:var(--space-6);padding-top:var(--space-5);border-top:1px solid var(--line-subtle)}
+.plan-place-library h3{margin:0 0 var(--space-3);font:600 18px/1.2 var(--font-editorial)}
+.plan-place-library-empty{margin:0;color:var(--soft-charcoal);font-size:14px;line-height:1.4}
+.plan-place-library-list{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-3)}
+.plan-place-library-list li{
+  display:flex;
+  flex-wrap:wrap;
+  gap:var(--space-3);
+  align-items:center;
+  justify-content:space-between;
+  padding:var(--space-3) 0;
+  border-bottom:1px solid var(--line-subtle);
+}
 .plan-lesson-action-row{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center}
 .planning-lesson-actions{margin-top:6px;display:flex;gap:var(--space-3);flex-wrap:wrap}
 @media (max-width:900px){

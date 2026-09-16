@@ -93,6 +93,11 @@ import { buildKellyDeskDemoBundle } from '../demo/kellyDeskDemo'
 import { GAUNTLET_DEMO_CALENDAR_ID } from '../demo/gauntletDemo'
 import { deskPreviewBuildEnabled } from '../buildInfo'
 import { requestDeskIdeasOpen } from '../desk/deskIdeasEvents'
+import {
+  buildLessonCreateSeed,
+  type LessonCreateSeed,
+  type PlanPlaceLessonIntent,
+} from '../planning/planPlaceLesson'
 
 export function AppFrame() {
   const workspaceMode = useWorkspaceMode()
@@ -113,6 +118,8 @@ export function AppFrame() {
   const [tasksOverlayOpen, setTasksOverlayOpen] = useState(false)
   const [recoveryFocusSectionId, setRecoveryFocusSectionId] = useState<string | null>(null)
   const [lessonSetupFocusId, setLessonSetupFocusId] = useState<string | null>(null)
+  const [planPlaceIntent, setPlanPlaceIntent] = useState<PlanPlaceLessonIntent | null>(null)
+  const [lessonCreateSeed, setLessonCreateSeed] = useState<LessonCreateSeed | null>(null)
   const [revealUnscheduledLessonId, setRevealUnscheduledLessonId] = useState<string | null>(null)
   const [workspaceLayout, setWorkspaceLayout] = useState<WorkspaceLayoutState>(loadWorkspaceLayout)
   const [stackWorkspace, setStackWorkspace] = useState<StackWorkspace | null>(null)
@@ -268,6 +275,34 @@ export function AppFrame() {
   function openLessonForEdit(lessonId: string) {
     setLessonSetupFocusId(lessonId)
     openUnitLessonLibrary('lessons')
+  }
+
+  function beginPlanPlaceLesson(intent: PlanPlaceLessonIntent) {
+    setPlanPlaceIntent(intent)
+  }
+
+  function cancelPlanPlaceLesson() {
+    setPlanPlaceIntent(null)
+  }
+
+  function createLessonFromSlot(_acknowledgedOffDay: boolean) {
+    if (!planPlaceIntent || !workspace.calendar) return
+    const seed = buildLessonCreateSeed(planPlaceIntent, workspace.calendar)
+    setLessonCreateSeed(seed)
+    setLessonSetupFocusId(null)
+    setPlanPlaceIntent(null)
+    openUnitLessonLibrary('lessons')
+  }
+
+  function placeUnscheduledFromSlot(lessonId: string) {
+    if (!planPlaceIntent) return
+    try {
+      scheduleLessonFromFridge(lessonId, planPlaceIntent.date)
+      setPlanPlaceIntent(null)
+      workspace.setStorageNotice('Lesson placed on the selected date.')
+    } catch (error) {
+      workspace.setStorageNotice(error instanceof Error ? error.message : String(error))
+    }
   }
 
   function showUnscheduledInIdeas(lessonId: string) {
@@ -921,6 +956,13 @@ export function AppFrame() {
       onBeginPlanLessonMove={workspace.beginPlanLessonMove}
       onCancelPlanLessonMove={workspace.cancelPlanLessonMove}
       onConfirmPlanLessonMove={workspace.confirmPlanLessonMove}
+      planPlaceIntent={planPlaceIntent}
+      onBeginPlanPlaceLesson={beginPlanPlaceLesson}
+      onCancelPlanPlaceLesson={cancelPlanPlaceLesson}
+      onCreateLessonFromSlot={createLessonFromSlot}
+      onPlaceUnscheduledFromSlot={placeUnscheduledFromSlot}
+      lessonCreateSeed={lessonCreateSeed}
+      onConsumeLessonCreateSeed={() => setLessonCreateSeed(null)}
       onOpenRecoveryForSection={(sectionId) => openRecovery(sectionId)}
       recoveryFocusSectionId={recoveryFocusSectionId}
       onEditLesson={openLessonForEdit}

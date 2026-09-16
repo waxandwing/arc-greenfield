@@ -20,6 +20,13 @@
 .lesson-field-grid label,.delivery-row label{display:grid;gap:6px;font-weight:600}
 .lesson-field-grid label>span,.delivery-row label>span{font-size:13px;color:var(--soft-charcoal)}
 .lesson-date-policy-note{margin:var(--space-4) 0 0;max-width:760px;font-size:13px;line-height:1.5;color:var(--soft-charcoal);padding-left:12px;border-left:2px solid rgba(201,104,69,.45)}
+.lesson-off-day-notice{
+  margin:0 0 var(--space-5);
+  padding:var(--space-4);
+  border-left:3px solid var(--dusty-blue);
+  background:color-mix(in srgb, var(--accent-blue-soft) 70%, #fff);
+}
+.lesson-off-day-notice p{margin:0;line-height:1.45;max-width:760px}
 .lesson-section-progress{display:grid;gap:0;background:transparent;margin-top:var(--space-2)}
 .delivery-row{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(140px,.85fr) minmax(150px,.9fr) minmax(240px,1.6fr);gap:var(--space-3);align-items:end;padding:var(--space-4) 0;border-top:1px solid var(--line-subtle)}
 .delivery-row:first-of-type{border-top:1px solid var(--line-subtle)}
