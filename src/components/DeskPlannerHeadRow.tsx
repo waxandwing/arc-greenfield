@@ -35,7 +35,7 @@ export function DeskPlannerHeadRow({
   const titleMarkUrl = deskPlannerTitleMarkUrl()
 
   return (
-    <div className="desk-planner-head-row" data-testid="desk-planner-head-row">
+    <div className="desk-planner-head-row" data-testid="desk-planner-head-row" data-plan-focus={planState.focus}>
       <div className="desk-planner-head-title-cluster">
         {showRainbowMark ? (
           <img

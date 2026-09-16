@@ -50,9 +50,10 @@ type Props = {
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
   onMoveCaptureToDate?: (captureId: string, anchorDate: ISODate | null) => boolean
+  onEditLesson?: (lessonId: string) => void
 }
 
-export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending = false, captureWorkspace = null, dayNotes, showDeskNotes = false, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection, onMoveCaptureToDate }: Props) {
+export function CalendarProjectionView({ view, calendar, anchorDate, planningContext, planContext, showWeekends = false, onStartClass, onSelectDate, onSelectYearUnit, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onOpenWorkspace, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending = false, captureWorkspace = null, dayNotes, showDeskNotes = true, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection, onMoveCaptureToDate, onEditLesson }: Props) {
   if (!calendar || !anchorDate) {
     return (
       <section className="calendar-unconfigured" aria-label="Calendar not configured">
@@ -85,6 +86,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
           onSetLessonImportant={onSetLessonImportant}
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
+          onEditLesson={onEditLesson}
           termContext={<TermContext quarters={projection.quarter ? [projection.quarter] : []} semesters={projection.semester ? [projection.semester] : []} />}
         />
       )
@@ -227,7 +229,7 @@ export function CalendarProjectionView({ view, calendar, anchorDate, planningCon
   }
 }
 
-function PlanningDayStrip({ title, day, planningContext, planContext, termContext, onStartClass, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending, captureWorkspace, dayNotes, showDeskNotes = false, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection }: {
+function PlanningDayStrip({ title, day, planningContext, planContext, termContext, onStartClass, onSelectTeachingBlock, onSelectLesson, onRetreatPlanFocus, onFollowPlanningAttention, onReturnToPlanningPeriod, planningPeriodReturnPending, captureWorkspace, dayNotes, showDeskNotes = false, onSetLessonImportant, onBeginPlanLessonMove, onOpenRecoveryForSection, onOpenWorkspace, onEditLesson }: {
   title: string
   day: ProjectedDay
   planningContext?: PlanningContext | null
@@ -247,6 +249,7 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
   onBeginPlanLessonMove?: Props['onBeginPlanLessonMove']
   onOpenRecoveryForSection?: Props['onOpenRecoveryForSection']
+  onEditLesson?: (lessonId: string) => void
 }) {
   const noteHandlers: CalendarDayNoteHandlers = {
     onAdd: dayNotes?.onAdd,
@@ -303,6 +306,8 @@ function PlanningDayStrip({ title, day, planningContext, planContext, termContex
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onSetLessonImportant={onSetLessonImportant}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
+          onEditLesson={onEditLesson}
+          onOpenWorkspace={onOpenWorkspace}
         />
         </>
       ) : (

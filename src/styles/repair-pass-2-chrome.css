@@ -120,6 +120,10 @@
   font-size: 14px;
 }
 
+.plan-lesson-action-row .lesson-focus-edit {
+  order: -2;
+}
+
 .plan-lesson-action-row .day-start-class {
   order: -1;
 }

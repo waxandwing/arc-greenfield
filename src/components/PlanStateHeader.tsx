@@ -55,11 +55,14 @@ function kickerLine(props: {
   blockLabel?: string | null
   blockType?: 'teaching' | 'planning' | 'non-teaching' | null
 }) {
-  if (props.focus === 'lesson') return 'Lesson focus'
+  // Lesson title is the primary; kicker is where you are — never a mode stamp like "Lesson focus".
+  if (props.focus === 'lesson') {
+    return [props.sectionName, props.courseTitle].filter(Boolean).join(' · ') || 'Lesson'
+  }
   if (props.focus === 'class' && props.blockType === 'planning') return 'Planning period'
   if (props.focus === 'class' && props.blockType === 'non-teaching') return props.blockLabel ?? 'Non-teaching time'
-  if (props.focus === 'class') return [props.sectionName, props.courseTitle].filter(Boolean).join(' · ') || 'Class focus'
-  return 'Teaching focus'
+  if (props.focus === 'class') return [props.sectionName, props.courseTitle].filter(Boolean).join(' · ') || 'Class'
+  return 'Teaching Day'
 }
 
 function primaryLine(props: {
@@ -106,7 +109,8 @@ function secondaryLine(props: {
   if (props.view === 'Month') return props.monthLabel ?? dateLabel
   if (props.view === 'Year Map') return props.yearLabel ?? dateLabel
   if (props.focus === 'lesson') {
-    return [props.sectionName, props.courseTitle, props.unitTitle, dateLabel].filter(Boolean).join(' · ')
+    // Section/course already live in the kicker; keep secondary as unit + date only.
+    return [props.unitTitle, dateLabel].filter(Boolean).join(' · ')
   }
   if (props.focus === 'class' && props.blockType === 'planning') {
     return [props.blockLabel, dateLabel].filter(Boolean).join(' · ')

@@ -202,7 +202,7 @@
 }
 
 .planning-grid:not(.planning-grid--day) .planning-day-slot {
-  border-right-color: transparent;
+  border-right-color: color-mix(in srgb, var(--shell-frame-green) 28%, var(--line-subtle));
 }
 
 .planning-grid:not(.planning-grid--day) .planning-date-header {
@@ -279,7 +279,7 @@
 }
 
 .day-continuity[data-plan-focus='class'] .day-continuity-course--focus {
-  padding: var(--space-4) var(--space-3);
+  padding: var(--space-3) var(--space-3);
   border-left-width: 8px;
   box-shadow: inset 0 0 0 1px rgba(74, 102, 120, 0.12);
 }
@@ -290,7 +290,7 @@
 
 .day-continuity[data-plan-focus='lesson'] .lesson-focus {
   margin-top: var(--space-2);
-  padding: 32px 40px 24px;
+  padding: 20px 28px 16px;
   border-left-width: 8px;
   box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.8);
 }

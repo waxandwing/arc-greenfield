@@ -31,16 +31,20 @@ type Props = {
   units: UnitWorkspace
   shiftState: ShiftPersistenceInput | null
   initialValue: LessonWorkspaceInput | null
+  focusLessonId?: string | null
   onSave: (input: LessonWorkspaceInput, workspace: LessonWorkspace, shiftState: ShiftPersistenceInput) => void
   onCancel: () => void
 }
 
-export function LessonSetup({ calendar, planning, units, shiftState, initialValue, onSave, onCancel }: Props) {
+export function LessonSetup({ calendar, planning, units, shiftState, initialValue, focusLessonId = null, onSave, onCancel }: Props) {
   const [lessons, setLessons] = useState<Lesson[]>(() => initialValue?.lessons.map((lesson) => ({ ...lesson })) ?? [])
   const [deliveryStates, setDeliveryStates] = useState<LessonDeliveryState[]>(() => initialValue?.deliveryStates.map((state) => ({ ...state })) ?? [])
   const [overrides, setOverrides] = useState(() => shiftState?.overrides.map((override) => ({ ...override })) ?? [])
   const [shiftChanged, setShiftChanged] = useState(false)
-  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(() => initialValue?.lessons[0]?.id ?? null)
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(() => {
+    if (focusLessonId && initialValue?.lessons.some((lesson) => lesson.id === focusLessonId)) return focusLessonId
+    return initialValue?.lessons[0]?.id ?? null
+  })
   const [errors, setErrors] = useState<string[]>([])
   const [actionNotice, setActionNotice] = useState<string | null>(null)
 
