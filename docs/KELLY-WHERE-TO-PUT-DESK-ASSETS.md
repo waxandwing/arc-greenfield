@@ -86,11 +86,22 @@ The **`uploads/`** folder at the repo root is your **staging area**. It is meant
 
 ---
 
-## Labeled SVG pack (22 files) — required for P0 desk wires
+## Labeled SVG pack (22 files) — **current major blocker**
 
-Agents cannot find these on Drive/Gmail/git. **Put them in `uploads/desk-incoming/`** (preserve exact names, including `(USE)`). Checklist: `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md`. Canonical rename map: `public/assets/desk/canonical/README.md`.
+Agents cannot find these on Drive/Gmail/git. This is the **#1 visual blocker** after the 2026-09-16 re-audit (YELLOW/RED — improved from RED). Title/kicker/rainbow/3-course week are already landed; **do not** treat those as still missing.
 
-Priority examples: `Settings tab (USE).svg`, `TODO tab (use).svg`, `tray image (use).svg`, `Wood Background Light.svg`, `calendar background.svg`, magnet / rainbow / today / start-class SVGs from the handoff.
+**Put the 22 files (or one zip) in `uploads/desk-incoming/`** — preserve exact names, including `(USE)`.
+
+| Doc | Purpose |
+|-----|---------|
+| `uploads/desk-incoming/KELLY-DROP-22-LABELED-SVGS-HERE.txt` | Plain-English drop instructions |
+| `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md` | Exact 22 filenames + wire order |
+| `uploads/desk-incoming/README.txt` | Folder overview |
+| `public/assets/desk/canonical/README.md` | Canonical rename map (**BLOCKED** until binaries land) |
+
+Priority (USE): `Settings tab (USE).svg`, `TODO tab (use).svg`, `tray image (use).svg`, `Wood Background Light.svg`, plus calendar tabs/bg, magnets, rainbow, today, start-class from the checklist.
+
+After push to `main`, ask: **“Incorporate Kelly labeled SVGs from uploads/desk-incoming”**.
 
 ---
 

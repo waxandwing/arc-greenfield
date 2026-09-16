@@ -1,6 +1,11 @@
 Kelly desk asset drop folder
 ==============================
 
+************************************************************************
+** KELLY: PUT THE 22 LABELED SVGs IN THIS FOLDER — uploads/desk-incoming/
+** See KELLY-DROP-22-LABELED-SVGS-HERE.txt + LABELED-SVG-CHECKLIST.md
+************************************************************************
+
 **PRIMARY DROP PATH FOR LABELED SVGs:** this folder — `uploads/desk-incoming/`
 
 Put new desk PNGs, SVGs, or exports here when you are not sure of the final folder.
@@ -13,7 +18,7 @@ Steps to get your files onto GitHub so an agent can use them:
   3. In Terminal, from the repo root: git add uploads/desk-incoming/
   4. Commit: git commit -m "Add Kelly desk assets to incoming drop folder"
   5. Push: git push origin main
-  6. In Cursor, ask: "Incorporate the desk assets in uploads/desk-incoming"
+  6. In Cursor, ask: "Incorporate Kelly labeled SVGs from uploads/desk-incoming"
 
 An agent will move files into public/assets/desk/, public/assets/desk/slices/,
 public/assets/desk/figma/, public/assets/desk/canonical/, public/assets/arc/icarus/,
@@ -24,28 +29,35 @@ Example line for the list below:
 
 Files in this folder (update this list when you add assets):
 
-  kelly-desk-v3-preview-repair-2026-08-03.png — CURRENT APP DISPLAY (broken baseline, not visual target); evidence copy at docs/overnight/evidence/kelly-current-display-2026-08-03.png — see docs/overnight/KELLY-CURRENT-VS-TARGET.md
-  LABELED-SVG-CHECKLIST.md — checklist of the 22 expected Kelly labeled SVG filenames + P0 wiring stubs
+  KELLY-DROP-22-LABELED-SVGS-HERE.txt — plain-English drop instructions (READ FIRST)
+  LABELED-SVG-CHECKLIST.md — exact 22 filenames + wiring order
+  kelly-desk-v3-preview-repair-2026-08-03.png — CURRENT APP DISPLAY baseline only (not visual target)
 
 Teaching week zip (Teaching_week__1__01fd.zip) — extracted to teaching-week-1/:
-  Only 1.png (full comp) + 2.png (blank). The app uses REAL files from public/assets/desk/ — not crops from 1.png — unless a developer turns on comp-crop mode.
-  Please add a separate export pack here: one PNG or SVG per layer (IDEAS drawer, TO-DOS folder, planner tabs, frame accents, title mark). See docs/overnight/TEACHING-WEEK-ASSETS-HONESTY.md.
+  Only 1.png (full comp) + 2.png (blank). Comp crops are opt-in only.
+  The labeled SVG pack is SEPARATE from this zip — drop the 22 SVGs here.
 
 ========================================================================
 BLOCKED — Kelly labeled SVG pack (22 files) — drop HERE
 ========================================================================
 
-Re-hunt 2026-09-16 confirmed the 22 labeled source SVGs are still missing from:
-  git (incl. asset-reconciliation-labeled-svgs), Drive (only 2 unrelated legacy SVGs),
-  Gmail, uploads/, public/assets/, /tmp artifacts, LFS, and Skin Lab zips.
+Re-audit 2026-09-16: visual grade improved RED → YELLOW/RED, but the
+22 labeled source SVGs are STILL MISSING. That is the major blocker.
+
+Already landed (do NOT treat as current fails):
+  Teaching week title, week kicker, rainbow mark, 3-course week grid.
+
+Still blocked until you drop binaries:
+  Wood / tray / Settings+TO-DOS tabs / calendar tabs / calendar bg /
+  rainbow SVG / today / start-class / magnets — then pixel gate.
 
 Planning Period audit (same day): Kelly selected .arc-desk-surface — photographic
 TO-DOS strip, IDEAS green pill, SETTINGS, edge-tab PNG crops, wood, planner buckets
 all still blocked. See LABELED-SVG-CHECKLIST.md § Planning Period view. No wires /
 CSS fakes until binaries land.
 
-Exact expected filenames are listed in LABELED-SVG-CHECKLIST.md. Highest priority (USE)
-for Planning Period:
+Exact expected filenames: LABELED-SVG-CHECKLIST.md
+Highest priority (USE) for Planning Period + Teaching week:
 
   - TODO tab (use).svg
   - tray image (use).svg
@@ -62,4 +74,5 @@ Also needed for full P0 pack:
   - today button.svg / today highlighter icon.svg
 
 Preserve exact names (incl. "(USE)"). A single zip is fine.
-Agents rename into public/assets/desk/canonical/ and wire P0 1–9 — they must NOT invent fake Kelly art.
+Agents rename into public/assets/desk/canonical/ and wire in order —
+they must NOT invent fake Kelly art or prettier CSS on wrong assets.

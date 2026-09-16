@@ -1,0 +1,38 @@
+========================================================================
+KELLY — DROP THE 22 LABELED SVGs HERE
+========================================================================
+
+Folder:  uploads/desk-incoming/   (this folder, repo root)
+
+This is the ONLY place agents look for the labeled SVG pack.
+Do not email Drive links as the only copy. Do not invent replacements.
+
+WHAT TO DROP
+  The 22 source SVGs from your labeled handoff (exact names).
+  A single .zip containing those files is fine.
+
+MUST INCLUDE (USE / highest priority)
+  Settings tab (USE).svg
+  TODO tab (use).svg
+  tray image (use).svg
+  Wood Background Light.svg
+
+FULL NAME LIST
+  See LABELED-SVG-CHECKLIST.md in this same folder (all 22 names).
+
+AFTER YOU DROP
+  1. git add uploads/desk-incoming/
+  2. git commit -m "Add Kelly labeled SVG pack (22) to desk-incoming"
+  3. git push origin main
+  4. Tell Cursor: Incorporate Kelly labeled SVGs from uploads/desk-incoming
+
+AGENTS MUST NOT
+  Invent wood / tray / tab / magnet / rainbow SVGs
+  Claim Kelly labeled authority from crops or CSS stand-ins
+  Mark canonical wires DONE while binaries are missing
+
+CURRENT BLOCKER (2026-09-16 re-audit): labeled binaries still absent.
+Teaching week title / kicker / rainbow / 3-course week chrome from the
+2026-09-15 RED audit are HISTORICAL (landed). Pixel gate still open after
+binaries wire.
+========================================================================

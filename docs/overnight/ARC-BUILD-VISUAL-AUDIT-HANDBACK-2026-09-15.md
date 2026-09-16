@@ -26,7 +26,9 @@
 
 ## Remaining for next audit
 
-- Pixel RGB gate vs authority still RED
-- Day headers `MON 7` (currently `Mon Sep 7`) — YELLOW
+- **Major blocker (2026-09-16 re-audit):** 22 Kelly **labeled SVG binaries** still absent — drop at `uploads/desk-incoming/` (`LABELED-SVG-CHECKLIST.md`). Do **not** invent wood/tray/tab substitutes.
+- Visual grade improved **RED → YELLOW/RED**; title/kicker/rainbow/3-course week above are **historical DONE**, not current fails.
+- Wiring order when binaries land: wood → tray → settings/todos tabs → calendar tabs → calendar bg/rainbow/today/start-class/magnets → pixel gate (`public/assets/desk/canonical/README.md`).
+- Pixel RGB gate vs authority still open (expect >>15% until labeled art wires)
+- Day headers `MON 7` polish — YELLOW
 - IDEAS “LINE” stone label — YELLOW
-- Discrete Figma layer pack — Kelly blocker

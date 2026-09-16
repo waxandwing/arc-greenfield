@@ -1,9 +1,13 @@
 # ArcBuild visual audit vs Teaching week — 2026-09-15
 
+> **HISTORICAL AUDIT (2026-09-15).** Original overall verdict was **RED**.  
+> **2026-09-16 re-audit:** grade improved **RED → YELLOW/RED**. Title / kicker / rainbow / 3-course week chrome from the P0 list below have **landed** (see `ARC-BUILD-VISUAL-AUDIT-HANDBACK-2026-09-15.md`).  
+> **Current major blocker:** the **22 Kelly labeled SVG binaries** are still absent — drop at `uploads/desk-incoming/` (see `LABELED-SVG-CHECKLIST.md`). Do **not** invent replacement art. Pixel gate remains open after binaries wire.
+
 **Audit id:** ArcBuild live-desk vs Teaching week authority  
 **Auditor:** ArcBuild audit agent (`bc-1fdde260`)  
 **Scope:** Visual composition only — **no implementation this pass**  
-**Overall verdict:** **RED**
+**Overall verdict (at time of audit):** **RED** — superseded; see banner above for current status
 
 ## Inputs compared (vision)
 
@@ -11,25 +15,29 @@
 |------|------|-------|
 | **LIVE (what Kelly sees)** | `/home/ubuntu/.cursor/projects/workspace/assets/7a82998b-ed15-4de9-badb-ff34d7d48e15.png` | Pages desk capture; footer `desk-v2 · f6ce4df…` |
 | **AUTHORITY** | `docs/overnight/evidence/kelly-teaching-week-authority.png` | Kelly zip `1.png` (also `uploads/desk-incoming/teaching-week-1/1.png`) |
-| **Repo tip at audit write** | `origin/main` @ `1d68617` | Pulled past live Pages SHA `f6ce4df`; **visual gaps below still apply** — tip has a11y heading tweak only, not Teaching-week chrome parity |
+| **Repo tip at audit write** | `origin/main` @ `1d68617` | Historical tip at audit write. Structural P0s later landed; see banner — current blocker is labeled SVG binaries |
 
 **North-star docs read:** `MASTER-DESK-VISUAL-GOAL.md`, `TEACHING-WEEK-ZIP-INCORPORATION.md`, `KELLY-CURRENT-VS-TARGET.md`, `ARC-DESK-VISUAL-RECONCILIATION-PASS-2026-09-15.md`, `DESK-PIXEL-REQUIREMENTS.md`, `ARC-BUILD-AUDIT-LOOP.md`.
 
-**Honesty note:** Several requirement rows in `DESK-PIXEL-REQUIREMENTS.md` / zip incorporation checklist still say **PASS** for title, denim folder, IDEAS drawer, etc. **This live Pages capture contradicts those claims.** Treat structural smoke PASS ≠ pixel/composition PASS. Do not greenwash.
+**Honesty note (at audit write):** Live Pages then contradicted some DESK-PIXEL / zip checklist PASS rows. Structural smoke PASS ≠ pixel PASS.  
+**Now:** title/kicker/rainbow/3-course structural work has landed; remaining honesty gap is labeled SVG binaries + pixel gate — not “title still missing.”
 
 ---
 
-## Overall verdict: **RED**
+## Overall verdict at audit time: **RED** (historical)
 
-Live desk reads as a **SaaS planner modal on wood wallpaper**, not Kelly’s **physical Teaching week desk**. Core north-star furniture (Teaching week title stack, rainbow, denim TO-DOS folder, IDEAS drawer tray, three-course week spread) is missing or wrong. Edge tabs / start-class / wood field are only partial.
+At capture time, live desk read as a **SaaS planner modal on wood wallpaper**, not Kelly’s **physical Teaching week desk**. The title/kicker/rainbow/3-course/denim/IDEAS items below were the P0 fails **then**.
 
-Re-audit gate: after implementation, capture `?demo=1&demoReset=1` at same viewport and re-diff against authority. Pixel gate remains **&lt;15% RGB** (`test:desk-pixel-pass`) — do not claim visual DONE while >>15%.
+**Now (2026-09-16):** those structural P0s largely landed (handback DONE rows). Remaining work is **labeled SVG binaries** (wood → tray → settings/todos tabs → calendar tabs → calendar bg/rainbow/today/start-class/magnets) then the **pixel gate** — not another CSS inventiveness pass.
+
+Re-audit gate: after labeled SVGs land + wire, capture `?demo=1&demoReset=1` at same viewport and re-diff against authority. Pixel gate remains **&lt;15% RGB** (`test:desk-pixel-pass`) — do not claim visual DONE while >>15%.
 
 ---
 
-## Ordered FAIL list
+## Ordered FAIL list (historical snapshot @ Pages `f6ce4df`)
 
 ### P0 — must fix before claiming Teaching-week parity
+**(Status 2026-09-16:** title/kicker/rainbow/3-course + denim/IDEAS structural work **landed** per handback; **do not** treat as current open fails. Current blocker = labeled SVG pack.)
 
 | # | Fail | Live (Pages @ `f6ce4df`) | Authority (Teaching week) | Concrete diff |
 |---|------|--------------------------|---------------------------|---------------|
@@ -70,13 +78,16 @@ Re-audit gate: after implementation, capture `?demo=1&demoReset=1` at same viewp
 | Mesopotamia unit / lesson names | **PARTIAL** | Unit + some lessons appear under AP only |
 | Build stamp footer | **PASS** | `desk-v2 · f6ce4df…` visible |
 
-**Not PASS:** Teaching week title, kicker, rainbow, denim TO-DOS, IDEAS drawer, three-course week chrome, edge-tab material, modal de-bloating.
+**Historical “Not PASS” at audit write:** Teaching week title, kicker, rainbow, denim TO-DOS, IDEAS drawer, three-course week chrome, edge-tab material, modal de-bloating.  
+**Superseded 2026-09-16:** handback marks Req 1–6 DONE for those structural items; remaining major blocker is **22 labeled SVG binaries** + pixel gate.
 
 ---
 
-## Exact fix requirements (implementation agent)
+## Exact fix requirements (implementation agent) — historical
 
-Do **not** claim DONE until live capture matches P0 list. Prefer committed assets (`public/assets/desk/…`) over new CSS inventiveness. Work on **`main`**, then handback per `ARC-BUILD-AUDIT-LOOP.md`.
+> Handback (`ARC-BUILD-VISUAL-AUDIT-HANDBACK-2026-09-15.md`) records these Req 1–6 as **DONE**. Do not re-open them as if still missing. Next implementation work waits on Kelly labeled SVGs in `uploads/desk-incoming/`.
+
+Do **not** claim visual DONE until live capture matches authority + pixel gate. Prefer committed assets (`public/assets/desk/…`) over new CSS inventiveness. Work on **`main`**, then handback per `ARC-BUILD-AUDIT-LOOP.md`.
 
 ### Req 1 — Restore Teaching week title + kicker + rainbow (P0-1…3)
 

@@ -4,7 +4,9 @@
 
 **Honest pixel gate (1696×1254, scale-normalized):** see `docs/overnight/evidence/desk-pixel-pass/round-4-REPORT.md` (latest) — **~60.08% RGB diff vs Kelly** (SSIM ~0.20). Structural smoke checks can pass while pixels differ.
 
-**Queue alignment:** `docs/overnight/AGENT-WORK-QUEUE.md` — slice stack **A DONE**; header **B** + course rows **C** in progress; pixel loop **F** blocked until B/C.
+**2026-09-16:** Teaching week title/kicker/rainbow/3-course week are **structural DONE** (not “still missing”). **Major blocker** = 22 Kelly labeled SVG binaries (`uploads/desk-incoming/`). Pixel loop **F** stays blocked until those wire — do not invent substitutes.
+
+**Queue alignment:** `docs/overnight/AGENT-WORK-QUEUE.md` — A DONE; B structural DONE; labeled SVGs **BLOCKED**; pixel **F** blocked on binaries.
 
 | # | Requirement | File / selector / testid | Status |
 |---|-------------|---------------------------|--------|
@@ -68,9 +70,9 @@
 
 ## Top remaining pixel gaps (priority)
 
-1. **Global diff ~60%** — viewport scaling, SVG vs photo chrome, and unstylized course header blocks dominate.
-2. **TO-DOS denim** — still CSS gradient; comp uses photographic folder/tray texture.
-3. **IDEAS drawer** — authored SVG + tokens vs comp photography and LINE stone label.
-4. **Planner header** — missing rainbow icon; Today control not chevron pill.
-5. **Course row chrome** — period/time blocks and colored left rails not matching comp layout.
-6. **3D row / Weekends footer** — minor content/chrome omissions vs comp.
+1. **22 labeled SVG binaries absent** — wood / tray / Settings+TO-DOS tabs / calendar tabs / calendar bg / rainbow / today / start-class / magnets. Drop at `uploads/desk-incoming/`. Do not invent art.
+2. **Global diff ~60%** — expect to stay open until labeled art wires; then re-run `test:desk-pixel-pass`.
+3. **TO-DOS / IDEAS texture** — interim denim/drawer vs photographic labeled USE art.
+4. **Course row chrome** — period/time blocks and colored left rails polish.
+5. **3D row / Weekends footer** — minor content/chrome omissions vs comp.
+6. *(Historical)* Planner header title/kicker/rainbow — structural landed; labeled rainbow SVG still blocked on #1.
