@@ -270,7 +270,7 @@ try {
   await mustComplete.check()
   assert(await page.getByTestId('desk-priority-lane-must').locator('[data-completed="true"]').count() >= 1, 'MUST tasks must be completable.')
   // Rename must keep working on the plate surface.
-  await mustTask.dblclick()
+  await mustTask.click()
   const mustEdit = page.getByTestId(/desk-priority-edit-/).last()
   await mustEdit.fill('Kelly must renamed')
   await mustEdit.press('Enter')
