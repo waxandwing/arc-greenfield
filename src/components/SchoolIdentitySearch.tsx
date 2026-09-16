@@ -56,10 +56,13 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
       <div className="school-identity-search-heading">
         <p className="section-label">Load school</p>
         <h3 id="school-identity-search-title">Find and load your school’s official identity.</h3>
-        <p>
-          Arc searches Google Places for schools first, then the U.S. Department of Education’s NCES directory for an official record.
-          If the Google API key is missing, Arc uses a labeled demo list. On hosts without the live proxies, Arc falls back to a local school list so you can still finish setup.
-        </p>
+        <details className="calendar-setup-more-info">
+          <summary>More info</summary>
+          <p>
+            Arc searches Google Places for schools first, then the U.S. Department of Education’s NCES directory for an official record.
+            If the Google API key is missing, Arc uses a labeled demo list. On hosts without the live proxies, Arc falls back to a local school list so you can still finish setup.
+          </p>
+        </details>
       </div>
 
       {selected && !showSearchAgain ? (

@@ -308,7 +308,10 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
       <div className="calendar-setup-intro">
         <p className="section-label">Calendar setup</p>
         <h2 id="calendar-setup-title">Tell Arc which days are actually yours.</h2>
-        <p>School first, then dates and week, class times, and a year preview you can confirm before saving.</p>
+        <details className="calendar-setup-more-info">
+          <summary>More info</summary>
+          <p>School first, then dates and week, class times, and a year preview you can confirm before saving.</p>
+        </details>
       </div>
 
       <ol className="calendar-setup-progress" aria-label="Calendar setup steps">
@@ -347,11 +350,14 @@ export function CalendarSetup({ initialValue = null, onSave, onCancel, onDraftCh
           <div className="calendar-setup-step-heading">
             <p className="section-label">Dates &amp; week</p>
             <h3>{initialValue ? 'Adjust the school year bounds.' : 'Confirm first day, last day, and your teaching week.'}</h3>
-            <p>
-              {schoolLoaded
-                ? 'When Arc knows your district year, fields prefill below. Edit anything that does not match your school.'
-                : 'Load a school above for district suggestions, or enter dates yourself.'}
-            </p>
+            <details className="calendar-setup-more-info">
+              <summary>More info</summary>
+              <p>
+                {schoolLoaded
+                  ? 'When Arc knows your district year, fields prefill below. Edit anything that does not match your school.'
+                  : 'Load a school above for district suggestions, or enter dates yourself.'}
+              </p>
+            </details>
           </div>
 
           {dateSuggestionNote ? (
