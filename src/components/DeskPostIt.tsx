@@ -32,7 +32,7 @@ type Props = {
   /** Controlled position — when set, parent owns placement (linked stacks). */
   position?: DeskPostItPosition
   onPositionChange?: (position: DeskPostItPosition) => void
-  /** Fired once when a desk drag arms (for IDEAS → wood lift ghosts). */
+  /** Fired once when a desk drag arms (IDEAS → wood escape ghost). */
   onDragStart?: (info: DeskPostItDragStartInfo) => void
   /** Fired while an armed desk drag is moving (for drop-target highlights). */
   onDragMove?: (info: { postItId: string; clientX: number; clientY: number; rect: DOMRect }) => void

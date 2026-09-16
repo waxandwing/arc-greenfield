@@ -505,14 +505,82 @@ try {
     assert(await trayUnit.evaluate((node) => node.classList.contains('arc-desk-post-it--accent')), 'Unit items in IDEAS must function as normal paper stickies.')
     assert(await trayUnit.locator('[data-desk-unit-magnet="true"]').count() === 1, 'Unit-associated tray sticky must show a magnet.')
   }
-  // Collapse again so later tray-utility assertions match a closed IDEAS dock.
-  await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  // Drag mustard + pink accents out of IDEAS onto the exterior desk/planner surface.
+  assert((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true', 'IDEAS must stay open to drag stickies out.')
+  const surfaceBox = await page.locator('.arc-desk-surface').boundingBox()
+  assert(surfaceBox, 'Desk surface must expose a box for exterior drop.')
+  for (const tone of ['mustard', 'pink']) {
+    const traySticky = page.getByTestId('arc-desk-ideas-accent-slot').getByTestId(`arc-desk-post-it-accent-${tone}`)
+    const grip = traySticky.getByTestId(`arc-desk-post-it-accent-${tone}-grip`)
+    const start = await grip.boundingBox()
+    assert(start, `${tone} in-drawer grip must be draggable.`)
+    const dropX = surfaceBox.x + surfaceBox.width * (tone === 'mustard' ? 0.72 : 0.82)
+    const dropY = surfaceBox.y + surfaceBox.height * 0.58
+    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(dropX, dropY, { steps: 16 })
+    const ghostVisible = await page.getByTestId('arc-desk-post-it-drag-ghost').count()
+    assert(ghostVisible === 1, `${tone} drag-out must show a document escape ghost (not clipped in the tray).`)
+    const deskParkLit = await page.locator('.arc-desk-surface.arc-desk-postit-drop-target--desk-park').count()
+    assert(deskParkLit === 1, `${tone} drag-out must highlight the exterior desk park target.`)
+    await page.mouse.up()
+    await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {})
+    assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator(`[data-desk-post-it="accent-${tone}"]`).count() === 0, `${tone} must leave the IDEAS accent slot after exterior drop.`)
+    const deskSticky = page.locator(`.arc-desk-surface > [data-desk-post-it="accent-${tone}"]`)
+    assert(await deskSticky.count() === 1, `${tone} must park as a free desk post-it on the exterior surface.`)
+    assert(await deskSticky.evaluate((node) => !node.classList.contains('arc-desk-post-it--in-drawer')), `${tone} on desk must not keep in-drawer chrome.`)
+  }
+  const drawerMembership = await page.evaluate(() => sessionStorage.getItem('arc.desk-postit-in-drawer.v1'))
+  assert(drawerMembership && drawerMembership.includes('"accent-mustard":false') && drawerMembership.includes('"accent-pink":false'),
+    'Drag-out must persist in-drawer=false for mustard + pink.')
+
+  // Drop pink back into the open IDEAS tray — return path.
+  const pinkOnDesk = page.locator('.arc-desk-surface > [data-desk-post-it="accent-pink"]')
+  const pinkGrip = pinkOnDesk.getByTestId('arc-desk-post-it-accent-pink-grip')
+  const pinkStart = await pinkGrip.boundingBox()
+  const slotBox = await page.getByTestId('arc-desk-ideas-accent-slot').boundingBox()
+  assert(pinkStart && slotBox, 'Pink desk sticky + IDEAS slot needed for return drop.')
+  await page.mouse.move(pinkStart.x + pinkStart.width / 2, pinkStart.y + pinkStart.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 14 })
+  const trayParkLit = await page.locator('.arc-desk-tray-dock.arc-desk-postit-drop-target--ideas').count()
+  assert(trayParkLit === 1, 'Return drag must highlight the IDEAS tray drop target.')
+  await page.mouse.up()
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'Dropping pink onto IDEAS must return it to the tray.')
+  // Leave mustard on wood; pull pink back out so later accent assertions see both loose.
+  const pinkReturned = page.getByTestId('arc-desk-ideas-accent-slot').getByTestId('arc-desk-post-it-accent-pink')
+  const pinkReturnedGrip = pinkReturned.getByTestId('arc-desk-post-it-accent-pink-grip')
+  const pinkReturnedStart = await pinkReturnedGrip.boundingBox()
+  assert(pinkReturnedStart, 'Returned pink must be draggable out again.')
+  await page.mouse.move(pinkReturnedStart.x + pinkReturnedStart.width / 2, pinkReturnedStart.y + pinkReturnedStart.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(surfaceBox.x + surfaceBox.width * 0.8, surfaceBox.y + surfaceBox.height * 0.62, { steps: 14 })
+  await page.mouse.up()
+  assert(await page.locator('.arc-desk-surface > [data-desk-post-it="accent-pink"]').count() === 1, 'Pink must leave IDEAS again onto the exterior desk.')
+
+  // Clean up still gathers desk post-its back into IDEAS.
+  await page.getByTestId('arc-desk-clean-up').click()
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-mustard"]').count() === 1, 'Clean up must gather mustard back into IDEAS after drag-out.')
+  assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'Clean up must gather pink back into IDEAS after drag-out.')
   // Pull accents back onto the wood for later accent assertions that expect loose stickies.
-  await page.evaluate(() => {
-    sessionStorage.removeItem('arc.desk-postit-in-drawer.v1')
-  })
-  await page.reload({ waitUntil: 'networkidle' })
-  await page.getByTestId('arc-desk-tray-dock').waitFor({ state: 'visible' })
+  if ((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) !== 'true') {
+    await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  }
+  for (const tone of ['mustard', 'pink', 'blue']) {
+    const traySticky = page.getByTestId('arc-desk-ideas-accent-slot').getByTestId(`arc-desk-post-it-accent-${tone}`)
+    if (await traySticky.count() === 0) continue
+    const grip = traySticky.getByTestId(`arc-desk-post-it-accent-${tone}-grip`)
+    const start = await grip.boundingBox()
+    if (!start) continue
+    await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(surfaceBox.x + surfaceBox.width * (0.68 + (tone === 'pink' ? 0.08 : tone === 'blue' ? 0.14 : 0)), surfaceBox.y + surfaceBox.height * 0.55, { steps: 12 })
+    await page.mouse.up()
+  }
+  // Collapse again so later tray-utility assertions match a closed IDEAS dock.
+  if ((await page.getByTestId('arc-desk-tray-dock').getAttribute('data-extended')) === 'true') {
+    await page.getByTestId('arc-desk-folders-tab').evaluate((el) => el.click())
+  }
 
   await page.evaluate(() => {
     const tray = document.querySelector('[data-testid="arc-desk-utility-tabs"] button.arc-index-tab--workspace')

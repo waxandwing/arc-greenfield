@@ -52,7 +52,7 @@ export function hitTestDeskPostItDrop(clientX: number, clientY: number): DeskPos
   const stack = document.elementsFromPoint(clientX, clientY)
   for (const node of stack) {
     if (!(node instanceof Element)) continue
-    // Skip the dragged post-it itself and its children.
+    // Skip the dragged post-it itself and its children / document ghost.
     if (node.closest('[data-desk-post-it]')) continue
     if (node.closest('[data-testid="arc-desk-post-it-drag-ghost"]')) continue
 
@@ -72,6 +72,31 @@ export function hitTestDeskPostItDrop(clientX: number, clientY: number): DeskPos
         ?? dateFromElement(dateHost.closest('[data-date], [data-plan-drop-date], [data-day-notes-date]') ?? dateHost)
       if (date) return { type: 'date', date, element: dateHost }
     }
+  }
+  return { type: 'empty' }
+}
+
+/**
+ * Resolve IDEAS tray vs exterior desk park under a point.
+ * Tray wins when the pointer is over the dock / accent slot so returns are obvious.
+ */
+export function hitTestDeskPostItPark(clientX: number, clientY: number): DeskPostItParkTarget {
+  if (typeof document === 'undefined') return { type: 'empty' }
+  const stack = document.elementsFromPoint(clientX, clientY)
+  for (const node of stack) {
+    if (!(node instanceof Element)) continue
+    if (node.closest('[data-desk-post-it]')) continue
+    if (node.closest('[data-testid="arc-desk-post-it-drag-ghost"]')) continue
+
+    const trayHost = node.closest(
+      '[data-desk-postit-drop="ideas-tray"], [data-testid="arc-desk-tray-dock"], [data-testid="arc-desk-ideas-accent-slot"]',
+    )
+    if (trayHost) return { type: 'ideas-tray', element: trayHost }
+
+    const deskHost = node.closest(
+      '[data-desk-postit-drop="desk-park"], .arc-desk-surface',
+    )
+    if (deskHost) return { type: 'desk-park', element: deskHost }
   }
   return { type: 'empty' }
 }
@@ -109,32 +134,6 @@ export function highlightDeskPostItParkTarget(target: DeskPostItParkTarget): voi
       ?? target.element
     surface.classList.add(DESK_POSTIT_DROP_HIGHLIGHT_CLASS, DESK_POSTIT_PARK_DESK_CLASS)
   }
-}
-
-
-/**
- * Resolve IDEAS tray vs exterior desk park under a point.
- * Tray wins when the pointer is over the dock / accent slot so returns are obvious.
- */
-export function hitTestDeskPostItPark(clientX: number, clientY: number): DeskPostItParkTarget {
-  if (typeof document === 'undefined') return { type: 'empty' }
-  const stack = document.elementsFromPoint(clientX, clientY)
-  for (const node of stack) {
-    if (!(node instanceof Element)) continue
-    if (node.closest('[data-desk-post-it]')) continue
-    if (node.closest('[data-testid="arc-desk-post-it-drag-ghost"]')) continue
-
-    const trayHost = node.closest(
-      '[data-desk-postit-drop="ideas-tray"], [data-testid="arc-desk-tray-dock"], [data-testid="arc-desk-ideas-accent-slot"]',
-    )
-    if (trayHost) return { type: 'ideas-tray', element: trayHost }
-
-    const deskHost = node.closest(
-      '[data-desk-postit-drop="desk-park"], .arc-desk-surface',
-    )
-    if (deskHost) return { type: 'desk-park', element: deskHost }
-  }
-  return { type: 'empty' }
 }
 
 export function pointFromRectCenter(rect: { left: number; top: number; width: number; height: number }): {

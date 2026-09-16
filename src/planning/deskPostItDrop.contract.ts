@@ -1,9 +1,14 @@
 import {
   DESK_POSTIT_DROP_HIGHLIGHT_CLASS,
+  DESK_POSTIT_PARK_DESK_CLASS,
+  DESK_POSTIT_PARK_TRAY_CLASS,
   clearDeskPostItDropHighlights,
   hitTestDeskPostItDrop,
+  hitTestDeskPostItPark,
   highlightDeskPostItDropTarget,
+  highlightDeskPostItParkTarget,
   pointFromRectCenter,
+  pointInElement,
 } from './deskPostItDrop'
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -14,10 +19,14 @@ const center = pointFromRectCenter({ left: 10, top: 20, width: 40, height: 60 })
 assert(center.clientX === 30 && center.clientY === 50, 'Rect center must be midpoint.')
 
 assert(DESK_POSTIT_DROP_HIGHLIGHT_CLASS === 'arc-desk-postit-drop-target', 'Highlight class must stay stable for CSS/tests.')
+assert(DESK_POSTIT_PARK_TRAY_CLASS === 'arc-desk-postit-drop-target--ideas', 'Tray park class must stay stable.')
+assert(DESK_POSTIT_PARK_DESK_CLASS === 'arc-desk-postit-drop-target--desk-park', 'Desk park class must stay stable.')
 
 // Without DOM furniture, hit-test returns empty (safe default — wood is unassigned).
 const empty = hitTestDeskPostItDrop(0, 0)
 assert(empty.type === 'empty', 'Missing DOM must classify as EMPTY wood.')
+assert(hitTestDeskPostItPark(0, 0).type === 'empty', 'Missing DOM must classify park as empty.')
+assert(pointInElement(5, 5, null) === false, 'Null element is never a hit.')
 
 if (typeof document !== 'undefined') {
   const lane = document.createElement('div')
@@ -48,6 +57,38 @@ if (typeof document !== 'undefined') {
   assert(slot.classList.contains(DESK_POSTIT_DROP_HIGHLIGHT_CLASS), 'Day slot must highlight on hover.')
   clearDeskPostItDropHighlights()
   slot.remove()
+
+  const tray = document.createElement('aside')
+  tray.setAttribute('data-testid', 'arc-desk-tray-dock')
+  tray.setAttribute('data-desk-postit-drop', 'ideas-tray')
+  tray.style.position = 'fixed'
+  tray.style.left = '0'
+  tray.style.top = '0'
+  tray.style.width = '80px'
+  tray.style.height = '80px'
+  document.body.appendChild(tray)
+  const parkTray = hitTestDeskPostItPark(20, 20)
+  assert(parkTray.type === 'ideas-tray', 'IDEAS tray must resolve as return park target.')
+  highlightDeskPostItParkTarget(parkTray)
+  assert(tray.classList.contains(DESK_POSTIT_PARK_TRAY_CLASS), 'Tray must show return highlight.')
+  clearDeskPostItDropHighlights()
+  tray.remove()
+
+  const surface = document.createElement('div')
+  surface.className = 'arc-desk-surface'
+  surface.setAttribute('data-desk-postit-drop', 'desk-park')
+  surface.style.position = 'fixed'
+  surface.style.left = '0'
+  surface.style.top = '0'
+  surface.style.width = '120px'
+  surface.style.height = '120px'
+  document.body.appendChild(surface)
+  const parkDesk = hitTestDeskPostItPark(40, 40)
+  assert(parkDesk.type === 'desk-park', 'Desk surface must resolve as exterior park target.')
+  highlightDeskPostItParkTarget(parkDesk)
+  assert(surface.classList.contains(DESK_POSTIT_PARK_DESK_CLASS), 'Desk must show park highlight.')
+  clearDeskPostItDropHighlights()
+  surface.remove()
 }
 
 console.log('desk post-it drop contract passed')
