@@ -61,6 +61,7 @@ async function auditDesktop(browser) {
     assert(await field.getAttribute('aria-describedby') === 'calendar-setup-errors', `Validation: ${name} is not connected to the error summary.`)
   }
 
+  await page.getByText('Exceptions (optional)').click()
   await page.getByRole('button', { name: 'Add date' }).click()
   assert(await page.getByLabel('Exception 1 date').count() === 1, 'Dynamic rows: exception date needs contextual accessible naming.')
   assert(await page.getByLabel('Exception 1 type').count() === 1, 'Dynamic rows: exception type needs contextual accessible naming.')
