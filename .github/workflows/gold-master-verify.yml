@@ -40,11 +40,14 @@ jobs:
           done
           curl --fail --silent http://127.0.0.1:4173/?gold=week > /dev/null
           ARC_BASE_URL=http://127.0.0.1:4173 npm run test:gold-master
+          ARC_BASE_URL=http://127.0.0.1:4173 node tests/gold-master-layout-rigor.mjs
       - name: Publish Gold Master screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: arc-gold-master-screens
-          path: docs/overnight/evidence/gold-master/*.png
+          path: |
+            docs/overnight/evidence/gold-master/*.png
+            docs/overnight/evidence/gold-master-rigor/*.png
           if-no-files-found: warn
           retention-days: 14
