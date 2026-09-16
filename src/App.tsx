@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AppFrame } from './components/AppFrame'
 import { DeskBuildStamp } from './components/DeskBuildStamp'
+import { GoldHandoffAuthority } from './components/GoldHandoffAuthority'
 import { GoldMasterGallery } from './components/GoldMasterGallery'
 import { GoldMasterIndex } from './components/GoldMasterIndex'
 import { GoldMasterShiftPreview, GoldMasterWeekEdit } from './components/GoldMasterStates'
@@ -20,6 +21,10 @@ function goldMasterRequested() {
 export default function App() {
   const [entryComplete, setEntryComplete] = useState(() => isEntryComplete())
   const params = new URLSearchParams(window.location.search)
+
+  if (params.get('gallery') === 'gold-handoff' || params.has('handoff')) {
+    return <GoldHandoffAuthority />
+  }
 
   if (params.get('gallery') === 'gold-master') {
     return <GoldMasterIndex />
