@@ -470,6 +470,7 @@ function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, 
       {lesson.deliveryStatus === 'in-progress' && lesson.resumeNote ? (
         <p className="day-continuity-resume"><strong>Continue:</strong> {lesson.resumeNote}</p>
       ) : null}
+      </ArcObjectMenu>
       <div className="day-continuity-lesson-actions plan-lesson-action-row">
         {onStartClass && (lesson.deliveryStatus === 'not-started' || lesson.deliveryStatus === 'in-progress') ? (
           <button type="button" className="day-start-class" onClick={() => onStartClass(sectionId, lesson.lessonId)}>{lesson.deliveryStatus === 'in-progress' ? 'Resume in ArcTable' : 'Start class'}</button>
@@ -483,7 +484,6 @@ function ContinuityLesson({ lesson, sectionId, important = false, onStartClass, 
           <button type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Review Shift</button>
         ) : null}
       </div>
-      </ArcObjectMenu>
     </article>
     </ArcImportantObject>
   )
