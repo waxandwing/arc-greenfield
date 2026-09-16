@@ -206,18 +206,22 @@ export function AppFrame() {
 
   function completeDeskEdit(save: boolean) {
     if (!deskEditSession) return
-    if (save) {
-      setWorkspaceLayout(deskEditSession.draftLayout)
-      saveWorkspaceLayout(deskEditSession.draftLayout)
-      updateViewPreferences({ ...viewPreferences, desk: deskEditSession.draftDesk })
+    const session = deskEditSession
+    try {
+      if (save) {
+        setWorkspaceLayout(session.draftLayout)
+        saveWorkspaceLayout(session.draftLayout)
+        updateViewPreferences({ ...viewPreferences, desk: session.draftDesk })
+      }
+      if (session.returnAnchor) {
+        workspace.setActiveView(session.returnView, session.returnAnchor)
+      } else {
+        workspace.setActiveView(session.returnView)
+      }
+    } finally {
+      setDeskEditSession(null)
+      setDeskResetArmed(false)
     }
-    if (deskEditSession.returnAnchor) {
-      workspace.setActiveView(deskEditSession.returnView, deskEditSession.returnAnchor)
-    } else {
-      workspace.setActiveView(deskEditSession.returnView)
-    }
-    setDeskEditSession(null)
-    setDeskResetArmed(false)
   }
 
   function moveSelectedDeskObject(direction: DeskMoveDirection) {
