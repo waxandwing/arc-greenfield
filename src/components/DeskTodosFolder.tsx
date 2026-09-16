@@ -28,7 +28,7 @@ export function DeskTodosFolder({ children }: Props) {
         src={todosTabSrc}
         alt=""
         aria-hidden="true"
-        data-testid="desk-source-todos-tab"
+        data-testid="desk-slice-todos-tab"
         data-desk-kelly-asset="todos-tab"
         decoding="async"
       />
