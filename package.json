@@ -36,6 +36,7 @@
     "test:arc-desk-figma-pass": "node tests/arc-desk-figma-evidence.mjs",
     "test:desk-fidelity-audit": "node tests/desk-fidelity-audit.mjs",
     "test:desk-pixel-pass": "node scripts/desk-pixel-pass.mjs",
+    "test:gold-master": "node tests/gold-master-gallery.smoke.mjs",
     "check:canonical-desk-svgs": "node scripts/check-canonical-desk-svgs.mjs",
     "test:import-onboarding": "node tests/import-onboarding.smoke.mjs"
   },
