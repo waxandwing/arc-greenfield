@@ -469,10 +469,16 @@ function LessonProgressiveActions({
   return (
     <>
       {canStartClass && onStartClass ? (
-        <div className="planning-lesson-primary-action">
+        <div
+          className="planning-lesson-primary-action"
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
           <button
             type="button"
             className="day-start-class"
+            data-testid="week-start-class"
+            onPointerDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.preventDefault()
               event.stopPropagation()
