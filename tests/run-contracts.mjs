@@ -90,6 +90,7 @@ function assertManifestComplete() {
     ...discoverContracts('src/calendar'),
     ...discoverContracts('src/navigation'),
     ...discoverContracts('src/planning'),
+    ...discoverContracts('src/desk'),
     ...discoverContracts('src/demo'),
     ...discoverContracts('src/app'),
     ...discoverContracts('tests', { topLevelOnly: true }),
