@@ -6,6 +6,12 @@ function apiUrl(path: string): string {
   return `${base}${suffix}`
 }
 
+export function isStaticEntryPreviewHost(): boolean {
+  if (typeof window === 'undefined') return false
+  const host = window.location.hostname
+  return host === '127.0.0.1' || host === 'localhost' || host.endsWith('.github.io')
+}
+
 export async function verifyBetaPassword(password: string): Promise<{ ok: boolean; error?: string }> {
   const supplied = password.trim()
   if (!supplied) return { ok: false, error: 'Enter the beta password.' }
@@ -36,7 +42,7 @@ export type InterestSignupInput = {
 }
 
 export type InterestSignupResult =
-  | { ok: true; duplicate?: boolean }
+  | { ok: true; duplicate?: boolean; previewOnly?: boolean }
   | { ok: false; error: string }
 
 export async function submitInterestSignup(input: InterestSignupInput): Promise<InterestSignupResult> {
@@ -61,12 +67,23 @@ export async function submitInterestSignup(input: InterestSignupInput): Promise<
     const result = await response.json().catch(() => ({ ok: false }))
     if (response.status === 409 || result.duplicate) return { ok: true, duplicate: true }
     if (response.ok && result.ok) return { ok: true }
-    return { ok: false, error: 'We could not add you right now. Try again.' }
+    if (!isStaticEntryPreviewHost()) {
+      return { ok: false, error: 'We could not add you right now. Try again.' }
+    }
   } catch {
-    return { ok: false, error: 'We could not add you right now. Try again.' }
+    if (!isStaticEntryPreviewHost()) {
+      return { ok: false, error: 'We could not add you right now. Try again.' }
+    }
   }
+
+  // GitHub Pages/local static preview has no serverless /api route. Keep the full
+  // signup interaction testable without pretending the address was submitted.
+  return { ok: true, previewOnly: true }
 }
 
-export const ENTRY_SPLASH_VIDEO = publicAssetUrl('assets/Arc_Motion_Transparent.webm')
+const configuredSplashVideo = import.meta.env.VITE_ARC_SPLASH_VIDEO?.trim()
+export const ENTRY_SPLASH_VIDEO = configuredSplashVideo
+  ? (configuredSplashVideo.startsWith('http') ? configuredSplashVideo : publicAssetUrl(configuredSplashVideo))
+  : ''
 export const ENTRY_SPLASH_POSTER = publicAssetUrl('assets/arc/arc-mark-stacked.png')
 export const ENTRY_PATTERN_ASSET = publicAssetUrl('assets/arc/pattern-arc-geometric.png')

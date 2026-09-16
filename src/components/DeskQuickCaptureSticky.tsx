@@ -111,7 +111,7 @@ export function DeskQuickCaptureSticky({
             disabled={disabled}
             rows={4}
             spellCheck
-            placeholder="Write…  u / l / i / n"
+            placeholder="Jot something…"
             aria-label="Quick capture note"
             onChange={(event) => setText(event.target.value)}
             onKeyDown={onNoteKeyDown}

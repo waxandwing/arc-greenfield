@@ -7,6 +7,7 @@
 .teaching-day-fields{display:grid;grid-template-columns:1.1fr 1fr 1.4fr;gap:14px;align-items:start}
 .teaching-day-fields label{display:grid;gap:6px;font-weight:700}.teaching-day-fields label>span{font-size:12px;letter-spacing:.03em;color:var(--soft-charcoal)}
 .teaching-day-times{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.teaching-day-time-help{grid-column:1/-1;margin:0;font:400 12px/1.35 var(--font-ui,inherit);font-weight:400;color:var(--soft-charcoal)}
 .teaching-day-controls{display:grid;align-content:start;justify-items:start}.teaching-day-controls .text-button{min-height:36px;padding-block:5px}.teaching-day-controls .text-button:disabled{opacity:.35;cursor:default;text-decoration:none}
 .teaching-day-add{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
 .teaching-day-setup .setup-actions{margin-top:32px}

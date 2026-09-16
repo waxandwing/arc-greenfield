@@ -150,7 +150,7 @@ try {
   await page.getByRole('button', { name: 'Back to Planning period', exact: true }).click()
   assert(await page.getByRole('heading', { name: 'Planning period' }).isVisible(), 'Week deep link did not return to Planning period.')
 
-  await page.getByRole('button', { name: 'TRAY', exact: true }).evaluate((el) => el.click())
+  await page.getByRole('button', { name: 'IDEAS', exact: true }).evaluate((el) => el.click())
   assert(await page.locator('.plan-state-header').getAttribute('data-plan-overlay') === 'workspace', 'Planning period did not open Tray overlay.')
   await shot(page, '06-planning-workspace.png')
   await page.getByRole('button', { name: 'Close Tray', exact: true }).evaluate((el) => el.click())

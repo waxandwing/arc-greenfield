@@ -51,7 +51,16 @@
   color: var(--soft-charcoal);
 }
 
-/* Week: progressive disclosure for lesson actions */
+/* Start class stays visible — primary teaching CTA cannot hide behind reveal. */
+.planning-lesson-primary-action {
+  margin-top: 4px;
+}
+.planning-lesson-primary-action .day-start-class {
+  min-height: 32px;
+  pointer-events: auto;
+}
+
+/* Week: progressive disclosure for secondary lesson actions */
 .planning-lesson .planning-lesson-actions {
   max-height: 0;
   margin-top: 0;

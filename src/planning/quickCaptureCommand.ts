@@ -58,5 +58,5 @@ export function quickCaptureHintForDraft(raw: string): string {
   if (/^l(\s|$)/i.test(trimmed)) return 'Enter saves as lesson · next sticky ready'
   if (/^n(\s|$)/i.test(trimmed)) return 'Enter saves as note · next sticky ready'
   if (/^i(\s|$)/i.test(trimmed)) return 'Enter saves to IDEAS · next sticky ready'
-  return 'Enter saves to IDEAS · u/l/i/n prefixes'
+  return 'Enter saves to IDEAS'
 }

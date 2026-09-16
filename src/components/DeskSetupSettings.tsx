@@ -25,10 +25,10 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
     <section className="b01-settings-group desk-setup-settings" aria-labelledby="settings-desk-setup">
       <h2 id="settings-desk-setup">Desk setup</h2>
       <p className="desk-setup-overview">
-        Edit Workspace arranges planner, tray, Must/Should/Could, and ArcTable on your real desk — not a miniature preview.
+        Arrange desk moves planner, IDEAS, To-dos, and ArcTable on your real desk — not a miniature preview.
       </p>
       <button type="button" className="b01-settings-action b01-settings-action--primary" onClick={onEditWorkspace}>
-        Edit Workspace
+        Arrange desk
       </button>
       {layoutCustomized ? <p className="desk-setup-hint" role="status">Your desk layout is customized.</p> : null}
 
@@ -61,14 +61,14 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
           </select>
         </label>
         <label>
-          <span>Tray</span>
+          <span>IDEAS</span>
           <select value={preferences.desk.traySize} onChange={(event) => patchDesk({ traySize: event.target.value as DeskSurfacePreferences['traySize'] })}>
             <option value="standard">Standard</option>
             <option value="wide">Wide</option>
           </select>
         </label>
         <label>
-          <span>Must / Should / Could</span>
+          <span>To-dos</span>
           <select value={preferences.desk.mscSize} onChange={(event) => patchDesk({ mscSize: event.target.value as DeskSurfacePreferences['mscSize'] })}>
             <option value="compact">Compact</option>
             <option value="standard">Standard</option>
@@ -84,11 +84,11 @@ export function DeskSetupSettings({ preferences, onChange, onEditWorkspace }: Pr
         </label>
         <label className="view-preferences-check">
           <input type="checkbox" checked={preferences.desk.showTray} onChange={(event) => patchDesk({ showTray: event.target.checked })} />
-          <span>Tray</span>
+          <span>IDEAS</span>
         </label>
         <label className="view-preferences-check">
           <input type="checkbox" checked={preferences.desk.showPriorityPad} onChange={(event) => patchDesk({ showPriorityPad: event.target.checked })} />
-          <span>Must / Should / Could pad</span>
+          <span>To-dos</span>
         </label>
         <label className="view-preferences-check">
           <input type="checkbox" checked={preferences.desk.showArcTable} onChange={(event) => patchDesk({ showArcTable: event.target.checked })} />

@@ -40,7 +40,7 @@ export function DeskEditToolbar({
       </label>
     ) : selectedObject === 'msc' ? (
       <label className="desk-edit-size-control">
-        <span>MSC size</span>
+        <span>To-dos size</span>
         <select value={sizes.msc} onChange={(event) => onSizeChange({ msc: event.target.value as MscSizePreset })}>
           <option value="compact">Compact</option>
           <option value="standard">Standard</option>
@@ -86,7 +86,7 @@ export function DeskEditToolbar({
           {resetNeedsConfirm ? 'Confirm reset desk' : 'Reset desk'}
         </button>
         <button type="button" className="b01-settings-action b01-settings-action--primary" onClick={onDone}>
-          Pin it down
+          Done arranging
         </button>
       </div>
     </div>

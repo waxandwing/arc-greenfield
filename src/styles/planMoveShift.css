@@ -1,4 +1,26 @@
-.plan-move-panel{max-width:920px;margin:var(--space-6) auto 0;padding:var(--space-6);border-top:1px solid var(--line-strong)}
+.plan-move-layer{
+  position:fixed;
+  inset:0;
+  z-index:60;
+  display:grid;
+  place-items:center;
+  padding:max(16px,3vh) 16px;
+  background:color-mix(in srgb, var(--ink) 42%, transparent);
+  overflow:auto;
+}
+.plan-move-panel{
+  box-sizing:border-box;
+  width:min(920px,100%);
+  max-height:min(88vh,920px);
+  margin:0;
+  padding:var(--space-6);
+  overflow:auto;
+  border:1px solid var(--line-strong);
+  border-radius:var(--radius-md);
+  background:var(--cream, #fffdf8);
+  box-shadow:0 24px 48px -28px rgba(23,46,37,.55);
+}
+.plan-move-panel--blocked{display:grid;gap:var(--space-4);max-width:480px}
 .plan-move-panel-heading h2{margin:6px 0 0;font:600 27px/1.16 var(--font-editorial)}
 .plan-move-panel-context{margin:6px 0 0;color:var(--soft-charcoal)}
 .plan-move-destination{display:grid;gap:6px;margin-top:var(--space-5);max-width:280px;font-size:14px;font-weight:700}

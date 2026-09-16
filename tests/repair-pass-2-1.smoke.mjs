@@ -143,7 +143,7 @@ try {
 
   await page.getByRole('button', { name: /Period 6 2D Art 1/ }).click()
   await page.getByRole('button', { name: 'Open lesson', exact: true }).first().click()
-  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
+  await page.getByRole('button', { name: 'IDEAS', exact: true }).click()
   await page.getByRole('button', { name: 'Close Tray', exact: true }).click()
   assert(await page.locator('.day-continuity').getAttribute('data-plan-focus') === 'lesson', 'Close Tray must return to Lesson focus.')
   await shot(page, '08-workspace-exact-return.png')

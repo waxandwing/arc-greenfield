@@ -386,11 +386,11 @@ export function B01Furniture({
   }, [openRequest?.token])
 
   const sidePanel = open.settings ? 'settings' : workspaceIsOpen ? 'workspace' : tasksIsOpen ? 'tasks' : 'none'
-  const workspaceTabLabel = deskEnabled ? 'TRAY' : 'WORKSPACE'
-  const workspacePanelLabel = deskEnabled ? 'Tray' : 'Workspace'
+  const workspaceTabLabel = deskEnabled ? 'IDEAS' : 'WORKSPACE'
+  const workspacePanelLabel = deskEnabled ? 'IDEAS' : 'Workspace'
   const layoutGridActive =
     deskEnabled && Boolean(deskLayout) && (deskEditMode || !deskLayoutUsesDefault(deskLayout!))
-  /** IDEAS green drawer stays on every desk calendar view; TRAY utility panel reuses content when open — never both. */
+  /** IDEAS green drawer stays on every desk calendar view; enlarged IDEAS panel reuses content when open — never both. */
   const showDeskTrayDock = deskEnabled && !workspaceIsOpen
 
   function renderDeskTrayDock() {

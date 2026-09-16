@@ -27,6 +27,7 @@ import '../styles/arctable.css'
 type SharedProps = {
   live: ArcTableLiveState
   onOpenPlan: () => void
+  /** @deprecated Table settings stay on ArcTable; plan SETTINGS is a separate object. */
   onOpenSettings?: () => void
   onShowTeacher: () => void
   onShowStudent: () => void
@@ -35,11 +36,15 @@ type SharedProps = {
   onEnd: (outcome: ArcTableTeachingOutcome) => string | null
 }
 
-export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onShowStudent, onUpdate, onEnd }: SharedProps) {
+export function ArcTableTeacherMonitor({ live, onOpenPlan, onShowStudent, onUpdate, onEnd }: SharedProps) {
   const [ending, setEnding] = useState(false)
   const [resumeNote, setResumeNote] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [tool, setTool] = useState<'people' | 'passes' | 'media' | null>(null)
+  const [tableSettingsOpen, setTableSettingsOpen] = useState(false)
+  const [boardComposing, setBoardComposing] = useState(false)
+  const [boardDraft, setBoardDraft] = useState('')
+  const [editingMaterials, setEditingMaterials] = useState(false)
   const [personName, setPersonName] = useState('')
   const [mediaTitle, setMediaTitle] = useState('')
   const [mediaSource, setMediaSource] = useState('')
@@ -51,6 +56,10 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
   const timerDurationInputRef = useRef<HTMLInputElement>(null)
   const toolPanelRef = useRef<HTMLElement>(null)
   const toolRowRef = useRef<HTMLDivElement>(null)
+  const tableSettingsRef = useRef<HTMLElement>(null)
+  const tableSettingsButtonRef = useRef<HTMLButtonElement>(null)
+  const boardDraftRef = useRef<HTMLInputElement>(null)
+  const materialsFieldRef = useRef<HTMLInputElement>(null)
   const now = useClock()
   const classElapsed = elapsedLiveMinutes(live, now)
   const timerRemaining = countdownRemaining(live.timer, now)
@@ -70,11 +79,33 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
     if (!timerCanEditDuration && editingTimerDuration) setEditingTimerDuration(false)
   }, [editingTimerDuration, timerCanEditDuration])
   useEffect(() => {
-    if (!tool) return
-    const closeTool = (event: KeyboardEvent) => { if (event.key === 'Escape') setTool(null) }
-    window.addEventListener('keydown', closeTool)
-    return () => window.removeEventListener('keydown', closeTool)
-  }, [tool])
+    if (!tool && !tableSettingsOpen && !boardComposing && !editingMaterials) return
+    const closeOverlay = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      if (boardComposing) {
+        setBoardComposing(false)
+        setBoardDraft('')
+        return
+      }
+      if (editingMaterials) {
+        setEditingMaterials(false)
+        return
+      }
+      if (tableSettingsOpen) setTableSettingsOpen(false)
+      else setTool(null)
+    }
+    window.addEventListener('keydown', closeOverlay)
+    return () => window.removeEventListener('keydown', closeOverlay)
+  }, [tool, tableSettingsOpen, boardComposing, editingMaterials])
+  useEffect(() => {
+    if (!boardComposing) return
+    boardDraftRef.current?.focus()
+  }, [boardComposing])
+  useEffect(() => {
+    if (!editingMaterials) return
+    materialsFieldRef.current?.focus()
+    materialsFieldRef.current?.select()
+  }, [editingMaterials])
   useEffect(() => {
     if (!tool) return
     function closeOnOutsidePointer(event: PointerEvent) {
@@ -86,6 +117,24 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
     document.addEventListener('pointerdown', closeOnOutsidePointer)
     return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
   }, [tool])
+  useEffect(() => {
+    if (!tableSettingsOpen) return
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const target = event.target as Node
+      if (tableSettingsRef.current?.contains(target)) return
+      if (tableSettingsButtonRef.current?.contains(target)) return
+      setTableSettingsOpen(false)
+    }
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    return () => document.removeEventListener('pointerdown', closeOnOutsidePointer)
+  }, [tableSettingsOpen])
+
+  function openClassroomTool(next: 'people' | 'passes' | 'media') {
+    setTableSettingsOpen(false)
+    setBoardComposing(false)
+    setEditingMaterials(false)
+    setTool(next)
+  }
 
   useEffect(() => {
     const launch = consumeArcTableDeskLaunch()
@@ -132,9 +181,43 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
     if (passes !== live.passes) setPassLabel('')
   }
 
+  function beginBoardCompose(focus: 'direction' | 'materials' = 'direction') {
+    if (live.boardLocked) onUpdate({ boardLocked: false })
+    setTableSettingsOpen(false)
+    setTool(null)
+    if (focus === 'materials') {
+      setBoardComposing(false)
+      setBoardDraft('')
+      setEditingMaterials(true)
+      return
+    }
+    setEditingMaterials(false)
+    setBoardComposing(true)
+  }
+
+  function commitBoardDirection() {
+    const next = boardDraft.trim()
+    if (!next) {
+      setBoardComposing(false)
+      setBoardDraft('')
+      return
+    }
+    onUpdate({ directions: [...live.directions, next], boardLocked: false })
+    setBoardDraft('')
+    setBoardComposing(true)
+  }
+
+  function openBoardMedia() {
+    if (live.boardLocked) onUpdate({ boardLocked: false })
+    setBoardComposing(false)
+    setEditingMaterials(false)
+    openClassroomTool('media')
+  }
+
   const timerDisplaySeconds = live.timer.status === 'idle' && timerRemaining === 0 && live.timer.durationSeconds > 0
     ? live.timer.durationSeconds
     : timerRemaining
+  const phaseFlow = live.session.phases.map((label) => label.trim()).filter(Boolean)
 
   return (
     <main className="arctable arctable--teacher">
@@ -154,15 +237,109 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
         <div><p className="arctable-kicker">Teacher Monitor</p><strong>{live.session.courseTitle} · {live.session.sectionName}</strong></div>
         <div className="arctable-header-actions">
           <button type="button" className="quiet-button" onClick={onOpenPlan}>Plan View</button>
-          {onOpenSettings ? (
-            <button type="button" className="quiet-button arctable-settings-button" data-testid="arctable-settings" onClick={onOpenSettings}>
-              Settings
-            </button>
-          ) : null}
+          <button
+            type="button"
+            ref={tableSettingsButtonRef}
+            className={`arctable-table-settings-button${tableSettingsOpen ? ' is-open' : ''}`}
+            data-testid="arctable-settings"
+            aria-expanded={tableSettingsOpen}
+            aria-controls="arctable-table-settings-surface"
+            onClick={() => {
+              setTool(null)
+              setTableSettingsOpen((open) => !open)
+            }}
+          >
+            <span className="arctable-table-settings-icon" aria-hidden="true">
+              <svg viewBox="0 0 20 20" width="14" height="14" focusable="false">
+                <path
+                  fill="currentColor"
+                  d="M8.2 1.6h3.6l.3 1.7a5.8 5.8 0 0 1 1.5.9l1.6-.7 1.8 1.8-.7 1.6c.4.5.7 1 .9 1.5l1.7.3v3.6l-1.7.3a5.8 5.8 0 0 1-.9 1.5l.7 1.6-1.8 1.8-1.6-.7a5.8 5.8 0 0 1-1.5.9l-.3 1.7H8.2l-.3-1.7a5.8 5.8 0 0 1-1.5-.9l-1.6.7-1.8-1.8.7-1.6a5.8 5.8 0 0 1-.9-1.5L1.1 11V7.4l1.7-.3c.2-.5.5-1 .9-1.5l-.7-1.6L4.8 2.2l1.6.7c.5-.4 1-.7 1.5-.9l.3-1.7Zm1.8 5.2a3.2 3.2 0 1 0 0 6.4 3.2 3.2 0 0 0 0-6.4Z"
+                />
+              </svg>
+            </span>
+            <span className="arctable-table-settings-label">Table settings</span>
+          </button>
           <span className="arctable-live-chip">Live · {classElapsed} min</span>
           <button type="button" className="quiet-button" onClick={() => setEnding(true)}>End Class</button>
         </div>
       </header>
+
+      {tableSettingsOpen ? (
+        <section
+          ref={tableSettingsRef}
+          id="arctable-table-settings-surface"
+          className="arctable-table-settings-panel"
+          data-testid="arctable-table-settings-surface"
+          aria-labelledby="arctable-table-settings-heading"
+        >
+          <div className="arctable-table-settings-heading-row">
+            <div>
+              <p className="arctable-kicker">This classroom</p>
+              <h2 id="arctable-table-settings-heading">Table settings</h2>
+            </div>
+            <button type="button" className="quiet-button" onClick={() => setTableSettingsOpen(false)}>Close</button>
+          </div>
+          <p className="arctable-table-settings-scope">
+            Tools and defaults for <strong>{live.session.sectionName}</strong> · {live.session.courseTitle}. School year, calendar, and courses stay in Plan → SETTINGS.
+          </p>
+          <div className="arctable-table-settings-groups">
+            <section className="arctable-table-settings-group" aria-labelledby="arctable-table-tools-heading">
+              <h3 id="arctable-table-tools-heading">Classroom tools</h3>
+              <div className="arctable-table-settings-actions">
+                <button type="button" onClick={() => openClassroomTool('people')}>People picker · {live.people.roster.length || 0}</button>
+                <button type="button" onClick={() => openClassroomTool('passes')}>Pass types · {live.passes.passes.length || 0}</button>
+                <button type="button" onClick={() => openClassroomTool('media')}>Media · {live.media.items.length || 0}</button>
+              </div>
+            </section>
+            <section className="arctable-table-settings-group" aria-labelledby="arctable-table-session-heading">
+              <h3 id="arctable-table-session-heading">Live class defaults</h3>
+              <label>
+                <span>Timer minutes</span>
+                <input
+                  aria-label="Table default timer minutes"
+                  type="number"
+                  min="1"
+                  max={ARC_TABLE_MAX_COUNTDOWN_SECONDS / 60}
+                  value={Math.ceil(live.timer.durationSeconds / 60)}
+                  onChange={(event) => onUpdate({ timer: setArcTableCountdownDuration(live.timer, Number(event.target.value) * 60) })}
+                />
+              </label>
+              <label>
+                <span>Cleanup minutes</span>
+                <input
+                  aria-label="Table default cleanup minutes"
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={Math.ceil(live.cleanupTimer.durationSeconds / 60)}
+                  onChange={(event) => onUpdate({ cleanupTimer: setArcTableCountdownDuration(live.cleanupTimer, Number(event.target.value) * 60) })}
+                />
+              </label>
+              <label>
+                <span>Voice expectation</span>
+                <select
+                  aria-label="Table default voice expectation"
+                  value={live.voiceLevel}
+                  onChange={(event) => onUpdate({ voiceLevel: Number(event.target.value) as 1 | 2 | 3 })}
+                >
+                  <option value="1">Level 1</option>
+                  <option value="2">Level 2</option>
+                  <option value="3">Level 3</option>
+                </select>
+              </label>
+              <button type="button" className="arctable-table-settings-toggle" onClick={() => onUpdate({ boardLocked: !live.boardLocked })}>
+                <strong>Board</strong>
+                <span>{live.boardLocked ? 'Locked for students' : 'Editable'}</span>
+              </button>
+            </section>
+            <section className="arctable-table-settings-group" aria-labelledby="arctable-table-plan-boundary-heading">
+              <h3 id="arctable-table-plan-boundary-heading">Not school-year settings</h3>
+              <p>Calendar dates, courses, and desk setup live on the planner SETTINGS tab — a different object from this table.</p>
+              <button type="button" className="quiet-button" onClick={onOpenPlan}>Open Plan View</button>
+            </section>
+          </div>
+        </section>
+      ) : null}
 
       <div className="arctable-teacher-room">
         <div className="arctable-furniture-tabs" ref={toolRowRef} role="toolbar" aria-label="Classroom tools">
@@ -180,21 +357,120 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
         <div className="arctable-teacher-stage-shell">
           <div className="arctable-arc-crop" aria-hidden="true" />
           <div className="arctable-teacher-layout" data-testid="arctable-teacher-layout">
-            <section className="arctable-board" aria-labelledby="arctable-lesson-title">
+                        <section
+              className={`arctable-board${live.boardLocked ? ' is-locked' : ' is-editable'}`}
+              aria-labelledby="arctable-lesson-title"
+              data-testid="arctable-board"
+              onClick={(event) => {
+                if (boardComposing || editingMaterials) return
+                const target = event.target as HTMLElement
+                if (target.closest('button, a, input, textarea, label, ol, li, h1, .arctable-board-footer, .arctable-progress, .arctable-board-flow, .arctable-board-add-elements')) return
+                beginBoardCompose('direction')
+              }}
+            >
               <div className="arctable-progress" aria-label={`Phase ${live.phase} of ${live.phaseCount}`}><span style={{ width: `${(live.phase / live.phaseCount) * 100}%` }} /></div>
-              <div className="arctable-board-stack">
+              <div className="arctable-board-stack" data-testid="arctable-board-stack">
                 <p className="arctable-kicker">Phase {live.phase} of {live.phaseCount}{live.session.phases[live.phase - 1] ? ` · ${live.session.phases[live.phase - 1]}` : ''}</p>
                 <h1 id="arctable-lesson-title">{live.session.lessonTitle}</h1>
+                {phaseFlow.length > 1 ? (
+                  <ol className="arctable-board-flow" aria-label="Today's flow" data-testid="arctable-board-flow">
+                    {phaseFlow.map((label, index) => {
+                      const step = index + 1
+                      return (
+                        <li key={`${step}-${label}`} className={step === live.phase ? 'is-current' : undefined}>
+                          <span className="arctable-board-flow-index">{step}</span>
+                          <strong>{label}</strong>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                ) : null}
                 {live.directions.length > 0 ? (
                   <ol className="arctable-directions">{live.directions.map((direction, index) => <li key={`${direction}-${index}`}>{direction}</li>)}</ol>
-                ) : (
-                  <p className="arctable-content-empty">No directions authored — project media or open Plan View to author the board.</p>
-                )}
+                ) : !boardComposing ? (
+                  <button
+                    type="button"
+                    className="arctable-board-empty-add"
+                    data-testid="arctable-board-add-direction"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      beginBoardCompose('direction')
+                    }}
+                  >
+                    Click to add a direction
+                  </button>
+                ) : null}
+                {boardComposing ? (
+                  <form
+                    className="arctable-board-compose"
+                    data-testid="arctable-board-compose"
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      commitBoardDirection()
+                    }}
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <label className="sr-only" htmlFor="arctable-board-direction-input">New direction</label>
+                    <input
+                      ref={boardDraftRef}
+                      id="arctable-board-direction-input"
+                      value={boardDraft}
+                      placeholder="Type a student-facing direction…"
+                      onChange={(event) => setBoardDraft(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Escape') {
+                          event.preventDefault()
+                          setBoardComposing(false)
+                          setBoardDraft('')
+                        }
+                      }}
+                    />
+                    <div className="arctable-board-compose-actions">
+                      <button type="submit" className="primary-button" disabled={!boardDraft.trim()}>Add</button>
+                      <button
+                        type="button"
+                        className="quiet-button"
+                        onClick={() => {
+                          setBoardComposing(false)
+                          setBoardDraft('')
+                        }}
+                      >
+                        Done
+                      </button>
+                    </div>
+                  </form>
+                ) : null}
+                <div className="arctable-board-add-elements" role="toolbar" aria-label="Add board elements" data-testid="arctable-board-add-elements">
+                  <button type="button" data-testid="arctable-board-add-more" onClick={(event) => { event.stopPropagation(); beginBoardCompose('direction') }}>+ Direction</button>
+                  <button type="button" data-testid="arctable-board-add-media" onClick={(event) => { event.stopPropagation(); openBoardMedia() }}>+ Media</button>
+                  <button type="button" data-testid="arctable-board-add-materials" onClick={(event) => { event.stopPropagation(); beginBoardCompose('materials') }}>+ Materials</button>
+                </div>
               </div>
               <div className="arctable-board-footer">
                 <div className="arctable-materials-band" data-testid="arctable-materials-band">
                   <span className="arctable-kicker">Materials</span>
-                  <strong>{live.materials || 'No materials listed'}</strong>
+                  {editingMaterials ? (
+                    <label className="arctable-materials-edit">
+                      <span className="sr-only">Materials for this phase</span>
+                      <input
+                        ref={materialsFieldRef}
+                        value={live.materials}
+                        placeholder="Sketchbooks · pencils · glue"
+                        onChange={(event) => onUpdate({ materials: event.target.value, boardLocked: false })}
+                        onBlur={() => setEditingMaterials(false)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === 'Escape') {
+                            event.preventDefault()
+                            setEditingMaterials(false)
+                          }
+                        }}
+                      />
+                    </label>
+                  ) : (
+                    <button type="button" className="arctable-materials-hit" onClick={(event) => { event.stopPropagation(); beginBoardCompose('materials') }}>
+                      <strong>{live.materials || 'Click to add materials'}</strong>
+                    </button>
+                  )}
                 </div>
                 <div className="arctable-student-facts">
                   <span>Voice {live.voiceLevel}</span>
@@ -203,7 +479,8 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
               </div>
             </section>
 
-            <section className="arctable-stage" aria-label="Center stage" data-testid="arctable-stage">
+            
+<section className="arctable-stage" aria-label="Center stage" data-testid="arctable-stage">
               <p className="arctable-kicker">Center stage</p>
               <MediaSurface media={live.media} onOpenMedia={() => setTool('media')} onPreviewStudent={onShowStudent} />
               {live.people.projected && selectedPerson ? (

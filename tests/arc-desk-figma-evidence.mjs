@@ -149,10 +149,10 @@ try {
   await shot(page, '04-final-desk.png')
 
   await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
-  await page.getByRole('button', { name: 'Edit Workspace', exact: true }).click()
+  await page.getByRole('button', { name: 'Arrange desk', exact: true }).click()
   await page.getByTestId('desk-edit-toolbar').waitFor({ state: 'visible' })
   await shot(page, '05-edit-workspace.png')
-  await page.getByRole('button', { name: 'Pin it down', exact: true }).click()
+  await page.getByRole('button', { name: 'Done arranging', exact: true }).click()
   await page.waitForFunction(() => document.querySelector('[data-desk-edit-mode="true"]') === null)
 
   const trayDock = page.getByTestId('arc-desk-tray-dock')

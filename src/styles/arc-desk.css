@@ -2170,7 +2170,7 @@ html:has(.arc-shell--desk) body {
   opacity: 1;
 }
 
-/* Desk utilities: PLANNING/TRAY stay DOM-reachable for smokes (visually off-screen).
+/* Desk utilities: PLANNING/IDEAS stay DOM-reachable for smokes (visually off-screen).
    SETTINGS grips the planner/journal left edge — not this wood utility strip. */
 .b01-furniture-composition--desk .arc-desk-utility-tabs {
   position: absolute;
@@ -2203,7 +2203,7 @@ html:has(.arc-shell--desk) body {
 
 /* Kelly copper SETTINGS — physical index tab gripping the planner/journal LEFT edge.
    Sibling of planner on the desk surface (z above TO-DOS) so the ear stays clickable.
-   Original settings-tab.png art only; no filters/effects. */
+   Original settings-tab.png art only; no filters/effects. Not a wood utility-strip control. */
 .b01-furniture-composition--desk .arc-desk-surface > .arc-index-tab--settings-physical {
   position: absolute;
   /* Planner left is 13.5%; ear hangs onto wood, body overlaps green rim. */
@@ -3611,7 +3611,7 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .arc-planner-object { filter: drop-shadow(0 16px 34px -24px rgba(33, 29, 23, 0.4)); }
 
 /* Quiet desk help — paper note on wood (not native dialog chrome).
-   Keep ? help left of the tucked lower ArcTable / start-class mark (~104px). */
+   Keep ? help left of the tucked lower ArcTable / start-class mark (~100px). */
 .arc-desk-help {
   position: absolute;
   right: 15.2%;
@@ -3780,4 +3780,15 @@ html:has(.arc-shell--desk) body {
 
 .desk-calendar-popout-body .lesson-focus {
   min-height: 0;
+}
+
+.planning-lesson--openable{cursor:pointer}
+.planning-lesson-start-hint{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  color:var(--soft-charcoal);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.02em;
 }

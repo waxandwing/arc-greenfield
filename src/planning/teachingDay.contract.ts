@@ -1,5 +1,5 @@
 import { createSection } from './courses'
-import { createTeachingDayBlock, teachingDayHasBellTimes, validateTeachingDaySchedule } from './teachingDay'
+import { bellTimesFromSectionLabel, createTeachingDayBlock, teachingDayHasBellTimes, validateTeachingDaySchedule } from './teachingDay'
 import { deserializePlanningWorkspace, serializePlanningWorkspace } from './workspacePersistence'
 
 function assert(condition: unknown, message: string): asserts condition { if (!condition) throw new Error(message) }
@@ -18,5 +18,11 @@ assert(validateTeachingDaySchedule({ blocks: [{ ...schedule.blocks[0], endTime: 
 const restored = deserializePlanningWorkspace(serializePlanningWorkspace({ calendarId: 'calendar', courses: [{ id: 'course', title: 'Art' }], sections: [section], teachingDay: schedule }))
 assert(restored?.teachingDay?.blocks[1].type === 'planning', 'Explicit planning truth must survive persistence.')
 assert(deserializePlanningWorkspace(serializePlanningWorkspace({ calendarId: 'calendar', courses: [{ id: 'course', title: 'Art' }], sections: [section] }))?.teachingDay === undefined, 'Older workspaces without a teaching day must remain compatible.')
+
+const kellyP1 = bellTimesFromSectionLabel('P1 • 8:05–9:00')
+assert(kellyP1?.startTime === '08:05' && kellyP1.endTime === '09:00', 'Class labels must yield the embedded period times teachers already see.')
+const kellyP5 = bellTimesFromSectionLabel('P5 • 12:35–1:30')
+assert(kellyP5?.startTime === '12:35' && kellyP5.endTime === '13:30', 'Afternoon shorthand end times must cross noon correctly.')
+assert(bellTimesFromSectionLabel('Period 2') === null, 'Labels without a time range must not invent starts/ends.')
 
 console.log('explicit teaching-day contract passed')

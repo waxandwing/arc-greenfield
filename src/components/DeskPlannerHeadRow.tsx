@@ -64,18 +64,16 @@ export function DeskPlannerHeadRow({
       </div>
       <div className="desk-planner-head-tools" role="group" aria-label="Planner tools">
         <label className="desk-planner-search-field">
-          <span className="sr-only">Search plan</span>
-          <input type="search" className="desk-planner-search" data-testid="desk-planner-search" placeholder="" aria-label="Search plan" value={searchQuery} onChange={(event) => onSearchQueryChange?.(event.target.value)} />
+          <span className="sr-only">Find a lesson, unit, note</span>
+          <input type="search" className="desk-planner-search" data-testid="desk-planner-search" placeholder="Find a lesson, unit, note…" aria-label="Find a lesson, unit, note" value={searchQuery} onChange={(event) => onSearchQueryChange?.(event.target.value)} />
         </label>
         <div className="desk-planner-today-cluster period-controls" role="group" aria-label="Today navigation">
-          <button type="button" className="quiet-button period-button desk-planner-today-nav" data-testid="desk-planner-today-prev" disabled aria-label="Previous day">←</button>
           <button type="button" className="quiet-button today-button desk-planner-today" data-testid="desk-planner-today" disabled={todayDisabled} onClick={onToday}>Today</button>
-          <button type="button" className="quiet-button period-button desk-planner-today-nav" data-testid="desk-planner-today-next" disabled aria-label="Next day">→</button>
         </div>
         {onEnlargeCalendar ? (
-          <button ref={enlargeTriggerRef as RefObject<HTMLButtonElement> | undefined} type="button" className="quiet-button desk-planner-enlarge" data-testid="calendar-enlarge" aria-expanded={calendarEnlarged} aria-haspopup="dialog" aria-label="Enlarge calendar" title="Enlarge" onClick={onEnlargeCalendar}>
+          <button ref={enlargeTriggerRef as RefObject<HTMLButtonElement> | undefined} type="button" className="quiet-button desk-planner-enlarge" data-testid="calendar-enlarge" aria-expanded={calendarEnlarged} aria-haspopup="dialog" aria-label="Open calendar" title="Open calendar" onClick={onEnlargeCalendar}>
             <span className="desk-planner-enlarge-glyph" aria-hidden="true">⤢</span>
-            <span className="desk-planner-enlarge-label">Enlarge</span>
+            <span className="desk-planner-enlarge-label">Open</span>
           </button>
         ) : null}
       </div>

@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from 'react'
+import { useState } from 'react'
 import type { ProjectedDay } from '../calendar/projections'
 import type { ISODate, PlanNavigationContext } from '../calendar'
 import { isPlannableDayKind } from '../calendar/schoolCalendar'
@@ -276,7 +276,7 @@ function UnitSpanButton({
       className="planning-unit-span planning-unit-span--open"
       style={{ gridColumn: `${unit.startIndex + 2} / ${unit.endIndex + 3}` }}
       title={title}
-      aria-label={`Open ${unit.title} in Month at unit start`}
+      aria-label={`Open ${unit.title} unit`}
       onClick={() => onSelectUnit({ date: unit.startDate, courseId: unit.courseId, unitId: unit.unitId })}
     >
       {unit.title}
@@ -315,11 +315,23 @@ function LessonTile({
   const taughtLabel = lesson.taughtDate && lesson.taughtDate !== lesson.effectiveDate
     ? `Taught ${formatShortDate(lesson.taughtDate)}`
     : null
+  const startableStatus = lesson.deliveryStatus === 'not-started' || lesson.deliveryStatus === 'in-progress'
   const canStartClass =
     Boolean(onStartClass) &&
-    (lesson.deliveryStatus === 'not-started' || lesson.deliveryStatus === 'in-progress') &&
+    startableStatus &&
     (!focusDate || slotDate === focusDate)
-  const hasActions = Boolean(onBeginPlanLessonMove || onSetLessonImportant || (onOpenRecoveryForSection && lesson.deliveryStatus === 'in-progress') || canStartClass)
+  const startClassBlockedReason =
+    Boolean(onStartClass) && startableStatus && focusDate && slotDate !== focusDate
+      ? 'Open today to start'
+      : null
+  const hasActions = Boolean(
+    onSelectLesson ||
+    onBeginPlanLessonMove ||
+    onSetLessonImportant ||
+    (onOpenRecoveryForSection && lesson.deliveryStatus === 'in-progress') ||
+    canStartClass ||
+    startClassBlockedReason,
+  )
 
   const accessible = [
     lesson.title,
@@ -346,7 +358,7 @@ function LessonTile({
     })
   }
 
-  function openPlanningSurface(event: MouseEvent) {
+  function openPlanningSurface(event: { stopPropagation: () => void }) {
     if (!onSelectLesson) return
     event.stopPropagation()
     onSelectLesson({ ...lesson, sectionId, date: slotDate })
@@ -355,31 +367,31 @@ function LessonTile({
   return (
     <ArcImportantObject important={important}>
     <article
-      className={`planning-lesson planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}${selected || touchRevealed ? ' is-actions-revealed' : ''}`}
+      className={`planning-lesson planning-lesson--${lesson.deliveryStatus}${lesson.datePolicy === 'fixed' ? ' planning-lesson--fixed' : ''}${selected || touchRevealed ? ' is-actions-revealed' : ''}${onSelectLesson ? ' planning-lesson--openable' : ''}`}
       aria-label={accessible}
       tabIndex={hasActions ? 0 : undefined}
       onClick={(event) => {
-        if (!hasActions) return
         const target = event.target as HTMLElement
         if (target.closest('button, a, [role="menuitem"]')) return
+        if (onSelectLesson) {
+          openPlanningSurface(event)
+          return
+        }
+        if (!hasActions) return
         setTouchRevealed((value) => !value)
+      }}
+      onKeyDown={(event) => {
+        if (!onSelectLesson) return
+        if (event.key !== 'Enter' && event.key !== ' ') return
+        const target = event.target as HTMLElement
+        if (target.closest('button, a, [role="menuitem"]')) return
+        event.preventDefault()
+        openPlanningSurface(event)
       }}
     >
       <ArcObjectMenu label={lesson.title} items={menuItems}>
       <div className="planning-lesson-title-row">
-        {onSelectLesson ? (
-          <button
-            type="button"
-            className="planning-lesson-title planning-lesson-title--open"
-            title={lesson.title}
-            aria-label={`Open ${lesson.title} lesson plan`}
-            onClick={openPlanningSurface}
-          >
-            {lesson.title}
-          </button>
-        ) : (
-          <span className="planning-lesson-title" title={lesson.title}>{lesson.title}</span>
-        )}
+        <span className="planning-lesson-title" title={lesson.title}>{lesson.title}</span>
         {lesson.datePolicy === 'fixed' ? <span className="planning-lesson-anchor" title={lesson.title}>Fixed</span> : null}
       </div>
       {showStatus ? (
@@ -401,6 +413,7 @@ function LessonTile({
           liveDate={slotDate}
           inProgress={lesson.deliveryStatus === 'in-progress'}
           canStartClass={canStartClass}
+          startClassBlockedReason={startClassBlockedReason}
           onBeginPlanLessonMove={onBeginPlanLessonMove}
           onOpenRecoveryForSection={onOpenRecoveryForSection}
           onSetLessonImportant={onSetLessonImportant}
@@ -420,6 +433,7 @@ function LessonProgressiveActions({
   liveDate,
   inProgress,
   canStartClass = false,
+  startClassBlockedReason = null,
   onBeginPlanLessonMove,
   onOpenRecoveryForSection,
   onSetLessonImportant,
@@ -432,6 +446,7 @@ function LessonProgressiveActions({
   liveDate: ISODate
   inProgress: boolean
   canStartClass?: boolean
+  startClassBlockedReason?: string | null
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
   onSetLessonImportant?: (lessonId: string, important: boolean) => boolean
@@ -444,25 +459,58 @@ function LessonProgressiveActions({
       <button key="important" type="button" className="text-button" onClick={() => onSetLessonImportant(lessonId, !important)}>{important ? 'Remove Important' : 'Mark Important'}</button>
     ) : null,
     onOpenRecoveryForSection && inProgress ? (
-      <button key="shift" type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Review Shift</button>
+      <button key="shift" type="button" className="text-button recovery-review-trigger" onClick={() => onOpenRecoveryForSection(sectionId)}>Pick up here</button>
     ) : null,
   ].filter(Boolean)
 
-  if (!onBeginPlanLessonMove && !canStartClass && extras.length === 0) return null
+  const hasSecondary = Boolean(onBeginPlanLessonMove || extras.length > 0)
+  if (!canStartClass && !startClassBlockedReason && !hasSecondary) return null
 
   return (
-    <div className={`planning-lesson-actions${moreOpen ? ' is-expanded' : ''}`}>
+    <>
       {canStartClass && onStartClass ? (
-        <button type="button" className="day-start-class" onClick={() => onStartClass(sectionId, lessonId, liveDate)}>{inProgress ? 'Resume in ArcTable' : 'Start class'}</button>
+        <div
+          className="planning-lesson-primary-action"
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="day-start-class"
+            data-testid="week-start-class"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              onStartClass(sectionId, lessonId, liveDate)
+            }}
+          >
+            {inProgress ? 'Resume' : 'Start class'}
+          </button>
+        </div>
+      ) : startClassBlockedReason ? (
+        <div className="planning-lesson-primary-action">
+          <span className="planning-lesson-start-hint" role="note">{startClassBlockedReason}</span>
+        </div>
       ) : null}
-      {onBeginPlanLessonMove ? (
-        <button type="button" className="text-button" onClick={() => onBeginPlanLessonMove({ lessonId, sectionId, defaultDestination: effectiveDate })}>Move</button>
+      {hasSecondary ? (
+        <div className={`planning-lesson-actions${moreOpen ? ' is-expanded' : ''}`}>
+          {onBeginPlanLessonMove ? (
+            <button type="button" className="text-button" onClick={(event) => {
+              event.stopPropagation()
+              onBeginPlanLessonMove({ lessonId, sectionId, defaultDestination: effectiveDate })
+            }}>Move</button>
+          ) : null}
+          {extras.length > 0 ? (
+            <button type="button" className="text-button planning-lesson-more-toggle" aria-expanded={moreOpen} onClick={(event) => {
+              event.stopPropagation()
+              setMoreOpen((value) => !value)
+            }}>More</button>
+          ) : null}
+          {moreOpen && extras.length > 0 ? <div className="planning-lesson-more-panel">{extras}</div> : null}
+        </div>
       ) : null}
-      {extras.length > 0 ? (
-        <button type="button" className="text-button planning-lesson-more-toggle" aria-expanded={moreOpen} onClick={() => setMoreOpen((value) => !value)}>More</button>
-      ) : null}
-      {moreOpen && extras.length > 0 ? <div className="planning-lesson-more-panel">{extras}</div> : null}
-    </div>
+    </>
   )
 }
 

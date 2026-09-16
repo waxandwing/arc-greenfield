@@ -52,7 +52,7 @@ try {
   await capture('desk-month-view')
   await selectView(page, 'Year')
   await capture('desk-year-grid-expanded')
-  await page.getByRole('button', { name: 'TRAY', exact: true }).click()
+  await page.getByRole('button', { name: 'IDEAS', exact: true }).click()
   await capture('tray-push-panel')
   await page.getByRole('button', { name: 'Close Tray', exact: true }).click()
   await page.getByRole('button', { name: 'SETTINGS', exact: true }).click()
