@@ -258,6 +258,76 @@
   color:var(--ink);
 }
 
+.planning-course-toggle{
+  display:flex;
+  align-items:baseline;
+  gap:0.45rem;
+  min-width:0;
+  max-width:100%;
+  margin:0;
+  padding:0.15rem 0.35rem 0.15rem 0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+
+.planning-course-toggle:hover{
+  color:var(--ink);
+}
+
+.planning-course-toggle:focus-visible{
+  outline:2px solid var(--accent-blue-deep);
+  outline-offset:2px;
+  border-radius:2px;
+}
+
+.planning-course-chevron{
+  flex:0 0 auto;
+  width:0.85rem;
+  font:700 14px/1 var(--font-ui);
+  color:var(--soft-charcoal);
+  transform:translateY(0.05em);
+}
+
+.planning-course-minimize-hint{
+  flex:0 1 auto;
+  margin-left:0.35rem;
+  padding:0.1rem 0.45rem;
+  border:1px solid color-mix(in srgb, var(--line-subtle) 80%, transparent);
+  border-radius:2px;
+  background:color-mix(in srgb, var(--paper-raised, #fffaf2) 70%, transparent);
+  font:600 10px/1.2 var(--font-label), sans-serif;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--soft-charcoal);
+  white-space:nowrap;
+}
+
+.planning-course-body{
+  display:grid;
+  gap:var(--space-2);
+}
+
+.planning-course-body[hidden]{
+  display:none;
+}
+
+.planning-course--minimized{
+  gap:0;
+  padding-bottom:0.15rem;
+}
+
+.planning-course--minimized .planning-course-heading{
+  opacity:0.92;
+}
+
+.planning-course--minimized[data-minimize-reason='weekend-auto'] .planning-course-heading{
+  opacity:0.78;
+}
+
 .planning-unit-stack{
   display:grid;
   gap:4px;

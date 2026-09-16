@@ -2635,10 +2635,33 @@ html:has(.arc-shell--desk) body {
   overflow: hidden;
 }
 
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course--minimized {
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
+}
+
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading {
   flex: 0 0 auto;
   min-width: 0;
   padding-right: 4px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-toggle {
+  width: 100%;
+  gap: 0.4rem;
+  padding: 0.1rem 0.2rem 0.1rem 0;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-chevron {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--ink) 55%, var(--soft-charcoal));
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-minimize-hint {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  padding: 0.08rem 0.35rem;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading h2 {
@@ -2648,6 +2671,19 @@ html:has(.arc-shell--desk) body {
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-heading span {
   font-size: 11px;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-course-body[hidden] {
+  display: none;
 }
 
 .b01-furniture-composition--desk .planning-grid:not(.planning-grid--day) .planning-unit-stack,

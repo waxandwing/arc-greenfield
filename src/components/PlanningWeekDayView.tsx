@@ -3,6 +3,15 @@ import type { ProjectedDay } from '../calendar/projections'
 import type { ISODate, PlanNavigationContext } from '../calendar'
 import { isPlannableDayKind } from '../calendar/schoolCalendar'
 import type { PlanningNote } from '../planning'
+import {
+  loadCourseMinimizePreferences,
+  resolveCourseMinimized,
+  saveCourseMinimizePreferences,
+  shouldAutoMinimizeCourse,
+  toggleCourseMinimized,
+  type CourseMinimizePreferences,
+  type CourseMinimizeReason,
+} from '../planning/courseMinimizePreferences'
 import type { PlanningCourseGroup, PlanningLessonPlacement, PlanningRangeProjection, PlanningUnitSpan } from '../planning/planningProjection'
 import { ArcImportantObject } from './ArcImportantObject'
 import { ArcObjectMenu, type ArcObjectMenuItem } from './ArcObjectMenu'
@@ -56,6 +65,20 @@ export function PlanningWeekDayView({
    */
   deskNotes?: { notes: PlanningNote[]; handlers: CalendarDayNoteHandlers } | null
 }) {
+  const [minimizePrefs, setMinimizePrefs] = useState<CourseMinimizePreferences>(loadCourseMinimizePreferences)
+  const allowMinimize = !single
+
+  function updateMinimizePrefs(next: CourseMinimizePreferences) {
+    setMinimizePrefs(next)
+    saveCourseMinimizePreferences(next)
+  }
+
+  function toggleCourseRow(course: PlanningCourseGroup) {
+    const resolved = resolveCourseMinimized(course.course.id, course, days, minimizePrefs, focusDate)
+    const wouldAuto = shouldAutoMinimizeCourse(course, days, focusDate)
+    updateMinimizePrefs(toggleCourseMinimized(minimizePrefs, course.course.id, resolved.minimized, wouldAuto))
+  }
+
   if (planning.courses.length === 0) {
     return <p className="planning-empty-state">Set up Classes to begin placing teaching work on the calendar.</p>
   }
@@ -71,23 +94,31 @@ export function PlanningWeekDayView({
           handlers={deskNotes.handlers}
         />
       ) : null}
-      {planning.courses.map((course) => (
-        <PlanningCourse
-          key={course.course.id}
-          course={course}
-          days={days}
-          single={single}
-          focusDate={focusDate}
-          planContext={planContext}
-          onSelectLesson={onSelectLesson}
-          onSelectUnit={onSelectUnit}
-          onBeginPlanLessonMove={onBeginPlanLessonMove}
-          onOpenRecoveryForSection={onOpenRecoveryForSection}
-          onSetLessonImportant={onSetLessonImportant}
-          onStartClass={onStartClass}
-          lessonImportantById={lessonImportantById}
-        />
-      ))}
+      {planning.courses.map((course) => {
+        const resolved = allowMinimize
+          ? resolveCourseMinimized(course.course.id, course, days, minimizePrefs, focusDate)
+          : { minimized: false, reason: null as CourseMinimizeReason | null }
+        return (
+          <PlanningCourse
+            key={course.course.id}
+            course={course}
+            days={days}
+            single={single}
+            focusDate={focusDate}
+            planContext={planContext}
+            minimized={resolved.minimized}
+            minimizeReason={resolved.reason}
+            onToggleMinimize={allowMinimize ? () => toggleCourseRow(course) : undefined}
+            onSelectLesson={onSelectLesson}
+            onSelectUnit={onSelectUnit}
+            onBeginPlanLessonMove={onBeginPlanLessonMove}
+            onOpenRecoveryForSection={onOpenRecoveryForSection}
+            onSetLessonImportant={onSetLessonImportant}
+            onStartClass={onStartClass}
+            lessonImportantById={lessonImportantById}
+          />
+        )
+      })}
     </div>
   )
 }
@@ -167,6 +198,9 @@ function PlanningCourse({
   single,
   focusDate,
   planContext,
+  minimized = false,
+  minimizeReason = null,
+  onToggleMinimize,
   onSelectLesson,
   onSelectUnit,
   onBeginPlanLessonMove,
@@ -180,6 +214,9 @@ function PlanningCourse({
   single: boolean
   focusDate?: string
   planContext?: PlanNavigationContext | null
+  minimized?: boolean
+  minimizeReason?: CourseMinimizeReason | null
+  onToggleMinimize?: () => void
   onSelectLesson?: SelectLessonHandler
   onSelectUnit?: SelectUnitHandler
   onBeginPlanLessonMove?: (input: { lessonId: string; sectionId: string | null; defaultDestination?: ISODate | null }) => void
@@ -188,63 +225,110 @@ function PlanningCourse({
   onStartClass?: (sectionId: string, lessonId: string, liveDate?: ISODate) => void
   lessonImportantById?: (lessonId: string) => boolean
 }) {
+  const headingId = `planning-course-heading-${course.course.id}`
+  const bodyId = `planning-course-body-${course.course.id}`
+  const toggleLabel = minimized
+    ? `Expand ${course.course.title}`
+    : `Minimize ${course.course.title}`
+  const statusHint = minimizeReason === 'weekend-auto'
+    ? 'Weekend — no classes'
+    : minimizeReason === 'manual' && minimized
+      ? 'Minimized'
+      : null
+
   return (
-    <section className="planning-course" data-course-id={course.course.id} aria-label={`${course.course.title} planning`}>
+    <section
+      className={`planning-course${minimized ? ' planning-course--minimized' : ''}`}
+      data-course-id={course.course.id}
+      data-minimized={minimized ? 'true' : 'false'}
+      data-minimize-reason={minimizeReason ?? undefined}
+      aria-label={`${course.course.title} planning`}
+    >
       <div className="planning-course-heading">
-        <h2>{course.course.title}</h2>
+        {onToggleMinimize ? (
+          <button
+            type="button"
+            className="planning-course-toggle"
+            id={headingId}
+            aria-expanded={!minimized}
+            aria-controls={bodyId}
+            aria-label={toggleLabel}
+            title={toggleLabel}
+            data-testid={`planning-course-toggle-${course.course.id}`}
+            onClick={onToggleMinimize}
+          >
+            <span className="planning-course-chevron" aria-hidden="true">{minimized ? '▸' : '▾'}</span>
+            <h2>{course.course.title}</h2>
+            {statusHint ? (
+              <span className="planning-course-minimize-hint" data-testid={`planning-course-minimize-hint-${course.course.id}`}>
+                {statusHint}
+              </span>
+            ) : null}
+          </button>
+        ) : (
+          <h2 id={headingId}>{course.course.title}</h2>
+        )}
       </div>
-      {course.unitSpans.length > 0 ? (
-        <div className="planning-unit-stack" aria-label={`${course.course.title} Unit spans`}>
-          {course.unitSpans.map((unit, index) => (
-            <div className="planning-unit-grid" style={gridTemplate(days)} key={unit.unitId}>
-              <span className="planning-row-label planning-row-label--unit">{index === 0 ? 'Unit' : ''}</span>
-              <UnitSpanButton unit={unit} onSelectUnit={onSelectUnit} />
+      <div
+        id={bodyId}
+        className="planning-course-body"
+        hidden={minimized}
+        role={onToggleMinimize ? 'region' : undefined}
+        aria-labelledby={onToggleMinimize ? headingId : undefined}
+      >
+        {course.unitSpans.length > 0 ? (
+          <div className="planning-unit-stack" aria-label={`${course.course.title} Unit spans`}>
+            {course.unitSpans.map((unit, index) => (
+              <div className="planning-unit-grid" style={gridTemplate(days)} key={unit.unitId}>
+                <span className="planning-row-label planning-row-label--unit">{index === 0 ? 'Unit' : ''}</span>
+                <UnitSpanButton unit={unit} onSelectUnit={onSelectUnit} />
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <div className="planning-section-list">
+          {course.sections.length === 0 ? (
+            <p className="planning-course-empty">No Sections are attached to this Course yet.</p>
+          ) : course.sections.map((row) => (
+            <div className="planning-section-row" style={gridTemplate(days)} key={row.section.id}>
+              <div className="planning-row-label">
+                <strong>{row.section.name}</strong>
+              </div>
+              {row.days.map((slot, index) => {
+                const dayKind = days[index]?.kind ?? 'unknown'
+                const offDay = !isPlannableDayKind(dayKind)
+                return (
+                <div
+                  key={slot.date}
+                  className={`planning-day-slot planning-day-slot--${dayKind}${offDay ? ' planning-day-slot--off' : ''}${slot.date === focusDate ? ' planning-day-slot--focus' : ''}`}
+                  aria-label={`${row.section.name}, ${formatLongDate(slot.date)}${offDay ? `. ${days[index]?.label || humanizeKind(dayKind)}` : ''}`}
+                  data-desk-postit-drop="date"
+                  data-desk-postit-date={slot.date}
+                  data-date={slot.date}
+                >
+                  {slot.lessons.map((lesson) => (
+                    <LessonTile
+                      key={lesson.lessonId}
+                      lesson={lesson}
+                      sectionId={row.section.id}
+                      slotDate={slot.date}
+                      focusDate={focusDate}
+                      important={lessonImportantById?.(lesson.lessonId) ?? false}
+                      selected={planContext?.lessonId === lesson.lessonId}
+                      onSelectLesson={onSelectLesson}
+                      onBeginPlanLessonMove={onBeginPlanLessonMove}
+                      onOpenRecoveryForSection={onOpenRecoveryForSection}
+                      onSetLessonImportant={onSetLessonImportant}
+                      onStartClass={onStartClass}
+                    />
+                  ))}
+                  {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
+                </div>
+                )
+              })}
             </div>
           ))}
         </div>
-      ) : null}
-      <div className="planning-section-list">
-        {course.sections.length === 0 ? (
-          <p className="planning-course-empty">No Sections are attached to this Course yet.</p>
-        ) : course.sections.map((row) => (
-          <div className="planning-section-row" style={gridTemplate(days)} key={row.section.id}>
-            <div className="planning-row-label">
-              <strong>{row.section.name}</strong>
-            </div>
-            {row.days.map((slot, index) => {
-              const dayKind = days[index]?.kind ?? 'unknown'
-              const offDay = !isPlannableDayKind(dayKind)
-              return (
-              <div
-                key={slot.date}
-                className={`planning-day-slot planning-day-slot--${dayKind}${offDay ? ' planning-day-slot--off' : ''}${slot.date === focusDate ? ' planning-day-slot--focus' : ''}`}
-                aria-label={`${row.section.name}, ${formatLongDate(slot.date)}${offDay ? `. ${days[index]?.label || humanizeKind(dayKind)}` : ''}`}
-                data-desk-postit-drop="date"
-                data-desk-postit-date={slot.date}
-                data-date={slot.date}
-              >
-                {slot.lessons.map((lesson) => (
-                  <LessonTile
-                    key={lesson.lessonId}
-                    lesson={lesson}
-                    sectionId={row.section.id}
-                    slotDate={slot.date}
-                    focusDate={focusDate}
-                    important={lessonImportantById?.(lesson.lessonId) ?? false}
-                    selected={planContext?.lessonId === lesson.lessonId}
-                    onSelectLesson={onSelectLesson}
-                    onBeginPlanLessonMove={onBeginPlanLessonMove}
-                    onOpenRecoveryForSection={onOpenRecoveryForSection}
-                    onSetLessonImportant={onSetLessonImportant}
-                    onStartClass={onStartClass}
-                  />
-                ))}
-                {single && slot.lessons.length === 0 ? <span className="planning-day-empty">No Lesson placed</span> : null}
-              </div>
-              )
-            })}
-          </div>
-        ))}
       </div>
     </section>
   )
