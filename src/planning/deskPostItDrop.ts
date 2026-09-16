@@ -7,7 +7,18 @@ export type DeskPostItDropTarget =
   | { type: 'priority'; priority: TaskPriority; element: Element }
   | { type: 'empty' }
 
+/**
+ * Park / return targets while dragging stickies between IDEAS and the exterior desk.
+ * Distinct from assign targets (date / priority) — wood itself is a valid park.
+ */
+export type DeskPostItParkTarget =
+  | { type: 'ideas-tray'; element: Element }
+  | { type: 'desk-park'; element: Element }
+  | { type: 'empty' }
+
 export const DESK_POSTIT_DROP_HIGHLIGHT_CLASS = 'arc-desk-postit-drop-target'
+export const DESK_POSTIT_PARK_TRAY_CLASS = 'arc-desk-postit-drop-target--ideas'
+export const DESK_POSTIT_PARK_DESK_CLASS = 'arc-desk-postit-drop-target--desk-park'
 
 const DATE_ATTRS = ['data-plan-drop-date', 'data-day-notes-date', 'data-date', 'data-desk-postit-date'] as const
 
@@ -43,6 +54,7 @@ export function hitTestDeskPostItDrop(clientX: number, clientY: number): DeskPos
     if (!(node instanceof Element)) continue
     // Skip the dragged post-it itself and its children.
     if (node.closest('[data-desk-post-it]')) continue
+    if (node.closest('[data-testid="arc-desk-post-it-drag-ghost"]')) continue
 
     const priorityHost = node.closest(
       '[data-desk-postit-drop="priority"], .desk-priority-lane',
@@ -68,12 +80,61 @@ export function clearDeskPostItDropHighlights(root: ParentNode = document): void
   root.querySelectorAll(`.${DESK_POSTIT_DROP_HIGHLIGHT_CLASS}`).forEach((el) => {
     el.classList.remove(DESK_POSTIT_DROP_HIGHLIGHT_CLASS)
   })
+  root.querySelectorAll(`.${DESK_POSTIT_PARK_TRAY_CLASS}`).forEach((el) => {
+    el.classList.remove(DESK_POSTIT_PARK_TRAY_CLASS)
+  })
+  root.querySelectorAll(`.${DESK_POSTIT_PARK_DESK_CLASS}`).forEach((el) => {
+    el.classList.remove(DESK_POSTIT_PARK_DESK_CLASS)
+  })
 }
 
 export function highlightDeskPostItDropTarget(target: DeskPostItDropTarget): void {
   clearDeskPostItDropHighlights()
   if (target.type === 'empty') return
   target.element.classList.add(DESK_POSTIT_DROP_HIGHLIGHT_CLASS)
+}
+
+export function highlightDeskPostItParkTarget(target: DeskPostItParkTarget): void {
+  clearDeskPostItDropHighlights()
+  if (target.type === 'ideas-tray') {
+    const tray =
+      target.element.closest('[data-testid="arc-desk-tray-dock"]')
+      ?? target.element
+    tray.classList.add(DESK_POSTIT_DROP_HIGHLIGHT_CLASS, DESK_POSTIT_PARK_TRAY_CLASS)
+    return
+  }
+  if (target.type === 'desk-park') {
+    const surface =
+      target.element.closest('.arc-desk-surface')
+      ?? target.element
+    surface.classList.add(DESK_POSTIT_DROP_HIGHLIGHT_CLASS, DESK_POSTIT_PARK_DESK_CLASS)
+  }
+}
+
+
+/**
+ * Resolve IDEAS tray vs exterior desk park under a point.
+ * Tray wins when the pointer is over the dock / accent slot so returns are obvious.
+ */
+export function hitTestDeskPostItPark(clientX: number, clientY: number): DeskPostItParkTarget {
+  if (typeof document === 'undefined') return { type: 'empty' }
+  const stack = document.elementsFromPoint(clientX, clientY)
+  for (const node of stack) {
+    if (!(node instanceof Element)) continue
+    if (node.closest('[data-desk-post-it]')) continue
+    if (node.closest('[data-testid="arc-desk-post-it-drag-ghost"]')) continue
+
+    const trayHost = node.closest(
+      '[data-desk-postit-drop="ideas-tray"], [data-testid="arc-desk-tray-dock"], [data-testid="arc-desk-ideas-accent-slot"]',
+    )
+    if (trayHost) return { type: 'ideas-tray', element: trayHost }
+
+    const deskHost = node.closest(
+      '[data-desk-postit-drop="desk-park"], .arc-desk-surface',
+    )
+    if (deskHost) return { type: 'desk-park', element: deskHost }
+  }
+  return { type: 'empty' }
 }
 
 export function pointFromRectCenter(rect: { left: number; top: number; width: number; height: number }): {
@@ -84,4 +145,10 @@ export function pointFromRectCenter(rect: { left: number; top: number; width: nu
     clientX: rect.left + rect.width / 2,
     clientY: rect.top + rect.height / 2,
   }
+}
+
+export function pointInElement(clientX: number, clientY: number, el: Element | null): boolean {
+  if (!el) return false
+  const box = el.getBoundingClientRect()
+  return clientX >= box.left && clientX <= box.right && clientY >= box.top && clientY <= box.bottom
 }

@@ -97,7 +97,7 @@ export function DeskGreenFoldersDrawer({ children, defaultExtended = false }: Pr
     }
   }, [])
 
-const beginParkDrag = useCallback((event: ReactPointerEvent, fromTab = false) => {
+  const beginParkDrag = useCallback((event: ReactPointerEvent, fromTab = false) => {
     if (event.button !== 0) return
     // Don't steal drags that begin on Clean up or interactive well content.
     const target = event.target
@@ -223,6 +223,7 @@ const beginParkDrag = useCallback((event: ReactPointerEvent, fromTab = false) =>
           <div
             className="arc-desk-ideas-accent-slot"
             data-testid="arc-desk-ideas-accent-slot"
+            data-desk-postit-drop="ideas-tray"
             aria-label="Post-its in IDEAS"
           />
           {children}

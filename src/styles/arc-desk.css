@@ -1907,11 +1907,11 @@ html:has(.arc-shell--desk) body {
   right: auto;
   left: max(12px, 1.2vw);
   bottom: max(16px, 2.5dvh);
-  width: min(392px, calc(100vw - 28px));
+  width: min(440px, calc(100vw - 28px));
   min-height: 0;
   max-height: none;
   margin: 0;
-  padding: 20px 22px 26px;
+  padding: 22px 24px 28px;
   border: var(--shell-planner-border) solid var(--shell-frame-green);
   border-radius: 14px;
   opacity: 1;
@@ -2097,11 +2097,11 @@ html:has(.arc-shell--desk) body {
    Original settings-tab.png art only; no filters/effects. Not a wood utility-strip control. */
 .b01-furniture-composition--desk .arc-planner-object > .arc-index-tab--settings-physical {
   position: absolute;
-  /* Ear protrudes onto wood; body overlaps green rim / cream plate. */
-  left: -26px;
+  /* Ear tucked under planner left rim when closed — peek only; sheet owns the open surface. */
+  left: -22px;
   top: 54%;
   transform: translateY(-50%);
-  z-index: 48;
+  z-index: 36;
   display: inline-flex;
   flex-direction: column;
   align-items: center;

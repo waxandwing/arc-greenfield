@@ -19,6 +19,7 @@
     "src/desk/deskIdeasEvents.contract.ts",
     "src/desk/deskIdeasTrayPark.ts",
     "src/desk/deskIdeasTrayPark.contract.ts",
+    "src/planning/courseMinimizePreferences.contract.ts",
     "src/demo/**/*.ts",
     "src/app/setupSections.ts",
     "src/app/setupSections.contract.ts",

@@ -7,6 +7,8 @@
 
 **Slice landed:** first repair wave — comprehension nouns + onboarding P0 entry (branch `cursor/register-130-first-wave-32a6`).
 
+**Interrupted-session finish (`cursor/kelly-interrupted-finish-045e`):** ArcTable Editable default / end-class unframe / Media polish; IDEAS tray park + Clean up lip + post-it PNGs; YEAR one-click; setup Units/Lessons header retirement; Unplace → IDEAS Unscheduled notice; course minimize + weekend auto-minimize.
+
 | Register # | Status | Notes |
 |---|---|---|
 | 1 | done | Welcome CTA → **Set up my school year** |
@@ -16,13 +18,17 @@
 | 5 | done | Step rail: School year → Courses → Teaching day → Done |
 | 8 | done | Import dependency callout on calendar stage |
 | 12 | done | Back uses destination labels |
+| 61 | done | SETTINGS physical tab tucked under planner left rim (not peer to DAY/WEEK) |
 | 66 / 86 | done | User-facing **Tray** → **IDEAS** (labels/empty/settings/help) |
 | 69 / 70 | done | **Open Arc to** + Year absence explained |
 | 73 | done | Planner shown as fixed text, not disabled checkbox |
 | 74 / 76 | done | Show-on-desk labels match objects; Day notes |
+| 118 | done | Unplace names **Unscheduled lessons in IDEAS** + Show unplaced recovery |
 | 121 | done | Prefix syntax demoted to optional Help; blank sticky stays Enter→IDEAS |
+| 127 | done | Single Clean up lip on IDEAS tray (no duplicate underline pills) |
 | 136–138 / 141 | done | **Arrange desk** band, IDEAS/To-dos size labels, **Reset desk layout** |
 | 137 | done | Exit remains **Done arranging** |
+| 146–148 / 153 | already | Teacher Monitor Editable default; end-class unframed outcome layer |
 | 101 | already | Whole lesson object opens (prior gauntlet Pass 1) |
 | 88 / 89 / 90 | already | Dead prev/next removed; search scoped; Enlarge → Open |
 | Rest of register | open | See sections below; do not boil the ocean |
