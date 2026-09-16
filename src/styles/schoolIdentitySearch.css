@@ -1,4 +1,4 @@
-.school-identity-search{display:grid;gap:var(--space-4);margin:0 0 var(--space-6);padding:var(--space-4) 0 var(--space-6);border-top:1px solid var(--line-subtle);border-bottom:1px solid var(--line-subtle)}
+.school-identity-search{display:grid;gap:var(--space-3);margin:0;padding:0 0 var(--space-2);border:0}
 .school-identity-search-heading{max-width:720px}
 .school-identity-search-heading h3,.manual-calendar-divider h3{margin:6px 0 8px;font:600 24px/1.18 var(--font-editorial);letter-spacing:-.018em}
 .school-identity-search-heading>p:last-child,.manual-calendar-divider>p:last-child{margin:0;color:var(--soft-charcoal)}

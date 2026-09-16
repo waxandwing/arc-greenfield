@@ -58,6 +58,7 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
   function chooseSchool(candidate: OfficialSourceCandidate) {
     setSelected(candidate)
     setShowSearchAgain(false)
+    setResult({ status: 'idle' })
     onSchoolIdentitySelected?.(candidate)
   }
 
@@ -75,7 +76,7 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
           <strong>{selected.schoolName}</strong>
           <p>{selected.districtName ?? 'District not listed'}{selected.locality ? ` · ${selected.locality}` : ''}</p>
           <p className="school-identity-source">Source: {selected.sourceLabel}</p>
-          <p>Identity is loaded. Dates still come from a calendar source or manual entry below — this step does not invent your school year.</p>
+          <p>Identity is loaded. Confirm dates, class times, and the year preview below — this step does not invent your school year on its own.</p>
           <button type="button" className="quiet-button" onClick={() => setShowSearchAgain(true)}>
             Change school
           </button>
@@ -198,7 +199,10 @@ export function SchoolIdentitySearch({ onUseCalendar, onSchoolIdentitySelected, 
       )}
 
       {selected && (
-        <OfficialCalendarSourceInput key={selected.id} school={selected} onUseCalendar={onUseCalendar} />
+        <details className="school-identity-optional-source">
+          <summary>Optional: hold an official calendar link</summary>
+          <OfficialCalendarSourceInput key={selected.id} school={selected} onUseCalendar={onUseCalendar} />
+        </details>
       )}
     </section>
   )
