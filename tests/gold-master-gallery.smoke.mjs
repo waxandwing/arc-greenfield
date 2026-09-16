@@ -53,8 +53,10 @@ try {
   await page.goto(`${baseUrl}/?gold=week`, { waitUntil: 'networkidle' })
   assert(await page.getByText('October 20 – 24, 2025', { exact: true }).isVisible(), 'Week date range missing')
   assert(await page.getByText('Renaissance Context', { exact: true }).first().isVisible(), 'Week fixture lesson missing')
-  assert(await page.getByText('TO-DO', { exact: true }).isVisible(), 'Week To-Do pad missing')
-  assert(await page.getByText('IDEAS', { exact: true }).isVisible(), 'Week Ideas pad missing')
+  const sidepad = page.locator('.gm-sidepad')
+  assert(await sidepad.isVisible(), 'Week utility rail missing')
+  assert(await sidepad.getByText('TO-DO', { exact: true }).isVisible(), 'Week To-Do pad missing')
+  assert(await sidepad.getByText('IDEAS', { exact: true }).isVisible(), 'Week Ideas pad missing')
   assert(await page.getByRole('button', { name: 'ArcTable', exact: false }).count() > 0, 'ArcTable access missing from Arc shell')
 
   await page.goto(`${baseUrl}/?gold=arctable`, { waitUntil: 'networkidle' })
