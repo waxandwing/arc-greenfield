@@ -20,6 +20,7 @@ import { DeskTodosFolder } from './DeskTodosFolder'
 import {
   deskCommittedRasterChromeEnabled,
   deskPlannerEdgeTabAssetUrl,
+  deskSettingsTabUrl,
 } from '../desk/deskSliceRuntime'
 import { DeskPlannerFrameSlices } from './DeskPlannerFrameSlices'
 
@@ -392,13 +393,31 @@ export function B01Furniture({
         <button
           ref={settingsButton}
           type="button"
-          className="arc-index-tab arc-index-tab--settings"
+          className={`arc-index-tab arc-index-tab--settings${deskCommittedRasterChromeEnabled() ? ' arc-index-tab--settings-physical' : ''}`}
           aria-expanded={open.settings}
           aria-controls="b01-settings-surface"
           aria-current={open.settings ? 'page' : undefined}
+          aria-label="SETTINGS"
           onClick={() => toggle('settings')}
+          data-testid="arc-desk-settings-tab"
         >
-          SETTINGS
+          {deskCommittedRasterChromeEnabled() ? (
+            <>
+              <img
+                className="arc-settings-tab-face"
+                src={deskSettingsTabUrl()}
+                alt=""
+                width={48}
+                height={82}
+                aria-hidden="true"
+                decoding="async"
+                data-testid="arc-desk-settings-tab-face"
+              />
+              <span className="arc-settings-tab-label">SETTINGS</span>
+            </>
+          ) : (
+            'SETTINGS'
+          )}
         </button>
       </nav>
     )

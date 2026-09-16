@@ -1,0 +1,49 @@
+{
+  "ingestedAt": "2026-09-16T00:32:18.124998+00:00",
+  "agent": "bc-f777bf61",
+  "source": "Kelly chat upload 2026-09-16 \u2014 settings/start-class/rainbow/paper-tray",
+  "processing": "Cropped transparent letterbox to content bbox (+2px pad). No recolor.",
+  "note": "start-class-mark includes cursive + quadrant; distinct from arctable-mark tile-only.",
+  "outputs": [
+    {
+      "file": "settings-tab.png",
+      "size": [
+        317,
+        541
+      ],
+      "bytes": 125146,
+      "sha256": "68ec2c708ece131b846262c9c712f342cb78f9e100e8022feae7a69688d81061",
+      "source": "56d5f05f-9b86-45c3-8af1-24653165f894.png"
+    },
+    {
+      "file": "start-class-mark.png",
+      "size": [
+        444,
+        539
+      ],
+      "bytes": 16330,
+      "sha256": "89a004041d2c887edd82c1f30485468bfa052a0961a6df3e75e196e04265a7b1",
+      "source": "406826ec-1e4b-4ba8-b07f-d350cd16b4e0.png"
+    },
+    {
+      "file": "calendar-date-rainbow.png",
+      "size": [
+        508,
+        495
+      ],
+      "bytes": 27618,
+      "sha256": "5b8049b4cd37277a52cc9c50f0b08359f9973c5d86584dabefd8888dfb7e71f0",
+      "source": "83aed162-b2b1-4ab7-bf2c-b4266fe15299.png"
+    },
+    {
+      "file": "postit-stack-base.png",
+      "size": [
+        522,
+        199
+      ],
+      "bytes": 5293,
+      "sha256": "e99df0a9c824080ac03d8d117e651cea66de1f19083a76cf53dcdabd5be757c0",
+      "source": "da2d1234-c2c3-4255-b17f-2ce4a671ad51.png"
+    }
+  ]
+}

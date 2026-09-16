@@ -12,6 +12,18 @@ Also see `KELLY-DROP-22-LABELED-SVGS-HERE.txt` and `README.txt` in this folder.
 
 **Historical note:** Teaching week title / kicker / rainbow / three-course week were RED on 2026-09-15 and have since landed (see handback). They are **not** the current blocker. The current blocker is these **22 labeled SVG binaries**.
 
+
+## Kelly PNG interim (2026-09-16) — settings / start-class / rainbow
+
+While the SVG pack is still missing, these Kelly chat-upload PNGs are canonical + wired:
+
+| Canonical PNG | Replaces interim | Status |
+|---|---|---|
+| `settings-tab.png` | CSS SETTINGS pill | **WIRED** |
+| `start-class-mark.png` | `start-class-frame.png` / AT SVG + script | **WIRED** |
+| `calendar-date-rainbow.png` | `planner-rainbow-mark.*` | **WIRED** |
+| `postit-stack-base.png` / `paper-tray.png` | (none yet) | **STAGED** |
+
 ## Planning Period view — object → asset map (Kelly `.arc-desk-surface` select)
 
 Screenshot audit of Planning Period desk furniture. **Correct source = Kelly labeled SVG only.** Interim live controllers listed for diagnosis — they are **not** approved replacements.

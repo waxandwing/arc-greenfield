@@ -46,7 +46,7 @@ export function DeskPlannerHeadRow({
             height={58}
             aria-hidden="true"
             data-testid="desk-planner-rainbow-mark"
-            data-desk-mark-source={deskCommittedRasterChromeEnabled() ? 'committed-png' : 'vector'}
+            data-desk-mark-source={deskCommittedRasterChromeEnabled() ? 'canonical-calendar-date-rainbow' : 'vector'}
             decoding="async"
           />
         ) : null}

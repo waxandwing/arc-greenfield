@@ -24,7 +24,7 @@ Provenance: `PROVENANCE-kelly-2026-09-16.json`
 | `magnet-blue.png` (+ `desk/magnets/magnet-blue.png`) | Slate-blue speckled magnet/plate | **WIRED** — blue/slate magnet face |
 | `postit-blue.png` | Pale blue tilted post-it paper | **WIRED** — `.arc-desk-post-it--blue` / accent-blue |
 
-`start-class-mark.png` may also be present from a concurrent Kelly PNG drop (script + quadrant lockup). Desk Start Class chrome still uses live script + `ARC_TABLE_MARK_ASSET` quadrant art so script is not doubled.
+`start-class-mark.png` is the cursive + quadrant lockup from upload `406826ec-…` — **WIRED** as the desk Start Class control (see section below). Do not replace with quadrant-only `arctable-mark.png`.
 
 ## Wiring order (from re-audit — do not skip ahead)
 
@@ -57,7 +57,7 @@ Kelly selected `.arc-desk-surface` on Planning Period and asked to find correct 
 
 **No P0 wires shipped** for Planning Period furniture (rule: do not CSS-fake). Object → asset map: `uploads/desk-incoming/LABELED-SVG-CHECKLIST.md` § Planning Period view.
 
-Planning Period blockers: `TODO tab (use).svg`, `tray image (use).svg`, `Settings tab (USE).svg`, `calendar selected tab view.svg`, `unselected calendar states.svg`, `Wood Background Light.svg`, `calendar background.svg`.
+Planning Period blockers (remaining): `TODO tab (use).svg`, `tray image (use).svg`, calendar tab bodies, `Wood Background Light.svg`, `calendar background.svg`. SETTINGS copper tab PNG is wired (`settings-tab.png`).
 
 ## Kelly PNG upload session (2026-09-16) — batch 2 wired
 
@@ -75,6 +75,21 @@ Kelly uploaded four more desk PNGs (empty chat message) after batch 1 (Arc mark 
 Provenance: `PROVENANCE-kelly-2026-09-16-batch2-tray-tab-magnet-paper.json`.
 
 Coordinate with batch 1 (`PROVENANCE-kelly-2026-09-16.json`) — do not overwrite those paths.
+
+## Kelly PNG ingest — settings / start-class / rainbow / paper tray (2026-09-16)
+
+Agent `bc-f777bf61`. Provenance: `PROVENANCE-kelly-settings-start-rainbow-2026-09-16.json`.
+
+| Canonical PNG | Upload UUID | Role | Wire |
+|---|---|---|---|
+| `settings-tab.png` | `56d5f05f-…` | Copper brushed SETTINGS physical tab | **WIRED** — desk utility SETTINGS face |
+| `start-class-mark.png` | `406826ec-…` | Cursive “start class” + ArcTable quadrant | **WIRED** — ArcTable desk Start Class control (+ `public/assets/arctable/start-class-mark.png`) |
+| `calendar-date-rainbow.png` | `83aed162-…` | Teaching week header rainbow | **WIRED** — replaces interim `planner-rainbow-mark.png` |
+| `postit-stack-base.png` (+ alias `paper-tray.png`) | `da2d1234-…` | Cream paper tray / post-it stack base | **STAGED** — binary landed; tray-stack wire pending |
+
+Processing: transparent letterbox cropped to content bbox (+2px pad). No recolor. `start-class-mark.png` includes cursive + quadrant and must **not** be replaced by the quadrant-only `arctable-mark` tile.
+
+
 
 ## Binary handoff status
 
