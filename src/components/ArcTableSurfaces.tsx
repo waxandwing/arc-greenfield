@@ -47,6 +47,8 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
   const [mediaError, setMediaError] = useState<string | null>(null)
   const [passLabel, setPassLabel] = useState('')
   const [passPeople, setPassPeople] = useState<Record<string, string>>({})
+  const [editingTimerDuration, setEditingTimerDuration] = useState(false)
+  const timerDurationInputRef = useRef<HTMLInputElement>(null)
   const toolPanelRef = useRef<HTMLElement>(null)
   const toolRowRef = useRef<HTMLDivElement>(null)
   const now = useClock()
@@ -56,7 +58,17 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
   const cleanupActive = cleanupIsActive(live)
   const selectedPerson = selectedArcTablePerson(live.people)
   const activeMedia = live.media.items.find((item) => item.id === live.media.activeId) ?? null
+  const timerIdle = live.timer.status === 'idle' || live.timer.status === 'completed'
+  const timerCanEditDuration = timerIdle || live.timer.status === 'paused'
   useSettleCountdowns(live, now, onUpdate)
+  useEffect(() => {
+    if (!editingTimerDuration) return
+    timerDurationInputRef.current?.focus()
+    timerDurationInputRef.current?.select()
+  }, [editingTimerDuration])
+  useEffect(() => {
+    if (!timerCanEditDuration && editingTimerDuration) setEditingTimerDuration(false)
+  }, [editingTimerDuration, timerCanEditDuration])
   useEffect(() => {
     if (!tool) return
     const closeTool = (event: KeyboardEvent) => { if (event.key === 'Escape') setTool(null) }
@@ -203,14 +215,85 @@ export function ArcTableTeacherMonitor({ live, onOpenPlan, onOpenSettings, onSho
 
             <aside className="arctable-controls" aria-label="Teacher controls">
               <p className="arctable-kicker">Teacher controls</p>
-              <section className="arctable-timer-control" aria-labelledby="classroom-timer-heading">
-                <div className="arctable-timer-control-heading"><strong id="classroom-timer-heading">Classroom timer</strong><span>{live.timer.status}</span></div>
-                <div className="arctable-timer-display" aria-live="polite"><TimerDigits seconds={timerDisplaySeconds} /></div>
-                <label><span>Duration in minutes</span><input aria-label="Timer duration in minutes" type="number" min="1" max={ARC_TABLE_MAX_COUNTDOWN_SECONDS / 60} value={Math.ceil(live.timer.durationSeconds / 60)} onChange={(event) => onUpdate({ timer: setArcTableCountdownDuration(live.timer, Number(event.target.value) * 60) })} /></label>
-                <div className="arctable-presets" aria-label="Timer presets">{[5, 10, 15].map((minutes) => <button type="button" key={minutes} onClick={() => onUpdate({ timer: setArcTableCountdownDuration(live.timer, minutes * 60) })}>{minutes} min</button>)}</div>
+              <section className={`arctable-timer-control is-${live.timer.status}`} aria-labelledby="classroom-timer-heading">
+                <div className="arctable-timer-control-heading">
+                  <strong id="classroom-timer-heading">Timer</strong>
+                  {live.timer.status === 'paused' ? <span>Paused</span> : null}
+                  {live.timer.status === 'completed' ? <span>Done</span> : null}
+                </div>
+                {editingTimerDuration && timerCanEditDuration ? (
+                  <label className="arctable-timer-edit">
+                    <span className="sr-only">Duration in minutes</span>
+                    <input
+                      ref={timerDurationInputRef}
+                      aria-label="Timer duration in minutes"
+                      type="number"
+                      min={1}
+                      max={ARC_TABLE_MAX_COUNTDOWN_SECONDS / 60}
+                      value={Math.ceil(live.timer.durationSeconds / 60)}
+                      onChange={(event) => onUpdate({ timer: setArcTableCountdownDuration(live.timer, Number(event.target.value) * 60) })}
+                      onBlur={() => setEditingTimerDuration(false)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === 'Escape') {
+                          event.preventDefault()
+                          setEditingTimerDuration(false)
+                        }
+                      }}
+                    />
+                    <span aria-hidden="true">min</span>
+                  </label>
+                ) : (
+                  <button
+                    type="button"
+                    className="arctable-timer-display"
+                    aria-live="polite"
+                    aria-label={
+                      timerCanEditDuration
+                        ? `Duration ${formatDuration(timerDisplaySeconds)}. Tap to change minutes.`
+                        : `Time remaining ${formatDuration(timerDisplaySeconds)}`
+                    }
+                    disabled={!timerCanEditDuration}
+                    onClick={() => {
+                      if (timerCanEditDuration) setEditingTimerDuration(true)
+                    }}
+                  >
+                    <TimerDigits seconds={timerDisplaySeconds} />
+                  </button>
+                )}
+                {timerIdle ? (
+                  <div className="arctable-presets" aria-label="Timer presets">
+                    {[5, 10, 15].map((minutes) => (
+                      <button
+                        type="button"
+                        key={minutes}
+                        className={Math.ceil(live.timer.durationSeconds / 60) === minutes ? 'is-selected' : undefined}
+                        onClick={() => onUpdate({ timer: setArcTableCountdownDuration(live.timer, minutes * 60) })}
+                      >
+                        {minutes}m
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
                 <div className="arctable-timer-actions">
-                  {live.timer.status === 'running' ? <button type="button" onClick={() => onUpdate({ timer: pauseArcTableCountdown(live.timer, now) })}>Pause Timer</button> : <button type="button" onClick={() => onUpdate({ timer: startArcTableCountdown(live.timer, now) })}>{live.timer.status === 'paused' ? 'Resume Timer' : 'Start Timer'}</button>}
-                  <button type="button" onClick={() => onUpdate({ timer: resetArcTableCountdown(live.timer) })}>Reset Timer</button>
+                  {live.timer.status === 'running' ? (
+                    <button type="button" className="arctable-timer-primary" onClick={() => onUpdate({ timer: pauseArcTableCountdown(live.timer, now) })}>Pause</button>
+                  ) : (
+                    <button type="button" className="arctable-timer-primary" onClick={() => onUpdate({ timer: startArcTableCountdown(live.timer, now) })}>
+                      {live.timer.status === 'paused' ? 'Resume' : 'Start'}
+                    </button>
+                  )}
+                  {live.timer.status !== 'idle' ? (
+                    <button
+                      type="button"
+                      className="arctable-timer-reset"
+                      onClick={() => {
+                        setEditingTimerDuration(false)
+                        onUpdate({ timer: resetArcTableCountdown(live.timer) })
+                      }}
+                    >
+                      Reset
+                    </button>
+                  ) : null}
                 </div>
               </section>
               <div className="arctable-control-row"><strong>Phase</strong><div className="arctable-stepper"><button type="button" aria-label="Previous phase" disabled={live.phase === 1} onClick={() => onUpdate({ phase: live.phase - 1 })}>−</button><span>{live.phase} / {live.phaseCount}</span><button type="button" aria-label="Next phase" disabled={live.phase === live.phaseCount} onClick={() => onUpdate({ phase: live.phase + 1 })}>+</button></div></div>
