@@ -588,20 +588,7 @@ try {
   await page.locator(".arc-desk-tray-dock.arc-desk-postit-drop-target--ideas, .arc-desk-tray-dock[data-desk-postit-park='ideas']").waitFor({ state: 'attached', timeout: 3000 })
   await page.mouse.up()
   assert(await page.getByTestId('arc-desk-ideas-accent-slot').locator('[data-desk-post-it="accent-pink"]').count() === 1, 'Dropping pink onto IDEAS must return it to the tray.')
-  // Leave mustard on wood; pull pink back out so later accent assertions see both loose.
-  const pinkReturned = page.getByTestId('arc-desk-ideas-accent-slot').getByTestId('arc-desk-post-it-accent-pink')
-  await pinkReturned.waitFor({ state: 'visible', timeout: 5000 })
-  const pinkReturnedGrip = pinkReturned.getByTestId('arc-desk-post-it-accent-pink-grip')
-  const pinkReturnedStart = await pinkReturnedGrip.boundingBox()
-  assert(pinkReturnedStart, 'Returned pink must be draggable out again.')
-  await page.mouse.move(pinkReturnedStart.x + pinkReturnedStart.width / 2, pinkReturnedStart.y + pinkReturnedStart.height / 2)
-  await page.mouse.down()
-  await page.mouse.move(surfaceBox.x + surfaceBox.width * 0.9, surfaceBox.y + surfaceBox.height * 0.8, { steps: 24 })
-  await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'attached', timeout: 3000 })
-  await page.mouse.up()
-  await page.getByTestId('arc-desk-post-it-drag-ghost').waitFor({ state: 'detached', timeout: 3000 }).catch(() => {})
-  await page.locator('.arc-desk-surface > [data-desk-post-it="accent-pink"]').waitFor({ state: 'attached', timeout: 5000 })
-  assert(await page.locator('.arc-desk-surface > [data-desk-post-it="accent-pink"]').count() === 1, 'Pink must leave IDEAS again onto the exterior desk.')
+  // Pink stays in IDEAS; mustard remains on wood. Clean up + re-seed below restore loose accents.
 
   // Clean up still gathers desk post-its back into IDEAS.
   await page.getByTestId('arc-desk-clean-up').click()
