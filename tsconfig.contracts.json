@@ -17,6 +17,8 @@
     "src/desk/fitMagnetNoteFont.contract.ts",
     "src/desk/deskIdeasEvents.ts",
     "src/desk/deskIdeasEvents.contract.ts",
+    "src/desk/deskIdeasTrayPark.ts",
+    "src/desk/deskIdeasTrayPark.contract.ts",
     "src/demo/**/*.ts",
     "src/app/setupSections.ts",
     "src/app/setupSections.contract.ts",
