@@ -1,0 +1,213 @@
+.calendar-setup-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.calendar-setup-progress li {
+  font: 700 11px/1.2 var(--font-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--soft-charcoal) 70%, var(--ink));
+}
+
+.calendar-setup-progress li[data-active='true'] {
+  color: var(--ink);
+}
+
+.calendar-setup-progress li[data-active='true']::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--mustard);
+  vertical-align: middle;
+}
+
+.calendar-setup-step {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--line-subtle);
+}
+
+.calendar-setup-step:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.calendar-setup-step-heading {
+  max-width: 720px;
+}
+
+.calendar-setup-step-heading h3 {
+  margin: 6px 0 8px;
+  font: 600 22px/1.18 var(--font-editorial);
+  letter-spacing: -0.016em;
+}
+
+.calendar-setup-step-heading > p {
+  margin: 0;
+  color: var(--soft-charcoal);
+}
+
+.calendar-setup-date-suggestion {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--mustard);
+  background: color-mix(in srgb, var(--mustard) 7%, transparent);
+  color: var(--soft-charcoal);
+  font-size: 14px;
+}
+
+.calendar-setup-preview-step {
+  padding-bottom: var(--space-3);
+}
+
+.calendar-setup-advanced {
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  padding: 0 var(--space-4);
+  background: color-mix(in srgb, var(--surface-paper) 94%, white);
+}
+
+.calendar-setup-advanced + .calendar-setup-advanced {
+  margin-top: var(--space-3);
+}
+
+.calendar-setup-advanced > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: var(--space-4) 0;
+  font: 650 15px/1.3 var(--font-body);
+  color: var(--ink);
+}
+
+.calendar-setup-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+.calendar-setup-advanced > summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--soft-charcoal);
+}
+
+.calendar-setup-advanced[open] > summary::before {
+  content: '▾';
+}
+
+.calendar-setup-advanced-body {
+  padding: 0 0 var(--space-4);
+}
+
+.calendar-setup-class-times {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.calendar-setup-class-times-source {
+  margin: 8px 0 0 !important;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink) !important;
+}
+
+.calendar-setup-class-times-list {
+  display: grid;
+  gap: 8px;
+}
+
+.calendar-setup-class-time-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 7.5rem auto 7.5rem auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-paper) 92%, white);
+}
+
+.calendar-setup-class-time-row--planning {
+  border-left: 3px solid color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+.calendar-setup-class-time-row--non-teaching {
+  border-left: 3px solid color-mix(in srgb, var(--soft-charcoal) 45%, transparent);
+}
+
+.calendar-setup-class-time-row--teaching {
+  border-left: 3px solid var(--mustard);
+}
+
+.calendar-setup-class-time-row input[type='time'],
+.calendar-setup-class-time-row input:not([type]) {
+  width: 100%;
+}
+
+.calendar-setup-class-time-sep {
+  color: var(--soft-charcoal);
+  font-weight: 650;
+}
+
+.calendar-setup-class-times-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+}
+
+.calendar-setup-class-times-actions p {
+  margin: 0;
+  max-width: 520px;
+  font-size: 13px;
+  color: var(--soft-charcoal);
+}
+
+.school-identity-optional-source {
+  margin-top: var(--space-3);
+  border: 1px solid var(--line-subtle);
+  border-radius: 10px;
+  padding: 0 var(--space-4);
+  background: color-mix(in srgb, var(--surface-paper) 96%, white);
+}
+
+.school-identity-optional-source > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: var(--space-4) 0;
+  font: 650 15px/1.35 var(--font-body);
+}
+
+.school-identity-optional-source > summary::-webkit-details-marker {
+  display: none;
+}
+
+.school-identity-optional-source[open] .official-calendar-source {
+  border-top: 1px solid var(--line-subtle);
+  padding-top: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+@media (max-width: 720px) {
+  .calendar-setup-class-time-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .calendar-setup-class-time-sep {
+    display: none;
+  }
+
+  .calendar-setup-class-time-row .text-button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
