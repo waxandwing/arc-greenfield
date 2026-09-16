@@ -31,14 +31,20 @@ try {
   assert(await edgeTabs.count() === 1, 'Planner edge tabs must use slice stack when enabled.')
   const weekTab = edgeTabs.getByRole('button', { name: 'WEEK' })
   const weekBg = await weekTab.evaluate((el) => getComputedStyle(el).backgroundImage)
-  assert(weekBg.includes('planner-edge-tab-active'), 'Active WEEK tab must use active slice raster.')
+  assert(
+    weekBg.includes('planner-edge-tab-active') || weekBg.includes('calendar-tab'),
+    'Active WEEK tab must use active edge-tab raster (slice or Kelly calendar-tab).',
+  )
 
   const dayTab = edgeTabs.getByRole('button', { name: 'DAY', exact: true })
   await dayTab.evaluate((el) => el.click())
   assert(await dayTab.getAttribute('aria-current') === 'page', 'DAY must be aria-current=page in Day view.')
   assert(await dayTab.evaluate((el) => el.classList.contains('arc-index-tab--desk-slice-active')), 'DAY must use --desk-slice-active in Day view.')
   const dayBg = await dayTab.evaluate((el) => getComputedStyle(el).backgroundImage)
-  assert(dayBg.includes('planner-edge-tab-active'), 'Active DAY tab must use active slice raster, not inactive crop.')
+  assert(
+    dayBg.includes('planner-edge-tab-active') || dayBg.includes('calendar-tab'),
+    'Active DAY tab must use active edge-tab raster, not inactive crop.',
+  )
   assert(!dayBg.includes('planner-edge-tab-day-inactive'), 'DAY must not keep inactive artwork when selected.')
 
   // One click on YEAR must enter Year Map immediately (not Week-then-Year).
@@ -49,8 +55,9 @@ try {
     await page.locator('.b01-furniture-composition--desk').getAttribute('data-year-expanded') === 'true',
     'One YEAR click must expand the year desk stage (not land on Week first).',
   )
-  const yearPlanView = await page.locator('[data-plan-view="Year Map"]').count()
-  assert(yearPlanView >= 1 || (await page.locator('.plan-state-header').getAttribute('data-plan-view')) === 'Year Map', 'One YEAR click must set plan view to Year Map.')
+  const yearPlanHeader = await page.locator('.plan-state-header').getAttribute('data-plan-view')
+  const yearPlanBody = await page.locator('[data-plan-view="Year Map"]').count()
+  assert(yearPlanHeader === 'Year Map' || yearPlanBody >= 1, 'One YEAR click must set plan view to Year Map.')
 
   // DAY/WEEK/MONTH must still select cleanly after Year.
   await dayTab.evaluate((el) => el.click())
