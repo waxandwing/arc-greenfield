@@ -80,6 +80,8 @@ type WorkspaceStageProps = {
   onConfirmPlanLessonMove?: (destination: ISODate, preview: LessonMovePreview) => void
   onOpenRecoveryForSection?: (sectionId: string) => void
   recoveryFocusSectionId?: string | null
+  onEditLesson?: (lessonId: string) => void
+  focusLessonId?: string | null
 }
 
 export function WorkspaceStage(props: WorkspaceStageProps) {
@@ -135,6 +137,8 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
     onConfirmPlanLessonMove,
     onOpenRecoveryForSection,
     recoveryFocusSectionId,
+    onEditLesson,
+    focusLessonId = null,
   } = props
 
   const needsCalendarSetup = !calendar || !anchorDate || mode === 'calendar-setup'
@@ -207,6 +211,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         units={unitWorkspace}
         shiftState={shiftState}
         initialValue={lessonInput}
+        focusLessonId={focusLessonId}
         onSave={onUseLessons}
         onCancel={onReturnToSettings}
       />
@@ -277,6 +282,7 @@ export function WorkspaceStage(props: WorkspaceStageProps) {
         onBeginPlanLessonMove={onBeginPlanLessonMove}
         onOpenRecoveryForSection={onOpenRecoveryForSection}
         onMoveCaptureToDate={_moveCaptureToDate}
+        onEditLesson={onEditLesson}
       />
     </>
   )

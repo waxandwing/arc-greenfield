@@ -3022,6 +3022,35 @@ html:has(.arc-shell--desk) body {
 .b01-furniture-composition--desk .desk-planner-head-title-copy { display:flex; flex-direction:column; align-items:flex-start; gap:2px; min-width:0; }
 .b01-furniture-composition--desk .desk-planner-head-title-copy .plan-state-header { margin:0; padding:0; }
 .b01-furniture-composition--desk .desk-planner-head-title-copy .plan-state-header .plan-state-secondary { display:none; }
+/* Day class/lesson focus: keep unit · date visible so the title is not a lonely mode stamp. */
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='class'] .plan-state-header .plan-state-secondary,
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='lesson'] .plan-state-header .plan-state-secondary {
+  display: block;
+  margin: 2px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: color-mix(in srgb, var(--ink) 72%, var(--soft-charcoal));
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='class'] .plan-state-kicker,
+.b01-furniture-composition--desk .desk-planner-head-row[data-plan-focus='lesson'] .plan-state-kicker {
+  margin: 0 0 2px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--ink) 70%, var(--soft-charcoal));
+  font-family: 'League Spartan', var(--font-label), sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 .b01-furniture-composition--desk .desk-planner-week-kicker { font-family:'League Spartan', var(--font-label), sans-serif; font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:color-mix(in srgb, var(--ink) 78%, var(--soft-charcoal)); margin:0; }
 .b01-furniture-composition--desk .desk-planner-rainbow-mark { width:clamp(40px,4.2vw,56px); height:auto; flex:0 0 auto; object-fit:contain; pointer-events:none; }
 .b01-furniture-composition--desk .desk-planner-head-tools { gap:6px; padding-top:4px; opacity:0.82; }
