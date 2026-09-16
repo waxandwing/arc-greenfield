@@ -688,18 +688,17 @@
   background:var(--paper);
 }
 .arctable--student .arctable-student-header{
-  background:transparent;
-  color:var(--ink);
-  border-bottom:1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  background:var(--ink);
+  color:#fff;
+  border-bottom:0;
 }
-.arctable--student .arctable-header-brand--on-dark{color:var(--ink)}
 .arctable--student .arctable-sync-button,
 .arctable--student .arctable-projection-exit{
-  border-color:color-mix(in srgb, var(--ink) 28%, transparent);
-  color:var(--ink);
+  border-color:rgba(255,255,255,.45);
+  color:#fff;
 }
 .arctable--student .arctable-projection-exit{
-  background:color-mix(in srgb, var(--field-elevated) 80%, transparent);
+  background:rgba(255,255,255,.08);
 }
 .arctable--student .arctable-student-stage{
   position:relative;

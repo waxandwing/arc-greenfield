@@ -20,7 +20,7 @@ import {
   type ArcTableTeachingOutcome,
 } from '../planning'
 import { consumeArcTableDeskLaunch } from '../planning/arcTableDeskLaunch'
-import { ARC_TABLE_MARK_ASSET } from '../planning/arcTableDeskMark'
+import { ARC_TABLE_HEADER_DARK_ASSET, ARC_TABLE_MARK_ASSET } from '../planning/arcTableDeskMark'
 import { publicAssetUrl } from '../publicAssetUrl'
 import '../styles/arctable.css'
 
@@ -299,17 +299,14 @@ export function ArcTableStudentSurface({ live, onShowTeacher, onSyncLive, onUpda
     <main className={`arctable arctable--student${cleanupActive ? ' is-cleanup' : ''}`}>
       <div className="arctable-paper-texture" aria-hidden="true" />
       <header className="arctable-student-header">
-        <div className="arctable-header-brand arctable-header-brand--on-dark">
-          <img
-            className="arctable-header-mark"
-            src={publicAssetUrl(ARC_TABLE_MARK_ASSET)}
-            alt=""
-            width={44}
-            height={44}
-            data-testid="arctable-student-header-mark"
-          />
-          <span className="arctable-header-table-word">TABLE</span>
-        </div>
+        <img
+          className="arctable-header-wordmark"
+          src={publicAssetUrl(ARC_TABLE_HEADER_DARK_ASSET)}
+          alt="ArcTable"
+          width={170}
+          height={46}
+          data-testid="arctable-student-header-mark"
+        />
         <div className="arctable-student-session">
           <strong>{live.session.sectionName} · {live.session.courseTitle}</strong>
           <span data-testid="arctable-sync-status" role="status">{syncNote}</span>
