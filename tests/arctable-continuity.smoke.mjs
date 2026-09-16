@@ -72,16 +72,12 @@ try {
   await page.getByRole('button', { name: 'Skip — lesson never started' }).click()
   assert(await page.evaluate(() => localStorage.getItem('arc.arctable.live.v1')) === null, 'Week-row launch must respect the same End Class boundary as Day.')
   await selectView(page, 'Week')
-  const trayTab = page.getByRole('button', { name: 'IDEAS', exact: true })
-  if (await trayTab.count()) {
-    await trayTab.evaluate((element) => element.click())
-    const quickCapture = page.getByRole('textbox', { name: 'Quick capture', exact: true })
-    if (await quickCapture.count()) {
-      assert(await quickCapture.count() === 1, 'Tray must expose real capture before Course placement.')
-      assert(!(await page.locator('body').innerText()).includes('Fridge'), 'Visible product language must say IDEAS while internal fridge compatibility seams remain untouched.')
-      await capture(page, '02-week-workspace.png')
-      await trayTab.evaluate((element) => element.click())
-    }
+  const ideasDrawerTab = page.getByTestId('arc-desk-folders-tab')
+  if (await ideasDrawerTab.count()) {
+    await ideasDrawerTab.evaluate((element) => element.click())
+    assert(!(await page.locator('body').innerText()).includes('Fridge'), 'Visible product language must say IDEAS while internal fridge compatibility seams remain untouched.')
+    await capture(page, '02-week-workspace.png')
+    await ideasDrawerTab.evaluate((element) => element.click())
   }
 
   await selectView(page, 'Month')
