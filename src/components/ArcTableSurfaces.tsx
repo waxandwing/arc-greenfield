@@ -518,6 +518,13 @@ function MediaSurface({
 
 function EndClassDialog({ live, resumeNote, error, onResumeNote, onFinish, onCancel }: { live: ArcTableLiveState; resumeNote: string; error: string | null; onResumeNote: (value: string) => void; onFinish: (outcome: ArcTableTeachingOutcome) => void; onCancel: () => void }) {
   const neverStarted = live.session.deliveryStatus === 'not-started' && elapsedLiveMinutes(live) === 0 && live.phase === 1 && live.timer.status === 'idle' && live.cleanupTimer.status === 'idle'
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onCancel()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onCancel])
   return <div className="arctable-end-layer" role="dialog" aria-modal="true" aria-labelledby="end-class-title"><form className="arctable-end-card" onSubmit={(event) => { event.preventDefault(); if (resumeNote.trim()) onFinish({ kind: 'stopped', resumeNote }) }}><p className="arctable-kicker">Instructional outcome</p><h2 id="end-class-title">Where did this class land?</h2><p>Ending is different from opening Plan View. This updates only {live.session.sectionName} and closes its live tools.</p>{error ? <p className="setup-errors" role="alert">{error}</p> : null}<button type="button" className="primary-button" onClick={() => onFinish({ kind: 'completed' })}>Complete lesson</button><label><span>Stop here + required resume note</span><textarea required value={resumeNote} onChange={(event) => onResumeNote(event.target.value)} /></label><button type="submit" className="quiet-button">Save stop point</button>{neverStarted ? <button type="button" className="text-button" onClick={() => onFinish({ kind: 'skipped' })}>Skip — lesson never started</button> : null}<button type="button" className="text-button" onClick={onCancel}>Keep class running</button></form></div>
 }
 
